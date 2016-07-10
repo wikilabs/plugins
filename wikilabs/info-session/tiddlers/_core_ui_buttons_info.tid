@@ -1,0 +1,27 @@
+title:$:/core/ui/Buttons/info
+tags: $:/tags/ViewToolbar
+caption: {{$:/core/images/info-button}} {{$:/language/Buttons/Info/Caption}}
+description:{{$:/language/Buttons/Info/Hint}}
+
+<$reveal type="match" text="" default="" state=<<tiddlerInfoState>> >
+<$button tooltip={{$:/language/Buttons/Info/Hint}} aria-label={{$:/language/Buttons/Info/Caption}} class=<<tv-config-toolbar-class>> selectedClass="tc-selected">
+<$action-setfield $tiddler=<<tiddlerInfoState>> text="visible"/>
+<$list filter="[<tv-config-toolbar-icons>prefix[yes]]">
+{{$:/core/images/info-button}}
+</$list>
+<$list filter="[<tv-config-toolbar-text>prefix[yes]]">
+<span class="tc-btn-text"><$text text={{$:/language/Buttons/Info/Caption}}/></span>
+</$list>
+</$button>
+</$reveal>
+<$reveal type="nomatch" text="" default="" state=<<tiddlerInfoState>> >
+<$button tooltip={{$:/language/Buttons/Info/Hint}} aria-label={{$:/language/Buttons/Info/Caption}} class="tc-btn-invisible tc-selected" >
+<$action-deletetiddler $tiddler=<<tiddlerInfoState>>/>
+<$list filter="[<tv-config-toolbar-icons>prefix[yes]]">
+{{$:/core/images/info-button}}
+</$list>
+<$list filter="[<tv-config-toolbar-text>prefix[yes]]">
+<span class="tc-btn-text"><$text text={{$:/language/Buttons/Info/Caption}}/></span>
+</$list>
+</$button>
+</$reveal>
