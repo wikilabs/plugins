@@ -3,5 +3,6 @@
 	"description": "Info button, with session persistent open/closed status",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.0.0",
+	"version": "0.1.0",
 	"list": "readme license"
 }
