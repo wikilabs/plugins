@@ -1,0 +1,13 @@
+title: $:/plugins/wikilabs/info-tagmap/readme
+
+This plugin adds a new tab to the tiddler info section. It's a multi column list of all tiddler tags plus all tagged tiddlers.
+
+This plugin doesn't change any core templates.
+
+The code below can be copied into the tag tiddlers.
+
+```
+All tiddlers tagged: {{!!title}}
+
+<<list-links filter:"[tag{!!title}]">>
+```

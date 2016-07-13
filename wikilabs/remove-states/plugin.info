@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/remove-states",
+	"description": "Remove all state tiddlers. Simple UI",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.0.0",
+	"version": "0.1.0",
+	"list": "readme license"
+}

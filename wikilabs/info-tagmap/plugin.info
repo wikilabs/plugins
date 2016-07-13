@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/info-tagmap",
+	"description": "Adds a Tag-Map tab to the tiddler info section",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.0.0",
+	"version": "0.1.0",
+	"list": "readme license"
+}

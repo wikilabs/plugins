@@ -1,0 +1,35 @@
+title: $:/plugins/wikilabs/multicol-dropdown/styles
+tags: $:/tags/Stylesheet
+type: text/plain
+
+/* concept used from: http://fourkitchens.com/blog/article/responsive-multi-column-lists-flexbox */
+
+.tc-block-dropdown {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 3px;
+}
+
+.tc-dropdown-item {
+  flex: 1 0 100%;
+  margin-left: 2px;
+  margin-top: 2px;
+}
+
+.tc-block-dropdown a{
+  flex: 1 0 calc(33% - 2px);
+  background: #eee;
+  margin-left: 2px;
+  margin-top: 2px;
+}
+
+.tc-search-results {
+  width: 100%;
+}
+
+/* TODO this is needed, since otherwise the search results show an artefact */
+/* This is already part of the reset.css .. but it has no effect .. bug? */
+
+[hidden] {
+  display: none;
+}

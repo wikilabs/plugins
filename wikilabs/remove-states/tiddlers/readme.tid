@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/remove-states/readme
+
+This plugin creates a simple UI, to remove all state tiddlers.
+
+[[$:/plugins/wikilabs/ui/remove-states]]
+
+{{$:/plugins/wikilabs/ui/remove-states}}

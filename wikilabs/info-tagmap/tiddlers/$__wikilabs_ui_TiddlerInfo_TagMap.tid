@@ -1,0 +1,15 @@
+title: $:/wikilabs/ui/TiddlerInfo/TagMap
+tags: $:/tags/TiddlerInfo
+caption: Tag Map
+
+<div class="flexbox">
+<$list filter="[all[current]tags[]sort[title]]" emptyMessage="This tiddler has no tags">
+<div class="col">
+<span class="tc-tag-label">
+<$transclude tiddler="$:/core/ui/ListItemTemplate"/>
+</span>
+<hr>
+<$list filter="[all[current]tagging[]sort[title]]" template="$:/core/ui/ListItemTemplate" />
+</div>
+</$list>
+</div>

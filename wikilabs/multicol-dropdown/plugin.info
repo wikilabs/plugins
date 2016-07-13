@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/multicol-dropdown",
+	"description": "MultiColumn Dropdown with flex-box CSS only",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.0.0",
+	"version": "0.1.0",
+	"list": "readme license"
+}

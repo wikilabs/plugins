@@ -1,0 +1,17 @@
+title: $:/wikilabs/ui/TiddlerInfo/TagMap/Styles
+tags: $:/tags/Stylesheet
+type: text/plain
+
+.flexbox {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+  flex-direction: row;
+  flex-flow: row wrap;
+}
+
+.flexbox .col {
+  flex: 1 1 33%;
+  margin-bottom: 1em;
+}

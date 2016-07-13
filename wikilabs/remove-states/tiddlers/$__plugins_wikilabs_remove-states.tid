@@ -1,0 +1,17 @@
+title: $:/plugins/wikilabs/ui/remove-states
+
+\define theFilter()
+[prefix[$:/state/]]
+\end
+
+<$button>
+<$action-deletetiddler $filter=<<theFilter>> />
+Delete all: <<theFilter>> tiddlers
+</$button>
+
+<$list filter=<<theFilter>> >
+<$button>
+<$action-deletetiddler $tiddler=<<currentTiddler>>/>
+x
+</$button> - <<currentTiddler>><br>
+</$list>
