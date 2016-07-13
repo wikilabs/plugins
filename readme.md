@@ -69,7 +69,7 @@ Open your editions `tiddlywiki.info` file and change the `plugins` section accor
 ...
 ...
 
-}
+    }
 }
 ```
 
