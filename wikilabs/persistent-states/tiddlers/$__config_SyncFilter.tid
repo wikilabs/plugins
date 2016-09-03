@@ -1,0 +1,6 @@
+created: 20160902131452473
+modified: 20160902131509079
+title: $:/config/SyncFilter
+type: text/vnd.tiddlywiki
+
+[is[tiddler]] -[[$:/HistoryList]] -[[$:/Import]] -[[$:/isEncrypted]] -[prefix[$:/status/]] -[prefix[$:/temp/]] -[[$:/StoryList]]

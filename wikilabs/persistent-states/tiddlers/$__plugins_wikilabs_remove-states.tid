@@ -1,0 +1,17 @@
+title: $:/plugins/wikilabs/ui/persistent-states
+
+\define theFilter()
+[prefix[$:/state/]]
+\end
+
+<$button>
+<$action-deletetiddler $filter=<<theFilter>> />
+Delete all: ''~$:/state/'' tiddlers
+</$button>
+
+<$list filter=<<theFilter>> >
+<$button>
+<$action-deletetiddler $tiddler=<<currentTiddler>>/>
+x
+</$button> - <$text text=<<currentTiddler>> /><br>
+</$list>

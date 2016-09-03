@@ -1,0 +1,9 @@
+title: $:/plugins/wikilabs/persistent-states/readme
+
+This plugin saves all $:/state/ tiddlers and creates a simple UI, to remove them manually.
+
+see: 
+
+[[$:/plugins/wikilabs/ui/persistent-states]]
+
+{{$:/plugins/wikilabs/ui/persistent-states}}

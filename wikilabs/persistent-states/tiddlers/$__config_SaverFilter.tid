@@ -1,0 +1,6 @@
+created: 20160902131547270
+modified: 20160902131552116
+title: $:/config/SaverFilter
+type: text/vnd.tiddlywiki
+
+[all[]] -[[$:/HistoryList]] -[[$:/StoryList]] -[[$:/Import]] -[[$:/isEncrypted]] -[[$:/UploadName]] -[prefix[$:/temp/]]
