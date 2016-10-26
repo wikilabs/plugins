@@ -1,0 +1,28 @@
+title: $:/plugins/wikilabs/link-to-tabs/styles
+tags: $:/tags/Stylesheet
+type: text/css
+
+.wlc-link-to-tab {
+  display: none;
+  position: relative;
+  top: -1.3em;
+  left: -1.3em;
+  font-size: 0.7em;
+  opacity: 0.7;
+  margin-right: -1em;
+}
+
+.wlc-link-to-tab:hover {
+  opacity: 1;
+}
+
+.tc-tab-selected + .wlc-link-to-tab {
+  display: inline;
+}
+
+.tc-vertical > .wlc-link-to-tab {
+  top: -2.5em;
+  left: 0;
+  height: 0;
+  float: right;
+}

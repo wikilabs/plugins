@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/link-to-tabs/readme
+
+This plugin adds a little link icon to every tab. 
+
+''Important:'' This plugin changes the core tabs macro.
