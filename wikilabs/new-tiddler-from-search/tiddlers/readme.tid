@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/new-tiddler-from-search/readme
+
+This plugin provides a minimal "new Tiddler" interface, if a search doesn't return any results. There are 2 buttons.
+
+* {{$:/core/images/cancel-button}} .. Clear the temporary template tiddler
+* {{$:/core/images/done-button}} .. Save the tiddler
+
+''Important'': This plugin overwrites core template tiddlers:
+
+* $:/core/ui/DefaultSearchResultList

@@ -1,0 +1,23 @@
+title: $:/plugins/wikilabs/new-tiddler-from-search/template
+
+\define new-tiddler-temp()
+$:/temp/new-tiddler-from-search
+\end
+\define new-tiddler-from-search-template()
+<$button tooltip={{$:/language/Buttons/Clear/Caption}} >
+  <$action-deletetiddler $tiddler=<<new-tiddler-temp>>/>
+  <$transclude tiddler="$:/core/images/cancel-button" />
+</$button><!--
+--><$button tooltip={{$:/language/Buttons/NewTiddler/Caption}} >
+  <$action-setfield $tiddler={{$(searchTiddler)$!!text}}
+  tags= {{$(new-tiddler-temp)$!!tags}}
+  text= {{$(new-tiddler-temp)$}}
+  />
+  <$transclude tiddler="$:/core/images/done-button" /> : <$transclude tiddler="$(searchTiddler)$" />
+</$button>
+<p>
+<$edit-text field="tags" class="wikilabs-full-width" tiddler=<<new-tiddler-temp>> placeholder={{$:/language/EditTemplate/Tags/Add/Placeholder}} /><br>
+<$edit-text field="text" class="wikilabs-full-width" tiddler=<<new-tiddler-temp>> placeholder={{$:/language/EditTemplate/Body/Placeholder}} default=""/>
+</p>
+\end
+<<new-tiddler-from-search-template>>

@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/new-tiddler-from-search",
+	"description": "New Tiddler from Search - minimal interface",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.1.6",
+	"version": "0.1.0",
+	"list": "readme license"
+}
