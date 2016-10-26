@@ -1,0 +1,22 @@
+title: $:/core/ui/AdvancedSearch/Filter
+caption: {{$:/plugins/wikilabs/advanced-search-plus/filter-search.svg}}
+icon: $:/plugins/wikilabs/advanced-search-plus/filter-search.svg
+tags: $:/tags/AdvancedSearch
+
+\define lingo-base() $:/language/Search/
+
+{{$:/plugins/wikilabs/advanced-search-plus/filter-search-plus-new}}<<lingo Filter/Hint>>
+
+<div class="tc-search tc-advanced-search">
+<$edit-text tiddler="$:/temp/advancedsearch" type="search" tag="input" focus="yes"/>
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/AdvancedSearch/FilterButton]!has[draft.of]]"><$transclude/></$list>
+</div>
+
+<$reveal state="$:/temp/advancedsearch" type="nomatch" text="">
+<$set name="resultCount" value="""<$count filter={{$:/temp/advancedsearch}}/>""">
+<div class="tc-search-results">
+<<lingo Filter/Matches>>
+<$list filter={{$:/temp/advancedsearch}} template="$:/core/ui/ListItemTemplate"/>
+</div>
+</$set>
+</$reveal>

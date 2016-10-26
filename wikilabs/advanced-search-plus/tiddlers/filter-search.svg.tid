@@ -1,0 +1,9 @@
+title: $:/plugins/wikilabs/advanced-search-plus/filter-search.svg
+
+<svg height="22pt" viewBox="0 0 128 128" width="22pt" class="wlc-image-filter-search tc-image-button">
+	<g>
+		<path d="m6,5.7,0,7,0,96,0,7,7,0,27,0,0-14-20,0,0-82,19,0,0-14-26,0-7,0z" />
+		<path d="m68,5.7,0,14,19,0,0,82-20,0,0,14,27,0,7,0,0-7,0-96,0-7-7,0-26,0z" />
+	</g>
+</svg>
+

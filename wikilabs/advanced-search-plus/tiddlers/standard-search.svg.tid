@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/advanced-search-plus/standard-search.svg
+
+<svg height="22pt" viewBox="0 0 128 128" width="22pt" class="wlc-image-standard-search tc-image-button" fill="#666">
+	<g fill-rule="evenodd">
+		<path d="M47,0.91c-25,0-46,21-46,47s21,47,47,47,46-21,47-47h0.062v-0.56h-0.062c-1-25-21-46-48-46zm0,17c18,0,30,13,30,30-0.15,17-14,30-30,30s-30-12-30-30c0-17,14-30,30-30z" />
+		<path d="m73,68a8.4,8.4,0,0,0,-5.5,15l42,40a8.4,8.4,0,1,0,12,-12l-41-39a8.4,8.4,0,0,0,-6,-3z" />
+	</g>
+</svg>

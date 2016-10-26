@@ -1,0 +1,32 @@
+title: $:/core/ui/AdvancedSearch/Shadows
+caption: {{$:/plugins/wikilabs/advanced-search-plus/shadow-search.svg}}
+icon: $:/plugins/wikilabs/advanced-search-plus/shadow-search.svg
+tags: $:/tags/AdvancedSearch
+
+\define lingo-base() $:/language/Search/
+<$linkcatcher to="$:/temp/advancedsearch">
+
+{{$:/plugins/wikilabs/advanced-search-plus/shadow-search-plus-new}}<<lingo Shadows/Hint>>
+
+<div class="tc-search">
+<$edit-text tiddler="$:/temp/advancedsearch" type="search" tag="input" focus="yes"/>
+<$reveal state="$:/temp/advancedsearch" type="nomatch" text="">
+<$button class="tc-btn-invisible">
+<$action-setfield $tiddler="$:/temp/advancedsearch" $field="text" $value=""/>
+{{$:/core/images/close-button}}
+</$button>
+</$reveal>
+</div>
+
+</$linkcatcher>
+
+<$reveal state="$:/temp/advancedsearch" type="nomatch" text="">
+<$set name="resultCount" value="""<$count filter="[all[shadows]search{$:/temp/advancedsearch}] -[[$:/temp/advancedsearch]]"/>""">
+<div class="tc-search-results">
+<<lingo Shadows/Matches>>
+<$list filter="[all[shadows]search{$:/temp/advancedsearch}sort[title]limit[250]] -[[$:/temp/advancedsearch]]" template="$:/core/ui/ListItemTemplate"/>
+</div>
+</$set>
+</$reveal>
+<$reveal state="$:/temp/advancedsearch" type="match" text="">
+</$reveal>

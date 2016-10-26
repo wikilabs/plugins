@@ -1,0 +1,46 @@
+title: $:/plugins/wikilabs/advanced-search-plus/system-search-plus
+
+\define new-advanced-search-plus()
+<!--p>
+temp: """$(new-tiddler-input)$"""<br>
+input: [[$(input-tiddler)$]]<br>
+</p-->
+<$button tooltip={{$:/language/Buttons/Clear/Caption}} >
+  <$action-deletetiddler $tiddler=<<new-tiddler-input>>/>
+  <$transclude tiddler="$:/core/images/cancel-button" />
+</$button><!--
+--><$button tooltip={{$:/language/Buttons/NewTiddler/Caption}} >
+  <$action-deletetiddler $tiddler="$:/state/expandMe/-$:/plugins/wikilabs/advanced-search-plus/system-search-plus"/><!-- TODO make it dynamic-->
+  <$action-setfield $tiddler="$:/state/tab--1027337707" text="$(search-title)$" />
+  <$action-setfield $tiddler="$(input-tiddler)$" text={{$:/temp/advancedsearch}} />
+  <$action-setfield $tiddler="$(search-title)$"
+  caption={{$(new-tiddler-input)$!!caption}}
+  text="""$(content)$"""
+  tags="$:/tags/AdvancedSearch"
+  icon="$:/plugins/wikilabs/advanced-search-plus/system-search.svg"
+  tab-icon="{{$:/plugins/wikilabs/advanced-search-plus/system-search.svg}}"
+  />
+  <$transclude tiddler="$:/core/images/done-button" /> : {{$(new-tiddler-input)$!!new-title}}
+</$button>
+\end
+
+\define inner(pre title)
+<$wikify name="content" text={{$:/plugins/wikilabs/advanced-search-plus/SystemSearchTemplate}} mode=block output=text >
+<$set name="input-tiddler" value="$pre$inp/$title$" >
+<$set name="search-title" value="$pre$$title$">
+<<new-advanced-search-plus>>
+</$set>
+</$set>
+</$wikify>
+\end
+
+\define outer()
+<$macrocall $name="inner" pre="$:/search-sys/" title={{$(new-tiddler-input)$!!new-title}} />
+<br>
+<$edit-text field="new-title" class="wikilabs-full-width" tiddler="$(new-tiddler-input)$" placeholder="title"/> - title<br>
+<$edit-text field="caption" class="wikilabs-full-width" tiddler="$(new-tiddler-input)$" placeholder="caption" /> - caption<br>
+\end
+
+<$set name="new-tiddler-input" value=<<qualify "$:/temp/">> >
+<<outer>>
+</$set>

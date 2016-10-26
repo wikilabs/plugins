@@ -1,0 +1,6 @@
+title: $:/plugins/wikilabs/advanced-search-plus/styles
+tags: $:/tags/Stylesheet
+
+.tc-tab-buttons svg {
+  fill: #555;
+}

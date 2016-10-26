@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/advanced-search-plus/ui/Buttons/search-plus
+caption: {{$:/plugins/wikilabs/advanced-search-plus/standard-search.svg}} search-plus
+description: wikilabs - search-plus
+tags: $:/tags/PageControls
+
+<$button set="$:/state/tab/sidebar--1835078512" setTo="$:/plugins/wikilabs/advanced-search-plus/menu" tooltip={{$:/language/Buttons/AdvancedSearch/Hint}} aria-label={{$:/language/Buttons/AdvancedSearch/Caption}} class=<<tv-config-toolbar-class>>>
+<$action-setfield $tiddler="$:/state/tab--1027337707" text="$:/core/ui/AdvancedSearch/Standard"/>
+<$list filter="[<tv-config-toolbar-icons>prefix[yes]]">
+{{$:/plugins/wikilabs/advanced-search-plus/standard-search.svg}}
+</$list>
+<$list filter="[<tv-config-toolbar-text>prefix[yes]]">
+<span class="tc-btn-text"><$text text={{$:/language/Buttons/AdvancedSearch/Caption}}/></span>
+</$list>
+</$button>

@@ -1,0 +1,3 @@
+title: $:/plugins/wikilabs/advanced-search-plus/shadow-search-plus-new
+
+<<expandMe "$:/plugins/wikilabs/advanced-search-plus/shadow-search-plus" showText:{{$:/core/images/unfold-button}} hideText:{{$:/core/images/fold-button}} showTooltip:"Create a new SHADOW search tab">>

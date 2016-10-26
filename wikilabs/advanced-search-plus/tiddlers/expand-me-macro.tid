@@ -1,0 +1,17 @@
+title: $:/plugins/wikilabs/advanced-search-plus/expand-me-macro
+tags: $:/tags/Macro
+
+\define getState(tiddler, pre:"")
+$:/state/expandMe/$pre$-$tiddler$
+\end
+\define expandMe(tiddler, pre="", showText:"Show me", hideText:"Hide me", showTooltip:"show", hideTooltip:"hide")
+<$reveal type="nomatch" state=<<getState """$tiddler$""" """$pre$""">> text="show">
+  <$button set=<<getState """$tiddler$""" """$pre$""">> setTo="show" tooltip="""$showTooltip$""">$showText$</$button> 
+</$reveal>
+<$reveal type="match" state=<<getState """$tiddler$""" """$pre$""">> text="show">
+  <$button set=<<getState """$tiddler$""" """$pre$""">> setTo="hide" tooltip="""$hideTooltip$""">$hideText$</$button>
+  <$transclude tiddler="""$tiddler$""" mode=block>
+</$reveal>
+\end
+
+

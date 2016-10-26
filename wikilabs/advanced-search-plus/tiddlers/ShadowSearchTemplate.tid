@@ -1,0 +1,34 @@
+title: $:/plugins/wikilabs/advanced-search-plus/ShadowSearchTemplate
+
+`\define lingo-base() $:/language/Search/
+<$linkcatcher to="`$(input-tiddler)$`">
+
+<$button tooltip={{$:/language/Buttons/Delete/Caption}} >
+  <$action-deletetiddler $tiddler="`$(input-tiddler)$`"/>
+  <$action-deletetiddler $tiddler="`$(search-title)$`"/>
+  <$transclude tiddler="$:/core/images/delete-button" />
+</$button>
+<<lingo Shadows/Hint>>
+
+<div class="tc-search">
+<$edit-text tiddler="`$(input-tiddler)$`" type="search" tag="input"/>
+<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
+<$button class="tc-btn-invisible">
+<$action-setfield $tiddler="`$(input-tiddler)$`" $field="text" $value=""/>
+{{$:/core/images/close-button}}
+</$button>
+</$reveal>
+</div>
+
+</$linkcatcher>
+
+<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
+<$set name="resultCount" value="<$count filter='[all[shadows]search{`$(input-tiddler)$`}]'/>">
+<div class="tc-search-results">
+<<lingo Shadows/Matches>>
+<$list filter="[all[shadows]search{`$(input-tiddler)$`}sort[title]limit[250]]" template="$:/core/ui/ListItemTemplate"/>
+</div>
+</$set>
+</$reveal>
+<$reveal state="`$(input-tiddler)$`" type="match" text="">
+</$reveal>`

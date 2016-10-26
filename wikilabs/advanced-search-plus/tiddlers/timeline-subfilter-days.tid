@@ -1,0 +1,7 @@
+title: timeline-subfilter-days
+
+```
+<<timeline limit:100 subfilter:"days[-4]">>
+```
+
+<<timeline limit:100 subfilter:"days[-4]">>
