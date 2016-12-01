@@ -26,7 +26,7 @@ title: $:/plugins/wikilabs/advanced-search-plus/SystemSearchTemplate
 <$set name="resultCount" value="<$count filter='[is[system]search{`$(input-tiddler)$`}]'/>">
 <div class="tc-search-results">
 <<lingo System/Matches>>
-<$list filter="[is[system]search{`$(input-tiddler)$`}sort[title]limit[250]]`]]" template="$:/core/ui/ListItemTemplate"/>
+<$list filter="[is[system]search{`$(input-tiddler)$`}sort[title]limit[250]]" template="$:/core/ui/ListItemTemplate"/>
 </div>
 </$set>
 </$reveal>
