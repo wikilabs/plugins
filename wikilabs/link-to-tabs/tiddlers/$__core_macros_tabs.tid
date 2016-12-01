@@ -10,7 +10,7 @@ tags: $:/tags/Macro
 <$transclude tiddler=<<currentTab>> field="caption">
 <$macrocall $name="currentTab" $type="text/plain" $output="text/plain"/>
 </$transclude>
-</$set></$tiddler></$button><span class="wlc-link-to-tab"><$link to=<<currentTiddler>> > &#128279;</$link></span></$tiddler></$set></$list>
+</$set></$tiddler></$button><span class="wltc-link-to-tab"><$link to=<<currentTiddler>> >{{$:/core/images/link}}</$link></span></$tiddler></$set></$list>
 </div>
 <div class="tc-tab-divider $class$"/>
 <div class="tc-tab-content $class$">

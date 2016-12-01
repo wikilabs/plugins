@@ -2,26 +2,31 @@ title: $:/plugins/wikilabs/link-to-tabs/styles
 tags: $:/tags/Stylesheet
 type: text/css
 
-.wlc-link-to-tab {
+.wltc-link-to-tab {
   display: none;
   position: relative;
-  top: -1.3em;
+  top: -1em;
   left: -1.3em;
   font-size: 0.7em;
   opacity: 0.7;
   margin-right: -1em;
 }
 
-.wlc-link-to-tab:hover {
+.wltc-link-to-tab svg{
+  width: 1.4em;
+  height: 1.4em;
+}
+
+.wltc-link-to-tab:hover {
   opacity: 1;
 }
 
-.tc-tab-selected + .wlc-link-to-tab {
+.tc-tab-selected + .wltc-link-to-tab {
   display: inline;
 }
 
-.tc-vertical > .wlc-link-to-tab {
-  top: -2.5em;
+.tc-vertical > .wltc-link-to-tab {
+  top: -1.9em;
   left: 0;
   height: 0;
   float: right;
