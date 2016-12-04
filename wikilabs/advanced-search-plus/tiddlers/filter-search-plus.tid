@@ -18,7 +18,6 @@ input: [[$(input-tiddler)$]]<br>
   text="""$(content)$"""
   tags="$:/tags/AdvancedSearch"
   icon="$:/plugins/wikilabs/advanced-search-plus/filter-search.svg"
-  tab-icon="{{$:/plugins/wikilabs/advanced-search-plus/filter-search.svg}}"
   />
   <$transclude tiddler="$:/core/images/done-button" /> : {{$(new-tiddler-input)$!!new-title}}
 </$button>
