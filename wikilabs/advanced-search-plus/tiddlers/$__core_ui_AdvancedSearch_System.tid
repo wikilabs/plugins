@@ -1,5 +1,5 @@
 title: $:/core/ui/AdvancedSearch/System
-caption: {{$:/plugins/wikilabs/advanced-search-plus/system-search.svg}}
+caption:
 icon: $:/plugins/wikilabs/advanced-search-plus/system-search.svg
 tags: $:/tags/AdvancedSearch
 
