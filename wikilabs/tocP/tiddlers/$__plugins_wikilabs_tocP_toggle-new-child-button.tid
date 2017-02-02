@@ -5,10 +5,10 @@ title: $:/plugins/wikilabs/tocP/toggle-new-child-button
 type: text/vnd.tiddlywiki
 
 <$button>
-<$action-setfield $tiddler="$:/config/show/newChild" text="<span class='wltc-btn-new-child'>{{||$:/wikilabs/ui/buttons/new-child-alone}}</span>"/>
+<$action-setfield $tiddler="$:/config/wikilabs/tocP/newChild" text="<span class='wltc-btn-new-child'>{{||$:/wikilabs/ui/buttons/new-child-alone}}</span>"/>
 Enable "New Child" buttons
 </$button>
 <$button>
-<$action-deletetiddler $tiddler="$:/config/show/newChild"/>
+<$action-deletetiddler $tiddler="$:/config/wikilabs/tocP/newChild"/>
 Disable "New Child" buttons
 </$button>

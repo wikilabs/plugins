@@ -21,7 +21,7 @@ type: text/vnd.tiddlywiki
           <$list filter="[all[current]toc-link[no]]" emptyMessage="<$link><$view field='caption'><$view field='title'/></$view></$link>">
             <<tocP-caption>>
           </$list>
-          <$transclude tiddler='$:/config/show/newChild'></$transclude>
+          <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
           <$macrocall $name="tocP-body" tag=<<item>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>>/>
         </li>
       </$set>
@@ -52,7 +52,7 @@ type: text/vnd.tiddlywiki
       </$reveal>
       <<tocP-caption>>
     </$link>
-    <$transclude tiddler='$:/config/show/newChild'></$transclude>
+    <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
     <$reveal type="match" state=<<toc-state>> text="open">
       <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
     </$reveal>
@@ -78,7 +78,7 @@ type: text/vnd.tiddlywiki
           <<tocP-caption>>
         </$button>
       </$reveal> 
-      <$transclude tiddler='$:/config/show/newChild'></$transclude>
+      <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
         <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
       </$reveal>
@@ -122,7 +122,7 @@ type: text/vnd.tiddlywiki
         </$list>
         <<tocP-caption>> 
       </$link>
-      <$transclude tiddler='$:/config/show/newChild'></$transclude>
+      <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
         <$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
       </$reveal>
@@ -149,7 +149,7 @@ type: text/vnd.tiddlywiki
           </$button> 
         </$reveal> 
       </$list>
-      <$transclude tiddler='$:/config/show/newChild'></$transclude>
+      <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
         <$macrocall $name="""tocP-selective-expandable""" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
       </$reveal>
