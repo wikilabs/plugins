@@ -1,5 +1,5 @@
 created: 20170127103951869
-modified: 20170201213725322
+modified: 20170202134116229
 tags: $:/tags/Macro
 title: $:/plugins/wikilabs/tocP/macros
 type: text/vnd.tiddlywiki
@@ -12,17 +12,17 @@ type: text/vnd.tiddlywiki
 </$set>
 \end
 
-\define tocP-body(tag,sort:"",itemClassFilter,exclude,path)
+\define tocP-body(tag,sort:"",itemClassFilter,exclude,path,field:"parent")
 <ol class="tc-toc">
-  <$list filter="""[has[parent]parent[$tag$]!has[draft.of]$sort$] $exclude$""">
-    <$vars item=<<currentTiddler>> path="""$path$/$tag$""" excluded="""$exclude$ -[[$tag$]]""">
+  <$list filter="""[has[$field$]$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
+    <$vars item=<<currentTiddler>> path="""$path$/$tag$""" excluded="""$exclude$ -[[$tag$]]""" field="""$field$""">
       <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
         <li class=<<toc-item-class>>>
           <$list filter="[all[current]toc-link[no]]" emptyMessage="<$link><$view field='caption'><$view field='title'/></$view></$link>">
             <<tocP-caption>>
           </$list>
           <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
-          <$macrocall $name="tocP-body" tag=<<item>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>>/>
+          <$macrocall $name="tocP-body" tag=<<item>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> field=<<field>>/>
         </li>
       </$set>
     </$vars>
@@ -30,11 +30,11 @@ type: text/vnd.tiddlywiki
 </ol>
 \end
 
-\define tocP(tag,sort:"",itemClassFilter:" ")
-<<tocP-body tag:"""$tag$""" sort:"""$sort$""" itemClassFilter:"""$itemClassFilter$""">>
+\define tocP(tag,sort:"",itemClassFilter:" ",field:"parent")
+<<tocP-body tag:"""$tag$""" sort:"""$sort$""" itemClassFilter:"""$itemClassFilter$""" field:"""$field$""">>
 \end
 
-\define tocP-linked-expandable-body(tag,sort:"",itemClassFilter,exclude,path)
+\define tocP-linked-expandable-body(tag,sort:"",itemClassFilter,exclude,path,field:"parent")
 <!-- helper function -->
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
   <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
@@ -54,14 +54,14 @@ type: text/vnd.tiddlywiki
     </$link>
     <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
     <$reveal type="match" state=<<toc-state>> text="open">
-      <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
+      <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""  field="""$field$"""/>
     </$reveal>
     </li>
   </$set>
 </$set>
 \end
 
-\define tocP-unlinked-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path)
+\define tocP-unlinked-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
 <!-- helper function -->
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
   <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
@@ -80,7 +80,7 @@ type: text/vnd.tiddlywiki
       </$reveal> 
       <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
-        <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
+        <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$""" field="""$field$"""/>
       </$reveal>
     </li>
   </$set>
@@ -88,27 +88,27 @@ type: text/vnd.tiddlywiki
 \end
 
 \define tocP-expandable-empty-message()
-<<tocP-linked-expandable-body tag:"""$(tag)$""" sort:"""$(sort)$""" itemClassFilter:"""$(itemClassFilter)$""" exclude:"""$(excluded)$""" path:"""$(path)$""">>
+<<tocP-linked-expandable-body tag:"""$(tag)$""" sort:"""$(sort)$""" itemClassFilter:"""$(itemClassFilter)$""" exclude:"""$(excluded)$""" path:"""$(path)$""" field:"""$(field)$""">>
 \end
 
-\define tocP-expandable(tag,sort:"",itemClassFilter:" ",exclude,path)
-<$vars tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" excluded="""$exclude$ -[[$tag$]]""" path="""$path$/$tag$""">
+\define tocP-expandable(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
+<$vars tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" excluded="""$exclude$ -[[$tag$]]""" path="""$path$/$tag$"""  field="""$field$""">
   <ol class="tc-toc toc-expandable">
-    <$list filter="""[has[parent]parent[$tag$]!has[draft.of]$sort$] $exclude$""">
+    <$list filter="""[has[$field$]$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
       <$list filter="[all[current]toc-link[no]]" emptyMessage=<<tocP-expandable-empty-message>> >
-        <$macrocall $name="tocP-unlinked-expandable-body" tag="""$tag$""" sort="""$sort$""" itemClassFilter="""itemClassFilter""" exclude=<<excluded>> path=<<path>> />
+        <$macrocall $name="tocP-unlinked-expandable-body" tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> field=<<field>> />
       </$list>
     </$list>
   </ol>
 </$vars>
 \end
 
-\define tocP-linked-selective-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path)
+\define tocP-linked-selective-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
   <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected" >
     <li class=<<toc-item-class>>>
       <$link>
-          <$list filter="""[has[parent]parent<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button>">
+          <$list filter="""[has[$field$]$field$<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button>">
           <$reveal type="nomatch" state=<<toc-state>> text="open">
             <$button set=<<toc-state>> setTo="open" class="tc-btn-invisible">
               {{$:/core/images/right-arrow}}
@@ -124,18 +124,18 @@ type: text/vnd.tiddlywiki
       </$link>
       <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
-        <$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
+        <$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""  field="""$field$"""/>
       </$reveal>
     </li>
   </$set>
 </$set>
 \end
 
-\define tocP-unlinked-selective-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path)
+\define tocP-unlinked-selective-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
   <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
     <li class=<<toc-item-class>>>
-      <$list filter="""[has[parent]parent<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button> <$view field='caption'><$view field='title'/></$view>">
+      <$list filter="""[has[$field$]$field$<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button> <$view field='caption'><$view field='title'/></$view>">
         <$reveal type="nomatch" state=<<toc-state>> text="open">
           <$button set=<<toc-state>> setTo="open" class="tc-btn-invisible">
             {{$:/core/images/right-arrow}}
@@ -151,7 +151,7 @@ type: text/vnd.tiddlywiki
       </$list>
       <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
-        <$macrocall $name="""tocP-selective-expandable""" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""/>
+        <$macrocall $name="""tocP-selective-expandable""" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""  field="""$field$"""/>
       </$reveal>
     </li>
   </$set>
@@ -159,15 +159,15 @@ type: text/vnd.tiddlywiki
 \end
 
 \define tocP-selective-expandable-empty-message()
-<<tocP-linked-selective-expandable-body tag:"""$(tag)$""" sort:"""$(sort)$""" itemClassFilter:"""$(itemClassFilter)$""" exclude:"""$(excluded)$""" path:"""$(path)$""">>
+<<tocP-linked-selective-expandable-body tag:"""$(tag)$""" sort:"""$(sort)$""" itemClassFilter:"""$(itemClassFilter)$""" exclude:"""$(excluded)$""" path:"""$(path)$""" field:"""$(field)$""">>
 \end
 
-\define tocP-selective-expandable(tag,sort:"",itemClassFilter,exclude,path)
-<$vars tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" excluded="""$exclude$ -[[$tag$]]""" path="""$path$/$tag$""">
+\define tocP-selective-expandable(tag,sort:"",itemClassFilter,exclude,path,field:"parent")
+<$vars tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" excluded="""$exclude$ -[[$tag$]]""" path="""$path$/$tag$""" field="""$field$""">
   <ol class="tc-toc toc-selective-expandable">
-    <$list filter="""[has[parent]parent[$tag$]!has[draft.of]$sort$] $exclude$""">
+    <$list filter="""[has[$field$]$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
       <$list filter="[all[current]toc-link[no]]" variable="ignore" emptyMessage=<<tocP-selective-expandable-empty-message>> >
-        <$macrocall $name=tocP-unlinked-selective-expandable-body tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> >
+        <$macrocall $name=tocP-unlinked-selective-expandable-body tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> field=<<field>> >
       </$list>
     </$list>
   </ol>
