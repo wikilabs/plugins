@@ -1,0 +1,14 @@
+created: 20170127145849380
+modified: 20170201213725315
+tags: 
+title: $:/plugins/wikilabs/tocP/toggle-new-child-button
+type: text/vnd.tiddlywiki
+
+<$button>
+<$action-setfield $tiddler="$:/config/show/newChild" text="<span class='wltc-btn-new-child'>{{||$:/wikilabs/ui/buttons/new-child-alone}}</span>"/>
+Enable "New Child" buttons
+</$button>
+<$button>
+<$action-deletetiddler $tiddler="$:/config/show/newChild"/>
+Disable "New Child" buttons
+</$button>

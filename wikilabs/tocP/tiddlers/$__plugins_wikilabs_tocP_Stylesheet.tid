@@ -1,0 +1,9 @@
+created: 20170201173552575
+modified: 20170201214003877
+tags: $:/tags/Stylesheet
+title: $:/plugins/wikilabs/tocP/Stylesheet
+type: text/css
+
+.tc-tabbed-table-of-contents .wltc-btn-new-child {
+  display: none;
+}

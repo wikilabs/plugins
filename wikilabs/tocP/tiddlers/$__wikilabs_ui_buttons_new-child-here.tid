@@ -1,0 +1,23 @@
+caption: {{$:/wikilabs/images/new-child}} NewChildHere
+created: 20170127114258607
+description: NewChildHere & add parent field
+modified: 20170201213725310
+tags: $:/tags/ViewToolbar
+title: $:/wikilabs/ui/buttons/new-child-here
+type: text/vnd.tiddlywiki
+
+\define newHereValue()
+$(currentTiddler)$
+\end
+\define newChildButton()
+<$button tooltip="Create a new Child tiddler & add 'parent' field" aria-label="create a new child" class=<<tv-config-toolbar-class>>>
+<$action-sendmessage $message="tm-new-tiddler" parent=<<newHereValue>>/>
+<$list filter="[<tv-config-toolbar-icons>prefix[yes]]">
+{{$:/wikilabs/images/new-child}}
+</$list>
+<$list filter="[<tv-config-toolbar-text>prefix[yes]]">
+<span class="tc-btn-text"><$text text="New Child Here"/></span>
+</$list>
+</$button>
+\end
+<<newChildButton>>
