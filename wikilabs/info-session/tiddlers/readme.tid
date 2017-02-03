@@ -6,4 +6,4 @@ This plugin provides a tiddler info button, with a persistent open/close status 
 
 ----
 
-If you want persistent state variables, you need to ''add'' the "persistent-states" plugin ''and'' modify the ViewTemplate. The ''slant-01 theme" provides this functionality.
+If you want persistent state variables, you need to ''add'' the "persistent-states" plugin ''and'' modify the ~ViewTemplate. The ''slant-01 theme" provides this functionality.
