@@ -4,6 +4,6 @@
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.6",
 	"version": "0.1.1",
-	"deprecated": "0.1.1"
+	"deprecated": "0.1.1",
 	"list": "readme license"
 }
