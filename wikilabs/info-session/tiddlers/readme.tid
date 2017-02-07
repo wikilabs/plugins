@@ -1,8 +1,12 @@
 title: $:/plugins/wikilabs/info-session/readme
 
-This plugin provides a tiddler info button, with a persistent open/close status ''for one browser session''. The status is saved in a system "$:/state/popup" variable. This means, if you reload the TW, the status is gone, sice they are not stored by default!
+* This plugin provides a tiddler info button, with a persistent open/close status ''for one browser session''.
+* The status is saved in a system "$:/state/popup" variable. 
+** This means, if you reload the TW, the status is gone, sice they are not stored by default!
 
-''Important:'' This plugin doesn't change any core templates.
+''Important:''
+
+* This plugin changes the core tiddler: $:/core/ui/Buttons/info
 
 ----
 
