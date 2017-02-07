@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/new-tiddler-from-search/template
 
+\define createTiddler()
+<$action-setfield $tiddler={{$(searchTiddler)$!!text}}
+  tags= {{$(new-tiddler-temp)$!!tags}}
+  text= {{$(new-tiddler-temp)$}}
+/>
+\end
 \define new-tiddler-temp()
 $:/temp/new-tiddler-from-search
 \end
@@ -8,11 +14,7 @@ $:/temp/new-tiddler-from-search
   <$action-deletetiddler $tiddler=<<new-tiddler-temp>>/>
   <$transclude tiddler="$:/core/images/cancel-button" />
 </$button><!--
---><$button tooltip={{$:/language/Buttons/NewTiddler/Caption}} >
-  <$action-setfield $tiddler={{$(searchTiddler)$!!text}}
-  tags= {{$(new-tiddler-temp)$!!tags}}
-  text= {{$(new-tiddler-temp)$}}
-  />
+--><$button tooltip={{$:/language/Buttons/NewTiddler/Caption}} actions=<<createTiddler>> >
   <$transclude tiddler="$:/core/images/done-button" /> : <$transclude tiddler="$(searchTiddler)$" />
 </$button>
 <p>
