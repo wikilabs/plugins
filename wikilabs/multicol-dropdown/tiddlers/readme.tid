@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/multicol-dropdown/readme
 
-Some flex-box CSS the converts most dropdowns to multi column dropdowns.
+! Overview
 
-This plugin doesn't change any core templates.
+* This plugin changes most dropdown dialogs into multi column dialogs, with CSS only.
+* This plugin is handy, if you have eg: ''a lot of tags''
+
+! Important
+
+This plugin does ''not'' change any core templates!

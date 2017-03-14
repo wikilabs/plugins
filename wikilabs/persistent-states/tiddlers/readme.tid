@@ -1,8 +1,14 @@
 title: $:/plugins/wikilabs/persistent-states/readme
 
+! Important
+
+WORK IN PROGRESS -> DOESN'T WORK ATM !!!!!
+
+! Overview
+
 This plugin saves all $:/state/ tiddlers and creates a simple UI, to remove them manually.
 
-see: 
+! Simple UI
 
 [[$:/plugins/wikilabs/ui/persistent-states]]
 

@@ -1,8 +1,8 @@
 {
 	"title": "$:/plugins/wikilabs/link-to-tabs",
-	"description": "Link-to-Tabs are added to every tab if selected",
+	"description": "Internal links are added to tabs if selected",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.6",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"list": "readme license"
 }
