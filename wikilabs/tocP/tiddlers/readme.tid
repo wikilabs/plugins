@@ -4,7 +4,7 @@ This plugin contains several "Table of Content" macros, that have the same param
 
 ''Important''
 
-These macros are intended to be "drop in replacement" of the core macros. ... So they have the exact same parameter names. So instead of "parent" it still uses "tag" as the first parameter. 
+These macros are intended to be "drop in replacement" of the core macros. ... They have the exact same parameter names. Instead of "parent" it still uses "tag" as the first parameter. 
 
 ''Usage''
 
@@ -18,7 +18,7 @@ These macros are intended to be "drop in replacement" of the core macros. ... So
 </div>
 
 <div class="tc-table-of-contents">
-<<tocP-selective-expandable root>>
+<<tocP-selective-expandable root field:"any-name">>
 </div>
 
 <div class="tc-table-of-contents">
