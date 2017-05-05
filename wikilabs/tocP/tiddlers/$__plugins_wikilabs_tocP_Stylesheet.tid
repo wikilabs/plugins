@@ -7,3 +7,7 @@ type: text/css
 .tc-tabbed-table-of-contents .wltc-btn-new-child {
   display: none;
 }
+
+.tocp .tc-tiddlylink {
+  color: green;
+}

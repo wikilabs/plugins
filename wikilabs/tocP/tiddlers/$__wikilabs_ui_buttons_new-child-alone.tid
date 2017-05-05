@@ -11,7 +11,7 @@ $(currentTiddler)$
 \end
 
 \define newChildButton(field:"parent")
-<$button tooltip={{!!description}} aria-label="new child here" class=<<tv-config-toolbar-class>>>
+<$button tooltip="""New Child -> "$field$: $(currentTiddler)$" """ aria-label="new child here" class=<<tv-config-toolbar-class>>>
 <$action-sendmessage $message="tm-new-tiddler" $field$=<<newHereValue>>/>
 <$list filter="[<tv-config-toolbar-icons>prefix[yes]]">
 {{$:/wikilabs/images/new-child-alone}}

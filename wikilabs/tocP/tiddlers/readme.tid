@@ -2,23 +2,28 @@ title: $:/plugins/wikilabs/tocP/readme
 
 This plugin contains several "Table of Content" macros, that have the same parameters as the core toc macro. The main difference is, that it doesn't use tags to create the TOC scructure. It uses a "parent" field in so called "child - tiddlers".
 
+''Detailed Documentation''
+
+More details about this plugin can be found at: https://wikilabs.github.io/editions/tocP
+More plugins, themes and editions can be found at: https://wikilabs.github.io/
+
 ''Important''
 
-These macros are intended to be "drop in replacement" of the core macros. ... So they have the exact same parameter names. So instead of "parent" it still uses "tag" as the first parameter. 
+These macros are intended to be "drop in replacement" of the core macros. ... They have the exact same parameter names. Instead of "parent" it still uses "tag" as the first parameter. 
 
 ''Usage''
 
 ```
-<div class="tc-table-of-contents">
+<div class="tocp tc-table-of-contents">
 <<tocP root>>
 </div>
 
-<div class="tc-table-of-contents">
+<div class="tocp tc-table-of-contents">
 <<tocP-expandable root>>
 </div>
 
-<div class="tc-table-of-contents">
-<<tocP-selective-expandable root>>
+<div class="tocp tc-table-of-contents">
+<<tocP-selective-expandable root field:"any-name">>
 </div>
 
 <div class="tc-table-of-contents">
@@ -31,8 +36,12 @@ These macros are intended to be "drop in replacement" of the core macros. ... So
 
 ```
 
-''Simple UI''
+''Simple Configuration''
 
 * Enable / Disable the inline "New Child" button
 ** {{$:/plugins/wikilabs/tocP/toggle-new-child-button}}
+
+''Known Problems''
+
 * The "tabbed" versions don't show the "New Child" buttons
+* Color customisation isn't possible atm
