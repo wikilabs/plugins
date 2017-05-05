@@ -7,7 +7,7 @@ type: text/vnd.tiddlywiki
 \define tocP-caption()
 <$set name="tv-wikilinks" value="no">
   <$transclude field="caption">
-    <$view field="title"/>
+    <span title={{!!tooltip}}><$view field="title"/></span>
   </$transclude>
 </$set>
 \end
@@ -16,9 +16,9 @@ type: text/vnd.tiddlywiki
 <ol class="tc-toc">
   <$list filter="""[has[$field$]$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
     <$vars item=<<currentTiddler>> path="""$path$/$tag$""" excluded="""$exclude$ -[[$tag$]]""" field="""$field$""">
-      <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
+      <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item">
         <li class=<<toc-item-class>>>
-          <$list filter="[all[current]toc-link[no]]" emptyMessage="<$link><$view field='caption'><$view field='title'/></$view></$link>">
+          <$list filter="[all[current]toc-link[no]]" emptyMessage="<$link tooltip={{!!tooltip}}><$view field='caption'><$view field='title'/></$view></$link>">
             <<tocP-caption>>
           </$list>
           <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
@@ -37,7 +37,7 @@ type: text/vnd.tiddlywiki
 \define tocP-linked-expandable-body(tag,sort:"",itemClassFilter,exclude,path,field:"parent")
 <!-- helper function -->
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
-  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
+  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" >
     <li class=<<toc-item-class>>>
     <$link>
       <$reveal type="nomatch" state=<<toc-state>> text="open">
@@ -64,7 +64,7 @@ type: text/vnd.tiddlywiki
 \define tocP-unlinked-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
 <!-- helper function -->
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
-  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
+  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" >
     <li class=<<toc-item-class>>>
       <$reveal type="nomatch" state=<<toc-state>> text="open">
         <$button set=<<toc-state>> setTo="open" class="tc-btn-invisible">
@@ -105,7 +105,7 @@ type: text/vnd.tiddlywiki
 
 \define tocP-linked-selective-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
-  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected" >
+  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" >
     <li class=<<toc-item-class>>>
       <$link>
           <$list filter="""[has[$field$]$field$<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button>">
@@ -133,7 +133,7 @@ type: text/vnd.tiddlywiki
 
 \define tocP-unlinked-selective-expandable-body(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
-  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
+  <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" >
     <li class=<<toc-item-class>>>
       <$list filter="""[has[$field$]$field$<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button> <$view field='caption'><$view field='title'/></$view>">
         <$reveal type="nomatch" state=<<toc-state>> text="open">
