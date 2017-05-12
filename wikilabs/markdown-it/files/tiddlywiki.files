@@ -1,0 +1,12 @@
+{
+	"tiddlers": [
+		{
+			"file": "markdown-it.min.js",
+			"fields": {
+				"type": "application/javascript",
+				"title": "$:/plugins/wikilabs/markdown-it/markdown-it-min.js",
+				"module-type": "library"
+			}
+		}
+	]
+}

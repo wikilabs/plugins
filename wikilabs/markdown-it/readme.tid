@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/markdown-it/readme
+
+This is a WikiLabs plugin for parsing Markdown text, based on the [[markdown-it|https://markdown-it.github.io/]] project. 
+
+It is completely self-contained, and doesn't need an Internet connection in order to work. It works both in the browser and under Node.js.
+
+[[Source code can be found here!|https://github.com/wikilabs/plugins/tree/master/wikilabs]]
