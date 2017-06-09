@@ -17,16 +17,17 @@ exports.upgrade = function(wiki,titles,tiddlers) {
 		messages = {};
 
 	$tw.utils.each(titles,function(title) {
-		var tiddler,
+		var tiddler = {},
 			tiddlerData = wiki.getTiddler(title);
 		// Check for tiddlers on our list. Atm, we check for names only, since 5.1.14 allows modification date to be supressed.
 		// Creating a hash, would be a better option. ToDo
 		if (wiki.tiddlerExists(title)) {
-			messages[title] = "A tiddler with that name exists. A new tiddler will be created!";
-			tiddlers[title] = Object.create(null);
+			messages[title] = "A tiddler with that name exists. A new name will be used!";
 			// create new tiddler with a new name
 			tiddler = new $tw.Tiddler(tiddlers[title], {"title": wiki.generateNewTitle(title) });
 			tiddlers[tiddler.fields.title] = tiddler.fields;
+			// remove the original tiddler
+			tiddlers[title] = Object.create(null);
 		}
 	});
 	return messages;
