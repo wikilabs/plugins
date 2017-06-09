@@ -12,8 +12,6 @@ This module checks, if tiddlers, that are imported already exist. If they do, th
 /*global $tw: false */
 "use strict";
 
-var IMPORTED_TIDDLER_POST = ""
-
 exports.upgrade = function(wiki,titles,tiddlers) {
 	var self = this,
 		messages = {};
