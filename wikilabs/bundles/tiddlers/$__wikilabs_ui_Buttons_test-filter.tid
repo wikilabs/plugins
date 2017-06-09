@@ -1,0 +1,17 @@
+created: 20170602135926983
+modified: 20170609084521834
+tags: 
+title: $:/plugins/wikilabs/bundles/ui/Buttons/test-filter
+type: text/vnd.tiddlywiki
+
+\define go-advanced-search-filter()
+<$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
+<$action-setfield $tiddler="$:/temp/advancedsearch" $value={{$(currentTiddler)$!!filter}}/>
+\end
+\define test-filter()
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-invisible" tooltip="Test the filter">
+{{$:/core/images/info-button}}
+</$button>
+\end
+
+<<test-filter>>

@@ -1,0 +1,58 @@
+caption: Bundles
+created: 20170602132707785
+modified: 20170609084521876
+tags: $:/tags/ControlPanel
+title: $:/plugins/wikilabs/bundles/ui/ControlPanel/bundles-config
+type: text/vnd.tiddlywiki
+
+!! Wikilabs [[Bundle Settings|$:/plugins/wikilabs/bundles/ui/ControlPanel/bundles-config]]
+
+<<<
+
+Select the position of the bundle tab:
+
+<$tiddler tiddler="$:/plugins/wikilabs/bundles/ui/Bundles">
+<$radio field=tags value="$:/tags/MoreSideBar"> "$:/tags/MoreSideBar"</$radio><br>
+<$radio field=tags value="$:/tags/SideBar"> "$:/tags/SideBar"</$radio>
+</$tiddler>
+
+<<<
+
+!! Enable Import Bundle
+
+<<<
+
+<$checkbox tiddler="$:/state/wikilabs/EnableImportBundle" field="text" checked="yes" unchecked="no" default="no"> Enable Import Bundle</$checkbox>
+
+Everytime you import content, an [[import.bundle]] tiddler will be created. If the tiddler already exists, the new imported titles will be appended. 
+
+You can rename or delete the tiddler, to store the setting or get rid of it. 
+
+<<<
+
+!! Enable Filtered Bundles
+
+<<<
+
+<$checkbox tiddler="$:/state/enableBundles" field="text" checked="enabled" unchecked="disabled" default="disabled"> Enable Filtered Bundles</$checkbox>
+
+Bundle filters are already used by the "More" dropdown in the $:/AdvancedSearch - Filter tab. The filtered bundle settings provide a slightly different UI to export sets of tiddlers, configured by the user. 
+
+The "Filter Bundle" button creates compatible configurations. So user created filtered bundles show up in the advanced search panel too! Existing filters can be seen here: $:/plugins/wikilabs/bundles/doc/table-all-filters
+
+<<<
+
+!! Filter Format
+
+<<<
+
+;text
+:contains the documentation text if needed
+
+;filter
+:filter to use eg: `[tag[test]]`
+
+;description
+:descriptive text, that shows up in the AdvancedSearch: Filter: More dropdown
+
+<<<

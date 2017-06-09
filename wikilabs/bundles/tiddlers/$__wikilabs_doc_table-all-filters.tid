@@ -1,0 +1,36 @@
+created: 20170602150722531
+modified: 20170609084521849
+tags: 
+title: $:/plugins/wikilabs/bundles/doc/table-all-filters
+type: text/vnd.tiddlywiki
+
+!! Default Filters
+
+<table>
+<tbody>
+<th>Description</th><th>Filter</th><th>Test</th>
+<$list filter="[all[shadows]tag[$:/tags/Filter]]">
+  <tr>
+    <td>{{!!description}}</td>
+    <td><$view field=filter/></td>
+    <td>{{||$:/plugins/wikilabs/bundles/ui/Buttons/test-filter}}</td>
+  </tr>
+</$list>
+</tbody>
+</table>
+
+!! This Wiki
+
+<table>
+<tbody>
+<th>Description</th><th>Filter</th><th>Test</th>
+<$list filter="[all[tiddlers]tag[$:/tags/Filter]]">
+  <tr>
+    <td>{{!!description}}</td>
+    <td><$view field=filter/></td>
+    <td>{{||$:/plugins/wikilabs/bundles/ui/Buttons/test-filter}}</td>
+  </tr>
+</$list>
+</tbody>
+</table>
+

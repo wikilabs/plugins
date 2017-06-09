@@ -1,0 +1,16 @@
+title: $:/plugins/wikilabs/bundles/readme
+
+
+* The position of the "Bundles" tab can be selected in the $:/ControlPanel
+* There are 2 version of bundles
+** Bundle lists
+** Filtered Bundles ... which have to be activated by the user
+* The filter examples can be live tested, clicking on the number besides the "export button"
+* The Bundler can bundle itself into a bundle :-).
+* You can create several "selections". Those combinations are persistently stored for reuse. 
+* Bundle lists can be built up, over time. Just as the TW evolves. 
+* The "Enable Import Bundle" option lets you collect / log imported tiddlers and create a new bundle, for future use.
+* This plugin only works with TW >= 5.1.14 since we use the "enlist" operator which has been added in 5.1.14
+* It's easy to add the bundle configuration to the bundle itself eg: 
+** If the bundle is named: `tagged-test.bundle`, the filter can look like this: `[tag[test]] tagged-test.bundle`
+* Have a closer look at the $:/ControlPanel: Bundles tab for more [[settings|$:/plugins/wikilabs/bundles/ui/ControlPanel/bundles-config]]. 
