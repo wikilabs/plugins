@@ -1,8 +1,0 @@
-{
-	"title": "$:/plugins/wikilabs/bundles",
-	"description": "Bundles - Simple UI to create tiddler bundles",
-	"author": "pmario",
-	"core-version": ">=5.1.14",
-	"version": "0.1.0",
-	"list": "readme license"
-}

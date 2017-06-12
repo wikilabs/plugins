@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/bundles/importhook.js
+title: $:/plugins/wikilabs/bundler/importhook.js
 type: application/javascript
 module-type: startup
 
@@ -13,13 +13,13 @@ A startup module to log imported tiddlers to the import.bundle tiddler.
 "use strict";
 
 // Export name and synchronous status
-exports.name = "bundlesimporthook";
+exports.name = "bundlerimporthook";
 exports.platforms = ["browser"];
 exports.after = ["startup"];
 exports.synchronous = true;
 
 // Favicon tiddler
-var ENABLE_LOG_TITLE = "$:/state/wikilabs/EnableImportBundle",
+var ENABLE_LOG_TITLE = "$:/config/wikilabs/enableImportBundle",
 	IMPORT_LOG_TITLE = "import.bundle";
 
 exports.startup = function() {

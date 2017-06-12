@@ -2,7 +2,7 @@ caption: {{$:/core/images/export-button}} {{$:/language/Buttons/ExportTiddler/Ca
 created: 20170601135455476
 description: export bundle
 modified: 20170609084521882
-title: $:/plugins/wikilabs/bundles/ui/Buttons/export-bundle
+title: $:/plugins/wikilabs/bundler/ui/Buttons/export-bundle
 type: text/vnd.tiddlywiki
 
 \define makeExportFilter()

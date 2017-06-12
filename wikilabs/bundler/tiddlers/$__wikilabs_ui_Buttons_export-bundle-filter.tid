@@ -3,7 +3,7 @@ created: 20170602112538007
 description: export bundle
 modified: 20170609084521879
 tags: 
-title: $:/plugins/wikilabs/bundles/ui/Buttons/export-bundle-filter
+title: $:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter
 type: text/vnd.tiddlywiki
 
 <$macrocall $name="exportButton" exportFilter={{!!filter}} lingoBase="$:/language/Buttons/ExportTiddlers/" baseFilename=<<currentTiddler>>/>

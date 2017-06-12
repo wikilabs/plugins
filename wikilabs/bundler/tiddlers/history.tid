@@ -1,0 +1,11 @@
+title: $:/plugins/wikilabs/bundler/history
+
+* V0.1.0 - beta
+** new name: bundler
+** this name change makes it incompatible to older settings!
+
+** new "Enable Overwrite Check" option. default = no
+
+* V0.0.1 - beta
+** initial release
+** name: bundles

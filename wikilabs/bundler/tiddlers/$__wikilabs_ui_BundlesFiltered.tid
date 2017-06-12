@@ -1,6 +1,6 @@
-created: 20170604154146106
-modified: 20170609084521841
-title: $:/plugins/wikilabs/bundles/ui/BundlesList
+created: 20170604154246985
+modified: 20170609084521844
+title: $:/plugins/wikilabs/bundler/ui/BundlesFiltered
 type: text/vnd.tiddlywiki
 
 \define filter-exist() [enlist{$(currentTiddler)$}] +[has[title]]
@@ -22,16 +22,15 @@ type: text/vnd.tiddlywiki
 
 <$button>
 <$action-sendmessage $message="tm-new-tiddler" 
-title="new.bundle" 
-tags="$:/tags/Bundle" 
-type="text/plain" 
-text="tiddlerName
-[[tiddler with spaces]]"/>
-New Bundle List
-</$button>
-<$list filter="[tag[$:/tags/Bundle]]">
+title="new-filtered.bundle" 
+tags="$:/tags/Filter" 
+description="provide a meaningful description to display in AdvancedSearch: Filter!"
+filter="adjust this filter: [list[$:/StoryList]]" 
+text="<pre>{{!!filter}}</pre>"/>
+Filter Bundle
+</$button><$list
+filter="[tag[$:/tags/Filter]]">
+<$link to=<<currentTiddler>> tooltip=<<get-filter-tooltip>> >
 
-<$link to=<<currentTiddler>> tooltip=<<get-tooltip>> >
-{{||$:/plugins/wikilabs/bundles/ui/Buttons/export-bundle}} <<get-info>> <<currentTiddler>>
-</$link>
-</$list>
+{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}} <<test-filter>> <<currentTiddler>>
+</$link> </$list>

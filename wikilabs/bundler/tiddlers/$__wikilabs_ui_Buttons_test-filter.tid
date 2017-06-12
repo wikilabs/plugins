@@ -1,7 +1,7 @@
 created: 20170602135926983
 modified: 20170609084521834
 tags: 
-title: $:/plugins/wikilabs/bundles/ui/Buttons/test-filter
+title: $:/plugins/wikilabs/bundler/ui/Buttons/test-filter
 type: text/vnd.tiddlywiki
 
 \define go-advanced-search-filter()

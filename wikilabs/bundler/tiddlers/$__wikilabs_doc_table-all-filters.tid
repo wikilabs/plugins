@@ -1,7 +1,7 @@
 created: 20170602150722531
 modified: 20170609084521849
 tags: 
-title: $:/plugins/wikilabs/bundles/doc/table-all-filters
+title: $:/plugins/wikilabs/bundler/doc/table-all-filters
 type: text/vnd.tiddlywiki
 
 !! Default Filters
@@ -13,7 +13,7 @@ type: text/vnd.tiddlywiki
   <tr>
     <td>{{!!description}}</td>
     <td><$view field=filter/></td>
-    <td>{{||$:/plugins/wikilabs/bundles/ui/Buttons/test-filter}}</td>
+    <td>{{||$:/plugins/wikilabs/bundler/ui/Buttons/test-filter}}</td>
   </tr>
 </$list>
 </tbody>
@@ -28,7 +28,7 @@ type: text/vnd.tiddlywiki
   <tr>
     <td>{{!!description}}</td>
     <td><$view field=filter/></td>
-    <td>{{||$:/plugins/wikilabs/bundles/ui/Buttons/test-filter}}</td>
+    <td>{{||$:/plugins/wikilabs/bundler/ui/Buttons/test-filter}}</td>
   </tr>
 </$list>
 </tbody>
