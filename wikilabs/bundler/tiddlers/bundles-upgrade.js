@@ -3,7 +3,7 @@ title: title: $:/plugins/wikilabs/bundler/upgrade.js
 type: application/javascript
 module-type: upgrader
 
-This module checks, if tiddlers, that are imported already exist. If they do, they are disabled and a tiddler with a new name will be created. ge: "New Tiddler (1)".
+This module checks, if tiddlers, that are imported already exist. If they do, they are disabled and a tiddler with a new name will be created. ge: "New Tiddler (1)". This option is configurable.
 
 \*/
 (function(){
