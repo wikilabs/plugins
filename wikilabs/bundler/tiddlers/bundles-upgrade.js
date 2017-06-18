@@ -1,5 +1,5 @@
 /*\
-title: title: $:/plugins/wikilabs/bundler/upgrade.js
+title: $:/plugins/wikilabs/bundler/upgrade.js
 type: application/javascript
 module-type: upgrader
 

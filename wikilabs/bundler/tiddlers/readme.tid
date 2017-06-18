@@ -1,6 +1,7 @@
 title: $:/plugins/wikilabs/bundler/readme
 
 
+* Documentation and more can be found at: https://wikilabs.github.io/#bundler
 * The position of the "Bundles" tab can be selected in the $:/ControlPanel
 * There are 2 version of bundles
 ** Bundle lists
@@ -13,4 +14,4 @@ title: $:/plugins/wikilabs/bundler/readme
 * This plugin only works with TW >= 5.1.14 since we use the "enlist" operator which has been added in 5.1.14
 * It's easy to add the bundle configuration to the bundle itself eg: 
 ** If the bundle is named: `tagged-test.bundle`, the filter can look like this: `[tag[test]] tagged-test.bundle`
-* Have a closer look at the $:/ControlPanel: Bundles tab for more [[settings|$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config]]. 
+* Have a closer look at the ~$:/ControlPanel: Bundles tab for more [[settings|$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config]]. 

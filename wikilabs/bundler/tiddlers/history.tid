@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/bundler/history
 
+* V0.1.1 - beta 2017.06.18
+** improve license links and readme
+** fix upgrade.js title
+
 * V0.1.0 - beta
 ** new name: bundler
 ** this name change makes it incompatible to older settings!
