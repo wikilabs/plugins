@@ -1,5 +1,4 @@
 title: $:/plugins/wikilabs/uni-link/readme
-caption: read.me
 
 A new wikitext parsing rule, that calls the global [["uni-link" macro|$:/plugins/wikilabs/uni-link/uni-link-macro]], instead of referencing the tiddler name. 
 
