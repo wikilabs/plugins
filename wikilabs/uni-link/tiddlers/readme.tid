@@ -10,30 +10,25 @@ Uni-links are styled like this: $:/plugins/wikilabs/uni-link/styles
 
 ! Examples
 
-''subtitle''
+<$button>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-caption"  
+caption="short title"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle"  
+subtitle="tiddler with subtitle defined"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  
+subtitle="tiddler with subtitle and caption"
+caption="capt.ion"/>
+Create "uni-link" example tiddlers!
+</$button> -- <$button>
+<$action-deletetiddler $tiddler="tiddler-with-caption"/>
+<$action-deletetiddler $tiddler="tiddler-with-subtitle"/>
+<$action-deletetiddler $tiddler="tiddler-with-subtitle-and-caption"/>
+Delete example tiddlers!
+</$button>
 
-<<<
-
-```
-The $:/plugins/wikilabs/uni-link/license tiddler has a ''subtitle'' field defined. So the link: `[[$:/plugins/wikilabs/uni-link/license]]` will show: [[$:/plugins/wikilabs/uni-link/license]] 
-```
-
-results in: 
-
-The $:/plugins/wikilabs/uni-link/license tiddler has a ''subtitle'' field defined. So the link: `[[$:/plugins/wikilabs/uni-link/license]]` will show: [[$:/plugins/wikilabs/uni-link/license]] 
-
-<<<
-
-''caption''
-
-<<<
-
-```
-The $:/plugins/wikilabs/uni-link/readme tiddler has a ''caption'' field defined. So the link: `[[$:/plugins/wikilabs/uni-link/readme]]` will show: [[$:/plugins/wikilabs/uni-link/readme]] 
-```
-
-results in: 
-
-The $:/plugins/wikilabs/uni-link/readme tiddler has a ''caption'' field defined. So the link: `[[$:/plugins/wikilabs/uni-link/readme]]` will show: [[$:/plugins/wikilabs/uni-link/readme]] 
-
-<<<
+| Link | Result |h
+|`[[default prettylink|tiddler-with-caption]]` |[[default prettylink|tiddler-with-caption]] |
+|`[[tiddler-with-caption]]` |[[tiddler-with-caption]] |
+|`[[tiddler-with-subtitle]]` |[[tiddler-with-subtitle]] |
+|`[[tiddler-with-subtitle-and-caption]]` |[[tiddler-with-subtitle-and-caption]] |
+|`[[tiddler doesn't exist]]` |[[tiddler doesn't exist]] |
