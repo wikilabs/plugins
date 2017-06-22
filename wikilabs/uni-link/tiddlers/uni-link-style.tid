@@ -1,0 +1,6 @@
+title: $:/plugins/wikilabs/uni-link/styles
+tags: $:/tags/Stylesheet
+
+.uni-link {
+  color: navy;
+}

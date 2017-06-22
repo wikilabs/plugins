@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/uni-link/uni-link-macro
+tags: $:/tags/Macro
+
+\define returnText(tid) <span class="uni-link"><$transclude tiddler="""$tid$""" field=subtitle><$transclude tiddler="""$tid$""" field=caption><$transclude tiddler="""$tid$""" field=title/></$transclude></$transclude></span>
+\define uni-link(tid) <$link to="""$tid$""" tooltip="""uni-link to: $tid$"""><<returnText """$tid$""">></$link>
