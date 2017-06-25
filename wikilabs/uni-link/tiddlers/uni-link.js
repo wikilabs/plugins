@@ -48,13 +48,21 @@ exports.parse = function() {
 			}]
 		}];
 	} else if(text == link) {
+		// we need to add the type: "link" element, since the core needs it to find "backlinks" and "missing links" ...
 		return [{
+			type: "link",
+			attributes: {
+				to: {type: "string", value: text}
+				}
+			},
+			{
 			type: "macrocall",
 			name: "uni-link",
 			params: [
 				{name: "tid", value: text}
-			]
-		}];
+				]
+			}
+		];
 	} else {
 		return [{
 			type: "link",
