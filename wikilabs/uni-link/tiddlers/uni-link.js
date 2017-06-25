@@ -51,9 +51,9 @@ exports.parse = function() {
 		return [{
 			type: "macrocall",
 			name: "uni-link",
-			params: [{
-				name: "tid", value: text
-			}]
+			params: [
+				{name: "tid", value: text}
+			]
 		}];
 	} else {
 		return [{

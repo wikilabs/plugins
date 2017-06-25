@@ -31,3 +31,9 @@ Delete example tiddlers!
 |`[[tiddler-with-subtitle]]` |[[tiddler-with-subtitle]] |
 |`[[tiddler-with-subtitle-and-caption]]` |[[tiddler-with-subtitle-and-caption]] |
 |`[[tiddler doesn't exist]]` |[[tiddler doesn't exist]] |
+
+! Attention
+
+This plugin has to overwrite the core $tw.wiki.getTiddlerLinks() function, to enable the "backlink" functionality for the uni-link macro.
+
+So if there is a second plugin, that modifies that function, there will be a conflict. The last plugin, initialized will win! ... At the moment, there is no way to detect the confilict.
