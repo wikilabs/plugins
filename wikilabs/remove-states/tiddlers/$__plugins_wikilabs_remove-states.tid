@@ -13,5 +13,5 @@ Delete all: <<theFilter>> tiddlers
 <$button>
 <$action-deletetiddler $tiddler=<<currentTiddler>>/>
 x
-</$button> - <<currentTiddler>><br>
+</$button> - <$link to=<<currentTiddler>> ><$text text=<<currentTiddler>> /></$link><br>
 </$list>
