@@ -74,6 +74,7 @@ exports.getAllAliases = function() {
 			aliases = aliases + ` ${tiddler.fields.aliases}`;
 		} // if tiddler aliases
 	});
+	aliases = aliases.toLowerCase();
 	return $tw.utils.parseStringArray(aliases);
 };
 

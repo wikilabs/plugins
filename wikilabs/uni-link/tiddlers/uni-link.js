@@ -33,7 +33,8 @@ exports.parse = function() {
 	// Process the link
 	var text = this.match[1],
 		link = this.match[2] || text,
-		checkAlias = this.match[2] === "?";
+		checkAlias = this.match[2] === "?",
+		useUniLink = !(this.match[2] === "");
 
 	if($tw.utils.isLinkExternal(link)) {
 		return [{
@@ -58,7 +59,7 @@ exports.parse = function() {
 				]
 			}
 		];
-	} else if(text == link) {
+	} else if((text == link) && useUniLink) {
 		// we need to add the type: "link" element, since the core needs it to find "backlinks" and "missing links" ...
 		return [{
 			type: "link",

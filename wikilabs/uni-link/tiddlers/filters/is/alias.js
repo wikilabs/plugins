@@ -21,10 +21,12 @@ exports.alias = function(source,prefix,options) {
 
 	if(prefix === "!") {
 		source(function(tiddler,title) {
+			title = title.toLowerCase();
 			if (aliases.indexOf(title) === -1) results.push(title);
 		});
 	} else {
 		source(function(tiddler,title) {
+			title = title.toLowerCase();
 			if (aliases.indexOf(title) !== -1) results.push(title);
 		});
 	}

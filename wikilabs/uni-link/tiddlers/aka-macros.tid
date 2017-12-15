@@ -7,8 +7,8 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 <$list filter="[[$target$]is[alias]]" variable=ali emptyMessage="""<$link tooltip="Alias not defined!" to="?">$target$</$link>""">
 <$list filter="[has[aliases]!has[draft.of]]">
-  <$list filter="[enlist{!!aliases}regexp[^$target$$]]" variable="dummy">
-    <$link tooltip=<<tooltip>> ><span class="uni-alias"><<dummy>></span></$link>
+  <$list filter="[enlist{!!aliases}regexp[^$target$$(?i)]]" variable="dummy">
+    <$link tooltip=<<tooltip>> ><span class="uni-alias">$target$</span></$link>
   </$list>
 </$list>
 </$list>
@@ -18,7 +18,7 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 <$list filter="[[$target$]is[alias]]" variable=ali emptyMessage="""<$link tooltip="Alias not defined!" to="?">$target$</$link>""">
 <$list filter="[has[aliases]!has[draft.of]]">
-  <$list filter="[enlist{!!aliases}regexp[^$target$$]]" variable="dummy">
+  <$list filter="[enlist{!!aliases}regexp[^$target$$(?i)]]" variable="dummy">
     <span><<currentTiddler>></span>
   </$list>
 </$list>
