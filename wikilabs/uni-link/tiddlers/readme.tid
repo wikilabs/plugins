@@ -1,33 +1,78 @@
 title: $:/plugins/wikilabs/uni-link/readme
+subtitle: "uni-link" readme
 
-A new wikitext parsing rule, that calls the global [["uni-link" macro|$:/plugins/wikilabs/uni-link/uni-link-macro]], instead of referencing the tiddler name. 
-
-It substitues the following tiddler fields: ''subtitle'', ''caption'' and ''title''. From left to right, the first field it finds is shown.
-
-You can drag & drop import this link: $:/plugins/wikilabs/uni-link<br>
-Uni-links are styled like this: $:/plugins/wikilabs/uni-link/styles
-
-! Examples
-
+\define createExampleTiddlers()
 <$button>
-<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-caption"  
-caption="short title"/>
-<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle"  
-subtitle="tiddler with subtitle defined"/>
-<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  
-subtitle="tiddler with subtitle and caption"
-caption="capt.ion"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-caption"  caption="Short Title"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle"  subtitle="Tiddler With Subtitle Defined"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  subtitle="Tiddler With Subtitle And Caption" caption="capt.ion"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-alias"  aliases="alias"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="test-links" text={{$:/plugins/wikilabs/uni-link/backlinks-template!!text}}/>
 Create "uni-link" example tiddlers!
-</$button> -- <$button>
+</$button>
+\end
+\define deleteExampleTiddlers()
+<$button>
 <$action-deletetiddler $tiddler="tiddler-with-caption"/>
 <$action-deletetiddler $tiddler="tiddler-with-subtitle"/>
 <$action-deletetiddler $tiddler="tiddler-with-subtitle-and-caption"/>
+<$action-deletetiddler $tiddler="tiddler-with-alias"/>
+<$action-deletetiddler $tiddler="test-links"/>
 Delete example tiddlers!
 </$button>
+\end
 
-| Link | Result |h
-|`[[default prettylink|tiddler-with-caption]]` |[[default prettylink|tiddler-with-caption]] |
-|`[[tiddler-with-caption]]` |[[tiddler-with-caption]] |
-|`[[tiddler-with-subtitle]]` |[[tiddler-with-subtitle]] |
-|`[[tiddler-with-subtitle-and-caption]]` |[[tiddler-with-subtitle-and-caption]] |
-|`[[tiddler doesn't exist]]` |[[tiddler doesn't exist]] |
+!! Important
+
+This plugin overwrites the core tiddler: $:/core/ui/TiddlerInfo/References
+
+!! Video
+
+* https://youtu.be/V9l-vipAoNw
+
+!! Examples
+
+You can use the following buttons to create example tiddlers!
+
+<<createExampleTiddlers>>
+
+!! Uni-link
+
+* A new wikitext parsing rule, that calls the global [["uni-link" macro|$:/plugins/wikilabs/uni-link/uni-link-macro]], instead of referencing the tiddler name. 
+
+* It substitues the following tiddler fields: ''subtitle'', ''caption'' and ''title''. From left to right, the first field it finds is shown.
+
+!! Alias
+
+* Alias Link Syntax
+** `[[alias|?]]`
+** using [[aka-makros|$:/plugins/wikilabs/uni-link/aka-macros]] for tiddler alias handling
+
+* Alias Backlinks
+** open the tiddler (i)nfo area: References
+
+* Filter Operators: 
+** `is[alias]` ... extends the core `is` operator see: [[https://tiddlywiki.com/#is Operator]]
+** `all[aliases]` ... extends the core `all` operator see: [ext[https://tiddlywiki.com/#all Operator]]
+
+* Right-Sidebar: More tab: [[Aliases|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases]]
+** [[Sorted by Alias|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/byAlias]]
+** [[Sorted by Tiddler Title|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/byTitle]]
+
+* uni-link $:/ControlPanel setting
+
+* [[uni-fields|$:/plugins/wikilabs/uni-link/uni-fields.js]] widget, that allows us to assign CSS classes based on tiddler fields existence.
+
+!! Installation
+
+* You can drag & drop import this link: $:/plugins/wikilabs/uni-link<br>
+
+!! Link Styling
+
+* Uni-links are styled like this: $:/plugins/wikilabs/uni-link/styles
+
+!! Examples
+
+<<createExampleTiddlers>> -- <<deleteExampleTiddlers>>
+
+{{$:/plugins/wikilabs/uni-link/backlinks-template}}

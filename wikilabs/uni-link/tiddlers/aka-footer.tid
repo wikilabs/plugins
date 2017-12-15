@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/uni-link/aka-footer
+tags: $:/tags/ViewTemplate
+type: text/vnd.tiddlywiki
+
+<$list filter="[all[current]has[aliases]]">
+<br/>
+<hr>
+
+{{||$:/plugins/wikilabs/uni-link/aka-footer/template}}
+</$list>

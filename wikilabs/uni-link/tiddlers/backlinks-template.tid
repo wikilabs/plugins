@@ -1,0 +1,16 @@
+title: $:/plugins/wikilabs/uni-link/backlinks-template
+
+!!! Uni-links
+
+| Link | Result |h
+|`[[default prettylink|tiddler-with-caption]]` |[[default prettylink|tiddler-with-caption]] |
+|`[[tiddler-with-caption]]` |[[tiddler-with-caption]] |
+|`[[tiddler-with-subtitle]]` |[[tiddler-with-subtitle]] |
+|`[[tiddler-with-subtitle-and-caption]]` |[[tiddler-with-subtitle-and-caption]] |
+|`[[tiddler-with-subtitle-and-caption|]]` |[[tiddler-with-subtitle-and-caption|]] ... but don't use them!|
+|`[[tiddler doesn't exist]]` |[[tiddler doesn't exist]] |
+
+!!! Alias Links
+
+| Link | Result |h
+|`[[alias|?]]` |[[alias|?]] |

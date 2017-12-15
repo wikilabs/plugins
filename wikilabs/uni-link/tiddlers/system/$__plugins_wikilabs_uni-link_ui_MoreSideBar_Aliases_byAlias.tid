@@ -1,0 +1,17 @@
+caption: Alias
+created: 20171214203739053
+list-before: $:/core/ui/MoreSideBar/Recent
+modified: 20171214213743140
+tags: $:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases
+title: $:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/byAlias
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$list filter="[all[aliases]sort[title]]" variable=alias>
+  <div class="tc-menu-list-item">
+   <$macrocall $name="aka" target=<<alias>> />
+     <div class="tc-menu-list-subitem">
+       <$macrocall $name="aka-no-links" target=<<alias>> />
+      </div>
+   </div>
+</$list>
