@@ -1,0 +1,11 @@
+caption: Aliases
+created: 20171214213808142
+list-before: $:/core/ui/MoreSideBar/Recent
+modified: 20171214215245931
+tags: $:/tags/MoreSideBar
+title: $:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases
+type: text/vnd.tiddlywiki
+
+<div class="uni-link-sidebar tc-sidebar-lists">
+<<tabs "[all[shadows+tiddlers]tag[$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases]!has[draft.of]]" "$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/byAlias" "$:/state/tab/Aliases" >>
+</div>

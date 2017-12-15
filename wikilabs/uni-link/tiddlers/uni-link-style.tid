@@ -4,3 +4,19 @@ tags: $:/tags/Stylesheet
 .uni-link {
   color: navy;
 }
+
+.uni-caption {
+  color: #2a699f;
+}
+
+.uni-subtitle {
+  color: #0e8446;
+}
+
+.uni-alias {
+  color: #7557d8;
+}
+
+.uni-link-sidebar .tc-tab-buttons {
+  padding-top: 0;
+}

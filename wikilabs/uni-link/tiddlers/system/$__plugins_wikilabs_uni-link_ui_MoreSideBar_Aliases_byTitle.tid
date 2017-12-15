@@ -1,0 +1,19 @@
+caption: Title
+created: 20171214201333460
+list-before: $:/core/ui/MoreSideBar/Recent
+modified: 20171214213745643
+tags: $:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases
+title: $:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/byTitle
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$list filter="[has[aliases]sort[title]]">
+  <div class="tc-menu-list-item">
+    <$link to=<<currentTiddler>> ><<currentTiddler>></$link>
+    <$list filter="[list[!!aliases]]">
+      <div class="tc-menu-list-subitem">
+        <$view field=title/>
+      </div>
+    </$list>
+  </div>
+</$list>

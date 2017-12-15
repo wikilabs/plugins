@@ -1,0 +1,9 @@
+caption: {{$:/language/TiddlerInfo/References/Caption}}
+tags: $:/tags/TiddlerInfo
+title: $:/core/ui/TiddlerInfo/References
+type: text/vnd.tiddlywiki
+
+\define lingo-base() $:/language/TiddlerInfo/
+<$list filter="[all[current]backlinks[]sort[title]]" emptyMessage=<<lingo References/Empty>> template="$:/core/ui/ListItemTemplate"></$list>
+<hr>
+<$list filter="[all[current]aliasbacklinks[]sort[title]]" emptyMessage=<<lingo References/Empty>> template="$:/core/ui/ListItemTemplate"></$list>
