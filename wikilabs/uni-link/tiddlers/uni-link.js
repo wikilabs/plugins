@@ -3,12 +3,12 @@ title: $:/plugins/wikilabs/uni-link/uni-link.js
 type: application/javascript
 module-type: wikirule
 
-Wiki text inline rule for pretty links. For example:
+Wiki text inline rule for uni link macros. For example:
 
 ```
-[[Introduction]]
+[[Introduction]] ... uni-link
 
-[[Link description|TiddlerTitle]]
+[[Link description|?]] ... alias-link
 ```
 
 \*/
@@ -32,7 +32,9 @@ exports.parse = function() {
 	this.parser.pos = this.matchRegExp.lastIndex;
 	// Process the link
 	var text = this.match[1],
-		link = this.match[2] || text;
+		link = this.match[2] || text,
+		checkAlias = this.match[2] === "?";
+
 	if($tw.utils.isLinkExternal(link)) {
 		return [{
 			type: "element",
@@ -47,6 +49,15 @@ exports.parse = function() {
 				type: "text", text: text
 			}]
 		}];
+	} else if(checkAlias) {
+		return [{
+			type: "macrocall",
+			name: "aka",
+			params: [
+				{name: "target", value: text}
+				]
+			}
+		];
 	} else if(text == link) {
 		// we need to add the type: "link" element, since the core needs it to find "backlinks" and "missing links" ...
 		return [{

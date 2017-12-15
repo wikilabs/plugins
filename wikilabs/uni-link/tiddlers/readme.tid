@@ -1,4 +1,5 @@
 title: $:/plugins/wikilabs/uni-link/readme
+subtitle: "uni-link" readme
 
 A new wikitext parsing rule, that calls the global [["uni-link" macro|$:/plugins/wikilabs/uni-link/uni-link-macro]], instead of referencing the tiddler name. 
 
@@ -7,7 +8,7 @@ It substitues the following tiddler fields: ''subtitle'', ''caption'' and ''titl
 You can drag & drop import this link: $:/plugins/wikilabs/uni-link<br>
 Uni-links are styled like this: $:/plugins/wikilabs/uni-link/styles
 
-! Examples
+!! Examples
 
 <$button>
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-caption"  
@@ -17,11 +18,14 @@ subtitle="tiddler with subtitle defined"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  
 subtitle="tiddler with subtitle and caption"
 caption="capt.ion"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-alias"  
+aliases="alias"/>
 Create "uni-link" example tiddlers!
 </$button> -- <$button>
 <$action-deletetiddler $tiddler="tiddler-with-caption"/>
 <$action-deletetiddler $tiddler="tiddler-with-subtitle"/>
 <$action-deletetiddler $tiddler="tiddler-with-subtitle-and-caption"/>
+<$action-deletetiddler $tiddler="tiddler-with-alias"/>
 Delete example tiddlers!
 </$button>
 
@@ -30,4 +34,5 @@ Delete example tiddlers!
 |`[[tiddler-with-caption]]` |[[tiddler-with-caption]] |
 |`[[tiddler-with-subtitle]]` |[[tiddler-with-subtitle]] |
 |`[[tiddler-with-subtitle-and-caption]]` |[[tiddler-with-subtitle-and-caption]] |
+|`[[alias|?]]` |[[alias|?]] |
 |`[[tiddler doesn't exist]]` |[[tiddler doesn't exist]] |

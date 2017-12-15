@@ -1,0 +1,36 @@
+tags: $:/tags/Macro
+title: $:/plugins/wikilabs/uni-link/aka-macros
+type: text/vnd.tiddlywiki
+
+\define tooltip() Alias: <<currentTiddler>>
+\define aka(target)
+\whitespace trim
+<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage="""<$link tooltip="Alias not defined!" to="?">$target$</$link>""">
+<$list filter="[has[aliases]!has[draft.of]]">
+  <$list filter="[enlist{!!aliases}regexp[^$target$$]]" variable="dummy">
+    <$link tooltip=<<tooltip>> ><span class="uni-alias"><<dummy>></span></$link>
+  </$list>
+</$list>
+</$list>
+\end
+
+\define aka-no-links(target)
+\whitespace trim
+<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage="""<$link tooltip="Alias not defined!" to="?">$target$</$link>""">
+<$list filter="[has[aliases]!has[draft.of]]">
+  <$list filter="[enlist{!!aliases}regexp[^$target$$]]" variable="dummy">
+    <span><<currentTiddler>></span>
+  </$list>
+</$list>
+</$list>
+\end
+
+\define showAliases(delim:",")
+<$list filter="[list[!!aliases]butlast[]]"><$view field=title/>$delim$ </$list><$list filter="[list[!!aliases]last[]]"><$view field=title/></$list>
+\end
+
+\define listAliases()
+<$list filter="[has[aliases]]"><$link to=<<currentTiddler>> ><<currentTiddler>></$link> - <<showAliases>><br/></$list>
+\end
+
+<pre><$view field="text"/></pre>

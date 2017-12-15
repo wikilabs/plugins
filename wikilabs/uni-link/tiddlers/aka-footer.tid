@@ -1,0 +1,10 @@
+tags: $:/tags/ViewTemplate
+title: $:/plugins/wikilabs/uni-link/aka-footer
+type: text/vnd.tiddlywiki
+
+<$list filter="[all[current]has[aliases]]">
+<br/>
+<hr>
+
+''Note'': This tiddler has the following aliases: <<showAliases delim:",">>
+</$list>
