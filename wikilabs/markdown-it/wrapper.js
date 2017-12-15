@@ -6,14 +6,20 @@ module-type: parser
 Wraps up the markdown-js parser for use in TiddlyWiki5
 
 \*/
+
+// Spec overview: https://www.iana.org/assignments/media-types/media-types.xhtml,
+// MD spec: https://tools.ietf.org/html/rfc7763
+// variants overvewi: https://www.iana.org/assignments/markdown-variants/markdown-variants.xhtml
+// variants: https://tools.ietf.org/html/rfc7764
+
 (function(){
 
 /*jslint node: true, browser: true */
 /*global $tw: false */
 "use strict";
 
-var CONFIG_DIALECT_TIDDLER = "$:/config/markdown/dialect",
-	DEFAULT_DIALECT = "markdown-it";
+var CONFIG_VARIANT_TIDDLER = "$:/config/markdown/variant",
+	DEFAULT_VARIANT = "markdown-it";
 
 /*
 The wiki text parser processes blocks of source text into a parse tree.
@@ -35,11 +41,11 @@ Attributes are stored as hashmaps of the following objects:
 
 
 var MarkdownParser = function(type,text,options) {
-	var dialect = options.wiki.getTiddlerText(CONFIG_DIALECT_TIDDLER,DEFAULT_DIALECT) || "gfm",
+	var variant = options.wiki.getTiddlerText(CONFIG_VARIANT_TIDDLER,DEFAULT_VARIANT),
 		preset = "",
 		twOptions = {};
 
-	switch (dialect) {
+	switch (variant) {
 		case "gfm":
 			preset = "default",
 			twOptions = {
@@ -65,7 +71,7 @@ var MarkdownParser = function(type,text,options) {
 		break;
 	}
 	
-	// additional options, which don't touch compatibility between dialects!
+	// additional options, which don't touch compatibility between variants!
 	twOptions.linkify     = false;		// TODO create an option for this. 
 	twOptions.typographer = true;		// TODO create an option for this. 
 
@@ -79,8 +85,8 @@ var MarkdownParser = function(type,text,options) {
 
 exports["text/x-markdown"] = MarkdownParser;
 
-// "text/x-markdown;flavour=commonmark"  should be possible too
-// "text/x-markdown;flavour=commonmark;plugin=xxx"  should be possible too
+// "text/x-markdown;variant=commonmark"  should be possible too
+// "text/x-markdown;variant=commonmark;plugin=xxx"  should be possible too
 
 })();
 

@@ -1,13 +1,13 @@
 title: $:/plugins/wikilabs/markdown-it/usage
 link: [[CommonMark compatible Markdown|https://github.com/markdown-it/markdown-it]]
 
-! Markdown Dialects
+! Markdown Variants
 
-The configuration tiddler [[$:/config/markdown/dialect]] determines which dialect is used.
+The configuration tiddler [[$:/config/markdown/variant]] determines which variant is used.
 
-''Important'': Changing the dialect needs. `Browser: SAVE and RELOAD!`
+''Important'': Changing the variant needs. `Browser: SAVE and RELOAD!`
 
-|!Dialect |!Description |
+|!Variant |!Description |
 |commonmark |(default)  {{!!link}}|
 |gfm |GitHub Flavoured MD |
 |markdown-it |see: [[Demo Page|https://markdown-it.github.io/]] |
