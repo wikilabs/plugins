@@ -64,7 +64,10 @@ exports.parse = function() {
 		return [{
 			type: "link",
 			attributes: {
-				to: {type: "string", value: text}
+				to: {type: "string", value: text},
+				tag: {type: "string", value: "x"},
+				overrideClass: {type: "string", value: ""},
+				draggable: {type: "string", value: "false"}
 				}
 			},
 			{

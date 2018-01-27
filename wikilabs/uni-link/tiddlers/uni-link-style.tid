@@ -17,6 +17,10 @@ tags: $:/tags/Stylesheet
   color: #7557d8;
 }
 
+.uni-alias-missing {
+  color: red;
+}
+
 .uni-link-sidebar .tc-tab-buttons {
   padding-top: 0;
 }
