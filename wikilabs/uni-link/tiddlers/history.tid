@@ -1,5 +1,33 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 0.3.0 - 2018.01.27
+
+* add: styling possibility for missing aliases
+* improve: history and copyright
+
+V 0.2.1 - 2018.01.27
+
+* fix: uni-link creates an unused a-element
+
+V 0.2.0 - 2017.12.15
+
+* added: [[alias|?]] link syntax
+** using aka-makros for tiddler alias handling
+
+* added: Alias backlinks
+** open the tiddler (i)nfo area: References
+
+* added filter operators:
+** is[alias] ... extends the core is operator see: https://tiddlywiki.com/#is Operator
+** all[aliases] ... extends the core all operator see: https://tiddlywiki.com/#all Operator
+
+* added: Right-Sidebar: More tab: "Aliases"
+** Sorted by Alias
+** Sorted by Tiddler Title
+
+* added: uni-link $:/ControlPanel setting
+* added: different colors for title, caption, subtitle and alias links
+
 V0.1.0 - 2017.07.25
 
 * fix "backlink" and "missing" issue
