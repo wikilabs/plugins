@@ -8,7 +8,10 @@ type: text/vnd.tiddlywiki
 <$list filter="[[$target$]is[alias]]" variable=ali emptyMessage="""<$link tooltip="Alias not defined!" to="?"><span class="uni-alias-missing">$target$</span></$link>""">
 <$list filter="[has[aliases]!has[draft.of]]">
   <$list filter="[enlist{!!aliases}regexp[^$target$$(?i)]]" variable="dummy">
-    <$link tooltip=<<tooltip>> ><span class="uni-alias">$target$</span></$link>
+    <$link tooltip=<<tooltip>> >
+		<span class="uni-alias">
+			<$set name="tv-wikilinks" value="no">$target$</$set>
+		</span></$link>
   </$list>
 </$list>
 </$list>
