@@ -3,9 +3,9 @@ subtitle: "uni-link" readme
 
 \define createExampleTiddlers()
 <$button>
-<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-caption"  caption="Short Title"/>
-<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle"  subtitle="Tiddler With Subtitle Defined"/>
-<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  subtitle="Tiddler With Subtitle And Caption" caption="capt.ion"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-caption"  caption="Short Caption"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle"  subtitle="Tiddler With Subtitle Only Defined"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  subtitle="Tiddler With Subtitle And Caption - using subtitle" caption="capt.ion"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-alias"  aliases="alias"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="test-links" text={{$:/plugins/wikilabs/uni-link/backlinks-template!!text}}/>
 Create "uni-link" example tiddlers!
