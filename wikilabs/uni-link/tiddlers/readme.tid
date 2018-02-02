@@ -51,13 +51,16 @@ You can use the following buttons to create example tiddlers!
 * Alias Backlinks
 ** open the tiddler (i)nfo area: References
 
-* Filter Operators: 
+* Filter Operators:
 ** `is[alias]` ... extends the core `is` operator see: [[https://tiddlywiki.com/#is Operator]]
 ** `all[aliases]` ... extends the core `all` operator see: [ext[https://tiddlywiki.com/#all Operator]]
+** `[aliasbacklinks[]]` ... shows a list of all tiddlers that contain alias links
+** `[[?]aliasbacklinks[]sort[title]]` ... shows a list of tiddlers that contain undefined alias links
 
 * Right-Sidebar: More tab: [[Aliases|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases]]
 ** [[Sorted by Alias|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/byAlias]]
 ** [[Sorted by Tiddler Title|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/byTitle]]
+** [[Undefined Aliases|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/undefined]]
 
 * uni-link $:/ControlPanel setting
 

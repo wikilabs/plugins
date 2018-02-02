@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 0.3.2 - 2018.02.02
+
+* new Undefined Aliases Sidebar tab under More: Aliases
+* `[[?]aliasbacklinks[]sort[title]]` shows a list of tiddlers that contain undefined alias links
+
 V 0.3.1 - 2018.01.31
 
 * fixed: [[CamelCase]] or [[$:/system]] tiddler "double linking"
