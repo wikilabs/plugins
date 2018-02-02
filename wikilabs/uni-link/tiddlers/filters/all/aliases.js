@@ -3,7 +3,7 @@ title: $:/plugins/wikilabs/uni-link/filters/all/aliases.js
 type: application/javascript
 module-type: allfilteroperator
 
-Filter function for [all[orphans]]
+Filter function for [all[aliases]]
 
 \*/
 (function(){
