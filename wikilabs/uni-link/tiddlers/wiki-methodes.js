@@ -56,6 +56,11 @@ function aliasInit(title) {
 			})
 		} // if tiddler aliases
 	});
+
+	if ((backlinks.length === 0) && (links.length > 0)) {
+		backlinks[0] = "?";
+	}
+
 	return backlinks;
 }
 
