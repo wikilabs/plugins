@@ -1,6 +1,9 @@
 title: $:/core/macros/tabs
 tags: $:/tags/Macro
 
+\define link-action()
+<$action-sendmessage $message="$(message)$" $param=<<currentTiddler>> navigateTo=<<currentTiddler>>/>
+\end
 \define tabs(tabsList,default,state:"$:/state/tab",class,template)
 <div class="tc-tab-set $class$">
 <div class="tc-tab-buttons $class$">
@@ -11,8 +14,9 @@ tags: $:/tags/Macro
 <$transclude tiddler=<<currentTab>> field="caption">
 <$macrocall $name="currentTab" $type="text/plain" $output="text/plain"/>
 </$transclude>
-</$set></$tiddler></$button><span class="wltc-link-to-tab"><$link to=<<currentTiddler>> >{{$:/core/images/link}}</$link></span></$tiddler></$set></$list>
-</div>
+</$set></$tiddler></$button>
+<$set name=message value={{$:/plugins/wikilabs/link-to-tabs/config!!link-action}}>
+<$list filter="[<currentTiddler>]+[!is[shadow]]" emptyMessage="""<$button tag=span class="wltc-link-to-tab" to=<<currentTiddler>> >{{$:/core/images/link}}</$button>""" ><$button tag=span class="wltc-link-to-tab" actions=<<link-action>> >{{$:/core/images/link}}</$button></$list></$set></$tiddler></$set></$list></div>
 <div class="tc-tab-divider $class$"/>
 <div class="tc-tab-content $class$">
 <$list filter="$tabsList$" variable="currentTab">
