@@ -4,6 +4,6 @@ This plugin adds a little link icon to every tab.
 
 ''Important:'' This plugin changes the core tabs macro.
 
-! Lint-to-Tabs Settings
+! Link-to-Tabs Settings
 
 {{$:/core/ui/ControlPanel/Settings/link-to-tabs}}
