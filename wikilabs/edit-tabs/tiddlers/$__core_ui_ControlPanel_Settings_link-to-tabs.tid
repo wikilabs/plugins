@@ -6,4 +6,4 @@ title: $:/core/ui/ControlPanel/Settings/edit-tabs
 
 <$checkbox tiddler="$:/plugins/wikilabs/edit-tabs/config" field="show-single-link" checked="inline" unchecked="none" default="inline"> Show internal tab link for ''selected tab''</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/edit-tabs/config" field="link-action" checked="tm-edit-tiddler" unchecked="tm-navigate" default="tm-navigate"> Clicking a tab-link opens the tiddler in ''edit mode''</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/edit-tabs/config" field="link-action" checked="tm-edit-tiddler" unchecked="tm-navigate" default="tm-navigate"> Clicking a tab-link opens non-system tiddlers in ''edit mode''</$checkbox>
