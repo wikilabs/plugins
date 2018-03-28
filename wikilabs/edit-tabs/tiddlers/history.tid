@@ -1,0 +1,13 @@
+title: $:/plugins/wikilabs/edit-tabs/history
+
+V0.2.0-experimental - 2018-02-13
+
+* initial release
+* forked from link-to-tabs V0.1.1
+* add new "auto-edit" configuration for tab-links
+* auto-edit is only active for non-shadow tiddlers `[!is[shadow]]`
+* contains a temporary fix for a <$action-sendmessage widget parameter passing problem
+** This fix should be deactivated in the future.
+
+also see: https://wikilabs.github.io/editions/edit-tabs/#History
+also see: https://wikilabs.github.io/editions/link-to-tabs/#History

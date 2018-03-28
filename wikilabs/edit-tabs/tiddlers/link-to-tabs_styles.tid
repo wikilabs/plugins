@@ -1,0 +1,36 @@
+tags: $:/tags/Stylesheet
+title: $:/plugins/wikilabs/edit-tabs/styles
+
+<pre>
+
+.wltc-edit-tab {
+  display: {{$:/plugins/wikilabs/edit-tabs/config!!show-all-links}};
+  position: relative;
+  top: -1em;
+  left: -1.3em;
+  font-size: 0.7em;
+  opacity: 0.7;
+  margin-right: -1em;
+}
+
+.wltc-edit-tab svg{
+  width: 1.4em;
+  height: 1.4em;
+}
+
+.wltc-edit-tab:hover {
+  opacity: 1;
+}
+
+.tc-tab-selected + .wltc-edit-tab {
+  display: {{$:/plugins/wikilabs/edit-tabs/config!!show-single-link}};
+}
+
+.tc-vertical > .wltc-edit-tab {
+  top: -1.9em;
+  left: 0;
+  height: 0;
+  float: right;
+}
+
+</pre>
