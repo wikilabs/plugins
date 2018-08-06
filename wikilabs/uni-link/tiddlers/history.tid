@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 0.3.3 - 2018.08.06
+
+* fix [[issue 19|https://github.com/wikilabs/plugins/issues/19]] Alias References behaviour
+
 V 0.3.2 - 2018.02.02
 
 * new Undefined Aliases Sidebar tab under More: Aliases
