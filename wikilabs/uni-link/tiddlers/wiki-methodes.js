@@ -50,7 +50,8 @@ function aliasInit(title) {
 	var backlinks = []
 	this.forEachTiddler({includeSystem:true}, function(ttl,tiddler) {
 		if (tiddler.fields["aliases"]) {
-			var fields = tiddler.fields["aliases"];
+			// var fields = tiddler.fields["aliases"];
+			var fields = $tw.utils.parseStringArray(tiddler.fields["aliases"]);
 			links.map( function (el) {
 				if (fields.indexOf(el) != -1) backlinks.push(ttl);
 			})
