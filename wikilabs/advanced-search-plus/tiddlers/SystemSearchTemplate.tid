@@ -1,34 +1,34 @@
 title: $:/plugins/wikilabs/advanced-search-plus/SystemSearchTemplate
 
-`\define lingo-base() $:/language/Search/
-<$linkcatcher to="`$(input-tiddler)$`">
+\define lingo-base() $:/language/Search/
 
+<$tiddler tiddler=<<currentTab>>>
 <$button tooltip={{$:/language/Buttons/Delete/Caption}} >
-  <$action-deletetiddler $tiddler="`$(input-tiddler)$`"/>
-  <$action-deletetiddler $tiddler="`$(search-title)$`"/>
+  <$action-deletetiddler $tiddler={{!!input-tiddler}}/>
+  <$action-deletetiddler $tiddler={{!!input-title}}/>
   <$transclude tiddler="$:/core/images/delete-button" />
 </$button>
 <<lingo System/Hint>>
 
 <div class="tc-search">
-<$edit-text tiddler="`$(input-tiddler)$`" type="search" tag="input"/>
-<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
+<$edit-text tiddler={{!!input-tiddler}} type="search" tag="input" placeholder="..." default=""/>
+<$reveal state={{!!input-tiddler}} type="nomatch" text="">
 <$button class="tc-btn-invisible">
-<$action-setfield $tiddler="`$(input-tiddler)$`" $field="text" $value=""/>
+<$action-setfield $tiddler={{!!input-tiddler}} $field="text" $value=""/>
 {{$:/core/images/close-button}}
 </$button>
 </$reveal>
 </div>
 
-</$linkcatcher>
-
-<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
-<$set name="resultCount" value="<$count filter='[is[system]search{`$(input-tiddler)$`}]'/>">
+<$reveal state={{!!input-tiddler}} type="nomatch" text="">
+<$set name="search-term" tiddler={{!!input-tiddler}}>
+<$set name="resultCount" value="<$count filter='[is[system]search<search-term>]'/>">
 <div class="tc-search-results">
 <<lingo System/Matches>>
-<$list filter="[is[system]search{`$(input-tiddler)$`}sort[title]limit[250]]" template="$:/core/ui/ListItemTemplate"/>
+<$list filter="[is[system]search<search-term>sort[title]limit[250]]" template="$:/core/ui/ListItemTemplate"/>
 </div>
-</$set>
+</$set></$set>
 </$reveal>
-<$reveal state="`$(input-tiddler)$`" type="match" text="">
-</$reveal>`
+<$reveal state={{!!input-tiddler}} type="match" text="">
+</$reveal>
+</$tiddler>
