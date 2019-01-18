@@ -1,32 +1,30 @@
 title: $:/plugins/wikilabs/advanced-search-plus/StandardSearchTemplate
 
-`\define lingo-base() $:/language/Search/
+\define lingo-base() $:/language/Search/
 
-<$linkcatcher to="`$(input-tiddler)$`" >
-
+<$tiddler tiddler=<<currentTab>>>
 <$button tooltip={{$:/language/Buttons/Delete/Caption}} >
-  <$action-deletetiddler $tiddler="`$(input-tiddler)$`"/>
-  <$action-deletetiddler $tiddler="`$(search-title)$`"/>
+  <$action-deletetiddler $tiddler={{!!input-tiddler}}/>
+  <$action-deletetiddler $tiddler={{!!input-title}}/>
   <$transclude tiddler="$:/core/images/delete-button" />
 </$button>
 <<lingo Standard/Hint>>
 
 <div class="tc-search">
-<$edit-text tiddler="`$(input-tiddler)$`" type="search" tag="input" placeholder="..." default=""/>
-<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
+<$edit-text tiddler={{!!input-tiddler}} type="search" tag="input" placeholder="..." default=""/>
+<$reveal state={{!!input-tiddler}} type="nomatch" text="">
 <$button class="tc-btn-invisible">
-<$action-setfield $tiddler="`$(input-tiddler)$`" $field="text" $value=""/>
+<$action-setfield $tiddler={{!!input-tiddler}} $field="text" $value=""/>
 {{$:/core/images/close-button}}
 </$button>
 </$reveal>
 </div>
 
-</$linkcatcher>
-
-<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
-<$set name="searchTiddler" value="`$(input-tiddler)$`">
+<$reveal state={{!!input-tiddler}} type="nomatch" text="">
+<$set name="searchTiddler" value={{!!input-tiddler}}>
 <$list filter="[all[shadows+tiddlers]tag[$:/tags/SearchResults]!has[draft.of]butfirst[]limit[1]]" emptyMessage={{$:/plugins/wikilabs/advanced-search-plus/StandardSearchTemplate-emptyMessage}} >
 <$macrocall $name="tabs" tabsList="[all[shadows+tiddlers]tag[$:/tags/SearchResults]!has[draft.of]]" default={{$:/config/SearchResults/Default}}/>
 </$list>
 </$set>
-</$reveal>`
+</$reveal>
+</$tiddler>

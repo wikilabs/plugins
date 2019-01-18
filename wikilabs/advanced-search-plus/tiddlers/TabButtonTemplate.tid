@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/advanced-search-plus/TabButtonTemplate
+
+<$tiddler tiddler=<<currentTab>>>
+<$transclude tiddler={{!!icon}}/>
+<$transclude tiddler=<<currentTab>> field="caption">
+<$macrocall $name="currentTab" $type="text/plain" $output="text/plain"/>
+</$transclude>
+</$tiddler>

@@ -11,32 +11,31 @@ input: [[$(input-tiddler)$]]<br>
 </$button><!--
 --><$button tooltip={{$:/language/Buttons/NewTiddler/Caption}} >
   <$action-deletetiddler $tiddler="$:/state/expandMe/-$:/plugins/wikilabs/advanced-search-plus/system-search-plus"/><!-- TODO make it dynamic-->
-  <$action-setfield $tiddler="$:/state/tab--1027337707" text="$(search-title)$" />
+  <$action-setfield $tiddler="$:/state/tab-54561037" text="$(search-title)$" />
   <$action-setfield $tiddler="$(input-tiddler)$" text={{$:/temp/advancedsearch}} />
   <$action-setfield $tiddler="$(search-title)$"
-  caption={{$(new-tiddler-input)$!!caption}}
-  text="""$(content)$"""
-  tags="$:/tags/AdvancedSearch"
-  icon="$:/plugins/wikilabs/advanced-search-plus/system-search.svg"
+    caption={{$(new-tiddler-input)$!!caption}}
+    input-title="""$(search-title)$"""
+    input-tiddler="""$(input-tiddler)$"""
+    text={{$:/plugins/wikilabs/advanced-search-plus/SystemSearchTemplate}}
+    tags="$:/tags/AdvancedSearch"
+    icon="$:/plugins/wikilabs/advanced-search-plus/system-search.svg"
   />
-  <$transclude tiddler="$:/core/images/done-button" /> : {{$(new-tiddler-input)$!!new-title}}
+  <$transclude tiddler="$:/core/images/done-button" />
 </$button>
 \end
 
 \define inner(pre title)
-<$wikify name="content" text={{$:/plugins/wikilabs/advanced-search-plus/SystemSearchTemplate}} mode=block output=text >
 <$set name="input-tiddler" value="$pre$inp/$title$" >
 <$set name="search-title" value="$pre$$title$">
 <<new-advanced-search-plus>>
 </$set>
 </$set>
-</$wikify>
 \end
 
 \define outer()
-<$macrocall $name="inner" pre="$:/search-sys/" title={{$(new-tiddler-input)$!!new-title}} />
+<$macrocall $name="inner" pre="$:/search-sys/" title={{$(new-tiddler-input)$!!caption}} />
 <br>
-<$edit-text field="new-title" class="wikilabs-full-width" tiddler="$(new-tiddler-input)$" placeholder="title"/> - title<br>
 <$edit-text field="caption" class="wikilabs-full-width" tiddler="$(new-tiddler-input)$" placeholder="caption" /> - caption<br>
 \end
 

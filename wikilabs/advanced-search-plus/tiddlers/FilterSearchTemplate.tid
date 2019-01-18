@@ -1,41 +1,47 @@
 title: $:/plugins/wikilabs/advanced-search-plus/FilterSearchTemplate
 
-`\define lingo-base() $:/language/Search/
+\define lingo-base() $:/language/Search/
 
+<$tiddler tiddler=<<currentTab>>>
 <$button tooltip={{$:/language/Buttons/Delete/Caption}} >
-  <$action-deletetiddler $tiddler="`$(input-tiddler)$`"/>
-  <$action-deletetiddler $tiddler="`$(search-title)$`"/>
+  <$action-deletetiddler $tiddler={{!!input-tiddler}}/>
+  <$action-deletetiddler $tiddler={{!!input-title}}/>
   <$transclude tiddler="$:/core/images/delete-button" />
 </$button>
-<<lingo Filter/Hint>>
+<<lingo Filter/Hint>><br>
 
 <span class="tc-search tc-popup-keep">
-<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
-<$macrocall $name="exportButton" exportFilter={{`$(input-tiddler)$`}} lingoBase="$:/language/Buttons/ExportTiddlers/"/>
+<$reveal state={{!!input-tiddler}} type="nomatch" text="">
+<$set name="search-term" tiddler={{!!input-tiddler}}>
+<$macrocall $name="exportButton" exportFilter=<<search-term>> lingoBase="$:/language/Buttons/ExportTiddlers/"/>
+</$set>
 </$reveal>
 <$button popup=<<qualify "$:/state/filterDropdown">> class="tc-btn-invisible">
 {{$:/core/images/down-arrow}}
 </$button>
 </span>
 <$reveal state=<<qualify "$:/state/filterDropdown">> type="popup" position="below" animate="yes" class="tc-block-dropdown tc-edit-type-dropdown">
-<$linkcatcher to="`$(input-tiddler)$`">
+<$linkcatcher to={{!!input-tiddler}}>
 <$list filter="[all[shadows+tiddlers]tag[$:/tags/Filter]]"><$link to={{!!filter}}><$transclude field="description"/></$link>
 </$list>
 </$linkcatcher>
+
 </$reveal>
 <span class="tc-search tc-advanced-search">
-<$edit-text tiddler="`$(input-tiddler)$`" type="search" tag="input"/>
+<$edit-text tiddler={{!!input-tiddler}} type="search" tag="input"/>
 <$button class="tc-btn-invisible">
-<$action-setfield $tiddler="`$(input-tiddler)$`" $field="text" $value=""/>
+<$action-setfield $tiddler={{!!input-tiddler}} $field="text" $value=""/>
 {{$:/core/images/close-button}}
 </$button>
 </span>
 
-<$reveal state="`$(input-tiddler)$`" type="nomatch" text="">
-<$set name="resultCount" value="<$count filter={{`$(input-tiddler)$`}}/>">
+<$reveal state={{!!input-tiddler}} type="nomatch" text="">
+<$set name="search-term" tiddler={{!!input-tiddler}}>
+<$set name="resultCount" value="<$count filter=<<search-term>>/>">
 <div class="tc-search-results">
 <<lingo Filter/Matches>>
-<$list filter={{`$(input-tiddler)$`}} template="$:/core/ui/ListItemTemplate"/>
+<$list filter=<<search-term>> template="$:/core/ui/ListItemTemplate"/>
 </div>
-</$set>
-</$reveal>`
+</$set></$set>
+</$reveal>
+</$tiddler>
