@@ -1,5 +1,23 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 1.0.0 - 2019.02.09
+
+* Add `[[alias|?t]]`, `[[alias|?c]]` and `[[alias|?s]]`, that show the tiddler ''title'', ''caption'' and ''subtitle'' field as the link text
+* Add `[[alias|?my-field]]` shows the content of the field named: `my-filed` as the link text
+* Add a new editor toolbar button, which opens an alias search menue. 
+** Default keyboard shortcut is to Ctrl-Space
+
+``Incompatible changes``
+
+* There is a new $:/ControlPanel setting, that defines the default behaviour of the uni-link macro ''globally''. 
+* uni-link now only shows the tiddler title, ''or'' the caption ''or'' the subtitle field. 
+* If you need different behaviour, you'll need to use the alias mechanism!
+
+V 0.3.4 - 2018.09.09
+
+* Add "aliasify" button to tiddler editor toolbar
+* Add ctrl-k to activate "aliasify"
+
 V 0.3.3 - 2018.08.06
 
 * fix [[issue 19|https://github.com/wikilabs/plugins/issues/19]] Alias References behaviour

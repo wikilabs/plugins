@@ -6,7 +6,7 @@ subtitle: "uni-link" readme
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-caption"  caption="Short Caption"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle"  subtitle="Tiddler With Subtitle Only Defined"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  subtitle="Tiddler With Subtitle And Caption - using subtitle" caption="capt.ion"/>
-<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-alias"  aliases="alias"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-alias"  aliases="alias" caption="alias-caption" subtitle="alias-subtitle" my-field="alias my-field"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="test-links" text={{$:/plugins/wikilabs/uni-link/backlinks-template!!text}}/>
 Create "uni-link" example tiddlers!
 </$button>
@@ -30,22 +30,21 @@ This plugin overwrites the core tiddler: $:/core/ui/TiddlerInfo/References
 
 * https://youtu.be/V9l-vipAoNw
 
-!! Examples
-
-You can use the following buttons to create example tiddlers!
-
-<<createExampleTiddlers>>
-
 !! Uni-link
 
 * A new wikitext parsing rule, that calls the global [["uni-link" macro|$:/plugins/wikilabs/uni-link/uni-link-macro]], instead of referencing the tiddler name. 
 
-* It substitues the following tiddler fields: ''subtitle'', ''caption'' and ''title''. From left to right, the first field it finds is shown.
+* It substitues the following tiddler fields: ''subtitle'', ''caption'' and ''title''. The $:/ControlPanel contains a new tab, that lets you define the behaviour of the uni-link macro. Default is ''title''. So there is no difference between the default setting of the plugin and the default behaviour in unmodified ~TiddlyWiki.
 
 !! Alias
 
 * Alias Link Syntax
-** `[[alias|?]]`
+** `[[anything|?]]` ... link to the tiddler that contains the alias: `anything`
+** `[[anything|?t]]` ... link to alias anything, but display the tiddler ''title''
+** `[[anything|?c]]` ... link to alias anything, but display the tiddler ''caption''
+** `[[anything|?s]]` ... link to alias anything, but display the tiddler ''subtitle''
+** `[[anything|?my-field]]` ... link to alias anything, but display the tiddler-field named ''my-field''
+** If a field doesn't exist, it shows the "alias-text" as used with `[[anything|?]]`
 ** using [[aka-makros|$:/plugins/wikilabs/uni-link/aka-macros]] for tiddler alias handling
 
 * Alias Backlinks
@@ -76,6 +75,8 @@ You can use the following buttons to create example tiddlers!
 
 !! Examples
 
+You can use the following buttons to create example tiddlers!
+
 <<createExampleTiddlers>> -- <<deleteExampleTiddlers>>
 
-{{$:/plugins/wikilabs/uni-link/backlinks-template}}
+

@@ -11,6 +11,18 @@ type: text/vnd.tiddlywiki
 <$checkbox tiddler="$:/plugins/wikilabs/uni-link/aka-footer" tag="$:/tags/ViewTemplate"> Enable Aliases Footer</$checkbox>
 <<<
 
+!! [[Uni-link - Default field|$:/config/wikilabs/uni-link/field]]
+
+Use the following field as link text, if available: 
+
+<<<
+<$tiddler tiddler="$:/config/wikilabs/uni-link/field">
+<$radio value="caption"> caption</$radio><br>
+<$radio value="subtitle"> subtitle</$radio><br>
+<$radio value=""> title</$radio><br>
+</$tiddler>
+<<<
+
 !! Additional Info
 
 See: [[$:/plugins/wikilabs/uni-link/readme]]

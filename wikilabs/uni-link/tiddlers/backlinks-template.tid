@@ -2,6 +2,18 @@ title: $:/plugins/wikilabs/uni-link/backlinks-template
 
 !!! Uni-links
 
+Use the following field as link text, if available. It defaults to tiddler ''title''!
+
+<<<
+<$tiddler tiddler="$:/config/wikilabs/uni-link/field">
+<$radio value="caption"> caption</$radio><br>
+<$radio value="subtitle"> subtitle</$radio><br>
+<$radio value=""> title</$radio><br>
+</$tiddler>
+<<<
+
+This setting can be found at the $:/ControPanel uni-links tab! The configuration tiddler is: [[$:/config/wikilabs/uni-link/field]]
+
 | Link | Result |h
 |`[[default prettylink|tiddler-with-caption]]` |[[default prettylink|tiddler-with-caption]] |
 |`[[tiddler-with-caption]]` |[[tiddler-with-caption]] |
@@ -14,3 +26,9 @@ title: $:/plugins/wikilabs/uni-link/backlinks-template
 
 | Link | Result |h
 |`[[alias|?]]` |[[alias|?]] |
+|`[[AliaS|?]]` |[[AliaS|?]] |
+|`[[alias|?t]]` |[[alias|?t]] |
+|`[[alias|?c]]` |[[alias|?c]] |
+|`[[alias|?s]]` |[[alias|?s]] |
+|`[[alias|?my-field]]` |[[alias|?my-field]] |
+|`[[doesn't exist|?]]` |[[doesn't exist|?]] |
