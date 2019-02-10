@@ -1,0 +1,26 @@
+title: $:/plugins/wikilabs/uni-link/uni-link-macro-old
+tags: $:/tags/MacroX
+
+\define getClass()
+<$uni-fields template="uni-$name$ " include="subtitle caption" sort="no"/> uni-link
+\end
+
+\define returnText()
+\whitespace trim
+<$set name="tv-wikilinks" value="no">
+<span class=<<class>> >
+  <$transclude field=subtitle><$transclude field=caption><$transclude field=title/></$transclude></$transclude>
+</span>
+</$set>
+\end
+
+\define uni-link(tid)
+\whitespace trim
+<$tiddler tiddler="""$tid$""">
+  <$wikify name=class text=<<getClass>> >
+    <$link to="""$tid$""" tooltip="""uni-link to: $tid$"""><<returnText>></$link>
+  </$wikify>
+</$tiddler>
+\end
+
+<pre><$view field="text"/></pre>
