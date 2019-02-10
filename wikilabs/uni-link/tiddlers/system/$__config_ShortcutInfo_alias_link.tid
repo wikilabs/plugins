@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/alias-link
+type: text/vnd.tiddlywiki
+
+{{$:/language/Buttons/Make/Alias/Hint}}

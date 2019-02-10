@@ -1,0 +1,6 @@
+title: $:/language/Buttons/
+
+Aliasify/Caption: alias-link
+Aliasify/Hint: Wrap selection in square brackets and add alias postfix
+Make/Alias/Caption: make alias
+Make/Alias/Hint: Create a wikitext alias-link

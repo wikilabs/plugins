@@ -14,11 +14,11 @@ Text editor operation to make an alias-link
 
 exports["make-alias-link"] = function(event,operation) {
 	if(operation.selection) {
-		operation.replacement = "[[" + operation.selection + "|?" + event.paramObject.text + "]]";
+		operation.replacement = "[[" + operation.selection + "|?" + event.paramObject.text + "]] ";
 		operation.cutStart = operation.selStart;
 		operation.cutEnd = operation.selEnd;
 	} else {
-		operation.replacement = "[[" + event.paramObject.text + "|?]]";
+		operation.replacement = "[[" + event.paramObject.text + "|?]] ";
 		operation.cutStart = operation.selStart;
 		operation.cutEnd = operation.selEnd;
 	}

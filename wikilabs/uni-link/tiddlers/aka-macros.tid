@@ -2,7 +2,7 @@ tags: $:/tags/Macro
 title: $:/plugins/wikilabs/uni-link/aka-macros
 type: text/vnd.tiddlywiki
 
-\define tooltip() Alias: <<currentTiddler>>
+\define tooltip() Tiddler -> <<currentTiddler>>
 \define aka(target, field:X)
 \whitespace trim
 <$list filter="[[$target$]is[alias]]" variable=ali emptyMessage="""<$link tooltip="Alias not defined!" to="?"><span class="uni-alias-missing">$target$</span></$link>""">

@@ -19,7 +19,7 @@ tags: $:/tags/Macro
 <$tiddler tiddler="""$tid$""">
   <$vars field-name={{$:/config/wikilabs/uni-link/field}} >
     <$wikify name=class text=<<getClass>> >
-      <$link to="""$tid$""" tooltip="""uni-link to: $tid$"""><<returnText>></$link>
+      <$link to="""$tid$""" tooltip="""uni-link -> $tid$"""><<returnText>></$link>
     </$wikify>
   </$vars>
 </$tiddler>

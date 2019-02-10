@@ -1,0 +1,18 @@
+created: 20190210164849276
+modified: 20190210194648558
+title: $:/plugins/wikilabs/uni-link/ui/EditorToolbar/SearchResults
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<div class="tc-search-results">
+
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/AliasResults]!has[draft.of]butfirst[]limit[1]]" emptyMessage="""
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/AliasResults]!has[draft.of]]">
+<$transclude mode="block"/>
+</$list>
+""">
+
+<$macrocall $name="tabs" tabsList="[all[shadows+tiddlers]tag[$:/tags/AliasResults]!has[draft.of]]" default={{$:/config/SearchResults/Default}}/>
+
+</$list>
+</div>

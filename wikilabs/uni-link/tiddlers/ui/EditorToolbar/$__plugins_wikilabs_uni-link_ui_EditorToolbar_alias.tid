@@ -1,0 +1,13 @@
+button-classes: tc-text-editor-toolbar-item-start-group
+caption: {{$:/language/Buttons/Make/Alias/Caption}}
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+created: 20190210145538580
+description: {{$:/language/Buttons/Make/Alias/Hint}}
+dropdown: $:/plugins/wikilabs/uni-link/ui/EditorToolbar/alias-dropdown
+icon: $:/core/images/link
+modified: 20190210194833231
+shortcuts: ((alias-link))
+tags: $:/tags/EditorToolbar
+title: $:/plugins/wikilabs/uni-link/ui/EditorToolbar/alias
+type: text/vnd.tiddlywiki
+

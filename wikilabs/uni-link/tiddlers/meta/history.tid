@@ -4,6 +4,8 @@ V 1.0.0 - 2019.02.09
 
 * Add `[[alias|?t]]`, `[[alias|?c]]` and `[[alias|?s]]`, that show the tiddler ''title'', ''caption'' and ''subtitle'' field as the link text
 * Add `[[alias|?my-field]]` shows the content of the field named: `my-filed` as the link text
+* Add a new editor toolbar button, which opens an alias search menue. 
+** Default keyboard shortcut is to Ctrl-Space
 
 ``Incompatible changes``
 
