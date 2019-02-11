@@ -3,6 +3,7 @@ tags: $:/tags/ViewToolbar
 caption: {{$:/core/images/info-button}} {{$:/language/Buttons/Info/Caption}}
 description:{{$:/language/Buttons/Info/Hint}}
 
+\whitespace trim
 <$reveal type="match" text="" default="" state=<<tiddlerInfoState>> >
 <$button tooltip={{$:/language/Buttons/Info/Hint}} aria-label={{$:/language/Buttons/Info/Caption}} class=<<tv-config-toolbar-class>> selectedClass="tc-selected">
 <$action-setfield $tiddler=<<tiddlerInfoState>> text="visible"/>
@@ -15,7 +16,7 @@ description:{{$:/language/Buttons/Info/Hint}}
 </$button>
 </$reveal>
 <$reveal type="nomatch" text="" default="" state=<<tiddlerInfoState>> >
-<$button tooltip={{$:/language/Buttons/Info/Hint}} aria-label={{$:/language/Buttons/Info/Caption}} class="tc-btn-invisible tc-selected" >
+<$button tooltip={{$:/language/Buttons/Info/Hint}} aria-label={{$:/language/Buttons/Info/Caption}} class=<<tv-config-toolbar-class>> selectedClass="tc-selected" >
 <$action-deletetiddler $tiddler=<<tiddlerInfoState>>/>
 <$list filter="[<tv-config-toolbar-icons>prefix[yes]]">
 {{$:/core/images/info-button}}
