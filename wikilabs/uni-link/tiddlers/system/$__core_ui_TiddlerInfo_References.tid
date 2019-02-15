@@ -6,4 +6,4 @@ type: text/vnd.tiddlywiki
 \define lingo-base() $:/language/TiddlerInfo/
 <$list filter="[all[current]backlinks[]sort[title]]" emptyMessage=<<lingo References/Empty>> template="$:/core/ui/ListItemTemplate"></$list>
 <hr>
-<$list filter="[all[current]aliasbacklinks[]sort[title]]" emptyMessage=<<lingo References/Empty>> template="$:/core/ui/ListItemTemplate"></$list>
+<$list filter="[all[current]aliasbacklinks[]sort[title]]" emptyMessage="No tiddlers alias to this one" template="$:/core/ui/ListItemTemplate"></$list>
