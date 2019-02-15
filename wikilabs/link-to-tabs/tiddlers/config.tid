@@ -1,6 +1,6 @@
 title: $:/plugins/wikilabs/link-to-tabs/config
 show-all-links: none
-show-single-link: inline
+show-single-link: inline-block
 
 This tiddler is used to configure the "Link-to-tabs" plugin behaviour. 
 

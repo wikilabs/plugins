@@ -2,6 +2,6 @@ caption: Link-to-Tabs plugin
 tags: $:/tags/ControlPanel/Settings
 title: $:/core/ui/ControlPanel/Settings/link-to-tabs
 
-<$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="show-all-links" checked="inline" unchecked="none" default="none"> Show internal tab link for ''all tabs''</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="show-all-links" checked="inline-block" unchecked="none" default="none"> Show internal tab link for ''all tabs''</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="show-single-link" checked="inline" unchecked="none" default="inline"> Show internal tab link for ''selected tabs''</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="show-single-link" checked="inline-block" unchecked="none" default="inline-block"> Show internal tab link for ''selected tabs''</$checkbox>

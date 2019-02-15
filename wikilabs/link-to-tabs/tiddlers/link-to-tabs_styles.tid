@@ -33,4 +33,9 @@ title: $:/plugins/wikilabs/link-to-tabs/styles
   float: right;
 }
 
+.tc-search-results .wltc-link-to-tab a {
+  display: contents;
+  padding: 0;
+}
+
 </pre>
