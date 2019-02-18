@@ -1,0 +1,13 @@
+title: $:/plugins/wikilabs/link-to-tabs/history
+
+V 1.0.1 - 2019.02.18
+
+* link-to-tabs works in drop-down elements now.
+
+V 1.0.0 - 2019.02.14
+
+* Use core tabs-macro from TW 5.1.19
+
+V <1.0.0
+
+* Use core tabs-macro from TW 5.1.15
