@@ -1,0 +1,43 @@
+caption: Field-Search plugin
+tags: $:/tags/ControlPanel/Settings
+title: $:/core/ui/ControlPanel/Settings/field-search
+
+\define setDefault()
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/FieldSearchResultList"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/AliasSearchResultList"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/CaptionSearchResultList"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/TextSearchResultList"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/TitleSearchResultList"/>
+<$action-deletetiddler $tiddler="$:/core/ui/DefaultSearchResultList"/>
+\end
+
+!! Field Search Settings
+
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/FieldSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default="$:/tags/SearchResults"> Add "Fields Search" tab to the search dropdown!</$checkbox>
+
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/AliasSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Alias Search" tab to the search dropdown!</$checkbox>
+
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/CaptionSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Caption / Subtitle Search" tab to the search dropdown!</$checkbox>
+
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/TextSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Text only" tab to the search dropdown!</$checkbox>
+
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/TitleSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Title" tab to the search dropdown!</$checkbox>
+
+<$checkbox tiddler="$:/core/ui/DefaultSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default="$:/tags/SearchResults"> Add "Default Search" tab to the search dropdown!</$checkbox>
+
+!! Tab Order
+
+You can use drag&drop to sort the list:
+
+><<list-tagged-draggable tag:"$:/tags/SearchResults">>
+
+!! Return to Default
+
+The following shaddow tiddlers have been modified: 
+
+<<list-links filter:"[tag[$:/tags/SearchResults]is[tiddler]is[shadow]sort[title]]">>
+
+<$button actions=<<setDefault>> >
+Return to: Default Settings!
+</$button>
+

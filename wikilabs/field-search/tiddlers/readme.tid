@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/field-search/readme
+
+This plugin adds a "Field Search" tab to the search results
+
+{{$:/core/ui/ControlPanel/Settings/field-search}}

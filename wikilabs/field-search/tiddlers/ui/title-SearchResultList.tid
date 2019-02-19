@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/field-search/ui/TitleSearchResultList
+caption: Title
+
+\define searchResultList()
+//<small>Search all ''title'' fields</small>//
+
+<$list filter="[!is[system]search:title{$(searchTiddler)$}sort[title]limit[250]]" template="$:/core/ui/ListItemTemplate"/>
+
+\end
+<<searchResultList>>
