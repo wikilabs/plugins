@@ -1,5 +1,4 @@
 title: $:/plugins/wikilabs/field-search/ui/TitleSearchResultList
-caption: Title
 
 \define searchResultList()
 //<small>Search all ''title'' fields</small>//

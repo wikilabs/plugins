@@ -1,5 +1,4 @@
 title: $:/plugins/wikilabs/field-search/ui/TextSearchResultList
-caption: Text
 
 \define searchResultList()
 //<small>Search all ''text'' fields</small>//

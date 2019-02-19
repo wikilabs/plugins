@@ -1,0 +1,4 @@
+title: $:/plugins/wikilabs/field-search/ui/aliasWrapper
+caption: Aliases
+
+{{$:/plugins/wikilabs/field-search/ui/AliasSearchResultList}}

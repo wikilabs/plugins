@@ -1,5 +1,4 @@
 title: $:/plugins/wikilabs/field-search/ui/CaptionSearchResultList
-caption: Caption / Subtitle
 
 \define searchResultList()
 //<small>Search all ''captions & subtitle'' fields</small>//

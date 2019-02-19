@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/field-search/ui/fieldWrapper
+tags: $:/tags/SearchResults
+caption: Fields
+
+{{$:/plugins/wikilabs/field-search/ui/FieldSearchResultList}}

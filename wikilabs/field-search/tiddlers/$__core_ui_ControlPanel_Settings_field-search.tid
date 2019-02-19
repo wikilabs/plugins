@@ -3,25 +3,25 @@ tags: $:/tags/ControlPanel/Settings
 title: $:/core/ui/ControlPanel/Settings/field-search
 
 \define setDefault()
-<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/FieldSearchResultList"/>
-<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/AliasSearchResultList"/>
-<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/CaptionSearchResultList"/>
-<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/TextSearchResultList"/>
-<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/TitleSearchResultList"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/fieldWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/aliasWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/captionWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/textWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/titleWrapper"/>
 <$action-deletetiddler $tiddler="$:/core/ui/DefaultSearchResultList"/>
 \end
 
 !! Field Search Settings
 
-<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/FieldSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default="$:/tags/SearchResults"> Add "Fields Search" tab to the search dropdown!</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/fieldWrapper" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default="$:/tags/SearchResults"> Add "Fields Search" tab to the search dropdown!</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/AliasSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Alias Search" tab to the search dropdown!</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/aliasWrapper" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Alias Search" tab to the search dropdown!</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/CaptionSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Caption / Subtitle Search" tab to the search dropdown!</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/captionWrapper" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Caption / Subtitle Search" tab to the search dropdown!</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/TextSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Text only" tab to the search dropdown!</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/textWrapper" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Text only" tab to the search dropdown!</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/TitleSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Title" tab to the search dropdown!</$checkbox>
+<$checkbox tiddler="$:/plugins/wikilabs/field-search/ui/titleWrapper" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""> Add "Title" tab to the search dropdown!</$checkbox>
 
 <$checkbox tiddler="$:/core/ui/DefaultSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default="$:/tags/SearchResults"> Add "Default Search" tab to the search dropdown!</$checkbox>
 

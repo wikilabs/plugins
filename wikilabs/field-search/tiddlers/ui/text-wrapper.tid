@@ -1,0 +1,4 @@
+title: $:/plugins/wikilabs/field-search/ui/textWrapper
+caption: Text
+
+{{$:/plugins/wikilabs/field-search/ui/TextSearchResultList}}

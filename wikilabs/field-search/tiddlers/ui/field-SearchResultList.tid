@@ -1,6 +1,4 @@
 title: $:/plugins/wikilabs/field-search/ui/FieldSearchResultList
-tags: $:/tags/SearchResults
-caption: Fields
 
 \define searchResultList()
 //<small>Search all fields, except title and text</small>//

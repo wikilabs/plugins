@@ -1,6 +1,11 @@
 title: $:/plugins/wikilabs/field-search/history
 
-V 0.0.1
+V 0.1.0 - 2019.02.19
+
+* Make it more "update-friendly"
+** wrappers are tagged instead of "search-list" tiddlers
+
+V 0.0.1 - 2019.02.19
 
 * Initial release
 * Add "Field Search" tab to search results

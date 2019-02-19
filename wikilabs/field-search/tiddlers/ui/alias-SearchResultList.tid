@@ -1,5 +1,4 @@
 title: $:/plugins/wikilabs/field-search/ui/AliasSearchResultList
-caption: Aliases
 
 \define searchResultList()
 //<small>Search all ''aliases'' fields</small>//
