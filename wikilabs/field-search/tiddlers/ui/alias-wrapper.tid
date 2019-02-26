@@ -2,8 +2,8 @@ title: $:/plugins/wikilabs/field-search/ui/aliasWrapper
 caption: Aliases
 search-set: [has[aliases]!is[system]]
 search-sort: [sort[title]limit[250]]
-unchecked: [has[aliases]!is[system]]
-checked: [has[aliases]]
+opt-unchecked: [has[aliases]!is[system]]
+opt-checked: [has[aliases]]
 
 \define searchTerm() [search:aliases{$(searchTiddler)$}]
 
