@@ -1,4 +1,10 @@
 title: $:/plugins/wikilabs/field-search/ui/captionWrapper
 caption: Caption / Subtitle
+search-set: [!is[system]]
+search-sort: [sort[title]limit[250]]
+unchecked: [!is[system]]
+checked: [all[]]
 
-{{$:/plugins/wikilabs/field-search/ui/CaptionSearchResultList}}
+\define searchTerm() [search:caption,subtitle{$(searchTiddler)$}]
+
+{{||$:/plugins/wikilabs/field-search/ui/SearchResultTemplate}}

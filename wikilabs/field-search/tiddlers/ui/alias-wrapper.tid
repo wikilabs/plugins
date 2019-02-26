@@ -1,4 +1,10 @@
 title: $:/plugins/wikilabs/field-search/ui/aliasWrapper
 caption: Aliases
+search-set: [has[aliases]!is[system]]
+search-sort: [sort[title]limit[250]]
+unchecked: [has[aliases]!is[system]]
+checked: [has[aliases]]
 
-{{$:/plugins/wikilabs/field-search/ui/AliasSearchResultList}}
+\define searchTerm() [search:aliases{$(searchTiddler)$}]
+
+{{||$:/plugins/wikilabs/field-search/ui/SearchResultTemplate}}

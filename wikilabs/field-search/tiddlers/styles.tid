@@ -1,0 +1,11 @@
+title: title: $:/plugins/wikilabs/field-search/styles
+tags: $:/tags/Stylesheet
+
+.wltc-show-system input {
+  visibility: hidden;
+  margin-left: -1em;
+}
+
+.wltc-show-system  input[checked] + span{
+  color: blue;
+}
