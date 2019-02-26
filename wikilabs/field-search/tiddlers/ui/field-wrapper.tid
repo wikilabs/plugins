@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/field-search/ui/fieldWrapper
 tags: $:/tags/SearchResults
 caption: Fields
+search-set: [!is[system]]
+search-sort: [sort[title]limit[250]]
+opt-unchecked: [!is[system]]
+opt-checked: [all[]]
 
-{{$:/plugins/wikilabs/field-search/ui/FieldSearchResultList}}
+\define searchTerm() [search:-title,text{$(searchTiddler)$}]
+
+{{||$:/plugins/wikilabs/field-search/ui/SearchResultTemplate}}

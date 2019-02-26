@@ -1,4 +1,10 @@
 title: $:/plugins/wikilabs/field-search/ui/textWrapper
 caption: Text
+search-set: [!is[system]]
+search-sort: [sort[title]limit[250]]
+unchecked: [!is[system]]
+checked: [all[]]
 
-{{$:/plugins/wikilabs/field-search/ui/TextSearchResultList}}
+\define searchTerm() [search:text{$(searchTiddler)$}]
+
+{{||$:/plugins/wikilabs/field-search/ui/SearchResultTemplate}}
