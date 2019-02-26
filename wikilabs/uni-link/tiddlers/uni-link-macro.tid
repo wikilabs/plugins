@@ -17,11 +17,11 @@ tags: $:/tags/Macro
 \define uni-link(tid)
 \whitespace trim
 <$tiddler tiddler="""$tid$""">
-  <$vars field-name={{$:/config/wikilabs/uni-link/field}} >
+  <$set name="field-name" value={{$:/config/wikilabs/uni-link/field}} emptyValue=title>
     <$wikify name=class text=<<getClass>> >
       <$link to="""$tid$""" tooltip="""uni-link -> $tid$"""><<returnText>></$link>
     </$wikify>
-  </$vars>
+  </$set>
 </$tiddler>
 \end
 

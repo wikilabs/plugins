@@ -17,7 +17,44 @@ exports.getTiddlerAliasBacklinks = function(targetTitle) {
 /*global $tw: false */
 "use strict";
 
-//var widget = require("$:/core/modules/widgets/widget.js");
+/*
+Return an array of tiddler titles that are directly linked from the specified tiddler
+*/
+exports.getTiddlerLinks = function(title) {
+	var self = this;
+	// We'll cache the links so they only get computed if the tiddler changes
+	return this.getCacheForTiddler(title,"links",function() {
+		// Parse the tiddler
+		var parser = self.parseTiddler(title);
+		// Count up the links
+		var links = [],
+			checkParseTree = function(parseTree) {
+				for(var t=0; t<parseTree.length; t++) {
+					var parseTreeNode = parseTree[t];
+
+					if(parseTreeNode.type === "macrocall" && parseTreeNode.name === "uni-link" && parseTreeNode.params) {
+						var value = parseTreeNode.params[0].value;
+						if(links.indexOf(value) === -1) {
+							links.push(value);
+						}
+					} else if(parseTreeNode.type === "link" && parseTreeNode.attributes.to && parseTreeNode.attributes.to.type === "string") {
+						var value = parseTreeNode.attributes.to.value;
+						if(links.indexOf(value) === -1) {
+							links.push(value);
+						}
+					} // else if
+					if(parseTreeNode.children) {
+						checkParseTree(parseTreeNode.children);
+					}
+				}
+			};
+		if(parser) {
+			checkParseTree(parser.tree);
+		}
+		return links;
+	});
+};
+
 
 function aliasInit(title) {
 	// Parse the tiddler
