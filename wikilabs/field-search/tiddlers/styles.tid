@@ -1,6 +1,10 @@
 title: title: $:/plugins/wikilabs/field-search/styles
 tags: $:/tags/Stylesheet
 
+.wltc-show-system {
+  float: right;
+}
+
 .wltc-show-system input {
   visibility: hidden;
   margin-left: -1em;
