@@ -2,8 +2,8 @@ title: $:/plugins/wikilabs/field-search/ui/textWrapper
 caption: Text
 search-set: [!is[system]]
 search-sort: [sort[title]limit[250]]
-unchecked: [!is[system]]
-checked: [all[]]
+opt-unchecked: [!is[system]]
+opt-checked: [all[]]
 
 \define searchTerm() [search:text{$(searchTiddler)$}]
 
