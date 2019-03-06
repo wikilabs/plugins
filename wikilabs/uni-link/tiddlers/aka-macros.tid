@@ -3,9 +3,12 @@ title: $:/plugins/wikilabs/uni-link/aka-macros
 type: text/vnd.tiddlywiki
 
 \define tooltip() Tiddler -> <<currentTiddler>>
+\define getTitle(target)
+<$list filter="[regexp:title[^$target$$(?i)]]" variable="title"><$link to=<<title>>>$target$</$link></$list>
+\end
 \define aka(target, field:X)
 \whitespace trim
-<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage="""<$list filter="[regexp:title[^$target$$(?i)]]" variable="title"><$link to=<<title>>>$target$</$link></$list>""" >
+<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage=<<getTitle """$target$""">> >
 <$list filter="[has[aliases]!has[draft.of]]">
   <$list filter="[enlist{!!aliases}regexp[^$target$$(?i)]]" variable="dummy">
     <$link tooltip=<<tooltip>> >
