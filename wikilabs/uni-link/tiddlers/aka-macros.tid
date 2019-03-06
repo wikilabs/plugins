@@ -3,10 +3,16 @@ title: $:/plugins/wikilabs/uni-link/aka-macros
 type: text/vnd.tiddlywiki
 
 \define tooltip() Tiddler -> <<currentTiddler>>
+
 \define getTitle(target)
+\whitespace trim
 <$set name=pattern value="""^$target$$(?i)""">
-<$list filter="[regexp:title<pattern>]" variable="title" emptyMessage="No Alias or Title found"><$link to=<<title>>>$target$</$link></$list>
+  <$list filter="[regexp:title<pattern>]" variable="title" 
+    emptyMessage="""<$link tooltip="Alias or Title not defined!" to="?"><span class="uni-alias-missing">$target$</span></$link>""">
+      <$link to=<<title>> tooltip=<<title>>>$target$</$link>
+  </$list>
 \end
+
 \define aka(target, field:X)
 \whitespace trim
 <$list filter="[[$target$]is[alias]]" variable=ali emptyMessage=<<getTitle """$target$""">> >
