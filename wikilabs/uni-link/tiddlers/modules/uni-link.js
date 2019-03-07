@@ -57,7 +57,8 @@ exports.parse = function() {
 			}]
 		}];
 	} else if(checkAlias) {
-		var field = "X"; // field names are alwayse lowercase!
+		var field = "X", // field names are alwayse lowercase!
+			makro = ""; // Call this makro, if alias is not found!
 
 		if(link === "c") {
 			field = "caption"
@@ -65,6 +66,8 @@ exports.parse = function() {
 			field = "subtitle"
 		} else if(link === "t") {
 			field = "title"
+		} else if(link === "?") {
+			makro = "lazyTitle"
 		} else if (text != link) {
 			field = link;
 		}
@@ -75,6 +78,7 @@ exports.parse = function() {
 			params: [
 				{name: "target", value: text},
 				{name: "field", value: field},
+				{name: "makro", value: makro}
 				]
 			}
 		];

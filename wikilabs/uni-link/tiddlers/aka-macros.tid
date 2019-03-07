@@ -3,20 +3,25 @@ title: $:/plugins/wikilabs/uni-link/aka-macros
 type: text/vnd.tiddlywiki
 
 \define tooltip() Tiddler -> <<currentTiddler>>
+\define lazyTooltip() Found -> <<title>>
 
-\define getTitle(target)
+\define lazyTitle(target)
 \whitespace trim
 <$set name=pattern value="""^$target$$(?i)""">
   <$list filter="[regexp:title<pattern>]" variable="title" 
-    emptyMessage="""<$link tooltip="Alias or Title not defined!" to="?"><span class="uni-alias-missing"><$text text=$target$/></span></$link>""">
-      <$link to=<<title>> tooltip=<<title>>><$text text=$target$/></$link>
+    emptyMessage="""<$link tooltip="Lazy title not found!" to="?"><span class="uni-lazy-missing"><$text text=$target$/></span></$link>""">
+      <$link to=<<title>> tooltip=<<lazyTooltip>>><$text text=$target$/></$link>
   </$list>
 </$set>
 \end
 
-\define aka(target, field:X, hugo:getTitle)
+\define missingAlias(target)
+<$link tooltip="Alias not defined!" to="?"><span class="uni-alias-missing"><$text text=$target$></span></$link>
+\end
+
+\define aka(target, field:X, makro:missingAlias)
 \whitespace trim
-<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage=<<$hugo$ """$target$""">> >
+<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage=<<$makro$ """$target$""">> >
 <$list filter="[has[aliases]!has[draft.of]]">
   <$list filter="[enlist{!!aliases}regexp[^$target$$(?i)]]" variable="dummy">
     <$link tooltip=<<tooltip>> >

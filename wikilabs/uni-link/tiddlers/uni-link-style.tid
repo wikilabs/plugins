@@ -21,6 +21,10 @@ tags: $:/tags/Stylesheet
   color: red;
 }
 
+.uni-lazy-missing {
+  color: orange;
+}
+
 .uni-link-sidebar .tc-tab-buttons {
   padding-top: 0;
 }
