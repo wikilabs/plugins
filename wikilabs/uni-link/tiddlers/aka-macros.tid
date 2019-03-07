@@ -11,6 +11,7 @@ type: text/vnd.tiddlywiki
     emptyMessage="""<$link tooltip="Alias or Title not defined!" to="?"><span class="uni-alias-missing">$target$</span></$link>""">
       <$link to=<<title>> tooltip=<<title>>>$target$</$link>
   </$list>
+</$set>
 \end
 
 \define aka(target, field:X)
