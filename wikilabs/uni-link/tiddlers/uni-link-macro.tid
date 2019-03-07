@@ -5,11 +5,21 @@ tags: $:/tags/Macro
 <$uni-fields template="uni-$name$" include=$(field-name)$ sort="no"/> uni-link
 \end
 
+\define fuzzyTitle(tiddler)
+\whitespace trim
+<$set name=pattern value="""^$tiddler$$(?i)""">
+  <$list filter="[regexp:title<pattern>]" variable="title" 
+    emptyMessage="""<$link tooltip="Fuzzy title not found!" to="$:/help/Fuzzy Title"><span class="uni-fuzzy-title-missing">xxxxxx$tiddler$</span></$link>""">
+      <$link to=<<title>> tooltip=<<title>>>$tiddler$</$link>
+  </$list>
+</$set>
+\end
+
 \define returnText()
 \whitespace trim
 <$set name="tv-wikilinks" value="no">
 <span class=<<class>> >
-  <$transclude field=$(field-name)$ ><$transclude field=title/></$transclude>
+  <$transclude field=$(field-name)$ ><<fuzzyTitle """$(tid)$""">></$transclude>
 </span>
 </$set>
 \end
@@ -17,7 +27,7 @@ tags: $:/tags/Macro
 \define uni-link(tid)
 \whitespace trim
 <$tiddler tiddler="""$tid$""">
-  <$vars field-name={{$:/config/wikilabs/uni-link/field}} >
+  <$vars field-name={{$:/config/wikilabs/uni-link/field}} tid=<<__tid__>>>
     <$wikify name=class text=<<getClass>> >
       <$link to="""$tid$""" tooltip="""uni-link -> $tid$"""><<returnText>></$link>
     </$wikify>
