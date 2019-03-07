@@ -8,15 +8,15 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 <$set name=pattern value="""^$target$$(?i)""">
   <$list filter="[regexp:title<pattern>]" variable="title" 
-    emptyMessage="""<$link tooltip="Alias or Title not defined!" to="?"><span class="uni-alias-missing">$target$</span></$link>""">
-      <$link to=<<title>> tooltip=<<title>>>$target$</$link>
+    emptyMessage="""<$link tooltip="Alias or Title not defined!" to="?"><span class="uni-alias-missing"><$text text=$target$/></span></$link>""">
+      <$link to=<<title>> tooltip=<<title>>><$text text=$target$/></$link>
   </$list>
 </$set>
 \end
 
-\define aka(target, field:X)
+\define aka(target, field:X, hugo:getTitle)
 \whitespace trim
-<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage=<<getTitle """$target$""">> >
+<$list filter="[[$target$]is[alias]]" variable=ali emptyMessage=<<$hugo$ """$target$""">> >
 <$list filter="[has[aliases]!has[draft.of]]">
   <$list filter="[enlist{!!aliases}regexp[^$target$$(?i)]]" variable="dummy">
     <$link tooltip=<<tooltip>> >
