@@ -39,7 +39,8 @@ exports.parse = function() {
 	// Process the link
 	var text = this.match[1],
 		link = this.match[4] || text,
-		checkAlias = this.match[3] === "?",
+		useAlias = this.match[3] === "?",
+		useMacro = this.match[3] === "<",
 		useUniLink = !(this.match[2] === "|");
 
 	if($tw.utils.isLinkExternal(link)) {
@@ -56,9 +57,9 @@ exports.parse = function() {
 				type: "text", text: text
 			}]
 		}];
-	} else if(checkAlias) {
+	} else if(useAlias) {
 		var field = "X", // field names are alwayse lowercase!
-			makro = ""; // Call this makro, if alias is not found!
+			macro = ""; // Call this macro, if alias is not found!
 
 		if(link === "c") {
 			field = "caption"
@@ -67,7 +68,7 @@ exports.parse = function() {
 		} else if(link === "t") {
 			field = "title"
 		} else if(link === "?") {
-			makro = "lazyTitle"
+			macro = "lazyTitle"
 		} else if (text != link) {
 			field = link;
 		}
@@ -78,7 +79,7 @@ exports.parse = function() {
 			params: [
 				{name: "target", value: text},
 				{name: "field", value: field},
-				{name: "makro", value: makro}
+				{name: "macro", value: macro}
 				]
 			}
 		];
