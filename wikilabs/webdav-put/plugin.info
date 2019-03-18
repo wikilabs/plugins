@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/webdav-put",
+	"description": "WebDav PUT saver - takes precednece",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.1.14",
+	"version": "0.1.0",
+	"list": "readme history license"
+}

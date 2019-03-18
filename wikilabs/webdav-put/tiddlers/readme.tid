@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/webdav-put/readme
+
+''Important:'' This plugin takes precedence over the core webDav PUT saver!
+
+This saver uses `last-modified` and `if-unmodified-since` HTTP header attributes, to detect file inconsistencies,
+which allows the server to activate server-side file compression. 
+
+The core PUT saver uses etags to, which don't work, if server-side file compression is active.
