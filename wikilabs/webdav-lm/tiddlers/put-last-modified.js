@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/webdav-put/put.js
+title: $:/plugins/wikilabs/webdav-lm/put-last-modified.js
 type: application/javascript
 module-type: saver
 
