@@ -1,7 +1,7 @@
 title: $:/plugins/wikilabs/edit-tabs/config
 show-all-links: none
 show-single-link: inline
-link-action: tm-navigate
+link-action: tm-edit-tiddler
 initial-opacity: 0.7
 transition: 0.3
 
