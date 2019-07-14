@@ -9,7 +9,7 @@ title: $:/plugins/wikilabs/edit-tabs/styles
   top: -1em;
   left: -1.3em;
   font-size: 0.7em;
-  opacity: 0.7;
+  opacity: {{$:/plugins/wikilabs/edit-tabs/config!!initial-opacity}};
   margin-right: -1em;
 }
 
@@ -20,6 +20,8 @@ title: $:/plugins/wikilabs/edit-tabs/styles
 
 .wltc-edit-tab:hover {
   opacity: 1;
+  transition:opacity {{$:/plugins/wikilabs/edit-tabs/config!!transition}}s;
+  transition-timing-function: cubic-bezier(1,-0.06,.39,.89);
 }
 
 .tc-tab-selected + .wltc-edit-tab {
@@ -31,6 +33,11 @@ title: $:/plugins/wikilabs/edit-tabs/styles
   left: 0;
   height: 0;
   float: right;
+}
+
+.tc-search-results .wltc-edit-tab a {
+  display: contents;
+  padding: 0;
 }
 
 </pre>

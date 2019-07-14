@@ -7,3 +7,8 @@ title: $:/core/ui/ControlPanel/Settings/edit-tabs
 <$checkbox tiddler="$:/plugins/wikilabs/edit-tabs/config" field="show-single-link" checked="inline" unchecked="none" default="inline"> Show internal tab link for ''selected tab''</$checkbox>
 
 <$checkbox tiddler="$:/plugins/wikilabs/edit-tabs/config" field="link-action" checked="tm-edit-tiddler" unchecked="tm-navigate" default="tm-navigate"> Clicking a tab-link opens non-system tiddlers in ''edit mode''</$checkbox>
+
+<$checkbox tiddler="$:/plugins/wikilabs/edit-tabs/config" field="initial-opacity" checked="0" unchecked="0.7" default="0.7"> Tab links are initially hidden and need mouse hover to become visible.</$checkbox> The transition time in seconds is: <$edit-text tiddler="$:/plugins/wikilabs/edit-tabs/config" field="transition" default="0.3s"/>
+
+<$button message="tm-delete-tiddler" param="$:/plugins/wikilabs/edit-tabs/config">
+Reset to Default!
