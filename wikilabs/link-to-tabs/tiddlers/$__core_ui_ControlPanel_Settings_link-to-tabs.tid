@@ -1,7 +1,16 @@
 caption: Link-to-Tabs plugin
+created: 20190712133607244
+modified: 20190714104631250
 tags: $:/tags/ControlPanel/Settings
 title: $:/core/ui/ControlPanel/Settings/link-to-tabs
+type: text/vnd.tiddlywiki
 
 <$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="show-all-links" checked="inline-block" unchecked="none" default="none"> Show internal tab link for ''all tabs''</$checkbox>
 
 <$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="show-single-link" checked="inline-block" unchecked="none" default="inline-block"> Show internal tab link for ''selected tabs''</$checkbox>
+
+<$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="initial-opacity" checked="0" unchecked="0.7" default="0.7"> Tab links are initially hidden and need mouse hover to become visible.</$checkbox> The transition time in seconds is: <$edit-text tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="transition" default="0.3s"/>
+
+<$button message="tm-delete-tiddler" param="$:/plugins/wikilabs/link-to-tabs/config">
+Reset to Default!
+</$button>

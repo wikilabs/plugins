@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 1.1.0 - 2019.07.14
+
+* Add new option: Initially hide link
+** Transition time from hidden to visible is adjustable
+
 V 1.0.1 - 2019.02.18
 
 * link-to-tabs works in drop-down elements now.

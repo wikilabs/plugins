@@ -1,5 +1,8 @@
+created: 20190712133348541
+modified: 20190714104306483
 tags: $:/tags/Stylesheet
 title: $:/plugins/wikilabs/link-to-tabs/styles
+type: text/vnd.tiddlywiki
 
 <pre>
 
@@ -9,7 +12,7 @@ title: $:/plugins/wikilabs/link-to-tabs/styles
   top: -1em;
   left: -1.3em;
   font-size: 0.7em;
-  opacity: 0.7;
+  opacity: {{$:/plugins/wikilabs/link-to-tabs/config!!initial-opacity}};
   margin-right: -1em;
 }
 
@@ -20,6 +23,8 @@ title: $:/plugins/wikilabs/link-to-tabs/styles
 
 .wltc-link-to-tab:hover {
   opacity: 1;
+  transition:opacity {{$:/plugins/wikilabs/link-to-tabs/config!!transition}}s;
+  transition-timing-function: cubic-bezier(1,-0.06,.39,.89);
 }
 
 .tc-tab-selected + .wltc-link-to-tab {
