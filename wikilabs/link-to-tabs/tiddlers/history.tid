@@ -4,6 +4,7 @@ V 1.1.0 - 2019.07.14
 
 * Add new option: Initially hide link
 ** Transition time from hidden to visible is adjustable
+* Added: "Reset to Default" button
 
 V 1.0.1 - 2019.02.18
 
