@@ -9,7 +9,7 @@ type: text/vnd.tiddlywiki
 
 This tiddler is used to configure the "Link-to-tabs" plugin behaviour. 
 
-There are 2 fields, which are used by [[$:/plugins/wikilabs/link-to-tabs/styles]] enable and disable the internal links. 
+There are 4 fields, which are used by [[$:/plugins/wikilabs/link-to-tabs/styles]] enable and disable the internal links. 
 
 * show-all-links: {{!!show-all-links}}
 * show-single-link: {{!!show-single-link}}
