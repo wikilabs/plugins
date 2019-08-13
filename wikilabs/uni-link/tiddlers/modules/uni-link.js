@@ -79,17 +79,9 @@ exports.parse = function() {
 			}
 		];
 	} else if((text == link) && useUniLink) {
-		// we need to add the type: "link" element, since the core needs it to find "backlinks" and "missing links" ...
+		// Since V 1.1.0 new link-backlink detection implemented
+		// Overwrites the core $tw.wiki.getTiddlerLinks() method with own version
 		return [{
-			type: "link",
-			attributes: {
-				to: {type: "string", value: text},
-				tag: {type: "string", value: "x"},
-				overrideClass: {type: "string", value: ""},
-				draggable: {type: "string", value: "false"}
-				}
-			},
-			{
 			type: "macrocall",
 			name: "uni-link",
 			params: [
