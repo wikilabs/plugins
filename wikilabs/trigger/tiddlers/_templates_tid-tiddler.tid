@@ -1,0 +1,13 @@
+created: 20190906130953559
+modified: 20190906131037641
+tags: 
+title: /templates/tid-tiddler
+type: text/vnd.tiddlywiki
+
+<!--
+
+This template is used for saving tiddlers in TiddlyWeb *.tid format
+
+--><$fields exclude='text bag created modified' template='$name$: $value$
+'></$fields>`
+`<$view field="text" format="text" />
