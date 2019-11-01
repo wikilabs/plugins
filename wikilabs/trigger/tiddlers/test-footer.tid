@@ -4,11 +4,11 @@ tags: $:/tags/ViewTemplate
 title: test-footer
 type: text/vnd.tiddlywiki
 
-\define x1() 
+\define x1()
 <$action-setfield $tiddler="$:/StoryList" $field=list $value=<<prev>>/>
 \end
 
-\define x2() 
+\define x2()
 <$action-setfield $tiddler="$:/StoryList" $field=list $value=<<next>>/>
 \end
 
