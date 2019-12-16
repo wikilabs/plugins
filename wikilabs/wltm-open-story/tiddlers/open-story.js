@@ -38,9 +38,9 @@ exports.startup = function() {
 		// Listen for the tm-home message
 		$tw.rootWidget.addEventListener("tm-open-story",function(event) {
 			window.location.hash = "";
-			DEFAULT_TIDDLERS_TITLE = event.param ? event.param : DEFAULT_TIDDLERS_TITLE;
+			var storyTitle = event.param ? event.param : DEFAULT_TIDDLERS_TITLE;
 
-			var storyFilter = $tw.wiki.getTextReference(DEFAULT_TIDDLERS_TITLE, "GettingStarted"),
+			var storyFilter = $tw.wiki.getTextReference(storyTitle, "GettingStarted"),
 				storyList = $tw.wiki.filterTiddlers(storyFilter),
 				options = event.paramObject || {};
 			//invoke any hooks that might change the default story list
