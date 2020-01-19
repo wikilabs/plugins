@@ -3,6 +3,6 @@
 	"description": "AdvancedSearchPlus: Adds some powerfull search tools",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.15",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"list": "readme license history"
 }

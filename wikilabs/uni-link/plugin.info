@@ -4,7 +4,7 @@
 	"name": "uni-link",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.0",
-	"version":"1.1.0",
+	"version":"1.1.1",
 	"plugin-type": "plugin",
 	"list": "license readme history"
 }

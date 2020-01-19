@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 1.1.1 - 2020.01.19
+
+* Update license link/text
+
 V 1.1.0 - 2019.08.13
 
 * Fixed problem introduced with TW V 5.1.20 link-widget core changes

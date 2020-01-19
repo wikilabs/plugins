@@ -1,8 +1,14 @@
 title: $:/plugins/wikilabs/advanced-search-plus/history
 
-* V0.1.0 - beta 2019.01.06
-** fix wikify problems with TW 5.1.19
+V 0.1.1 - 2020.01.19
 
-* V0.0.2 - beta
-** initial release
+* Update license link/text
+
+V 0.1.0 - beta 2019.01.06
+
+* fix wikify problems with TW 5.1.19
+
+V 0.0.2 - beta
+
+* initial release
 ** name: advanced-search-plus
