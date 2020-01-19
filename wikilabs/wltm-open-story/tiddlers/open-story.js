@@ -9,7 +9,7 @@ A startup module
 (function(){
 
 /*jslint node: true, browser: true */
-/*global $tw: false */
+/*global $tw: false, exports:false, window:false*/
 "use strict";
 
 // Export name and synchronous status
@@ -25,7 +25,7 @@ var DEFAULT_HISTORY_TITLE = "$:/HistoryList";
 // Default tiddlers
 var DEFAULT_TIDDLERS_TITLE = "$:/DefaultTiddlers";
 
-	/*
+/*
 Get the value of a text reference. Text references can have any of these forms:
 	<tiddlertitle>
 	<tiddlertitle>!!<fieldname>
@@ -38,11 +38,10 @@ exports.startup = function() {
 		// Listen for the tm-home message
 		$tw.rootWidget.addEventListener("tm-open-story",function(event) {
 			window.location.hash = "";
-			DEFAULT_TIDDLERS_TITLE = event.param ? event.param : DEFAULT_TIDDLERS_TITLE;
-
-			var storyFilter = $tw.wiki.getTextReference(DEFAULT_TIDDLERS_TITLE, "GettingStarted"),
-				storyList = $tw.wiki.filterTiddlers(storyFilter),
-				options = event.paramObject || {};
+			var storyTitle = event.param ? event.param : DEFAULT_TIDDLERS_TITLE;
+			var field = (event.paramObject && event.paramObject.field) ? event.paramObject.field : "list";
+			var storyFilter = $tw.wiki.getTextReference(storyTitle + "!!" + field, "GettingStarted!!text");
+			var storyList = $tw.wiki.filterTiddlers(storyFilter);
 			//invoke any hooks that might change the default story list
 			storyList = $tw.hooks.invokeHook("th-opening-story",storyList);
 			$tw.wiki.addTiddler({title: DEFAULT_STORY_TITLE, text: "", list: storyList},$tw.wiki.getModificationFields());

@@ -9,7 +9,7 @@ unifields widget, derived from Fields Widget
 (function(){
 
 /*jslint node: true, browser: true */
-/*global $tw: false */
+/*global $tw: false, require:false, exports:false */
 "use strict";
 
 var Widget = require("$:/core/modules/widgets/widget.js").widget;
