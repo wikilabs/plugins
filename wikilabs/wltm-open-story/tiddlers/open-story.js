@@ -44,7 +44,8 @@ exports.startup = function() {
 			var storyList = $tw.wiki.filterTiddlers(storyFilter);
 			//invoke any hooks that might change the default story list
 			storyList = $tw.hooks.invokeHook("th-opening-story",storyList);
-			$tw.wiki.addTiddler({title: DEFAULT_STORY_TITLE, text: "", list: storyList},$tw.wiki.getModificationFields());
+			$tw.wiki.setText(DEFAULT_STORY_TITLE,"list",null,storyList);
+//			$tw.wiki.addTiddler({title: DEFAULT_STORY_TITLE, text: "", list: storyList},$tw.wiki.getModificationFields());
 			if(storyList[0]) {
 				$tw.wiki.addToHistory(storyList[0]);
 			}
