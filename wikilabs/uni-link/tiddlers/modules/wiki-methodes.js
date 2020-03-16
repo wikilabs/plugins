@@ -94,8 +94,11 @@ function aliasInit(title) {
 		if (tiddler.fields["aliases"]) {
 			// var fields = tiddler.fields["aliases"];
 			var fields = $tw.utils.parseStringArray(tiddler.fields["aliases"]);
+			fields = fields.map(function (el){
+				return el.toLowerCase();
+			});
 			links.map( function (el) {
-				if (fields.indexOf(el) != -1) backlinks.push(ttl);
+				if (fields.indexOf(el.toLowerCase()) != -1) backlinks.push(ttl);
 			})
 		} // if tiddler aliases
 	});
