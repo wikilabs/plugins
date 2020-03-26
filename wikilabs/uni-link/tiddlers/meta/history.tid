@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 1.2.0 - 2020.03.26
+
+* Make uni-link plugin compatible with relink-plugin from flibbles
+** see: https://github.com/flibbles/tw5-relink
+
 V 1.1.2 - 2020.03.16
 
 * Fix issue #44 problem with backlink cases sensitivity
