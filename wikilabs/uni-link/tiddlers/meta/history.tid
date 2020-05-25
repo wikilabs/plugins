@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 1.2.1 - 2020.05.22
+
+* Fix a compatibility problem with relink plugin, reported by flibbles.
+
 V 1.2.0 - 2020.03.26
 
 * Make uni-link plugin compatible with relink-plugin from flibbles
