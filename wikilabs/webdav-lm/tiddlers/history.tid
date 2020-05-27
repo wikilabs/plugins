@@ -1,6 +1,10 @@
 title: $:/plugins/wikilabs/webdav-lm/history
 
+V 0.1.1 - 2020.01.19
+
+* Update license link/text
+
 V 0.1.0 - 2019.03.18
 
 * Initial release
-* use `last-modified` and `If-Unmodified-Since` instead of `etag` to determine file "date" inconsistencies. 
+* use `last-modified` and `If-Unmodified-Since` instead of `etag` to determine file "date" inconsistencies.

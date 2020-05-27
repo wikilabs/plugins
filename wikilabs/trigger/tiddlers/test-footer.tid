@@ -1,0 +1,21 @@
+created: 20190906140727377
+modified: 20190906152402374
+tags: $:/tags/ViewTemplate
+title: test-footer
+type: text/vnd.tiddlywiki
+
+\define x1()
+<$action-setfield $tiddler="$:/StoryList" $field=list $value=<<prev>>/>
+\end
+
+\define x2()
+<$action-setfield $tiddler="$:/StoryList" $field=list $value=<<next>>/>
+\end
+
+<$list filter="[all[current]tag[test]]">
+<hr>
+<$set name=prev filter="[<currentTiddler>previous[test]else[GettingStarted]]">
+<$set name=next filter="[<currentTiddler>next[test]else[GettingStarted]]">
+<$button actions=<<x1>> tooltip=<<prev>> >previous</$button> - <$button  actions=<<x2>> tooltip=<<next>> >next</$button>
+</$set></$set>
+</$list>

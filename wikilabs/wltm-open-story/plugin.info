@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/tm-open-story",
+	"description": "Open Story - Open several story tiddlers",
+	"author": "pmario",
+	"core-version": ">=5.1.14",
+	"version": "0.1.0",
+	"list": "readme license history"
+}

@@ -1,0 +1,6 @@
+{
+	"title": "$:/plugins/wikilabs/speciallinks",
+	"name": "Speciallinks",
+	"description": "Camel_Case wikilinks are possible",
+	"list": "readme license history"
+}

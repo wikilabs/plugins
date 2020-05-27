@@ -1,0 +1,19 @@
+created: 20190906144716671
+modified: 20190906154301599
+title: log-actions
+type: text/vnd.tiddlywiki
+
+\define getText() $(currentTiddler)$ - $(diff-count)$ - errors - $(text-x)$
+
+\define log(xx:"")
+<$set name="text-x" value="""$xx$""" emptyValue=<<text>>>
+<$action-setfield $tiddler="log" $index=<<now "0hh-0mm-0ss:0XXX">> $value=<<getText>>/>
+</$set>
+\end
+
+\define clear-log()
+<$action-setfield $tiddler="log" text="" tags="$:/tags/BelowStory"/>
+<$action-setfield $tiddler="log" $index=<<now "0hh-0mm-0ss:0XXX">> $value=<<getText>>/>
+\end
+
+<pre><$view field="text"/></pre>

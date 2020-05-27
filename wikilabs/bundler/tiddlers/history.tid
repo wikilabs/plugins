@@ -1,15 +1,22 @@
 title: $:/plugins/wikilabs/bundler/history
 
-* V0.1.1 - beta 2017.06.18
-** improve license links and readme
-** fix upgrade.js title
+V 0.1.2 - 2020.01.19
 
-* V0.1.0 - beta
-** new name: bundler
-** this name change makes it incompatible to older settings!
+* Update license link/text
+
+V 0.1.1 - beta 2017.06.18
+
+* improve license links and readme
+* fix upgrade.js title
+
+V 0.1.0 - beta
+
+* new name: bundler
+* this name change makes it incompatible to older settings!
 
 ** new "Enable Overwrite Check" option. default = no
 
-* V0.0.1 - beta
-** initial release
-** name: bundles
+V 0.0.1 - beta
+
+* initial release
+* name: bundles

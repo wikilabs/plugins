@@ -1,5 +1,22 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 1.2.0 - 2020.03.26
+
+* Make uni-link plugin compatible with relink-plugin from flibbles
+** see: https://github.com/flibbles/tw5-relink
+
+V 1.1.2 - 2020.03.16
+
+* Fix issue #44 problem with backlink cases sensitivity
+
+V 1.1.1 - 2020.01.19
+
+* Update license link/text
+
+V 1.1.0 - 2019.08.13
+
+* Fixed problem introduced with TW V 5.1.20 link-widget core changes
+
 V 1.0.0 - 2019.02.09
 
 * Add `[[alias|?t]]`, `[[alias|?c]]` and `[[alias|?s]]`, that show the tiddler ''title'', ''caption'' and ''subtitle'' field as the link text

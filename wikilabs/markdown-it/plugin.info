@@ -3,6 +3,6 @@
 	"description": "Markdown parser (Commonmark compatible)",
 	"author": "pmario",
 	"core-version": ">=5.0.0",
-	"version": "0.1.0",
+	"version": "9.1.0",
 	"list": "readme usage license"
 }
