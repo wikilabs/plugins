@@ -1,0 +1,32 @@
+title: $:/plugins/tiddlywiki/pluginlibrary/library.template.html
+
+\rules only filteredtranscludeinline transcludeinline
+<!doctype html>
+
+<!-- IMPORTANT! This template overwrites tiddlywiki pluginlibrary template. So we will have a specific descripton! -->
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="application-name" content="Wikilabs Plugin Library" />
+<meta name="application-version" content="v0.0.0" />
+<meta name="copyright" content="Copyright 2020 Mario Pietsch" />
+<link id="faviconLink" rel="shortcut icon" href="favicon.ico">
+<title>Plugin Library</title>
+<script>
+{{$:/plugins/wikilabs/pluginlibrary/asset-list-json}}
+<!-- libraryserver.js MUST be used from /tiddlywiki/ otherwise we may loose latest changes !! -->
+<!-- wikilabs/pluginlibrary doesn't contain the code!! -->
+{{$:/plugins/tiddlywiki/pluginlibrary/libraryserver.js}}
+</script>
+</head>
+<body>
+
+<h1>HelloThere</h1>
+
+<p>This is the WikiLabs plugin library for TiddlyWiki. It is not intended to be opened directly in the browser.</p>
+
+<p>See <a href="https://wikilabs.github.io/" target="_blank">https://wikilabs.github.io/</a> for details of how to install plugins.</p>
+
+</body>
+</html>

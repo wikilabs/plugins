@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/pluginlibrary/readme
+
+This plugin is used behind the scenes by TiddlyWiki to build the plugin library.
+
+[[Source code|https://github.com/wikilabs/plugins/tree/master/wikilabs/pluginlibrary]]
