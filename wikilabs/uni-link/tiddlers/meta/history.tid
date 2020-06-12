@@ -1,5 +1,20 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 2.0.0 - 2020.06.11
+
+* Compatible with ~TiddlyWiki >= V5.1.22
+* Fix a "backlinking" problem introduced with TW V5.1.22
+** Adjusted uni-link "backlinker" to use new indexer `.extractLinks()` function
+* More info can be found in the [[readme|$:/plugins/wikilabs/uni-link/readme]]
+
+--------------
+
+Compatible with ~TiddlyWiki <= V5.1.21
+
+V 1.2.1 - 2020.05.22
+
+* Fix a compatibility problem with relink plugin, reported by flibbles.
+
 V 1.2.0 - 2020.03.26
 
 * Make uni-link plugin compatible with relink-plugin from flibbles

@@ -26,6 +26,10 @@ Delete example tiddlers!
 
 This plugin overwrites the core tiddler: $:/core/ui/TiddlerInfo/References
 
+''This uni-link version is compatible with ~TiddlyWiki >= V5.1.22''
+
+If you need to use it with TW <= V5.1.21 you'll need to use an older version, which is available at: https://wikilabs.github.io/#GettingStarted
+
 !! Video
 
 * https://youtu.be/IelDdM7iXrA
@@ -78,5 +82,3 @@ This plugin overwrites the core tiddler: $:/core/ui/TiddlerInfo/References
 You can use the following buttons to create example tiddlers!
 
 <<createExampleTiddlers>> -- <<deleteExampleTiddlers>>
-
-
