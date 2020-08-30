@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/tick-text/readme
+
+Adds a possibilty to style text content with wikitext syntax
+
+It's possible to manipulate the rules behaviour with: 
+
+`\rules only ticktext`
+`\rules excpet ticktext`

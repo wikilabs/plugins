@@ -1,0 +1,6 @@
+{
+	"title": "$:/plugins/wikilabs/tick-text",
+	"name": "Tick Paragraph",
+	"description": "Adds a possibilty to style text content with wikitext syntax",
+	"list": "readme license history"
+}
