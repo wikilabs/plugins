@@ -1,0 +1,7 @@
+created: 20200830170632352
+modified: 20200830171538628
+tags: 
+title: $:/config/ShortcutInfo/add-tick
+type: text/vnd.tiddlywiki
+
+{{:/plugins/wikilabs/tick-text/EditorToolbar/add-tick!!description}}

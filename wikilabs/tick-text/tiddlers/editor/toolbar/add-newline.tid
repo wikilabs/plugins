@@ -1,0 +1,17 @@
+title: $:/plugins/wikilabs/tick-text/EditorToolbar/add-newline
+created: 20200830160314690
+modified: 20200831052200043
+caption: add-newline
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+description: Adds a newline character at the end of the line
+icon: $:/plugins/wikilabs/tick-text/icons/add-newline
+shortcuts: ((add-newline))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="add-newline"
+	character="
+"
+	count="1"
+/>

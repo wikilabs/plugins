@@ -1,0 +1,16 @@
+title: $:/plugins/wikilabs/tick-text/EditorToolbar/add-tick
+caption: add-tick
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+created: 20200830145744005
+description: Add a "tick" at the start of the line
+icon: $:/plugins/wikilabs/tick-text/icons/tick-plus
+modified: 20200830190820590
+shortcuts: ((add-tick))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="add-tick"
+	character="´"
+	count="1"
+/>

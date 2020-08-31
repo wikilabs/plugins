@@ -1,0 +1,16 @@
+title: $:/plugins/wikilabs/tick-text/EditorToolbar/remove-tick
+caption: remove-tick
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+created: 20200830155036038
+description: Remove a "tick" at the start of the line
+icon: $:/plugins/wikilabs/tick-text/icons/tick-minus
+modified: 20200830190829985
+shortcuts: ((remove-tick))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="remove-tick"
+	character="´"
+	count="1"
+/>

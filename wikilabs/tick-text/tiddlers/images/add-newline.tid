@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/tick-text/icons/add-newline
+
+<svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
+  <path d="m0.24164 22.818h92.333v11.637h-92.333zm0 34.91h92.333v11.636h-92.333v-11.637zm0 34.908h92.333v11.637h-92.333z" fill-rule="evenodd" stroke-width=".99491"/>
+  <g stroke="#000" stroke-linejoin="round" stroke-width=".43636">
+   <path d="m108.65 46.235-12.518-5.014 12.518-4.9417v3.0445l6.2666 1e-6 0.025-16.287 3.9295-0.01579-0.017 20.121h-10.204z"/>
+   <path d="m108.67 81.016-12.518-5.014 12.518-4.9417v3.0445l6.2666 1e-6 0.025-16.287 3.9295-0.01579-0.017 20.121h-10.204z"/>
+   <path d="m108.67 116.06-12.518-5.014 12.518-4.9417v3.0445h6.2666l0.025-16.287 3.9295-0.01579-0.017 20.121h-10.204z"/>
+  </g>
+ </svg>

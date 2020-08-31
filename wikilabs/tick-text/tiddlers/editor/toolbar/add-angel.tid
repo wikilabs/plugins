@@ -1,0 +1,17 @@
+caption: add-angel
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+created: 20200831060111580
+description: Add a "angel bracket" at the start of the line
+icon: $:/plugins/wikilabs/tick-text/icons/angel-plus
+modified: 20200831060225340
+shortcuts: ((add-angel))
+tags: $:/tags/EditorToolbar
+title: $:/plugins/wikilabs/tick-text/EditorToolbar/add-angel
+type: text/vnd.tiddlywiki
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="add-tick"
+	character="»"
+	count="1"
+/>

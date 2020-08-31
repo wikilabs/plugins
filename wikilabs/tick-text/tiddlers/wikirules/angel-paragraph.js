@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/ticktext.js
+title: $:/plugins/wikilabs/tick-text/angel-paragraph.js
 type: application/javascript
 module-type: wikirule
 
@@ -15,7 +15,7 @@ Wiki text block rule for ticktexts
 var CLASS_GROUP = "wltc";
 var CLASS_PREFIX = CLASS_GROUP + "-l"; // l .. level
 
-exports.name = "tickparagraph";
+exports.name = "angelparagraph";
 exports.types = {block: true};
 
 exports.init = function(parser) {
@@ -25,7 +25,7 @@ exports.init = function(parser) {
 //	this.matchRegExp = /(\.{1,3})/mg; //b  CSS interference
 //	this.matchRegExp = /(\. )/mg;     //y  OK see: dot-space!
 //	this.matchRegExp = /(\´)(\t{1,2})?/mg; //x  OK
-	this.matchRegExp = /(\´)(\´{1,3})?/mg; //x  OK
+	this.matchRegExp = /(»)(»{1,3})?/mg; //x  OK
 //	this.matchRegExp = /(\. )|(\.{2,4} )/mg; //y  OK
 };
 
@@ -43,11 +43,11 @@ exports.parse = function() {
 	var classes = this.parser.parseClasses();
 	classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
-	var tree = this.parser.parseInlineRun(/(\r?\n)/mg);
+	var tree = this.parser.parseInlineRun(/(\r?\n\r?\n)/mg);
 	// Return the paragraph
 	return [{
 		type: "element",
-		tag: "div",
+		tag: "p",
 		attributes: {
 			"class": {type: "string", value: classes.join(" ")}
 		},

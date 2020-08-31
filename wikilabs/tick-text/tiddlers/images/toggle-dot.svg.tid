@@ -1,4 +1,4 @@
-title: $:/plugins/wikilabs/tick-text/toggle-dot
+title: $:/plugins/wikilabs/tick-text/icons/toggle-dot
 
 <svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
  <path d="m34.91 22.818h93.09v11.637h-93.09zm0 34.91h93.09v11.636h-93.09v-11.637zm0 34.908h93.09v11.637h-93.09z" fill-rule="evenodd"/>
