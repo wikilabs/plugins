@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/angel-paragraph.js
+title: $:/plugins/wikilabs/tick-text/wikirules/angel-paragraph.js
 type: application/javascript
 module-type: wikirule
 
