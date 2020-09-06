@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/wikirules/ticktext-pragma.js
+title: $:/plugins/wikilabs/tick-text/wikirules/ticktextpragma.js
 type: application/javascript
 module-type: wikirule
 
@@ -34,6 +34,13 @@ exports.init = function(parser) {
 	this.parser = parser;
 	// Regexp to match
 	this.matchRegExp = /^\\ticktext[^\S\n]/mg;
+
+	this.p = this.parser;
+	this.p.configTickText = this.p.configTickText  || {};
+	
+	this.pc = this.p.configTickText;
+	this.pc.tick = this.pc.tick || {};
+	this.pc.angel = this.pc.angel || {};
 };
 
 
@@ -90,12 +97,6 @@ Parse the most recent match
 */
 exports.parse = function() {
 	var self = this;
-	var sp = self.parser;
-	sp.configTickText = sp.configTickText  || {};
-	
-	var spc = sp.configTickText;
-	spc.tick = spc.tick || {};
-	spc.angel = spc.angel || {};
 	
 	// Move past the pragma invocation
 	this.parser.pos = this.matchRegExp.lastIndex;
@@ -153,9 +154,9 @@ exports.parse = function() {
 	});
 	
 	if (isAngel === true) {
-		spc.angel[configTickText.symbol] = configTickText;
+		this.pc.angel[configTickText.symbol] = configTickText;
 	} else {
-		spc.tick[configTickText.symbol] = configTickText;
+		this.pc.tick[configTickText.symbol] = configTickText;
 	}
 	// No parse tree nodes to return
 	return [];

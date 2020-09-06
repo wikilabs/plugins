@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/wikirules/tick-text.js
+title: $:/plugins/wikilabs/tick-text/wikirules/ticktext.js
 type: application/javascript
 module-type: wikirule
 
@@ -27,6 +27,13 @@ exports.init = function(parser) {
 //	this.matchRegExp = /(\´)(\t{1,2})?/mg; //x  OK
 //	this.matchRegExp = /(\´)(\´{1,3})?/mg; //x  OK
 //	this.matchRegExp = /(\. )|(\.{2,4} )/mg; //y  OK
+
+	this.p = this.parser;
+	this.p.configTickText = this.p.configTickText  || {};
+	
+	this.pc = this.p.configTickText;
+	this.pc.tick = this.pc.tick || {};
+	this.pc.angel = this.pc.angel || {};
 };
 
 /*
@@ -35,8 +42,8 @@ Parse the most recent match
 exports.parse = function() {
 	var self = this;
 	/*
-	Skip any whitespace at the current position. Options are:
-		treatNewlinesAsNonWhitespace: true if newlines are NOT to be treated as whitespace
+	Skip the endstring at the current position. Options are:
+	treatNewlinesAsNonWhitespace: true if newlines are NOT to be treated as whitespace
 	*/
 	var skipEndString = function(endString) {
 		var endRegExp = new RegExp("(" + $tw.utils.escapeRegExp(endString) + ")","mg")
@@ -52,24 +59,23 @@ exports.parse = function() {
 	
 	// Get all the details of the match
 	var level = this.match[1].length; //abc
-//	var level = (this.match[2]) ? this.match[2].length + 1 : 1; //x
-//	var level = (this.match[2]) ? this.match[2].length - 1 : 1; //y
 	// Move past the !s
 	this.parser.pos = this.matchRegExp.lastIndex;
 	// Parse any classes, whitespace and then the heading itself
 	var classes = this.parser.parseClasses();
-	var pc = this.parser.configTickText;
 	var x = classes[0];
+
+	if (!x && this.pc.tick["true"]) {
+		x = this.pc.tick["true"].use;
+	}
 	
-	if (pc && pc.tick && pc.tick[x]) {
-		options.symbol = pc.tick[x].symbol || options.mode;
-		options.endString = pc.tick[x].endString || options.endString;
-		// if there is an endString block mode is forced
-//		options.mode = (options.endString !== "") ? "block" : pc.tick[x].mode || options.mode;
-		options.mode = pc.tick[x].mode || options.mode;
-		options.tag = pc.tick[x].tag || options.tag;
-		options.params = pc.tick[x].params.split(".").join(" ").trim() || options.params;
-		classes[0] = options.params // remove the name element
+	if (this.pc.tick[x]) {
+		options.symbol = this.pc.tick[x].symbol || options.mode;
+		options.endString = this.pc.tick[x].endString || options.endString;
+		options.mode = this.pc.tick[x].mode || options.mode;
+		options.tag = this.pc.tick[x].tag || options.tag;
+		options.params = this.pc.tick[x].params.split(".").join(" ").trim() || options.params;
+		classes[0] = options.params // replace the name element
 	}
 	
 	this.parser.skipWhitespace();

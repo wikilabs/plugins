@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/wikirules/angel-paragraph.js
+title: $:/plugins/wikilabs/tick-text/wikirules/angelparagraph.js
 type: application/javascript
 module-type: wikirule
 
@@ -27,6 +27,13 @@ exports.init = function(parser) {
 //	this.matchRegExp = /(\´)(\t{1,2})?/mg; //x  OK
 	this.matchRegExp = /(»)(»{1,3})?/mg; //x  OK
 //	this.matchRegExp = /(\. )|(\.{2,4} )/mg; //y  OK
+
+	this.p = this.parser;
+	this.p.configTickText = this.p.configTickText  || {};
+	
+	this.pc = this.p.configTickText;
+	this.pc.tick = this.pc.tick || {};
+	this.pc.angel = this.pc.angel || {};
 };
 
 /*
