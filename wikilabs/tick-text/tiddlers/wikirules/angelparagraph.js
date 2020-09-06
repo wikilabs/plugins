@@ -1,7 +1,7 @@
 /*\
 title: $:/plugins/wikilabs/tick-text/wikirules/angelparagraph.js
 type: application/javascript
-module-type: wikirule
+module-type: wikiruleXXXX
 
 Wiki text block rule for ticktexts
 
