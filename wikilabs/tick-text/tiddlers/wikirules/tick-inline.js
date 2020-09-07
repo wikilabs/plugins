@@ -14,7 +14,7 @@ Wiki text inline rule for assigning styles and classes to inline runs. For examp
 (function(){
 
 /*jslint node: true, browser: true */
-/*global $tw: false */
+/*global $tw:false exports:false */
 "use strict";
 
 exports.name = "tickinline";
@@ -23,7 +23,7 @@ exports.types = {inline: true};
 exports.init = function(parser) {
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /´´(\.(?:[^\r\n\s]+))?/mg;
+	this.matchRegExp = /´´(\.(?:[^\r\n\s]+))?/mg; // OK
 //	this.matchRegExp = /´´((?:[^\.\r\n\s]+))?(\.(?:[^\r\n\s]+))?/mg;
 //	this.matchRegExp = /´´((?:[^\.\r\n\s:]+:[^\r\n;]+;)+)?(\.(?:[^\r\n\s]+)\s+)?/mg;
 };
