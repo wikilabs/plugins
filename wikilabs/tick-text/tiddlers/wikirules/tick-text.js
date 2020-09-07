@@ -21,7 +21,7 @@ exports.types = {block: true};
 exports.init = function(parser) {
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /(\´{1,4}|»{1,4})/mg; //a  OK
+	this.matchRegExp = /(^\´{1,4}|^»{1,4})/mg; //a  OK
 
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText  || {};
