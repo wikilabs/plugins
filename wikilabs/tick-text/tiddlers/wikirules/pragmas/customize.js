@@ -1,20 +1,20 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/wikirules/ticktextpragma.js
+title: $:/plugins/wikilabs/tick-text/wikirules/customize.js
 type: application/javascript
 module-type: wikirule
 
 Wiki pragma rule for whitespace specifications
 
 ```
-\ticktext tick tag=div name=§ end=---
+\customize tick=§ htmlTag=div endString= mode= params= use=
 
-\ticktext tick name=x tag=span params=.i.j.c.cp end=eee
+\customize angel=x htmlTag=span params=.i.j.c.cp endString=eee
 
-\ticktext tick name=det tag="details" params="" end="—"
+\customize comma=det htmlTag="details" params="" endString="—"
 
-\ticktext angel name=sum tag="summary" 
+\customize degree=sum tag="summary"
 
-\ticktext angel tag=span
+\customize underline tag=span
 ```
 
 \*/
@@ -24,7 +24,7 @@ Wiki pragma rule for whitespace specifications
 /*global $tw:false, exports:false*/
 "use strict";
 
-exports.name = "ticktext";
+exports.name = "customize";
 exports.types = {pragma: true};
 
 /*
@@ -33,13 +33,16 @@ Instantiate parse rule
 exports.init = function(parser) {
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /^\\ticktext[^\S\n]/mg;
+	this.matchRegExp = /^\\customize[^\S\n]/mg;
 
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText  || {};
 	
 	this.pc = this.p.configTickText;
 	this.pc.tick = this.pc.tick || {};
+	this.pc.comma = this.pc.comma || {};
+	this.pc.degree = this.pc.degree || {};
+	this.pc.underline = this.pc.underline || {};
 	this.pc.angel = this.pc.angel || {};
 };
 
@@ -73,7 +76,7 @@ type: string .. should be always string
 name: .. parameter name // 
 value: .. parameter value as string
 
-example tick name=x tag=div params=".i.j.c.cp" end="eee"
+example tick=x htmlTag=div params=".i.j.c.cp" end="eee"
 
 doesn't work as expected.
 */
@@ -96,8 +99,6 @@ function parseAttributes(source) {
 Parse the most recent match
 */
 exports.parse = function() {
-	var self = this;
-	
 	// Move past the pragma invocation
 	this.parser.pos = this.matchRegExp.lastIndex;
 	// Parse line terminated by a line break
@@ -121,25 +122,24 @@ exports.parse = function() {
 	
 	var attributes = parseAttributes(line);
 
-	// \ticktext tick name=x tag=div params=".i.j.c.cp" end="eee"
-	var isTick = false,
-		isAngel = false,
+	// \ticktext tick=x htmlTag=div params=".i.j.c.cp" end="eee"
+	var id = "X", // There should be no id X!!
 		configTickText = {mode:"", tag:"", params:"", endString:""};
 	
 	$tw.utils.each(attributes,function(token) {
 		switch(token.name) {
-			case "tick":
-				isTick  = true;
-				configTickText.symbol = token.value;
-				break;
-			case "angel":
-				isAngel = true;
+			case "tick": // fall through
+			case "angel": // fall through
+			case "comma": // fall through
+			case "underline": // fall through
+			case "degree":
+				id = token.name;
 				configTickText.symbol = token.value;
 				break;
 			case "mode":
 				configTickText.mode = token.value;
 				break;
-			case "tag":
+			case "htmlTag":
 				configTickText.tag = token.value;
 				break;
 			case "params":
@@ -153,11 +153,7 @@ exports.parse = function() {
 		}
 	});
 	
-	if (isAngel === true) {
-		this.pc.angel[configTickText.symbol] = configTickText;
-	} else {
-		this.pc.tick[configTickText.symbol] = configTickText;
-	}
+	this.pc[id][configTickText.symbol] = configTickText;
 	// No parse tree nodes to return
 	return [];
 };

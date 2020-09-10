@@ -1,12 +1,12 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/wikirules/pragmas/importpragmas.js
+title: $:/plugins/wikilabs/tick-text/wikirules/pragmas/import-custom.js
 type: application/javascript
 module-type: wikirule
 
 Wiki pragma rule to import pragmas from other tiddlers
 
 ```
-\imortpragmas [[pragma-global]] ... filter
+\importcustom [[pragma-global]] ... filter
 ```
 
 \*/
@@ -16,7 +16,7 @@ Wiki pragma rule to import pragmas from other tiddlers
 /*global $tw:false, exports:false*/
 "use strict";
 
-exports.name = "importpragmas";
+exports.name = "importcustom";
 exports.types = {pragma: true};
 
 /*
@@ -25,13 +25,16 @@ Instantiate parse rule
 exports.init = function(parser) {
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /^\\importpragmas[^\S\n]/mg;
+	this.matchRegExp = /^\\importcustom[^\S\n]/mg;
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText  || {};
 	
 	this.pc = this.p.configTickText;
 	this.pc.tick = this.pc.tick || {};
+	this.pc.comma = this.pc.comma || {};
+	this.pc.degree = this.pc.degree || {};
+	this.pc.underline = this.pc.underline || {};
 	this.pc.angel = this.pc.angel || {};
 };
 

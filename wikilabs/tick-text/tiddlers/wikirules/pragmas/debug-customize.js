@@ -1,12 +1,12 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/wikirules/pragmas/tick-debug-pragma.js
+title: $:/plugins/wikilabs/tick-text/wikirules/pragmas/debug-customize.js
 type: application/javascript
 module-type: wikirule
 
 Returns a JSON info of parser.configTickText
 
 ```
-\importdebug
+\debugcostomize
 ```
 
 \*/
@@ -16,7 +16,7 @@ Returns a JSON info of parser.configTickText
 /*global $tw:false, exports:false*/
 "use strict";
 
-exports.name = "tickdebug";
+exports.name = "debugcustomize";
 exports.types = {pragma: true};
 
 /*
@@ -25,13 +25,16 @@ Instantiate parse rule
 exports.init = function(parser) {
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /^\\tickdebug[^\S\n]/mg;
+	this.matchRegExp = /^\\debugcustomize[^\S\n]/mg;
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText  || {};
 	
 	this.pc = this.p.configTickText;
 	this.pc.tick = this.pc.tick || {};
+	this.pc.comma = this.pc.comma || {};
+	this.pc.degree = this.pc.degree || {};
+	this.pc.underline = this.pc.underline || {};
 	this.pc.angel = this.pc.angel || {};
 };
 
@@ -39,8 +42,7 @@ exports.init = function(parser) {
 Parse the most recent match
 */
 exports.parse = function() {
-	var self = this,
-		text = "";
+	var text = "";
 	
 	// Move past the pragma invocation
 	this.parser.pos = this.matchRegExp.lastIndex;
@@ -55,12 +57,22 @@ exports.parse = function() {
 			case "tick":
 				text = "tick:\n" + JSON.stringify(this.pc.tick, null, 2)
 				break;
-			case "all":
-				text = "tick:\n" + JSON.stringify(this.pc.tick, null, 2) + "\n\n"
-				// intentional fall through!
 			case "angel":
 				text += "angel:\n" + JSON.stringify(this.pc.angel, null, 2)
 				break;
+			case "comma":
+				text += "comma:\n" + JSON.stringify(this.pc.comma, null, 2)
+				break;
+			case "underline":
+				text += "underline:\n" + JSON.stringify(this.pc.underline, null, 2)
+				break;
+			case "degree":
+				text += "degree:\n" + JSON.stringify(this.pc.degree, null, 2)
+				break;
+			case "all": // fall through
+			default:
+				text = JSON.stringify(this.pc, null, 2) + "\n\n"
+				break
 		}
 	}
 	
