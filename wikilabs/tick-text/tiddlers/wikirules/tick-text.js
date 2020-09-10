@@ -147,7 +147,8 @@ exports.parse = function() {
 		// no GROUP in block mode
 		classes.push(CLASS_PREFIX + level);
 		
-		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options.endString) + "$");
+//		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options.endString) + "$");
+		tree = this.parser.parseBlocks($tw.utils.escapeRegExp(options.endString));
 	} else {
 		// apply CLASS_GROUP only if in inline mode. 
 		classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
