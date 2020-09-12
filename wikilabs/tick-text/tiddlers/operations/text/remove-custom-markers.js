@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/tick-text/editor/operations/text/add-tick.js
+title: $:/plugins/wikilabs/tick-text/editor/operations/text/remove-custom-markers.js
 type: application/javascript
 module-type: texteditoroperation
 
@@ -8,11 +8,16 @@ Text editor operation to add a prefix to the selected lines
 \*/
 (function(){
 
-/*jslint node: true, browser: true */
-/*global $tw: false */
+/*jslint node:true, browser: true */
+/*global $tw:false exports:false */
 "use strict";
 
-exports["add-tick"] = function(event,operation) {
+exports["remove-custom-markers"] = function(event,operation) {
+	// regExp to detect custom markers like: 
+	// <ID><symol><class> some text
+	// ´span.myClass.otherClass some text
+	var regExp = /((?=´[^´])´|»{1,4}|(?=°[^°])°|(?=,[^,]),|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg;
+	
 	var targetCount = parseInt(event.paramObject.count + "",10);
 	// Cut just past the preceding line break, or the start of the text
 	operation.cutStart = $tw.utils.findPrecedingLineBreak(operation.text,operation.selStart);
@@ -22,22 +27,25 @@ exports["add-tick"] = function(event,operation) {
 	var prefix = $tw.utils.repeat(event.paramObject.character,targetCount);
 	// Process each line
 	var lines = operation.text.substring(operation.cutStart,operation.cutEnd).split(/\r?\n/mg);
+	
+	var test = "´°,_»";
+	
 	$tw.utils.each(lines,function(line,index) {
-		// Remove and count any existing prefix characters
-		var count = 0;
 		var fragments = line.split(" ");
-		if (fragments[0] === event.paramObject.character) {
+		
+		var match = fragments[0].match(regExp); 
+		
+		if (match && (fragments[0] === match[0])) {
 			line = fragments.slice(1).join(" ");
+		} else if (!match && (test.indexOf(fragments[0]) !== -1)) {
+			line = fragments.slice(1).join(" ");
+		} else {
+			line = fragments.join(" ");
 		}
 		// Remove any whitespace
 		while(line.charAt(0) === " ") {
 			line = line.substring(1);
 		}
-		// We're done if we removed the exact required prefix, otherwise add it
-//		if(count !== targetCount) {
-			// Apply the prefix
-			line = (line === "") ? line : prefix + " " + line;
-//		}
 		// Save the modified line
 		lines[index] = line;
 	}); 
