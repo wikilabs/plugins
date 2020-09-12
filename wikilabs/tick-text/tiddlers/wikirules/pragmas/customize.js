@@ -6,15 +6,15 @@ module-type: wikirule
 Wiki pragma rule for whitespace specifications
 
 ```
-\customize tick=§ htmlTag=div endString= mode= params= use=
+\customize tick=§ _element=div _endString= _mode= _params= _use=
 
-\customize angel=x htmlTag=span params=.i.j.c.cp endString=eee
+\customize angel=x _element=span _params=.i.j.c.cp _endString=eee
 
-\customize comma=det htmlTag="details" params="" endString="—"
+\customize comma=det _element="details" _params="" _endString="—"
 
-\customize degree=sum tag="summary"
+\customize degree=sum _element="summary"
 
-\customize underline tag=span
+\customize underscore _element=span
 ```
 
 \*/
@@ -42,7 +42,7 @@ exports.init = function(parser) {
 	this.pc.tick = this.pc.tick || {};
 	this.pc.comma = this.pc.comma || {};
 	this.pc.degree = this.pc.degree || {};
-	this.pc.underline = this.pc.underline || {};
+	this.pc.underscore = this.pc.underscore || {};
 	this.pc.angel = this.pc.angel || {};
 };
 
@@ -124,29 +124,29 @@ exports.parse = function() {
 
 	// \ticktext tick=x htmlTag=div params=".i.j.c.cp" end="eee"
 	var id = "X", // There should be no id X!!
-		configTickText = {mode:"", tag:"", params:"", endString:""};
+		configTickText = {_mode:"", _element:"", _params:"", _endString:""};
 	
 	$tw.utils.each(attributes,function(token) {
 		switch(token.name) {
 			case "tick": // fall through
 			case "angel": // fall through
 			case "comma": // fall through
-			case "underline": // fall through
+			case "underscore": // fall through
 			case "degree":
 				id = token.name;
 				configTickText.symbol = token.value;
 				break;
-			case "mode":
-				configTickText.mode = token.value;
+			case "_mode":
+				configTickText._mode = token.value;
 				break;
-			case "htmlTag":
-				configTickText.tag = token.value;
+			case "_element":
+				configTickText._element = token.value;
 				break;
-			case "params":
-				configTickText.params = token.value;
+			case "_params":
+				configTickText._params = token.value;
 				break;
-			case "endString":
-				configTickText.endString = token.value;
+			case "_endString":
+				configTickText._endString = token.value;
 				break;
 			default:
 				configTickText[token.name] = token.value || "";

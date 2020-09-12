@@ -23,13 +23,13 @@ exports.types = {inline: true};
 exports.init = function(parser) {
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /´´(\.(?:[^\r\n\s]+))?/mg; // OK
+	this.matchRegExp = /°°(\.(?:[^\r\n\s]+))?/mg; // OK
 //	this.matchRegExp = /´´((?:[^\.\r\n\s]+))?(\.(?:[^\r\n\s]+))?/mg;
 //	this.matchRegExp = /´´((?:[^\.\r\n\s:]+:[^\r\n;]+;)+)?(\.(?:[^\r\n\s]+)\s+)?/mg;
 };
 
 exports.parse = function() {
-	var reEnd = /´´/g;
+	var reEnd = /°°/g;
 	// Get the styles and class
 	var stylesString = this.match[1],
 		classString = this.match[1] ? this.match[1].split(".").join(" ") : undefined;

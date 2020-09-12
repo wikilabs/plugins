@@ -44,7 +44,7 @@ exports.init = function(parser) {
 	this.pc.tick = this.pc.tick || {};
 	this.pc.comma = this.pc.comma || {};
 	this.pc.degree = this.pc.degree || {};
-	this.pc.underline = this.pc.underline || {};
+	this.pc.underscore = this.pc.underscore || {};
 	this.pc.angel = this.pc.angel || {};
 	this.pc.X = {}; // There is a naming problem
 };
@@ -77,7 +77,7 @@ exports.parse = function() {
 //	var id      = (this.match[1][0] === "°" || this.match[1][0] === "´") ? "tick" : (this.match[1][0] === "»") ? "angel" : null;
 //	var id      = (this.match[1][0] === "´") ? "tick" : (this.match[1][0] === "»") ? "angel" : null;
 	var sym     = this.match[2]; // needs to be undefined if no match
-	var params  = (this.match[3]) ? this.match[3] : "";
+	var _params  = (this.match[3]) ? this.match[3] : "";
 
 	switch (this.match[1][0]) {
 		case "»":
@@ -90,15 +90,15 @@ exports.parse = function() {
 			id = "comma"
 		break;
 		case "_":
-			id = "underline"
+			id = "underscore"
 		break;
 		case "°":
 			id = "degree"
 		break;
 	}
 	
-	// "debug" is a binary parameter
-	var options = {symbol: sym, mode : "inline", tag : (id==="angel") ? "p" : "div", params : params, endString : "", use: "", debug: false};
+	// "_debug" is a binary parameter
+	var options = {symbol: sym, _mode : "inline", _element : (id==="angel") ? "p" : "div", _params : _params, _endString : "", _use: "", _debug: false};
 	
 	var textEndInner,
 		textStartInner,
@@ -112,29 +112,31 @@ exports.parse = function() {
 	// remember text postions for macro src handling
 	textStartInner = this.parser.pos
 	// Parse any classes, whitespace and then the heading itself
-	var classes = params.split(".");
+	var classes = _params.split(".");
 
 	if (!sym && this.pc[id]["true"]) {
-		sym = (this.pc[id]["true"].use) ? this.pc[id]["true"].use : true;
-	} else if (sym && this.pc[id][sym] && this.pc[id][sym].use) {
-		sym = this.pc[id][sym].use;
+		sym = (this.pc[id]["true"]._use) ? this.pc[id]["true"]._use : true;
+	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._use) {
+		sym = this.pc[id][sym]._use;
+	} else if (sym !== "") {
+		options._element = ($tw.config.htmlBlockElements.indexOf(sym) !== -1) ? sym : options._element;
 	}
 	
 	if (this.pc[id][sym]) {
 		options.symbol = this.pc[id][sym].symbol || options.symbol;
-		options.endString = this.pc[id][sym].endString || options.endString;
-		options.mode = this.pc[id][sym].mode || options.mode;
-		options.tag = this.pc[id][sym].tag || options.tag;
-		options.params = this.pc[id][sym].params || options.params;
-		options.debug = this.pc[id][sym].debug || options.debug;
-		classes = (options.params + params).split(".") // pragma params are added to tick params
-//		classes[0] = options.params.split(".").join(" ").trim() // replace the name element
+		options._endString = this.pc[id][sym]._endString || options._endString;
+		options._mode = this.pc[id][sym]._mode || options._mode;
+		options._element = this.pc[id][sym]._element || options._element;
+		options._params = this.pc[id][sym]._params || options._params;
+		options._debug = this.pc[id][sym]._debug || options._debug;
+		classes = (options._params + _params).split(".") // pragma _params are added to tick _params
+//		classes[0] = options._params.split(".").join(" ").trim() // replace the name element
 	}
 	
 	// show tick config and code
-	if (options.debug) {
-		var text = "\\customize " + id + '="' + options.symbol + '" htmlTag="' + options.tag +
-					'" params="' + options.params + '" mode="' + options.mode + '" endString="' + options.endString +
+	if (options._debug) {
+		var text = "\\customize " + id + '="' + options.symbol + '" htmlTag="' + options._element +
+					'" _params="' + options._params + '" _mode="' + options._mode + '" _endString="' + options._endString +
 					'"';
 		
 		root.push({type:"codeblock", attributes:{ code: {type:"string", value: text}}})
@@ -142,31 +144,31 @@ exports.parse = function() {
 	
 	this.parser.skipWhitespace();
 
-	if (options.mode === "block") {
+	if (options._mode === "block") {
 	// standard rendering
 		// no GROUP in block mode
 		classes.push(CLASS_PREFIX + level);
 		
-//		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options.endString) + "$");
-		tree = this.parser.parseBlocks($tw.utils.escapeRegExp(options.endString));
+//		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options._endString) + "$");
+		tree = this.parser.parseBlocks($tw.utils.escapeRegExp(options._endString));
 	} else {
 		// apply CLASS_GROUP only if in inline mode. 
 		classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
 
-		if (options.endString === "") {
+		if (options._endString === "") {
 			tree = this.parser.parseInlineRun((id==="angel") ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg);// OK for single new-line
 		} else {
-			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options.endString) + "$)","mg"));
+			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options._endString) + "$)","mg"));
 		}
 	}
 	// remember text postions for macro src handling
-	textEndInner = this.parser.pos - options.endString.length;
+	textEndInner = this.parser.pos - options._endString.length;
 
-	skipEndString(options.endString);
+	skipEndString(options._endString);
 	
 	textEnd = this.parser.pos;
 
-	var fixAttributes = ["tick", "angel", "comma", "underline", "degree", "symbol", "endString", "mode", "htmlTag", "params", "use", "debug"];
+	var fixAttributes = ["tick", "angel", "comma", "underscore", "degree", "symbol", "_endString", "_mode", "_element", "_params", "_use", "_debug"];
 
 	var attributes = {
 			"class": {type: "string", value: classes.join(" ").trim()}
@@ -178,17 +180,17 @@ exports.parse = function() {
 			}
 	});
 
-	if (options.tag[0] === "$") {
+	if (options._element[0] === "$") {
 		var textOuter = this.parser.source.slice(textStart, textEnd);
 		var textInner = this.parser.source.slice(textStartInner, textEndInner);
-		var type = options.tag.slice(1);
+		var type = options._element.slice(1);
 		
 		root.push({ type: type,
-					tag: options.tag,
+					tag: options._element,
 					attributes: attributes,
 					children: tree})
 	} else {
-		root.push( { type: "element", tag: options.tag, attributes: attributes, children: tree});
+		root.push( { type: "element", tag: options._element, attributes: attributes, children: tree});
 	}
 	// Return the paragraph
 	return root;

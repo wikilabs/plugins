@@ -34,7 +34,7 @@ exports.init = function(parser) {
 	this.pc.tick = this.pc.tick || {};
 	this.pc.comma = this.pc.comma || {};
 	this.pc.degree = this.pc.degree || {};
-	this.pc.underline = this.pc.underline || {};
+	this.pc.underscore = this.pc.underscore || {};
 	this.pc.angel = this.pc.angel || {};
 };
 

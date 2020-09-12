@@ -34,7 +34,7 @@ exports.init = function(parser) {
 	this.pc.tick = this.pc.tick || {};
 	this.pc.comma = this.pc.comma || {};
 	this.pc.degree = this.pc.degree || {};
-	this.pc.underline = this.pc.underline || {};
+	this.pc.underscore = this.pc.underscore || {};
 	this.pc.angel = this.pc.angel || {};
 };
 
@@ -63,8 +63,8 @@ exports.parse = function() {
 			case "comma":
 				text += "comma:\n" + JSON.stringify(this.pc.comma, null, 2)
 				break;
-			case "underline":
-				text += "underline:\n" + JSON.stringify(this.pc.underline, null, 2)
+			case "underscore":
+				text += "underscore:\n" + JSON.stringify(this.pc.underscore, null, 2)
 				break;
 			case "degree":
 				text += "degree:\n" + JSON.stringify(this.pc.degree, null, 2)
