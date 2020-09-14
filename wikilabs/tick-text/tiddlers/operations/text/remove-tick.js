@@ -41,7 +41,7 @@ exports["remove-tick"] = function(event,operation) {
 //				line = line.substring(1);
 //			}
 //		} else {
-			line =  x.substring(1) + "" + line;
+			line =  x.substring(1) + " " + line;
 			x = "";
 //		}
 		// Save the modified line

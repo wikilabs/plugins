@@ -108,7 +108,7 @@ exports.parse = function() {
 	// Move past the start symbol
 	this.parser.pos = this.matchRegExp.lastIndex;
 	
-	this.parser.skipWhitespace();
+	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 	// remember text postions for macro src handling
 	textStartInner = this.parser.pos
 	// Parse any classes, whitespace and then the heading itself
@@ -142,7 +142,7 @@ exports.parse = function() {
 		root.push({type:"codeblock", attributes:{ code: {type:"string", value: text}}})
 	}
 	
-	this.parser.skipWhitespace();
+	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 
 	if (options._mode === "block") {
 	// standard rendering
