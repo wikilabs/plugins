@@ -13,6 +13,7 @@ Text editor operation to add a prefix to the selected lines
 "use strict";
 
 exports["add-tick"] = function(event,operation) {
+	var x="";
 	var targetCount = parseInt(event.paramObject.count + "",10);
 	// Cut just past the preceding line break, or the start of the text
 	operation.cutStart = $tw.utils.findPrecedingLineBreak(operation.text,operation.selStart);
@@ -25,22 +26,22 @@ exports["add-tick"] = function(event,operation) {
 	$tw.utils.each(lines,function(line,index) {
 		// Remove and count any existing prefix characters
 		var count = 0;
-		var fragments = line.split(" ");
-		if (fragments[0] === event.paramObject.character) {
-			line = fragments.slice(1).join(" ");
+		while(line.charAt(0) === event.paramObject.character) {
+			line = line.substring(1);
+			count++;
+			x += prefix;
 		}
 		// Remove any whitespace
 		while(line.charAt(0) === " ") {
 			line = line.substring(1);
 		}
 		// We're done if we removed the exact required prefix, otherwise add it
-//		if(count !== targetCount) {
-			// Apply the prefix
-			line = (line === "") ? line : prefix + " " + line;
+		// Apply the prefix
+		line = x + prefix + " " + line;
 //		}
 		// Save the modified line
 		lines[index] = line;
-	}); 
+	});
 	// Stitch the replacement text together and set the selection
 	operation.replacement = lines.join("\n");
 	if(lines.length === 1) {

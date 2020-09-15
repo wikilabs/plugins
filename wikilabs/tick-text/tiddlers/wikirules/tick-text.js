@@ -7,8 +7,9 @@ Wiki text block rule for ticktext and angeltext
 
 Detect
 
-´´´asdf.my.Class This is some text with a name and class
+´asdf.my.Class This is some text with a name and class
 ´.a.b.c.d This is some text with class
+
 »»»asdf.my.Class This is some text with a name and class
 ».a.b.c.d This is some text with class
 
@@ -33,7 +34,7 @@ exports.init = function(parser) {
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-//	this.matchRegExp = /(^´{1,4}|^»{1,4})((?:[^\.\r\n\s]+))?(\.(?:[^\r\n\s]+))?/mg; //a  
+//	this.matchRegExp = /(^´{1,4}|^»{1,4})((?:[^\.\r\n\s]+))?(\.(?:[^\r\n\s]+))?/mg; //a
 //	this.matchRegExp = /((?=´[^´])´|»{1,4})((?:[^\.\r\n\s´]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
 	this.matchRegExp = /((?=´[^´])´|»{1,4}|(?=°[^°])°|(?=,[^,]),|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
 
@@ -98,7 +99,7 @@ exports.parse = function() {
 	}
 	
 	// "_debug" is a binary parameter
-	var options = {symbol: sym, _mode : "inline", _element : (id==="angel") ? "p" : "div", _params : _params, _endString : "", _use: "", _debug: false};
+	var options = {symbol: sym, _mode : "inline", _element : (id==="angel") ? "p" : "div", _params : _params, _endString : "", _use: "", _debug: false, _debugString: ""};
 	
 	var textEndInner,
 		textStartInner,
@@ -114,11 +115,18 @@ exports.parse = function() {
 	// Parse any classes, whitespace and then the heading itself
 	var classes = _params.split(".");
 
+	var forceDebug = false;
+	
 	if (!sym && this.pc[id]["true"]) {
+	// ID is locally defined
 		sym = (this.pc[id]["true"]._use) ? this.pc[id]["true"]._use : true;
+		forceDebug = (this.pc[id]["true"]._debug) ? this.pc[id]["true"]._debug : false;
 	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._use) {
+	// ID and _use are locally defined
 		sym = this.pc[id][sym]._use;
+		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
 	} else if (sym !== "") {
+	// Check if symbol is an HTML element
 		options._element = ($tw.config.htmlBlockElements.indexOf(sym) !== -1) ? sym : options._element;
 	}
 	
@@ -128,18 +136,13 @@ exports.parse = function() {
 		options._mode = this.pc[id][sym]._mode || options._mode;
 		options._element = this.pc[id][sym]._element || options._element;
 		options._params = this.pc[id][sym]._params || options._params;
-		options._debug = this.pc[id][sym]._debug || options._debug;
+		
+		if (forceDebug) options._debug = forceDebug;
+		else options._debug = this.pc[id][sym]._debug || options._debug;
+		
+		options._debugString = this.pc[id][sym]._debugString || options._debugString;
 		classes = (options._params + _params).split(".") // pragma _params are added to tick _params
 //		classes[0] = options._params.split(".").join(" ").trim() // replace the name element
-	}
-	
-	// show tick config and code
-	if (options._debug) {
-		var text = "\\customize " + id + '="' + options.symbol + '" htmlTag="' + options._element +
-					'" _params="' + options._params + '" _mode="' + options._mode + '" _endString="' + options._endString +
-					'"';
-		
-		root.push({type:"codeblock", attributes:{ code: {type:"string", value: text}}})
 	}
 	
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
@@ -168,11 +171,11 @@ exports.parse = function() {
 	
 	textEnd = this.parser.pos;
 
-	var fixAttributes = ["tick", "angel", "comma", "underscore", "degree", "symbol", "_endString", "_mode", "_element", "_params", "_use", "_debug"];
-
 	var attributes = {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
+	
+	var fixAttributes = ["tick", "angel", "comma", "underscore", "degree", "symbol", "_endString", "_mode", "_element", "_params", "_use", "_debug", "_debugString"];
 	// Callback is invoked with (element,title,object)
 	$tw.utils.each(this.pc[id][sym], function(val,title) {
 		if (fixAttributes.indexOf(title) === -1) {
@@ -180,17 +183,48 @@ exports.parse = function() {
 			}
 	});
 
-	if (options._element[0] === "$") {
-		var textOuter = this.parser.source.slice(textStart, textEnd);
-		var textInner = this.parser.source.slice(textStartInner, textEndInner);
-		var type = options._element.slice(1);
-		
-		root.push({ type: type,
-					tag: options._element,
-					attributes: attributes,
-					children: tree})
-	} else {
-		root.push( { type: "element", tag: options._element, attributes: attributes, children: tree});
+	// show tick config and code
+	var showRendered = true;
+	if (options._debug) {
+		switch (options._debug) {
+			case "both":
+				root.push({type:"codeblock", attributes:{ code: {type:"string", value: options._debugString}}})
+				var textOuter = this.parser.source.slice(textStart, textEnd);
+				root.push({type:"codeblock", attributes:{ code: {type:"string", value: textOuter}}})
+			break;
+			case "textOnly":
+				showRendered = false;
+				// intentional fall through
+			case "text":
+				var textOuter = this.parser.source.slice(textStart, textEnd);
+	//			var textInner = this.parser.source.slice(textStartInner, textEndInner);
+				root.push({type:"codeblock", attributes:{ code: {type:"string", value: textOuter}}})
+			break;
+			case "pragmaOnly":
+				showRendered = false;
+				// intentional fall through
+			case "pragma": 
+				// intentional fall through
+			default:
+				root.push({type:"codeblock", attributes:{ code: {type:"string", value: options._debugString}}})
+			break;
+		}
+	}
+	
+	if (showRendered) {
+		// check if element is a widget
+		if (options._element[0] === "$") {
+	//		var textOuter = this.parser.source.slice(textStart, textEnd);
+	//		var textInner = this.parser.source.slice(textStartInner, textEndInner);
+			var type = options._element.slice(1);
+
+			root.push({ type: type,
+						tag: options._element,
+						attributes: attributes,
+						children: tree})
+		} else {
+			root.push( { type: "element", tag: options._element, attributes: attributes, children: tree});
+		}
 	}
 	// Return the paragraph
 	return root;

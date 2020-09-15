@@ -62,6 +62,9 @@ exports.parse = function() {
 	$tw.utils.each(tiddlerList,function(title) {
 		var pragmaInParser = $tw.wiki.parseText("text/vnd.tiddlywiki", $tw.wiki.getTiddlerText(title));
 		$tw.utils.extend(self.pc.tick, pragmaInParser.configTickText.tick);
+		$tw.utils.extend(self.pc.comma, pragmaInParser.configTickText.comma);
+		$tw.utils.extend(self.pc.degree, pragmaInParser.configTickText.degree);
+		$tw.utils.extend(self.pc.underscore, pragmaInParser.configTickText.underscore);
 		$tw.utils.extend(self.pc.angel, pragmaInParser.configTickText.angel);
 	});
 

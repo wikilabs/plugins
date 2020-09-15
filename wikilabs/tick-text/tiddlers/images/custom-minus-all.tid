@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/tick-text/icons/custom-minus-all
+
+<svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
+ <g fill-rule="evenodd">
+  <path d="m7.3709 38.298 19.404-15.446-15.139-5.8519-11.427 17.159z"/>
+  <path d="m7.2811 73.472 19.404-15.446-15.139-5.8519-11.427 17.159z"/>
+  <path d="m7.3709 108.27 19.404-15.446-15.139-5.8519-11.427 17.159zm51.424-34.072h47.566v11.636h-47.566v-11.637z"/>
+ </g>
+ <g>
+  <path d="m62.307 8.9688-9.3409 25.33h18.716zm-3.8864-6.7841h7.8068l19.398 50.898h-7.1591l-4.6364-13.057h-22.943l-4.6364 13.057h-7.2614z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+  <path d="m92.751 0.036991h6.2727v53.045h-6.2727z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+  <path d="m121.38 0.036991h6.2727v53.045h-6.2727z" style="font-variant-caps:normal;font-variant-east-asian:normal;font-variant-ligatures:normal;font-variant-numeric:normal"/>
+ </g>
+</svg>

@@ -39,7 +39,11 @@ exports["toggle-tick"] = function(event,operation) {
 		// We're done if we removed the exact required prefix, otherwise add it
 		if(addPrefix) {
 			// Apply the prefix
-			line = (line === "") ? line : prefix + " " + line;
+			if (event.paramObject && event.paramObject.force === "yes") {
+				line = prefix + " " + line;
+			} else {
+				line = (line === "") ? line : prefix + " " + line;
+			}
 		}
 		// Save the modified line
 		lines[index] = line;

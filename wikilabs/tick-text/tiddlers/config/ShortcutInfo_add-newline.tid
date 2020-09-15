@@ -1,7 +1,4 @@
-created: 20200830170709820
-modified: 20200830173000770
-tags: 
 title: $:/config/ShortcutInfo/add-newline
 type: text/vnd.tiddlywiki
 
-{{:/plugins/wikilabs/tick-text/EditorToolbar/add-newline!!description}}
+{{$:/plugins/wikilabs/tick-text/EditorToolbar/add-newline!!description}}

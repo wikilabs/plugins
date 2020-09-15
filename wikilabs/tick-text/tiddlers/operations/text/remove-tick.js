@@ -36,14 +36,14 @@ exports["remove-tick"] = function(event,operation) {
 			line = line.substring(1);
 		}
 		// We're done if we removed the exact required prefix, otherwise add it
-//		if(x === "") {
-//			while(line.charAt(0) === " ") {
-//				line = line.substring(1);
-//			}
-//		} else {
+		if(x === "") {
+			while(line.charAt(0) === " ") {
+				line = line.substring(1);
+			}
+		} else {
 			line =  x.substring(1) + " " + line;
 			x = "";
-//		}
+		}
 		// Save the modified line
 		lines[index] = line;
 	});

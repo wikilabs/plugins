@@ -124,7 +124,8 @@ exports.parse = function() {
 
 	// \ticktext tick=x htmlTag=div params=".i.j.c.cp" end="eee"
 	var id = "X", // There should be no id X!!
-		configTickText = {_mode:"", _element:"", _params:"", _endString:""};
+//		configTickText = {_mode:"", _element:"", _params:"", _endString:""};
+		configTickText = {};
 	
 	$tw.utils.each(attributes,function(token) {
 		switch(token.name) {
@@ -153,6 +154,15 @@ exports.parse = function() {
 		}
 	});
 	
+	// if _debug is set by _use in an other tiddler, we need the _debugString!
+	var debugString = "\\customize";
+	Object.keys(configTickText).map( function(x) {
+		if (x == "symbol") debugString += ' ' + id + '="' + configTickText[x] + '"';
+		else if (x == "_debug") debugString;
+		else debugString += ' ' + x + '="' + configTickText[x] + '"'; 
+	})
+	configTickText._debugString = debugString;
+
 	this.pc[id][configTickText.symbol] = configTickText;
 	// No parse tree nodes to return
 	return [];
