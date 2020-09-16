@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/add-angel
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/tick-text/EditorToolbar/add-angel!!description}}

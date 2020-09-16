@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/remove-custom-markers
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/tick-text/EditorToolbar/remove-custom-markers!!description}}

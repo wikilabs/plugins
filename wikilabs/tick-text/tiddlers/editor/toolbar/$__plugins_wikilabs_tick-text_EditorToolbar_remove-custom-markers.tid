@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/tick-text/EditorToolbar/remove-custom-markers
+caption: remove-markers
+tags: $:/tags/EditorToolbar
+shortcuts: ((remove-custom-markers))
+icon: $:/plugins/wikilabs/tick-text/icons/custom-minus-all
+description: Remove every "custom marker" from the selected line(s)
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="remove-custom-markers"
+	character="*"
+	count="1"
+/>

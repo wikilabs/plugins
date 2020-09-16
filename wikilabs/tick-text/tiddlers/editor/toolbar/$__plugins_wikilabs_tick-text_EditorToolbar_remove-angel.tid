@@ -1,13 +1,10 @@
+title: $:/plugins/wikilabs/tick-text/EditorToolbar/remove-angel
 caption: remove-angel
 condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
-created: 20200831060251957
-description: Remove a "angel bracket" at the start of the line
+description: Remove a "angel bracket" at the start of the selected line(s)
 icon: $:/plugins/wikilabs/tick-text/icons/angel-minus
-modified: 20200831060323900
 shortcuts: ((remove-angel))
 tags: $:/tags/EditorToolbar
-title: $:/plugins/wikilabs/tick-text/EditorToolbar/remove-angel
-type: text/vnd.tiddlywiki
 
 <$action-sendmessage
 	$message="tm-edit-text-operation"

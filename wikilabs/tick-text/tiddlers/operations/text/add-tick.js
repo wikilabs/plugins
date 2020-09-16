@@ -25,7 +25,8 @@ exports["add-tick"] = function(event,operation) {
 	var lines = operation.text.substring(operation.cutStart,operation.cutEnd).split(/\r?\n/mg);
 	$tw.utils.each(lines,function(line,index) {
 		// Remove and count any existing prefix characters
-		var count = 0;
+		var count = 0
+			x = "";
 		while(line.charAt(0) === event.paramObject.character) {
 			line = line.substring(1);
 			count++;
