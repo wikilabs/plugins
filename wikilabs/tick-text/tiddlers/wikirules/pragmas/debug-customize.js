@@ -18,11 +18,13 @@ Returns a JSON info of parser.configTickText
 
 exports.name = "debugcustomize";
 exports.types = {pragma: true};
-
+	
+var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
 /*
 Instantiate parse rule
 */
 exports.init = function(parser) {
+	var self = this;
 	this.parser = parser;
 	// Regexp to match
 	this.matchRegExp = /^\\debugcustomize[^\S\n]/mg;
@@ -31,12 +33,10 @@ exports.init = function(parser) {
 	this.p.configTickText = this.p.configTickText  || {};
 	
 	this.pc = this.p.configTickText;
-	this.pc.tick = this.pc.tick || {};
-	this.pc.comma = this.pc.comma || {};
-	this.pc.degree = this.pc.degree || {};
-	this.pc.underscore = this.pc.underscore || {};
-	this.pc.angel = this.pc.angel || {};
-};
+	
+	idTypes.map( function(id) {
+		self.pc[id] = self.pc[id] || {};
+	})};
 
 /*
 Parse the most recent match
@@ -60,8 +60,11 @@ exports.parse = function() {
 			case "angel":
 				text += "angel:\n" + JSON.stringify(this.pc.angel, null, 2)
 				break;
-			case "comma":
-				text += "comma:\n" + JSON.stringify(this.pc.comma, null, 2)
+			case "almost":
+				text += "almost:\n" + JSON.stringify(this.pc.almost, null, 2)
+				break;
+			case "single":
+				text += "single:\n" + JSON.stringify(this.pc.single, null, 2)
 				break;
 			case "underscore":
 				text += "underscore:\n" + JSON.stringify(this.pc.underscore, null, 2)

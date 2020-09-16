@@ -19,10 +19,12 @@ Wiki pragma rule to import pragmas from other tiddlers
 exports.name = "importcustom";
 exports.types = {pragma: true};
 
+var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
 /*
 Instantiate parse rule
 */
 exports.init = function(parser) {
+	var self = this;
 	this.parser = parser;
 	// Regexp to match
 	this.matchRegExp = /^\\importcustom[^\S\n]/mg;
@@ -31,11 +33,10 @@ exports.init = function(parser) {
 	this.p.configTickText = this.p.configTickText  || {};
 	
 	this.pc = this.p.configTickText;
-	this.pc.tick = this.pc.tick || {};
-	this.pc.comma = this.pc.comma || {};
-	this.pc.degree = this.pc.degree || {};
-	this.pc.underscore = this.pc.underscore || {};
-	this.pc.angel = this.pc.angel || {};
+	
+	idTypes.map( function(id) {
+		self.pc[id] = self.pc[id] || {};
+	})
 };
 
 /*
@@ -61,11 +62,10 @@ exports.parse = function() {
 
 	$tw.utils.each(tiddlerList,function(title) {
 		var pragmaInParser = $tw.wiki.parseText("text/vnd.tiddlywiki", $tw.wiki.getTiddlerText(title));
-		$tw.utils.extend(self.pc.tick, pragmaInParser.configTickText.tick);
-		$tw.utils.extend(self.pc.comma, pragmaInParser.configTickText.comma);
-		$tw.utils.extend(self.pc.degree, pragmaInParser.configTickText.degree);
-		$tw.utils.extend(self.pc.underscore, pragmaInParser.configTickText.underscore);
-		$tw.utils.extend(self.pc.angel, pragmaInParser.configTickText.angel);
+		
+		idTypes.map( function(id) {
+			$tw.utils.extend(self.pc[id] = pragmaInParser.configTickText[id]);
+		})
 	});
 
 	// No parse tree nodes to return

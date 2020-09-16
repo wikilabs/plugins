@@ -13,11 +13,12 @@ type: text/vnd.tiddlywiki
 \end
 \define idSelector()
 <$tiddler tiddler="$:/config/edit/linePrefix">
-  <$radio field="id" value="´" title="Tick"> ´ </$radio>|
-  <$radio  field="id" value="°"> ° </$radio>|
-  <$radio field="id" value=","> , </$radio>|
+  <$radio field="id" value="›"> › </$radio>|
+  <$radio field="id" value="´"> ´ </$radio>|
+  <$radio field="id" value="°"> ° </$radio>|
   <$radio field="id" value="_"> _ </$radio>||
   <$radio field="id" value="»"> » </$radio>|
+  <$radio field="id" value="≈"> ≈ </$radio>|
   <$checkbox 
      field=force
      checked="yes"

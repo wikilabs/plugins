@@ -10,7 +10,7 @@ Wiki pragma rule for whitespace specifications
 
 \customize angel=x _element=span _params=.i.j.c.cp _endString=eee
 
-\customize comma=det _element="details" _params="" _endString="—"
+\customize single=det _element="details" _params="" _endString="—"
 
 \customize degree=sum _element="summary"
 
@@ -27,10 +27,12 @@ Wiki pragma rule for whitespace specifications
 exports.name = "customize";
 exports.types = {pragma: true};
 
+var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
 /*
 Instantiate parse rule
 */
 exports.init = function(parser) {
+	var self = this;
 	this.parser = parser;
 	// Regexp to match
 	this.matchRegExp = /^\\customize[^\S\n]/mg;
@@ -39,11 +41,10 @@ exports.init = function(parser) {
 	this.p.configTickText = this.p.configTickText  || {};
 	
 	this.pc = this.p.configTickText;
-	this.pc.tick = this.pc.tick || {};
-	this.pc.comma = this.pc.comma || {};
-	this.pc.degree = this.pc.degree || {};
-	this.pc.underscore = this.pc.underscore || {};
-	this.pc.angel = this.pc.angel || {};
+	
+	idTypes.map( function(id) {
+		self.pc[id] = self.pc[id] || {};
+	})
 };
 
 
@@ -131,7 +132,8 @@ exports.parse = function() {
 		switch(token.name) {
 			case "tick": // fall through
 			case "angel": // fall through
-			case "comma": // fall through
+			case "almost": // fall through
+			case "single": // fall through
 			case "underscore": // fall through
 			case "degree":
 				id = token.name;

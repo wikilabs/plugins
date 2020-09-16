@@ -25,8 +25,11 @@ var CLASS_PREFIX = CLASS_GROUP + "-l"; // l .. level
 
 exports.name = "ticktext";
 exports.types = {block: true};
+	
+var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
 
 exports.init = function(parser) {
+	var self = this;
 	this.parser = parser;
 	// Regexp to match 
 //	this.matchRegExp = /(^´{1,4}|^»{1,4})/mg; //a  OK
@@ -36,17 +39,17 @@ exports.init = function(parser) {
 	// match[3] ... classString
 //	this.matchRegExp = /(^´{1,4}|^»{1,4})((?:[^\.\r\n\s]+))?(\.(?:[^\r\n\s]+))?/mg; //a
 //	this.matchRegExp = /((?=´[^´])´|»{1,4})((?:[^\.\r\n\s´]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
-	this.matchRegExp = /((?=´[^´])´|»{1,4}|(?=°[^°])°|(?=,[^,]),|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
-
+	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
+	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
 	
 	this.pc = this.p.configTickText;
-	this.pc.tick = this.pc.tick || {};
-	this.pc.comma = this.pc.comma || {};
-	this.pc.degree = this.pc.degree || {};
-	this.pc.underscore = this.pc.underscore || {};
-	this.pc.angel = this.pc.angel || {};
+	
+	idTypes.map( function(id) {
+		self.pc[id] = self.pc[id] || {};
+	})
+	
 	this.pc.X = {}; // There is a naming problem
 };
 
@@ -80,15 +83,22 @@ exports.parse = function() {
 	var sym     = this.match[2]; // needs to be undefined if no match
 	var _params  = (this.match[3]) ? this.match[3] : "";
 
+	var useParagraph = false; // use paragraph by default
+
 	switch (this.match[1][0]) {
 		case "»":
-			id = "angel"
+			id = "angel";
+			useParagraph = true;
+		break;
+		case "≈":
+			id = "almost";
+			useParagraph = true;
 		break;
 		case "´":
 			id = "tick"
 		break;
-		case ",":
-			id = "comma"
+		case "›":
+			id = "single"
 		break;
 		case "_":
 			id = "underscore"
@@ -99,7 +109,7 @@ exports.parse = function() {
 	}
 	
 	// "_debug" is a binary parameter
-	var options = {symbol: sym, _mode : "inline", _element : (id==="angel") ? "p" : "div", _params : _params, _endString : "", _use: "", _debug: false, _debugString: ""};
+	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _params : _params, _endString : "", _use: "", _debug: false, _debugString: ""};
 	
 	var textEndInner,
 		textStartInner,
@@ -159,7 +169,7 @@ exports.parse = function() {
 		classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
-			tree = this.parser.parseInlineRun((id==="angel") ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg);// OK for single new-line
+			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg);// OK for single new-line
 		} else {
 			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options._endString) + "$)","mg"));
 		}
@@ -175,7 +185,9 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["tick", "angel", "comma", "underscore", "degree", "symbol", "_endString", "_mode", "_element", "_params", "_use", "_debug", "_debugString"];
+	var fixAttributes = ["tick", "angel", "almost", "single", "underscore", "degree", "symbol",
+						 "_endString", "_mode", "_element", "_params", "_use", "_debug", "_debugString"];
+
 	// Callback is invoked with (element,title,object)
 	$tw.utils.each(this.pc[id][sym], function(val,title) {
 		if (fixAttributes.indexOf(title) === -1) {
