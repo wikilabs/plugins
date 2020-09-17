@@ -19,7 +19,7 @@ Wiki pragma rule to import pragmas from other tiddlers
 exports.name = "importcustom";
 exports.types = {pragma: true};
 
-var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
+var idTypes = ["tick", "single", "degree", "underscore", "angel", "almost"];
 /*
 Instantiate parse rule
 */

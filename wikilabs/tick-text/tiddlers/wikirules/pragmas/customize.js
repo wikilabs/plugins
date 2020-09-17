@@ -27,7 +27,7 @@ Wiki pragma rule for whitespace specifications
 exports.name = "customize";
 exports.types = {pragma: true};
 
-var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
+var idTypes = ["tick", "single", "degree", "underscore", "angel", "almost"];
 /*
 Instantiate parse rule
 */

@@ -29,16 +29,14 @@ exports.types = {block: true};
 var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
 
 exports.init = function(parser) {
-	var self = this;
 	this.parser = parser;
+
+	var self = this;
+
 	// Regexp to match 
-//	this.matchRegExp = /(^´{1,4}|^»{1,4})/mg; //a  OK
-	
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-//	this.matchRegExp = /(^´{1,4}|^»{1,4})((?:[^\.\r\n\s]+))?(\.(?:[^\r\n\s]+))?/mg; //a
-//	this.matchRegExp = /((?=´[^´])´|»{1,4})((?:[^\.\r\n\s´]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
 	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
 	
 	this.p = this.parser;
@@ -76,12 +74,10 @@ exports.parse = function() {
 		root = [];
 
 	// Get all the details of the match
-	var level   = this.match[1].length; //abc
-	var id;
-//	var id      = (this.match[1][0] === "°" || this.match[1][0] === "´") ? "tick" : (this.match[1][0] === "»") ? "angel" : null;
-//	var id      = (this.match[1][0] === "´") ? "tick" : (this.match[1][0] === "»") ? "angel" : null;
-	var sym     = this.match[2]; // needs to be undefined if no match
-	var _params  = (this.match[3]) ? this.match[3] : "";
+	var id,
+		level   = this.match[1].length,
+		sym     = this.match[2], // needs to be undefined if no match
+		_params  = (this.match[3]) ? this.match[3] : "";
 
 	var useParagraph = false; // use paragraph by default
 
