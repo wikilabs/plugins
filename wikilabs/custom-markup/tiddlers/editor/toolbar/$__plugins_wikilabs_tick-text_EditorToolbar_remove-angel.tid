@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/remove-angel
+caption: remove-angel
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+description: Remove a "angel bracket" at the start of the selected line(s)
+icon: $:/plugins/wikilabs/custom-markup/icons/angel-minus
+shortcuts: ((remove-angel))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="remove-tick"
+	character="»"
+	count="1"
+/>

@@ -1,0 +1,80 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
+type: text/vnd.tiddlywiki
+
+\define selectActions()
+<$action-createtiddler $basetitle="$:/config/edit/linePrefix" $overwrite="yes" 
+    text={{{ [<linePrefix>get[text]] }}}
+    name="""$(linePrefix)$""" 
+    id={{{ [<linePrefix>get[id]]~´ }}}
+/>
+<$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [{$:/config/edit/linePrefix!!id}addsuffix{$:/config/edit/linePrefix!!text}] }}}/>
+<$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/id-prepared"/>
+<$action-deletetiddler $tiddler=<<dropdown-state>> />
+\end
+\define idSelector()
+<$tiddler tiddler="$:/config/edit/linePrefix">
+  <$radio field="id" value="›"> › </$radio>|
+  <$radio field="id" value="´"> ´ </$radio>|
+  <$radio field="id" value="°"> ° </$radio>|
+  <$radio field="id" value="_"> _ </$radio>||
+  <$radio field="id" value="»"> » </$radio>|
+  <$radio field="id" value="≈"> ≈ </$radio>|
+  <$checkbox 
+     field=force
+     checked="yes"
+     unchecked="no"
+     default="no" > Use all lines</$checkbox>
+</$tiddler>
+\end
+\define preview-type-button()
+<$button tag="a" actions=<<selectActions>> >
+
+<$transclude tiddler=<<linePrefix>> field="caption" mode="inline">
+
+<$view tiddler=<<linePrefix>> field="title" mode="inline"/>
+
+</$transclude> 
+
+<$reveal tag="span" stateTitle="$:/config/edit/linePrefix" stateField=name type="match" text=<<linePrefix>> default="XXXXX">
+
+<$entity entity="&nbsp;"/>
+
+<$entity entity="&#x2713;"/>
+
+</$reveal>
+
+</$button>
+\end
+
+Select ID -- <$macrocall $name=idSelector />
+
+----
+
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/TextEditor/LinePrefix]!has[draft.of]sort[title]]" variable="linePrefix">
+
+<<preview-type-button>>
+
+</$list>
+
+----
+
+<$button tag="a">
+
+<$action-sendmessage
+	$message="tm-new-tiddler"
+	tags="$:/tags/TextEditor/LinePrefix"
+	caption="New Line Prefix"
+	text=""
+/>
+
+<$action-deletetiddler 
+	$tiddler=<<dropdown-state>> 
+/>
+
+<em>
+
+<$text text={{$:/language/Buttons/Stamp/Caption/New}}/>
+
+</em>
+
+</$button>

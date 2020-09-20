@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/add-angel
+caption: add-angel
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+description: Add a "angel bracket" at the start of the selected line(s)
+icon: $:/plugins/wikilabs/custom-markup/icons/angel-plus
+shortcuts: ((add-angel))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="add-tick"
+	character="»"
+	count="1"
+/>

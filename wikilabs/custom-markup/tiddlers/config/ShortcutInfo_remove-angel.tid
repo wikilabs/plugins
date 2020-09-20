@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/remove-angel
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/custom-markup/EditorToolbar/remove-angel!!description}}

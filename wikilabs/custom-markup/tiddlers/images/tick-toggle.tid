@@ -1,0 +1,13 @@
+title: $:/plugins/wikilabs/custom-markup/icons/tick-toggle
+
+<svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
+ <g transform="translate(0 16.058)" fill-rule="evenodd">
+  <path d="m61.715 61.724h47.566v11.636h-47.566v-11.637z"/>
+  <path d="m91.149 43.583v47.566h-11.636v-47.566h11.637z"/>
+ </g>
+ <g fill-rule="evenodd">
+  <path d="m11.228 56.264 30.441-24.231-23.75-9.1806-17.927 26.919z" stroke-width="1.5688"/>
+  <path d="m11.35 106.77 30.441-24.231-23.75-9.1806-17.927 26.919z" stroke-width="1.5688"/>
+  <path d="m61.296 27.452h47.566v11.636h-47.566v-11.637z"/>
+ </g>
+</svg>

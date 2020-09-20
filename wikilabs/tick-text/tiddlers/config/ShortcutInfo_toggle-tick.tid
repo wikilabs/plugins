@@ -1,4 +1,0 @@
-title: $:/config/ShortcutInfo/toggle-tick
-type: text/vnd.tiddlywiki
-
-{{$:/plugins/wikilabs/tick-text/EditorToolbar/toggle-tick!!description}}

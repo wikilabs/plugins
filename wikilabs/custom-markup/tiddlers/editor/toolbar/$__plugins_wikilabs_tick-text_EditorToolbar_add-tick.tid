@@ -1,0 +1,16 @@
+caption: add-tick
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+created: 20200830145744005
+description: Add a "tick" at the start of the selected line(s)
+icon: $:/plugins/wikilabs/custom-markup/icons/tick-plus
+modified: 20200913204237400
+shortcuts: ((add-tick))
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/add-tick
+type: text/vnd.tiddlywiki
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="add-tick"
+	character={{{ [[$:/config/edit/linePrefix]get[text]] }}}
+	count="1"
+/>

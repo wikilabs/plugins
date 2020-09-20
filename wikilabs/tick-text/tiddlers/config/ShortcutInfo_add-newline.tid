@@ -1,4 +1,0 @@
-title: $:/config/ShortcutInfo/add-newline
-type: text/vnd.tiddlywiki
-
-{{$:/plugins/wikilabs/tick-text/EditorToolbar/add-newline!!description}}

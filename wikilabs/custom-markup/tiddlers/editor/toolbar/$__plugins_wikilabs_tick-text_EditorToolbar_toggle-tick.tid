@@ -1,0 +1,15 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/toggle-tick
+caption: toggle-ID
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+description: Toggle the "ID" at the start of the selected line(s)
+icon: $:/plugins/wikilabs/custom-markup/icons/tick-toggle
+shortcuts: ((toggle-tick))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="toggle-tick"
+	character={{{ [{$:/config/edit/linePrefix!!id}addsuffix{$:/config/edit/linePrefix!!text}] }}}
+	count="1"
+	force={{{ [{$:/config/edit/linePrefix!!force}] }}}
+/>
