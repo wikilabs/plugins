@@ -103,10 +103,11 @@ exports.parse = function() {
 			id = "degree"
 		break;
 	}
-	
+
 	// "_debug" is a binary parameter
-	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _params : _params, _endString : "", _use: "", _debug: false, _debugString: ""};
-	
+	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _params : _params,
+		_endString : "", _use: "", _debug: false, _debugString: "", _srcName:"src"};
+
 	var textEndInner,
 		textStartInner,
 		textEnd,
@@ -147,6 +148,7 @@ exports.parse = function() {
 		else options._debug = this.pc[id][sym]._debug || options._debug;
 		
 		options._debugString = this.pc[id][sym]._debugString || options._debugString;
+		options._srcName = this.pc[id][sym]._srcName || options._srcName;
 		classes = (options._params + _params).split(".") // pragma _params are added to tick _params
 //		classes[0] = options._params.split(".").join(" ").trim() // replace the name element
 	}
@@ -185,12 +187,12 @@ exports.parse = function() {
 		}
 	
 	var fixAttributes = ["tick", "angel", "almost", "single", "underscore", "degree", "symbol",
-						 "_endString", "_mode", "_element", "_params", "_use", "_debug", "_debugString"];
+						 "_endString", "_mode", "_element", "_params", "_use", "_debug", "_debugString", "_srcName"];
 
 	// Callback is invoked with (element,title,object)
-	$tw.utils.each(this.pc[id][sym], function(val,title) {
+	$tw.utils.each(this.pc[id][sym], function(val,title,obj) {
 		if (fixAttributes.indexOf(title) === -1) {
-			attributes[title] = {type:"string", value: val}
+			attributes[title] = obj[title];
 			}
 	});
 
@@ -226,9 +228,10 @@ exports.parse = function() {
 		// check if element is a widget
 		if (options._element[0] === "$") {
 	//		var textOuter = this.parser.source.slice(textStart, textEnd);
-	//		var textInner = this.parser.source.slice(textStartInner, textEndInner);
+			var textInner = this.parser.source.slice(textStartInner, textEndInner);
 			var type = options._element.slice(1);
 
+			attributes[options._srcName] = {type: "string", value: textInner}
 			root.push({ type: type,
 						tag: options._element,
 						attributes: attributes,

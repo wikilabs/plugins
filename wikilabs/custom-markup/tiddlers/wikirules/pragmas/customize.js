@@ -49,7 +49,6 @@ exports.init = function(parser) {
 
 
 /* parse attributes
-
 var s = '<option value="" data-foo="{{te st}}" readonly>Value 1</option>';
 
 var test_element = document.createElement('div');
@@ -63,24 +62,8 @@ for (var i = 0; i < attributes.length; i++) {
 
     console.log(attribute.name, '=>', attribute.value);
 }
-
 */
 
-/*
-exports.parseTag = function(source,pos,options) {
-*/
-
-/*
-returns an object array with::
-start, end .. regexp numbers
-type: string .. should be always string
-name: .. parameter name // 
-value: .. parameter value as string
-
-example tick=x htmlTag=div params=".i.j.c.cp" end="eee"
-
-doesn't work as expected.
-*/
 function parseAttributes(source) {
 	var pos = 0,
 		attributes= [];
@@ -151,8 +134,11 @@ exports.parse = function() {
 			case "_endString":
 				configTickText._endString = token.value;
 				break;
+			case "_srcName":
+				configTickText._srcName = token.value;
+				break;
 			default:
-				configTickText[token.name] = token.value || "";
+				configTickText[token.name] = token || {};
 		}
 	});
 	
