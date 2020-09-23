@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/custom-markup/history-short
+
+V 0.5.2 - 2020-09-23
+
+* fixed `\importcustom`
+* new parameter `_srcName`
+* `\customize` or `\customise` 
+* `\debugcustomize` or `\debugcustomise` can be used
+
+See [[full history|$:/plugins/wikilabs/custom-markup/history]]

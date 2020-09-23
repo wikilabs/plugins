@@ -35,7 +35,7 @@ exports.init = function(parser) {
 	var self = this;
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /^\\customize[^\S\n]/mg;
+	this.matchRegExp = /^\\customi[zs]e[^\S\n]/mg;
 
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText  || {};
@@ -134,8 +134,14 @@ exports.parse = function() {
 			case "_endString":
 				configTickText._endString = token.value;
 				break;
+			case "_use":
+				configTickText._use = token.value;
+				break;
 			case "_srcName":
 				configTickText._srcName = token.value;
+				break;
+			case "_debug":
+				configTickText._debug = token.value;
 				break;
 			default:
 				configTickText[token.name] = token || {};

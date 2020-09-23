@@ -64,7 +64,7 @@ exports.parse = function() {
 		var pragmaInParser = $tw.wiki.parseText("text/vnd.tiddlywiki", $tw.wiki.getTiddlerText(title));
 		
 		idTypes.map( function(id) {
-			$tw.utils.extend(self.pc[id] = pragmaInParser.configTickText[id]);
+			$tw.utils.extend(self.pc[id], pragmaInParser.configTickText[id]);
 		})
 	});
 

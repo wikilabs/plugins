@@ -1,10 +1,41 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.5.2 - 2020-09-23
+
+* fixed \importcustom
+* new parameter _srcName
+* \customize or \customise can be used
+* \debugcustomize or \debugcustomise can be used
+
+V 0.5.0 - 2020.09.20
+
+* New Plugin Name: custom-markup
+* New directory structure
+
 V 0.4.2 - 2020-09-18
 
 * docs is on the way
 * almost feature complete
 ** \custominline needs to be improved
+
+V 0.4.0 2020.09.16
+
+* added IDs: single "›" and almost "≈"
+* ID comma removed 
+* new toolbar buttons
+* new keyboard shortcuts
+
+V 0.3.0 2020.09.10
+
+* pragma parameters renamed to _element, _use, _mode, ... 
+** because there was a naming problem with widget parameters
+* tick-inline uses `°°` now
+
+V 0.2.1 2020-09.12
+
+* add more IDs comma, degree, underline
+* \ticktect becomes \customize
+* \tickdebug becomes \debugcustomize
 
 V 0.0.1 - 2020-08-28
 
