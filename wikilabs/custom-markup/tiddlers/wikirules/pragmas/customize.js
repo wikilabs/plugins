@@ -140,6 +140,15 @@ exports.parse = function() {
 			case "_srcName":
 				configTickText._srcName = token.value;
 				break;
+			// case "_1": 
+			// 	configTickText._1 = token.value;
+			// 	break;
+			// case "_2": 
+			// 	configTickText._2 = token.value;
+			// 	break;
+			case "_maps":
+				configTickText._maps = token.value;
+				break;
 			case "_debug":
 				configTickText._debug = token.value;
 				break;

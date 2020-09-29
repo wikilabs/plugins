@@ -1,10 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history-short
 
-V 0.5.2 - 2020-09-23
+V 0.5.3 - 2020-09-29
 
-* fixed `\importcustom`
-* new parameter `_srcName`
-* `\customize` or `\customise` 
-* `\debugcustomize` or `\debugcustomise` can be used
+* new parameters: `_1, _2, _maps`
+** allows `°:param1Text:param2Text` 
+** new format `°.i.x.y:a:b`
+* [[Examples + Reference|https://wikilabs.github.io/editions/custom-markup/#test-checkbox-widget-maps-transclusion:test-checkbox-widget-maps-transclusion test-checkbox-widget-maps-variable "Custom Markup Definition"]]
+
 
 See [[full history|$:/plugins/wikilabs/custom-markup/history]]

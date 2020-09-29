@@ -37,7 +37,8 @@ exports.init = function(parser) {
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
+//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
+	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; //a  OK
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -60,7 +61,7 @@ exports.parse = function() {
 	treatNewlinesAsNonWhitespace: true if newlines are NOT to be treated as whitespace
 	*/
 	function skipEndString (endString) {
-		var endRegExp = new RegExp("(" + $tw.utils.escapeRegExp(endString) + ")","mg")
+		var endRegExp = (endString instanceof RegExp) ? new RegExp(endString, "mg") : new RegExp("(" + $tw.utils.escapeRegExp(endString) + ")","mg")
 		endRegExp.lastIndex = self.parser.pos;
 		var endMatch = endRegExp.exec(self.parser.source);
 		if(endMatch && endMatch.index === self.parser.pos) {
@@ -75,9 +76,10 @@ exports.parse = function() {
 
 	// Get all the details of the match
 	var id,
-		level   = this.match[1].length,
+		level   = (this.match[1]) ? this.match[1].length : 0,
 		sym     = this.match[2], // needs to be undefined if no match
-		_params  = (this.match[3]) ? this.match[3] : "";
+		_params  = (this.match[3]) ? this.match[3] : "",
+		_maps    = (this.match[4]) ? this.match[4] : "";
 
 	var useParagraph = false; // use paragraph by default
 
@@ -106,7 +108,7 @@ exports.parse = function() {
 
 	// "_debug" is a binary parameter
 	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _params : _params,
-		_endString : "", _use: "", _debug: false, _debugString: "", _srcName:"src"};
+		_endString : "", _use: "", _debug: false, _debugString: "", _srcName:"src", _maps : (_maps !== "") ? _maps.split(":") : [] };
 
 	var textEndInner,
 		textStartInner,
@@ -149,19 +151,29 @@ exports.parse = function() {
 		
 		options._debugString = this.pc[id][sym]._debugString || options._debugString;
 		options._srcName = this.pc[id][sym]._srcName || options._srcName;
+		options._1 = this.pc[id][sym]._1 || options._1;
+		options._2 = this.pc[id][sym]._2 || options._2;
+
+//		months.splice(4, 1, 'May');
+		var xMaps = (this.pc[id][sym]._maps) ? this.pc[id][sym]._maps.split(":") : ["",""];
+		var lMaps = (options._maps.length > 0 ) ? options._maps : ["",""];
+
+		options._maps[1] = (lMaps[1]) ? lMaps[1] : xMaps[1];
+		options._maps[2] = (lMaps[2]) ? lMaps[2] : xMaps[2];
+
 		classes = (options._params + _params).split(".") // pragma _params are added to tick _params
 //		classes[0] = options._params.split(".").join(" ").trim() // replace the name element
 	}
 	
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 
-	if (options._mode === "block") {
+	if ((options._mode === "block") ) { //&& (options._endString !== "")) {
 	// standard rendering
 		// no GROUP in block mode
 		classes.push(CLASS_PREFIX + level);
-		
-		if (options._endString === "") options._endString = (useParagraph) ? "\r?\n\r?\n" : "\r?\n";
-		
+
+		if (options._endString === "") options._endString = (useParagraph) ? $tw.utils.escapeRegExp("\r?\n\r?\n") : $tw.utils.escapeRegExp("\r?\n");
+
 //		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options._endString) + "$");
 //		tree = this.parser.parseBlocks($tw.utils.escapeRegExp(options._endString));
 		tree = this.parser.parseBlocks(options._endString);
@@ -170,6 +182,7 @@ exports.parse = function() {
 		classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
+//			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg, {eatTerminator:true}); 
 			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg);// OK for single new-line
 		} else {
 			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options._endString) + "$)","mg"));
@@ -186,8 +199,9 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["tick", "angel", "almost", "single", "underscore", "degree", "symbol",
-						 "_endString", "_mode", "_element", "_params", "_use", "_debug", "_debugString", "_srcName"];
+	var fixAttributes = ["tick", "angel", "almost", "single", "underscore", "degree", "symbol", 
+						"_endString", "_mode", "_element", "_params", "_use", "_1", "_2", "_maps",
+						"_srcName", "_debug", "_debugString"];
 
 	// Callback is invoked with (element,title,object)
 	$tw.utils.each(this.pc[id][sym], function(val,title,obj) {
@@ -230,7 +244,16 @@ exports.parse = function() {
 	//		var textOuter = this.parser.source.slice(textStart, textEnd);
 			var textInner = this.parser.source.slice(textStartInner, textEndInner);
 			var type = options._element.slice(1);
+			var maps = options._maps,
+				ml = maps.length,
+				x = "";
 
+			if (ml > 0) {
+				for (var i=1; i <= ml; i++) {
+					x = (maps[i] && options["_"+i]) ? options["_"+i].value : "";
+					if (x) attributes[x] = {type: "string", value: maps[i]}
+				}
+			}
 			attributes[options._srcName] = {type: "string", value: textInner}
 			root.push({ type: type,
 						tag: options._element,
