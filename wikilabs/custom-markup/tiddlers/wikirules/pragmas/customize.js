@@ -6,11 +6,11 @@ module-type: wikirule
 Wiki pragma rule for whitespace specifications
 
 ```
-\customize tick=§ _element=div _endString= _mode= _params= _use=
+\customize tick=§ _element=div _endString= _mode= _classes= _use=
 
-\customize angel=x _element=span _params=.i.j.c.cp _endString=eee
+\customize angle=x _element=span _classes=.i.j.c.cp _endString=eee
 
-\customize single=det _element="details" _params="" _endString="—"
+\customize single=det _element="details" _classes="" _endString="—"
 
 \customize degree=sum _element="summary"
 
@@ -27,7 +27,7 @@ Wiki pragma rule for whitespace specifications
 exports.name = "customize";
 exports.types = {pragma: true};
 
-var idTypes = ["tick", "single", "degree", "underscore", "angel", "almost"];
+var idTypes = ["tick", "single", "degree", "underscore", "angle", "almost"];
 /*
 Instantiate parse rule
 */
@@ -108,62 +108,52 @@ exports.parse = function() {
 
 	// \ticktext tick=x htmlTag=div params=".i.j.c.cp" end="eee"
 	var id = "X", // There should be no id X!!
-//		configTickText = {_mode:"", _element:"", _params:"", _endString:""};
+//		configTickText = {_mode:"", _element:"", _classes:"", _endString:""};
 		configTickText = {};
+
+	var debugString = "\\customize";
 	
 	$tw.utils.each(attributes,function(token) {
 		switch(token.name) {
 			case "tick": // fall through
-			case "angel": // fall through
+			case "angle": // fall through
 			case "almost": // fall through
 			case "single": // fall through
 			case "underscore": // fall through
 			case "degree":
 				id = token.name;
 				configTickText.symbol = token.value;
+				debugString += " " + id + "='" + token.value + "'";
 				break;
-			case "_mode":
-				configTickText._mode = token.value;
-				break;
-			case "_element":
-				configTickText._element = token.value;
-				break;
-			case "_params":
-				configTickText._params = token.value;
-				break;
-			case "_endString":
-				configTickText._endString = token.value;
-				break;
-			case "_use":
-				configTickText._use = token.value;
-				break;
-			case "_srcName":
-				configTickText._srcName = token.value;
-				break;
-			// case "_1": 
-			// 	configTickText._1 = token.value;
-			// 	break;
-			// case "_2": 
-			// 	configTickText._2 = token.value;
-			// 	break;
-			case "_maps":
-				configTickText._maps = token.value;
-				break;
+			case "_params": // falltrough
+			case "_classes":
 			case "_debug":
-				configTickText._debug = token.value;
-				break;
+			case "_mode":
+			case "_element":
+			case "_classes":
+			case "_endString":
+			case "_use":
+			case "_useGlobal":
+			case "_srcName":
+			// case "_1": 
+			// case "_2": 
+				configTickText[token.name] = token.value;
+				debugString += " " + token.name + "='" + token.value + "'";
+			break;
 			default:
 				configTickText[token.name] = token || {};
+				debugString += " " + token.name + "='" + "{..}" + "'"; 
 		}
 	});
 	
 	// if _debug is set by _use in an other tiddler, we need the _debugString!
-	var debugString = "\\customize";
-	Object.keys(configTickText).map( function(x) {
-		if (x == "symbol") debugString += ' ' + id + '="' + configTickText[x] + '"';
-		else if (x == "_debug") debugString;
-		else debugString += ' ' + x + '="' + configTickText[x] + '"'; 
-	})
+// 	var debugString = "\\customize";
+// 	Object.keys(configTickText).map( function(x) {
+// 		if (x == "symbol") debugString += ' ' + id + '="' + configTickText[x] + '"';
+// 		else if (x == "_debug") debugString;
+// 		else debugString += ' ' + x + '="' + "{...}" + '"'; 
+// //		else debugString += ' ' + x + '="' + JSON.stringify(configTickText[x], null, 2) + '"'; 
+// 	})
 	configTickText._debugString = debugString;
 
 	this.pc[id][configTickText.symbol] = configTickText;

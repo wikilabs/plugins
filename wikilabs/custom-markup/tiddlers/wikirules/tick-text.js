@@ -3,7 +3,7 @@ title: $:/plugins/wikilabs/custom-markup/wikirules/ticktext.js
 type: application/javascript
 module-type: wikirule
 
-Wiki text block rule for ticktext and angeltext
+Wiki text block rule for ticktext and angletext
 
 Detect
 
@@ -26,7 +26,7 @@ var CLASS_PREFIX = CLASS_GROUP + "-l"; // l .. level
 exports.name = "ticktext";
 exports.types = {block: true};
 	
-var idTypes = "tick,single,degree,underscore,angel,almost".split(",");
+var idTypes = "tick,single,degree,underscore,angle,almost".split(",");
 
 exports.init = function(parser) {
 	this.parser = parser;
@@ -44,7 +44,7 @@ exports.init = function(parser) {
 	this.p.configTickText = this.p.configTickText || {};
 	
 	this.pc = this.p.configTickText;
-	
+
 	idTypes.map( function(id) {
 		self.pc[id] = self.pc[id] || {};
 	})
@@ -69,6 +69,10 @@ exports.parse = function() {
 		}
 	}
 
+	function check(gpc, el) {
+
+	}
+
 //---------------------
 	var self = this,
 		tree = [],
@@ -78,14 +82,17 @@ exports.parse = function() {
 	var id,
 		level   = (this.match[1]) ? this.match[1].length : 0,
 		sym     = this.match[2], // needs to be undefined if no match
-		_params  = (this.match[3]) ? this.match[3] : "",
-		_maps    = (this.match[4]) ? this.match[4] : "";
+		_classes  = (this.match[3]) ? this.match[3] : "",
+		_params    = (this.match[4]) ? this.match[4] : "";
 
 	var useParagraph = false; // use paragraph by default
 
+	// global custom pragmas
+	var gPc = this.parser.wiki.caches["$:/config/custom-markup/pragma/PageTemplate"].blockParseTree.configTickText;
+
 	switch (this.match[1][0]) {
 		case "»":
-			id = "angel";
+			id = "angle";
 			useParagraph = true;
 		break;
 		case "≈":
@@ -107,8 +114,8 @@ exports.parse = function() {
 	}
 
 	// "_debug" is a binary parameter
-	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _params : _params,
-		_endString : "", _use: "", _debug: false, _debugString: "", _srcName:"src", _maps : (_maps !== "") ? _maps.split(":") : [] };
+	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _classes : _classes,
+		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(":") : [] };
 
 	var textEndInner,
 		textStartInner,
@@ -122,47 +129,75 @@ exports.parse = function() {
 	// remember text postions for macro src handling
 	textStartInner = this.parser.pos
 	// Parse any classes, whitespace and then the heading itself
-	var classes = _params.split(".");
+	var classes = _classes.split(".");
 
-	var forceDebug = false;
-	
+	var forceDebug = false,
+		_useError = false;
+
+
+	var config = {};
+
+	// !!! The order of the checks is important!!! TODO make this nicer
 	if (!sym && this.pc[id]["true"]) {
 	// ID is locally defined
 		forceDebug = (this.pc[id]["true"]._debug) ? this.pc[id]["true"]._debug : false;
 		sym = (this.pc[id]["true"]._use) ? this.pc[id]["true"]._use : true;
-	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._use) {
-	// ID and _use are locally defined
+		config = this.pc[id][sym];
+	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._use)  {
+		// ID and _use are locally defined
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
+		if (sym === this.pc[id][sym]._use) {
+			// error Can't use itself
+			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!";
+			forceDebug = true;
+		}
 		sym = this.pc[id][sym]._use;
+		config = this.pc[id][sym];
+	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._useGlobal && gPc[id][this.pc[id][sym]._useGlobal] )  {
+		// Use global symbol 
+		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
+		sym = this.pc[id][sym]._useGlobal;
+
+		// Switch to global configuration   TODO duplicated code
+		forceDebug = (forceDebug) ? forceDebug : (gPc[id][sym]._debug) ? gPc[id][sym]._debug : false;
+		config = gPc[id][sym];
+	} else if (sym && this.pc[id][sym])  {
+		// Switch to local configuration
+		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
+		config = this.pc[id][sym];
+	} else if (sym && gPc[id][sym])  {
+		// Switch to global configuration
+		forceDebug = (gPc[id][sym]._debug) ? gPc[id][sym]._debug : false;
+		config = gPc[id][sym];
 	} else if (sym !== "") {
 	// Check if symbol is an HTML element
 		options._element = ($tw.config.htmlBlockElements.indexOf(sym) !== -1) ? sym : options._element;
+		config = this.pc[id][sym];
 	}
-	
-	if (this.pc[id][sym]) {
-		options.symbol = this.pc[id][sym].symbol || options.symbol;
-		options._endString = this.pc[id][sym]._endString || options._endString;
-		options._mode = this.pc[id][sym]._mode || options._mode;
-		options._element = this.pc[id][sym]._element || options._element;
-		options._params = this.pc[id][sym]._params || options._params;
+
+	if (config) {
+		options.symbol = config.symbol || options.symbol;
+		options._endString = config._endString || options._endString;
+		options._mode = config._mode || options._mode;
+		options._element = config._element || options._element;
+		options._classes = config._classes || options._classes;
 		
 		if (forceDebug) options._debug = forceDebug;
-		else options._debug = this.pc[id][sym]._debug || options._debug;
+		else options._debug = config._debug || options._debug;
 		
-		options._debugString = this.pc[id][sym]._debugString || options._debugString;
-		options._srcName = this.pc[id][sym]._srcName || options._srcName;
-		options._1 = this.pc[id][sym]._1 || options._1;
-		options._2 = this.pc[id][sym]._2 || options._2;
+		options._debugString = (_useError) ? _useError : config._debugString || options._debugString;
+		options._srcName = config._srcName || options._srcName;
+		options._1 = config._1 || options._1;
+		options._2 = config._2 || options._2;
 
-//		months.splice(4, 1, 'May');
-		var xMaps = (this.pc[id][sym]._maps) ? this.pc[id][sym]._maps.split(":") : ["",""];
-		var lMaps = (options._maps.length > 0 ) ? options._maps : ["",""];
+		var xMaps = (config._params) ? config._params.split(":") : ["",""];
+		var lMaps = (options._params.length > 0 ) ? options._params : ["",""];
 
-		options._maps[1] = (lMaps[1]) ? lMaps[1] : xMaps[1];
-		options._maps[2] = (lMaps[2]) ? lMaps[2] : xMaps[2];
+		options._params[1] = (lMaps[1]) ? lMaps[1] : xMaps[1];
+		options._params[2] = (lMaps[2]) ? lMaps[2] : xMaps[2];
 
-		classes = (options._params + _params).split(".") // pragma _params are added to tick _params
-//		classes[0] = options._params.split(".").join(" ").trim() // replace the name element
+		classes = (options._classes + _classes).split(".") // pragma _classes are added to tick _classes
+//		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
 	}
 	
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
@@ -199,12 +234,12 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["tick", "angel", "almost", "single", "underscore", "degree", "symbol", 
-						"_endString", "_mode", "_element", "_params", "_use", "_1", "_2", "_maps",
+	var fixAttributes = ["tick", "angle", "almost", "single", "underscore", "degree", "symbol", 
+						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
 
 	// Callback is invoked with (element,title,object)
-	$tw.utils.each(this.pc[id][sym], function(val,title,obj) {
+	$tw.utils.each(config, function(val,title,obj) {
 		if (fixAttributes.indexOf(title) === -1) {
 			attributes[title] = obj[title];
 			}
@@ -214,6 +249,8 @@ exports.parse = function() {
 	var showRendered = true;
 	if (options._debug) {
 		switch (options._debug) {
+			case "no":
+			break;
 			case "both":
 				root.push({type:"codeblock", attributes:{ code: {type:"string", value: options._debugString}}})
 				var textOuter = this.parser.source.slice(textStart, textEnd);
@@ -244,7 +281,7 @@ exports.parse = function() {
 	//		var textOuter = this.parser.source.slice(textStart, textEnd);
 			var textInner = this.parser.source.slice(textStartInner, textEndInner);
 			var type = options._element.slice(1);
-			var maps = options._maps,
+			var maps = options._params,
 				ml = maps.length,
 				x = "";
 

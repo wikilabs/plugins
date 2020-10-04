@@ -19,7 +19,7 @@ Returns a JSON info of parser.configTickText
 exports.name = "debugcustomize";
 exports.types = {pragma: true};
 	
-var idTypes = ["tick", "single", "degree", "underscore", "angel", "almost"];
+var idTypes = ["tick", "single", "degree", "underscore", "angle", "almost"];
 /*
 Instantiate parse rule
 */
@@ -47,35 +47,54 @@ exports.parse = function() {
 	// Move past the pragma invocation
 	this.parser.pos = this.matchRegExp.lastIndex;
 	// Parse line terminated by a line break
-	var reMatch = /(.*)(\r?\n)|$/mg;
+	var reMatch = /(.*)\r?\n?|$/mg;
 	reMatch.lastIndex = this.parser.pos;
 	var match = reMatch.exec(this.parser.source);
 	this.parser.pos = reMatch.lastIndex;
+
+	var config = this.pc,
+		global = this.p.wiki.caches["$:/config/custom-markup/pragma/PageTemplate"].blockParseTree.configTickText,
+		foundKey = false,
+		test=[];
 	
-	if (match) {
-		switch(match[1]) {
-			case "tick":
-				text = "tick:\n" + JSON.stringify(this.pc.tick, null, 2)
-				break;
-			case "angel":
-				text += "angel:\n" + JSON.stringify(this.pc.angel, null, 2)
-				break;
-			case "almost":
-				text += "almost:\n" + JSON.stringify(this.pc.almost, null, 2)
-				break;
-			case "single":
-				text += "single:\n" + JSON.stringify(this.pc.single, null, 2)
-				break;
-			case "underscore":
-				text += "underscore:\n" + JSON.stringify(this.pc.underscore, null, 2)
-				break;
-			case "degree":
-				text += "degree:\n" + JSON.stringify(this.pc.degree, null, 2)
-				break;
-			case "all": // fall through
-			default:
-				text = JSON.stringify(this.pc, null, 2) + "\n\n"
-				break
+	if (match[0] === "" ) test = [""]
+	else test = (match[1]) ? match[1].split(/[ \t]+/) : [""];
+
+	if (test[0] === "no") {
+		return [];
+	} else if (test[0] === "global") {
+		if (test[1] === "list") {
+			text += "global list:\n" 
+			Object.keys(global).map( function(el) {
+				var x = Object.keys(global[el]);
+				if (x.length > 0) {
+					text += "  - " + el + " {..}\n"
+					foundKey = true;
+				}
+			});
+			text += (foundKey === false) ? "  - no keys with values found!" : "";
+		} else if (test[1]) {
+			text += "global " + test[1] + ":\n" + 
+			JSON.stringify(global[test[1]], null, 2)
+		} else {
+			text += "global all:\n" + JSON.stringify(global, null, 2)
+		}
+		text += "\n"
+	} else {
+		if (test[0] === "list") {
+			text += "local list:\n" 
+			Object.keys(config).map( function(el) {
+				var x = Object.keys(config[el]);
+				if (x.length > 0) {
+					foundKey = true;
+					text += "  - " + el + " {..}\n"
+				}
+			});
+			text += (foundKey === false) ? "  - no keys with values found!" : "";
+		} else if (test[0] === "all" || test[0] === "") {
+			text += "local all:\n" + JSON.stringify(config, null, 2)
+		} else {
+			text += "local " + test[0] + ":\n" + JSON.stringify(config[test[0]], null, 2)
 		}
 	}
 	

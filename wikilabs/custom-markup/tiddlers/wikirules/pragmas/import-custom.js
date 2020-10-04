@@ -19,7 +19,7 @@ Wiki pragma rule to import pragmas from other tiddlers
 exports.name = "importcustom";
 exports.types = {pragma: true};
 
-var idTypes = ["tick", "single", "degree", "underscore", "angel", "almost"];
+var idTypes = ["tick", "single", "degree", "underscore", "angle", "almost"];
 /*
 Instantiate parse rule
 */
@@ -50,7 +50,7 @@ exports.parse = function() {
 	// Move past the pragma invocation
 	this.parser.pos = this.matchRegExp.lastIndex;
 	// Parse line terminated by a line break
-	var reMatch = /(.*)(\r?\n)|$/mg;
+	var reMatch = /(.*)\r?\n?|$/mg;
 	reMatch.lastIndex = this.parser.pos;
 	var match = reMatch.exec(this.parser.source);
 	this.parser.pos = reMatch.lastIndex;
