@@ -146,7 +146,7 @@ exports.parse = function() {
 	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._use)  {
 		// ID and _use are locally defined
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
-		if (sym === this.pc[id][sym]._use) {
+		if ((sym === this.pc[id][sym]._use) && (this.pc[id][sym].imported !== true)) {
 			// error Can't use itself
 			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!";
 			forceDebug = true;
@@ -201,17 +201,22 @@ exports.parse = function() {
 	}
 	
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
+	
+	var oneBlock = false;
 
 	if ((options._mode === "block") ) { //&& (options._endString !== "")) {
 	// standard rendering
 		// no GROUP in block mode
 		classes.push(CLASS_PREFIX + level);
 
-		if (options._endString === "") options._endString = (useParagraph) ? $tw.utils.escapeRegExp("\r?\n\r?\n") : $tw.utils.escapeRegExp("\r?\n");
+		if (options._endString === "") {
+			options._endString = (useParagraph) ? "\\r?\\n\\r?\\n" : "\\r?\\n";
+			oneBlock = true;
+		} 
 
 //		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options._endString) + "$");
 //		tree = this.parser.parseBlocks($tw.utils.escapeRegExp(options._endString));
-		tree = this.parser.parseBlocks(options._endString);
+		tree = (oneBlock) ? this.parser.parseBlock(options._endString) : this.parser.parseBlocks(options._endString);
 	} else {
 		// apply CLASS_GROUP only if in inline mode. 
 		classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
