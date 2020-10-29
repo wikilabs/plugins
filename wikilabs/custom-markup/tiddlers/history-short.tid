@@ -1,19 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history-short
 
-V 0.6.0 - 2020-10-03
 
-* ''New Functionality''
-** $:/config/custom-markup/pragma/PageTemplate tagged: `$:/tags/Macro`
-*** content: `\importcustom [tag[$:/tags/pragma]]`
-** contains global pragma definitions .. and macro definitions
+V 0.8.0 - 2020-10-29
 
-* ''Incompatible changes''
-** `_params` renamed to -> `_classes`
-** `_maps` renamed to -> `_params` !!
-** Adjusted the docs accordingly
-* Improved debug modes
-** `\debugcustomize` new parameters: `no`, `list`, `global`, `global list`, `global ID`
-** `_debug` new parameter: `no`,
-* `angel` renamed to: `angle` + docs
+* There are 4 "inline" elements
+** `__ underscore__`, `﹙ little﹚`, `⠒ braille⠶`, `/° slash°/`
+* There are 6 "block" elements
+** `pilcrow: ¶`, `about: ≈`, `angle: »`, `degree: °`, `tick: ´`, `single: ›`
 
 See [[full history|$:/plugins/wikilabs/custom-markup/history]]

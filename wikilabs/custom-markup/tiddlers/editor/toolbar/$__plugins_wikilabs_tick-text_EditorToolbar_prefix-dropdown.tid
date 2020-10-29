@@ -16,7 +16,6 @@ type: text/vnd.tiddlywiki
   <$radio field="id" value="›"> › </$radio>|
   <$radio field="id" value="´"> ´ </$radio>|
   <$radio field="id" value="°"> ° </$radio>|
-  <$radio field="id" value="_"> _ </$radio>||
   <$radio field="id" value="»"> » </$radio>|
   <$radio field="id" value="≈"> ≈ </$radio>|
   <$checkbox 

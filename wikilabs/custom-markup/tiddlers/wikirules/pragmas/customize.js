@@ -14,7 +14,7 @@ Wiki pragma rule for whitespace specifications
 
 \customize degree=sum _element="summary"
 
-\customize underscore _element=span
+\customize tick _element=span
 ```
 
 \*/
@@ -27,7 +27,7 @@ Wiki pragma rule for whitespace specifications
 exports.name = "customize";
 exports.types = {pragma: true};
 
-var idTypes = ["tick", "single", "degree", "underscore", "angle", "almost"];
+var idTypes = ["tick", "single", "degree", "angle", "almost", "pilcrow", "underscore", "little", "braille", "slash"];
 /*
 Instantiate parse rule
 */
@@ -119,8 +119,12 @@ exports.parse = function() {
 			case "angle": // fall through
 			case "almost": // fall through
 			case "single": // fall through
+			case "degree": // fall through
+			case "pilcrow":
 			case "underscore": // fall through
-			case "degree":
+			case "little": // fall through
+			case "braille": // fall through
+			case "slash": // fall through
 				id = token.name;
 				configTickText.symbol = token.value;
 				debugString += " " + id + "='" + token.value + "'";

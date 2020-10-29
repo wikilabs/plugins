@@ -19,7 +19,7 @@ Returns a JSON info of parser.configTickText
 exports.name = "debugcustomize";
 exports.types = {pragma: true};
 	
-var idTypes = ["tick", "single", "degree", "underscore", "angle", "almost"];
+var idTypes = ["tick", "single", "degree", "angle", "almost", "pilcrow", "underscore", "little", "braille", "slash"];
 /*
 Instantiate parse rule
 */

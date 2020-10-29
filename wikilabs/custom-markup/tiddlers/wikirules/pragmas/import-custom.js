@@ -19,7 +19,7 @@ Wiki pragma rule to import pragmas from other tiddlers
 exports.name = "importcustom";
 exports.types = {pragma: true};
 
-var idTypes = ["tick", "single", "degree", "underscore", "angle", "almost"];
+var idTypes = ["tick", "single", "degree", "angle", "almost", "pilcrow", "underscore", "little", "braille", "slash"];
 /*
 Instantiate parse rule
 */
@@ -64,6 +64,10 @@ exports.parse = function() {
 		var pragmaInParser = $tw.wiki.parseText("text/vnd.tiddlywiki", $tw.wiki.getTiddlerText(title));
 		
 		idTypes.map( function(id) {
+			pragmaInParser.configTickText[id];
+			Object.keys(pragmaInParser.configTickText[id]).map(function (key) {
+				pragmaInParser.configTickText[id][key].imported = true;
+			})
 			$tw.utils.extend(self.pc[id], pragmaInParser.configTickText[id]);
 		})
 	});

@@ -3,6 +3,31 @@ title: $:/plugins/wikilabs/custom-markup/history
 
 {{$:/plugins/wikilabs/custom-markup/history-short}}
 
+V 0.7.0 - 2020-10-23
+
+* New Inline functions
+** `_symbol.class.clsss:param:param some text__`
+** `.class` and `:param` work the same way as "block" definitions
+* Removed underscore from "block" definitions, because it's used by "inline"
+* Added: `\\ pragma comments`
+** It's faster than HTML comments `<!-- comments -->`, since it can be used outside macro `\define x()` blocks
+
+V 0.6.0 - 2020-10-03
+
+* ''New Functionality''
+** $:/config/custom-markup/pragma/PageTemplate tagged: `$:/tags/Macro`
+*** content: `\importcustom [tag[$:/tags/Pragma]]`
+** contains global pragma definitions .. and macro definitions
+
+* ''Incompatible changes''
+** `_params` renamed to -> `_classes`
+** `_maps` renamed to -> `_params` !!
+** Adjusted the docs accordingly
+* Improved debug modes
+** `\debugcustomize` new parameters: `no`, `list`, `global`, `global list`, `global ID`
+** `_debug` new parameter: `no`,
+* `angel` renamed to: `angle` + docs
+
 V 0.5.3 - 2020-09-29
 
 * new parameters: `_1, _2, _maps`

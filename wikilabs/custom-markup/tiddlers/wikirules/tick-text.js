@@ -26,7 +26,7 @@ var CLASS_PREFIX = CLASS_GROUP + "-l"; // l .. level
 exports.name = "ticktext";
 exports.types = {block: true};
 	
-var idTypes = "tick,single,degree,underscore,angle,almost".split(",");
+var idTypes = "tick,single,degree,angle,almost,pilcrow".split(",");
 
 exports.init = function(parser) {
 	this.parser = parser;
@@ -37,8 +37,10 @@ exports.init = function(parser) {
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; //a  OK
-	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; //a  OK
+//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; // OK
+// 	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.6.x
+//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.0
+	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -69,10 +71,6 @@ exports.parse = function() {
 		}
 	}
 
-	function check(gpc, el) {
-
-	}
-
 //---------------------
 	var self = this,
 		tree = [],
@@ -80,10 +78,10 @@ exports.parse = function() {
 
 	// Get all the details of the match
 	var id,
-		level   = (this.match[1]) ? this.match[1].length : 0,
-		sym     = this.match[2], // needs to be undefined if no match
-		_classes  = (this.match[3]) ? this.match[3] : "",
-		_params    = (this.match[4]) ? this.match[4] : "";
+		level    = (this.match[1]) ? this.match[1].length : 0,
+		sym      = this.match[2], // needs to be undefined if no match
+		_classes = (this.match[3]) ? this.match[3] : "",
+		_params  = (this.match[4]) ? this.match[4] : "";
 
 	var useParagraph = false; // use paragraph by default
 
@@ -99,14 +97,15 @@ exports.parse = function() {
 			id = "almost";
 			useParagraph = true;
 		break;
+		case "¶":
+			id = "pilcrow";
+			useParagraph = true;
+		break;
 		case "´":
 			id = "tick"
 		break;
 		case "›":
 			id = "single"
-		break;
-		case "_":
-			id = "underscore"
 		break;
 		case "°":
 			id = "degree"
@@ -133,7 +132,6 @@ exports.parse = function() {
 
 	var forceDebug = false,
 		_useError = false;
-
 
 	var config = {};
 
@@ -200,7 +198,8 @@ exports.parse = function() {
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
 	}
 	
-	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
+// done in line 122
+// 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 	
 	var oneBlock = false;
 
@@ -225,7 +224,8 @@ exports.parse = function() {
 //			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg, {eatTerminator:true}); 
 			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg);// OK for single new-line
 		} else {
-			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options._endString) + "$)","mg"));
+//			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options._endString) + "$)","mg")); // V0.7.0
+			tree = this.parser.parseInlineRun(new RegExp("(" + $tw.utils.escapeRegExp(options._endString) + "$)","mg"));
 		}
 	}
 	// remember text postions for macro src handling
@@ -239,7 +239,7 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["tick", "angle", "almost", "single", "underscore", "degree", "symbol", 
+	var fixAttributes = ["tick", "angle", "almost", "single", "degree", "symbol", 
 						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
 
