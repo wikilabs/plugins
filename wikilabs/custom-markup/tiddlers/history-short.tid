@@ -1,6 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history-short
 
 
+V 0.8.1 - 2020-10-30
+
+* fix `/°slash /°slash nesting°/ nesting°/`
+
 V 0.8.0 - 2020-10-29
 
 * There are 4 "inline" elements
