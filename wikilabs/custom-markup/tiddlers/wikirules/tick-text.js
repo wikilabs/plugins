@@ -239,7 +239,7 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["tick", "angle", "almost", "single", "degree", "symbol", 
+	var fixAttributes = ["pilcrow", "tick", "angle", "almost", "single", "degree", "symbol", 
 						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
 

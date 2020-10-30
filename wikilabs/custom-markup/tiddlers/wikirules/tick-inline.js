@@ -41,7 +41,7 @@ exports.init = function(parser) {
 // 	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.6.x
 //	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.0
 //	this.matchRegExp = /((?=¶[^¶])¶|(?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])_)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
-	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])__)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
+	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])__|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -236,7 +236,7 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["tick", "angle", "almost", "single", "degree", "symbol", 
+	var fixAttributes = ["underscore", "little", "braille", "slash", "symbol", 
 						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
 
