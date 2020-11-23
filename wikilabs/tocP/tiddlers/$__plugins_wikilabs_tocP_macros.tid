@@ -1,7 +1,8 @@
 created: 20170127103951869
-modified: 20201118190442872
+modified: 20201123165153573
 tags: $:/tags/Macro
 title: $:/plugins/wikilabs/tocP/macros
+tocp.external-plugin.parent.ref: #:/wiki/plugins/external-exploded/pmario/tocP
 type: text/vnd.tiddlywiki
 
 \define tocP-caption()
@@ -26,9 +27,9 @@ type: text/vnd.tiddlywiki
           <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
           <$macrocall $name="tocP-body" tag=<<item>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> field=<<field>>/>
           <$list filter="""[is[current]get<tocP-tree-linker-field-name>]""" variable="newFields">
-					<$list filter="""[enlist<newFields>]""" variable="newField">
-          <$list filter="""[get<newField>match[root]]""" variable="ignore">
-          		<$macrocall $name="tocP-body" tag="root" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$ -[[$tag$]]""" path="""$path$/external-root""" field=<<newField>>/>
+          <$list filter="""[enlist<newFields>]""" variable="newField">
+          <$list filter="""[get<newField>match[root]first[]]""" variable="ignore">
+          <$macrocall $name="tocP-body" tag="root" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$ -[[$tag$]]""" path="""$path$/external-root""" field=<<newField>>/>
           </$list>
           </$list>
           </$list>
@@ -138,7 +139,7 @@ type: text/vnd.tiddlywiki
         </$list>
         <$list filter="""[is[current]get<tocP-tree-linker-field-name>]""" variable="newFields">
         <$list filter="""[enlist<newFields>]""" variable="newField">
-        <$list filter="""[get<newField>match[root]]""" variable="ignore">
+         <$list filter="""[get<newField>match[root]first[]]""" variable="ignore">
           <$macrocall $name="tocP-selective-expandable" tag="root" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$/external-root""" field=<<newField>>/>
         </$list>
         </$list>
@@ -174,7 +175,7 @@ type: text/vnd.tiddlywiki
         </$list>
         <$list filter="""[is[current]get<tocP-tree-linker-field-name>]""" variable="newFields">
         <$list filter="""[enlist<newFields>]""" variable="newField">
-        <$list filter="""[get<newField>match[root]]""" variable="ignore">
+         <$list filter="""[get<newField>match[root]first[]]""" variable="ignore">
           <$macrocall $name="tocP-selective-expandable" tag="root" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$/external-root""" field=<<newField>>/>
         </$list>
         </$list>
