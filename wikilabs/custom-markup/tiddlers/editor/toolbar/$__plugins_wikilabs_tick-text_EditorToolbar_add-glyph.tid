@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/add-glyph
+caption: add-angle
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+description: Add a "angle bracket" at the start of the selected line(s)
+icon: $:/plugins/wikilabs/custom-markup/icons/glyph-plus
+shortcuts: ((add-angle))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="add-tick"
+	character={{$:/plugins/wikilabs/custom-markup/icons/glyphs/active##glyph}}
+	count="1"
+/>

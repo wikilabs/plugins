@@ -1,13 +1,7 @@
 title: $:/plugins/wikilabs/custom-markup/icons/angle-minus
 
 <svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128"> <g fill-rule="evenodd">
- <path d="m69.256 51.81h47.566v11.636h-47.566v-11.637z" fill-rule="evenodd"/>
- <g transform="matrix(1.5813 0 0 1.5813 -11.86 -48.2)" stroke-width="1.02">
-  <path d="m11.382 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
-  <path d="m23.054 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
- </g>
- <g transform="matrix(1.5813 0 0 1.5813 -11.86 7.9787)" stroke-width="1.02">
-  <path d="m11.382 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
-  <path d="m23.054 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
- </g>
+ <path d="m76.4 57.4h51.4v12.6h-51.4v-12.6z" style="fill-rule:evenodd;stroke-width:1.08"/>
+ <path d="m6.78 99.1-6.32-6.22 30.1-30.2-29.5-29.6 6.27-6.33 35.9 35.9z" style="stroke-width:2.41"/>
+ <path d="m34.4 99.1-6.32-6.22 30.1-30.2-29.5-29.6 6.27-6.33 35.9 35.9z" style="stroke-width:2.41"/>
 </svg>

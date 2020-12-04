@@ -226,7 +226,7 @@ exports.parse = function() {
 		}
 	}
 	// remember text postions for macro src handling
-	textEndInner = this.parser.pos - options._endString.length;
+	textEndInner = this.parser.pos;
 
 	skipEndString(options._endString);
 	
