@@ -4,10 +4,12 @@ tags: $:/tags/Macro
 \define link-action()
 <$action-sendmessage $message="$(message)$" $param=<<currentTiddler>> navigateTo=<<currentTiddler>>/>
 \end
-\define tabs(tabsList,default,state:"$:/state/tab",class,template,buttonTemplate,retain)
+\define tabs(tabsList,default,state:"$:/state/tab",class,template,buttonTemplate,retain,actions,explicitState)
+<$set name="qualifiedState" value=<<qualify "$state$">>>
+<$set name="tabsState" filter="[<__explicitState__>minlength[1]] ~[<qualifiedState>]">
 <div class="tc-tab-set $class$">
 <div class="tc-tab-buttons $class$">
-<$list filter="$tabsList$" variable="currentTab"><$set name="save-currentTiddler" value=<<currentTiddler>>><$tiddler tiddler=<<currentTab>>><$button set=<<qualify "$state$">> setTo=<<currentTab>> default="$default$" selectedClass="tc-tab-selected" tooltip={{!!tooltip}}>
+<$list filter="$tabsList$" variable="currentTab" storyview="pop"><$set name="save-currentTiddler" value=<<currentTiddler>>><$tiddler tiddler=<<currentTab>>><$button set=<<tabsState>> setTo=<<currentTab>> default="$default$" selectedClass="tc-tab-selected" tooltip={{!!tooltip}}>
 <$transclude tiddler={{!!icon}}/>
 <$tiddler tiddler=<<save-currentTiddler>>>
 <$set name="tv-wikilinks" value="no">
@@ -16,14 +18,14 @@ tags: $:/tags/Macro
 <$macrocall $name="currentTab" $type="text/plain" $output="text/plain"/>
 </$transclude>
 </$transclude>
-</$set></$tiddler></$button>
-<$set name=message value={{$:/plugins/wikilabs/edit-tabs/config!!link-action}}>
-<$list filter="[<currentTiddler>]+[!is[shadow]]" emptyMessage="""<$button tag=span class="wltc-edit-tab" to=<<currentTiddler>> >{{$:/core/images/link}}</$button>""" ><$button tag=span class="wltc-edit-tab" actions=<<link-action>> ><$reveal type=match text="tm-navigate" state="$:/plugins/wikilabs/edit-tabs/config!!link-action">{{$:/core/images/link}}</$reveal><$reveal type=match text="tm-edit-tiddler" state="$:/plugins/wikilabs/edit-tabs/config!!link-action">{{$:/core/images/edit-button}}</$reveal></$button></$list></$set></$tiddler></$set></$list></div>
+</$set></$tiddler>$actions$</$button><$set name=message value={{$:/plugins/wikilabs/edit-tabs/config!!link-action}}>
+<$list filter="[<currentTiddler>]+[!is[shadow]]" emptyMessage="""<$button tag=span class="wltc-edit-tab" to=<<currentTiddler>> >{{$:/core/images/link}}</$button>""" ><$button tag=span class="wltc-edit-tab" actions=<<link-action>> ><$reveal type=match text="tm-navigate" state="$:/plugins/wikilabs/edit-tabs/config!!link-action">{{$:/core/images/link}}</$reveal><$reveal type=match text="tm-edit-tiddler" state="$:/plugins/wikilabs/edit-tabs/config!!link-action">{{$:/core/images/edit-button}}</$reveal></$button></$list></$set></$tiddler></$set></$list>
+</div>
 <div class="tc-tab-divider $class$"/>
 <div class="tc-tab-content $class$">
 <$list filter="$tabsList$" variable="currentTab">
 
-<$reveal type="match" state=<<qualify "$state$">> text=<<currentTab>> default="$default$" retain="""$retain$""">
+<$reveal type="match" state=<<tabsState>> text=<<currentTab>> default="$default$" retain="""$retain$""">
 
 <$transclude tiddler="""$template$""" mode="block">
 
@@ -36,4 +38,6 @@ tags: $:/tags/Macro
 </$list>
 </div>
 </div>
+</$set>
+</$set>
 \end
