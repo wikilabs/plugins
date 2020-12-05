@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/toggle-tick
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/custom-markup/EditorToolbar/toggle-tick!!description}}

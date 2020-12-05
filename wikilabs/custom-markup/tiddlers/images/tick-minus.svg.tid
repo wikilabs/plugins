@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/custom-markup/icons/tick-minus
+
+<svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
+  <path d="m7.3709 38.298 19.404-15.446-15.139-5.8519-11.427 17.159zm27.539-15.48h93.09v11.637h-93.09z"/>
+  <path d="m7.2811 73.472 19.404-15.446-15.139-5.8519-11.427 17.159z"/>
+  <path d="m7.3709 108.27 19.404-15.446-15.139-5.8519-11.427 17.159zm51.424-34.072h47.566v11.636h-47.566v-11.637z"/>
+</svg>

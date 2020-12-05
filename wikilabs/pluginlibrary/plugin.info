@@ -1,0 +1,6 @@
+{
+	"title": "$:/plugins/wikilabs/pluginlibrary",
+	"name": "Wikilabs Plugin Library",
+	"description": "Wikilabs plugin library configuration",
+	"list": "readme"
+}

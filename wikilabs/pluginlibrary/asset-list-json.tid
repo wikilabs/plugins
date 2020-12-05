@@ -1,0 +1,4 @@
+title: $:/plugins/wikilabs/pluginlibrary/asset-list-json
+
+`var assetList = `<$view tiddler="$:/UpgradeLibrary/List"/>`;
+`

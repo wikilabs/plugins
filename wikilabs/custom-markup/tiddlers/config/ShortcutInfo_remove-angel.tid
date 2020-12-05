@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/remove-angle
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/custom-markup/EditorToolbar/remove-angle!!description}}

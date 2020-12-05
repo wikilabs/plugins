@@ -1,0 +1,77 @@
+title: $:/plugins/wikilabs/custom-markup/history
+
+
+{{$:/plugins/wikilabs/custom-markup/history-short}}
+
+V 0.7.0 - 2020-10-23
+
+* New Inline functions
+** `_symbol.class.clsss:param:param some text__`
+** `.class` and `:param` work the same way as "block" definitions
+* Removed underscore from "block" definitions, because it's used by "inline"
+* Added: `\\ pragma comments`
+** It's faster than HTML comments `<!-- comments -->`, since it can be used outside macro `\define x()` blocks
+
+V 0.6.0 - 2020-10-03
+
+* ''New Functionality''
+** $:/config/custom-markup/pragma/PageTemplate tagged: `$:/tags/Macro`
+*** content: `\importcustom [tag[$:/tags/Pragma]]`
+** contains global pragma definitions .. and macro definitions
+
+* ''Incompatible changes''
+** `_params` renamed to -> `_classes`
+** `_maps` renamed to -> `_params` !!
+** Adjusted the docs accordingly
+* Improved debug modes
+** `\debugcustomize` new parameters: `no`, `list`, `global`, `global list`, `global ID`
+** `_debug` new parameter: `no`,
+* `angel` renamed to: `angle` + docs
+
+V 0.5.3 - 2020-09-29
+
+* new parameters: `_1, _2, _maps`
+** allows `°:param1Text:param2Text` 
+** new format `°.i.x.y:a:b`
+* [[Examples + Reference|https://wikilabs.github.io/editions/custom-markup/#test-checkbox-widget-maps-transclusion:test-checkbox-widget-maps-transclusion test-checkbox-widget-maps-variable "Custom Markup Definition"]]
+
+V 0.5.2 - 2020-09-23
+
+* fixed \importcustom
+* new parameter _srcName
+* \customize or \customise can be used
+* \debugcustomize or \debugcustomise can be used
+
+V 0.5.0 - 2020.09.20
+
+* New Plugin Name: custom-markup
+* New directory structure
+
+V 0.4.2 - 2020-09-18
+
+* docs is on the way
+* almost feature complete
+** \custominline needs to be improved
+
+V 0.4.0 2020.09.16
+
+* added IDs: single "›" and almost "≈"
+* ID comma removed 
+* new toolbar buttons
+* new keyboard shortcuts
+
+V 0.3.0 2020.09.10
+
+* pragma parameters renamed to _element, _use, _mode, ... 
+** because there was a naming problem with widget parameters
+* tick-inline uses `°°` now
+
+V 0.2.1 2020-09.12
+
+* add more IDs comma, degree, underline
+* \ticktect becomes \customize
+* \tickdebug becomes \debugcustomize
+
+V 0.0.1 - 2020-08-28
+
+* initial release

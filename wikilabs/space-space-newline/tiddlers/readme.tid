@@ -1,0 +1,37 @@
+title: $:/plugins/wikilabs/space-space-newline/readme
+
+Adds a wikitext rule to create hard linebreaks with `<space><space><newLine>` or `<space><space><backslash>`
+
+```
+There are 2 spaces and 1 linebreak at the end of this line  
+So we should see 2 lines
+```
+
+>There are 2 spaces and 1 linebreak at the end of this line  
+So we should see 2 lines
+
+---
+
+```
+There are 2 spaces and a backslash at the end of this line  \
+So we should see 2 lines
+```
+
+>There are 2 spaces and a backslash at the end of this line  \
+So we should see 2 lines
+
+---
+
+```
+If you want to have a visible backslash at the end of this line \  
+You need to add 2 spaces at the end of the line
+```
+
+>If you want to have a visible backslash at the end of this line \  
+You need to add 2 spaces after the backslash
+
+
+It's possible to manipulate the rules behaviour with:
+
+`\rules only ssnl`  
+`\rules excpet ssnl`

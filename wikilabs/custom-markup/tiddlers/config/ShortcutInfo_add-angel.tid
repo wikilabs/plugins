@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/add-angle
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/custom-markup/EditorToolbar/add-angle!!description}}

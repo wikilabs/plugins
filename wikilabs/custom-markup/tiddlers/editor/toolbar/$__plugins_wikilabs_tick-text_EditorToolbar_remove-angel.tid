@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/remove-angle
+caption: remove-angle
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+description: Remove a "angle bracket" at the start of the selected line(s)
+icon: $:/plugins/wikilabs/custom-markup/icons/angle-minus
+shortcuts: ((remove-angle))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="remove-tick"
+	character="»"
+	count="1"
+/>
