@@ -8,6 +8,7 @@ type: text/plain
   display: flex;
   flex-wrap: wrap;
   padding: 3px;
+  background: #eee;
 }
 
 .tc-dropdown-item {
@@ -18,9 +19,12 @@ type: text/plain
 
 .tc-block-dropdown a{
   flex: 1 0 calc(33% - 2px);
-  background: #eee;
   margin-left: 2px;
   margin-top: 2px;
+}
+
+.tc-block-dropdown .tc-tag-button-selected {
+  background: <<colour primary>>;
 }
 
 .tc-search-results {

@@ -3,4 +3,4 @@ modified: 20160902131509079
 title: $:/config/SyncFilter
 type: text/vnd.tiddlywiki
 
-[is[tiddler]] -[[$:/HistoryList]] -[[$:/Import]] -[[$:/isEncrypted]] -[prefix[$:/status/]] -[prefix[$:/temp/]] -[[$:/StoryList]]
+[is[tiddler]] -[[$:/core]] -[[$:/library/sjcl.js]] -[prefix[$:/boot/]] -[prefix[$:/HistoryList]] -[status[pending]plugin-type[import]] -[[$:/isEncrypted]] -[prefix[$:/status/]] -[prefix[$:/temp/]]
