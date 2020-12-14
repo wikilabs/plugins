@@ -1,5 +1,5 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/remove-custom-markers
-caption: remove-markers
+caption: remove-all-markers
 tags: $:/tags/EditorToolbar
 shortcuts: ((remove-custom-markers))
 icon: $:/plugins/wikilabs/custom-markup/icons/custom-minus-all

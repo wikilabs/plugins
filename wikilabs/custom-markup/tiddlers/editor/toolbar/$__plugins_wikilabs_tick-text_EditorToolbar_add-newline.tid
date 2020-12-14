@@ -4,6 +4,7 @@ condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]
 description: Adds a newline character at the end of the selected line(s)
 icon: $:/plugins/wikilabs/custom-markup/icons/add-newline
 shortcuts: ((add-newline))
+button-classes: tc-text-editor-toolbar-item-start-group
 tags: $:/tags/EditorToolbar
 
 <$action-sendmessage

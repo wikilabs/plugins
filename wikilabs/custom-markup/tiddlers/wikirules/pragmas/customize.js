@@ -27,7 +27,7 @@ Wiki pragma rule for whitespace specifications
 exports.name = "customize";
 exports.types = {pragma: true};
 
-var idTypes = ["tick", "single", "degree", "angle", "almost", "pilcrow", "underscore", "little", "braille", "slash"];
+var idTypes = ["tick", "single", "degree", "angle", "almost", "pilcrow", "little", "braille", "slash"];
 /*
 Instantiate parse rule
 */
@@ -121,7 +121,6 @@ exports.parse = function() {
 			case "single": // fall through
 			case "degree": // fall through
 			case "pilcrow":
-			case "underscore": // fall through
 			case "little": // fall through
 			case "braille": // fall through
 			case "slash": // fall through

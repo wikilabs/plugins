@@ -1,12 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 type: text/vnd.tiddlywiki
 
+\define getConfigName() $:/plugins/wikilabs/custom-markup/icons/glyphs/$(__name__)$
+
 \define selectID()
-<$action-createtiddler $basetitle="$:/plugins/wikilabs/custom-markup/icons/glyphs/active" $overwrite="yes" 
-		text={{{ [<linePrefix>get[text]] }}}
-		name="""$(linePrefix)$""" 
-		id={{{ [<linePrefix>get[id]]~´ }}}
-/>
+<$action-createtiddler $basetitle="$:/config/wikilabs/custom-markup/icons/glyphs/active" $overwrite="yes" $template=<<getConfigName>> />
 \end
 \define selectActions()
 <$action-createtiddler $basetitle="$:/config/edit/linePrefix" $overwrite="yes" 
@@ -18,13 +16,14 @@ type: text/vnd.tiddlywiki
 <$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/id-prepared"/>
 <$action-deletetiddler $tiddler=<<dropdown-state>> />
 \end
+
 \define idSelector()
 <$tiddler tiddler="$:/config/edit/linePrefix">
-	<$radio field="id" value="›"> › </$radio>|
-	<$radio field="id" value="´"> ´ </$radio>|
-	<$radio field="id" value="°"> ° </$radio>|
-	<$radio field="id" value="»"> » </$radio>|
-	<$radio field="id" value="≈"> ≈ </$radio>|
+	<$wl-radio field="id" value="›" actions=<<selectID>> name="single"> › </$wl-radio>|
+	<$wl-radio field="id" value="´" actions=<<selectID>> name="tick"> ´ </$wl-radio>|
+	<$wl-radio field="id" value="°" actions=<<selectID>> name="degree"> ° </$wl-radio>|
+	<$wl-radio field="id" value="»" actions=<<selectID>> name="angle"> » </$wl-radio>|
+	<$wl-radio field="id" value="≈" actions=<<selectID>> name="about"> ≈ </$wl-radio>|
 	<$checkbox 
 		field=force
 		checked="yes"
@@ -33,6 +32,7 @@ type: text/vnd.tiddlywiki
 	</$checkbox>
 </$tiddler>
 \end
+
 \define preview-type-button()
 <$button tag="a" actions=<<selectActions>> >
 

@@ -3,7 +3,7 @@ title: $:/plugins/wikilabs/custom-markup/icons/glyph-plus
 <svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128" > 
 	<defs>
 		<g id="element">
-			{{$:/plugins/wikilabs/custom-markup/icons/glyphs/active##element}}
+			{{$:/config/wikilabs/custom-markup/icons/glyphs/active##element}}
 		</g>
 	</defs>
 	<path d="m76.4 57.3h51.4v12.5h-51.4z" style="fill-rule:evenodd;stroke-width:1.08"/>

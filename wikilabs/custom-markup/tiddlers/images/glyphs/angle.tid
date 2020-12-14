@@ -3,5 +3,6 @@ type: application/json
 
 {
 "glyph": "»",
+"disabled": "no",
 "element": "<path d='m6.8 98.9-6.3-6.21 30-30.2-29.5-29.5 6.25-6.32 35.9 35.9z' style='stroke-width:2.41'/><path d='m34.4 98.9-6.3-6.21 30-30.2-29.5-29.5 6.25-6.32 35.9 35.9z' style='stroke-width:2.41'/>"
 }

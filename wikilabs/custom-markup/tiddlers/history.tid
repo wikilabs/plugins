@@ -3,6 +3,17 @@ title: $:/plugins/wikilabs/custom-markup/history
 
 {{$:/plugins/wikilabs/custom-markup/history-short}}
 
+V 0.8.1 - 2020-10-30
+
+* fix `/°slash /°slash nesting°/ nesting°/`
+
+V 0.8.0 - 2020-10-29
+
+* There are 4 "inline" elements
+** `__ underscore__`, `﹙ little﹚`, `⠒ braille⠶`, `/° slash°/`
+* There are 6 "block" elements
+** `pilcrow: ¶`, `about: ≈`, `angle: »`, `degree: °`, `tick: ´`, `single: ›`
+
 V 0.7.0 - 2020-10-23
 
 * New Inline functions
