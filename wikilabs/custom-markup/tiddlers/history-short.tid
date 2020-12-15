@@ -2,8 +2,16 @@ title: $:/plugins/wikilabs/custom-markup/history-short
 
 V 0.9.0 - 2020-12-11
 
+* Changed all keyboard shortcuts, to avoid overlapping
+
+* All toolbar buttons are visible atm. This will change in the future!
+
+* Add dynamic button "disabled" state to: $:/core/ui/EditTemplate/body/toolbar/button
+** Added button disabled CSS
+
 * There are 3 "inline" elements
 ** `﹙ little﹚`, `⠒ braille⠶`, `/° slash°/`
+
 * There are 6 "block" elements
 ** `pilcrow: ¶`, `about: ≈`, `angle: »`, `degree: °`, `tick: ´`, `single: ›`
 

@@ -10,7 +10,7 @@ tags: $:/tags/EditorToolbar
 <$action-sendmessage
 	$message="tm-edit-text-operation"
 	$param="toggle-tick"
-	character={{{ [{$:/config/edit/linePrefix!!id}addsuffix{$:/config/edit/linePrefix!!text}] }}}
+	character={{{ [{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}addsuffix{$:/config/edit/linePrefix!!text}] }}}
 	count="1"
-	force={{{ [{$:/config/edit/linePrefix!!force}] }}}
+	force={{{ [{$:/config/edit/linePrefix/force}] }}}
 />
