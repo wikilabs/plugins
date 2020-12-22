@@ -1,14 +1,17 @@
 title: $:/plugins/wikilabs/custom-markup/history-short
 
+V 0.9.0 - 2020-12-11
 
-V 0.8.1 - 2020-10-30
+* Changed all keyboard shortcuts, to avoid overlapping
 
-* fix `/°slash /°slash nesting°/ nesting°/`
+* All toolbar buttons are visible atm. This will change in the future!
 
-V 0.8.0 - 2020-10-29
+* Add dynamic button "disabled" state to: $:/core/ui/EditTemplate/body/toolbar/button
+** Added button disabled CSS
 
-* There are 4 "inline" elements
-** `__ underscore__`, `﹙ little﹚`, `⠒ braille⠶`, `/° slash°/`
+* There are 3 "inline" elements
+** `﹙ little﹚`, `⠒ braille⠶`, `/° slash°/`
+
 * There are 6 "block" elements
 ** `pilcrow: ¶`, `about: ≈`, `angle: »`, `degree: °`, `tick: ´`, `single: ›`
 

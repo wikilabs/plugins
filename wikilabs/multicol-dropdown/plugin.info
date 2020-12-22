@@ -3,6 +3,6 @@
 	"description": "MultiColumn Dropdown with flex-box CSS only",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.0",
-	"version": "0.1.2",
+	"version": "1.0.0",
 	"list": "readme license history"
 }

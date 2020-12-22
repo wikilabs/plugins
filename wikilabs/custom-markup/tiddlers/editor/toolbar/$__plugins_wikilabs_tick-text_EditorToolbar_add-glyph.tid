@@ -1,0 +1,15 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/add-glyph
+caption: add-glyph
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+condition-disabled: [[$:/config/wikilabs/custom-markup/icons/glyphs/active]getindex[disabled]else[yes]]
+description: Add a "glyph" at the start of the selected line(s)
+icon: $:/plugins/wikilabs/custom-markup/icons/glyph-plus
+shortcuts: ((add-glyph))
+tags: $:/tags/EditorToolbar
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="add-tick"
+	character={{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}}
+	count="1"
+/>

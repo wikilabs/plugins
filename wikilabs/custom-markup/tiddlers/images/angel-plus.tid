@@ -1,16 +1,8 @@
 title: $:/plugins/wikilabs/custom-markup/icons/angle-plus
 
 <svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128"> <g fill-rule="evenodd">
- <g transform="matrix(1.0801 0 0 1.0801 4.212 -17.516)" fill-rule="evenodd">
-  <path d="m57.573 69.333h47.566v11.636h-47.566v-11.637z"/>
-  <path d="m87.174 51.368v47.566h-11.636v-47.566h11.637z"/>
- </g>
- <g transform="matrix(1.7079 0 0 1.7079 -14.41 -51.918)" stroke-width="1.02">
-  <path d="m11.382 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
-  <path d="m23.054 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
- </g>
- <g transform="matrix(1.7079 0 0 1.7079 -14.41 9.7276)" stroke-width="1.02">
-  <path d="m11.382 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
-  <path d="m23.054 64.208-2.6718-2.6321 12.724-12.766-12.471-12.505 2.6539-2.6782 15.196 15.18z"/>
- </g>
+ <path d="m76.4 57.3h51.4v12.5h-51.4z" style="fill-rule:evenodd;stroke-width:1.08"/>
+ <path d="m108 38v51.4h-12.5v-51.4z" style="fill-rule:evenodd;stroke-width:1.08"/>
+ <path d="m6.8 98.9-6.3-6.21 30-30.2-29.5-29.5 6.25-6.32 35.9 35.9z" style="stroke-width:2.41"/>
+ <path d="m34.4 98.9-6.3-6.21 30-30.2-29.5-29.5 6.25-6.32 35.9 35.9z" style="stroke-width:2.41"/>
 </svg>

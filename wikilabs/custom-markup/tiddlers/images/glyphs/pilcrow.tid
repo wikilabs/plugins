@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/custom-markup/icons/glyphs/pilcrow
+type: application/json
+
+{
+"glyph": "¶",
+"element": "<path d='m27.6 20.5h25.5v96.2h-8.02v-89.2h-10.8v89.2h-8.08v-48.1q-12.2-0.967-18.9-7.23-6.66-6.32-6.66-16.8 0-10.8 7.4-17.4 7.4-6.6 19.6-6.6z' style='stroke-width:2.91'/>"
+}

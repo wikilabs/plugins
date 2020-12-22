@@ -26,7 +26,7 @@ var CLASS_PREFIX = CLASS_GROUP + "-inline";
 exports.name = "tickinline";
 exports.types = {inline: true};
 	
-var idTypes = ["underscore", "little", "braille", "slash"];
+var idTypes = ["little", "braille", "slash"];
 
 exports.init = function(parser) {
 	this.parser = parser;
@@ -41,7 +41,8 @@ exports.init = function(parser) {
 // 	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.6.x
 //	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.0
 //	this.matchRegExp = /((?=¶[^¶])¶|(?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])_)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
-	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])__|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
+//	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])__|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
+	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.9.0
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -94,11 +95,6 @@ exports.parse = function() {
 		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(":") : [] };
 
 	switch (this.match[1][0]) {
-		case "_":
-			id = "underscore";
-			options._element = "u"
-			options._endString = "__"
-		break;
 		case "﹙":
 			id = "little";
 			options._endString = "﹚"
@@ -226,7 +222,7 @@ exports.parse = function() {
 		}
 	}
 	// remember text postions for macro src handling
-	textEndInner = this.parser.pos - options._endString.length;
+	textEndInner = this.parser.pos;
 
 	skipEndString(options._endString);
 	
@@ -236,7 +232,7 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["underscore", "little", "braille", "slash", "symbol", 
+	var fixAttributes = ["little", "braille", "slash", "symbol", 
 						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
 

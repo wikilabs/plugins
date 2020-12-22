@@ -1,8 +1,8 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/preview-type
 button-classes: tc-text-editor-toolbar-item-adjunct
-caption: Choose ID type
+caption: choose glyph
 condition: [all[shadows+tiddlers]tag[$:/tags/EditPreview]!has[draft.of]butfirst[]limit[1]]
-description: Choose ID type
+description: Choose glyph
 dropdown: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 icon: $:/core/images/chevron-down
 tags: $:/tags/EditorToolbar

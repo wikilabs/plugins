@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/new-tiddler-from-search/history
 
+V 1.0.0 - 2020.12.08
+
+* Make it compatible to TW V5.1.23
+
 V 0.1.2 - 2020.01.19
 
 * Update license link/text

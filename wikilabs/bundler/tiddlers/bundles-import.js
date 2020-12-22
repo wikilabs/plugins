@@ -9,7 +9,7 @@ A startup module to log imported tiddlers to the import.bundle tiddler.
 (function(){
 
 /*jslint node: true, browser: true */
-/*global $tw: false */
+/*global $tw: false, exports: true */
 "use strict";
 
 // Export name and synchronous status

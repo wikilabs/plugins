@@ -1,30 +1,36 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 type: text/vnd.tiddlywiki
 
+\define getConfigName() $:/plugins/wikilabs/custom-markup/icons/glyphs/$(__name__)$
+
+\define selectID()
+<$action-createtiddler $basetitle="$:/config/wikilabs/custom-markup/icons/glyphs/active" $overwrite="yes" $template=<<getConfigName>> />
+\end
 \define selectActions()
 <$action-createtiddler $basetitle="$:/config/edit/linePrefix" $overwrite="yes" 
-    text={{{ [<linePrefix>get[text]] }}}
-    name="""$(linePrefix)$""" 
-    id={{{ [<linePrefix>get[id]]~´ }}}
+		text={{{ [<linePrefix>get[text]] }}}
+		name="""$(linePrefix)$""" 
+		id={{{ [{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}] ~[[´]] }}}
 />
 <$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [{$:/config/edit/linePrefix!!id}addsuffix{$:/config/edit/linePrefix!!text}] }}}/>
 <$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/id-prepared"/>
 <$action-deletetiddler $tiddler=<<dropdown-state>> />
 \end
+
 \define idSelector()
 <$tiddler tiddler="$:/config/edit/linePrefix">
-  <$radio field="id" value="›"> › </$radio>|
-  <$radio field="id" value="´"> ´ </$radio>|
-  <$radio field="id" value="°"> ° </$radio>|
-  <$radio field="id" value="»"> » </$radio>|
-  <$radio field="id" value="≈"> ≈ </$radio>|
-  <$checkbox 
-     field=force
-     checked="yes"
-     unchecked="no"
-     default="no" > Use all lines</$checkbox>
+	<$wl-radio field="id" value="›" actions=<<selectID>> name="single"> › </$wl-radio>|
+	<$wl-radio field="id" value="´" actions=<<selectID>> name="tick"> ´ </$wl-radio>|
+	<$wl-radio field="id" value="°" actions=<<selectID>> name="degree"> ° </$wl-radio>|
+	<$wl-radio field="id" value="»" actions=<<selectID>> name="angle"> » </$wl-radio>|
+	<$wl-radio field="id" value="≈" actions=<<selectID>> name="about"> ≈ </$wl-radio>|
 </$tiddler>
+<$checkbox tiddler="$:/config/edit/linePrefix/force" 
+	field=text 
+	checked="yes" unchecked="no" default="no" > Use all lines
+</$checkbox>
 \end
+
 \define preview-type-button()
 <$button tag="a" actions=<<selectActions>> >
 
@@ -45,7 +51,7 @@ type: text/vnd.tiddlywiki
 </$button>
 \end
 
-Select ID -- <$macrocall $name=idSelector />
+Select glyph -- <$macrocall $name=idSelector />
 
 ----
 

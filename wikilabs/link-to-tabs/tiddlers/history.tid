@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 2.0.0 - 2020.12.05
+
+* Update $:/core/macros/tabs to V5.1.23
+
 V 1.1.1 - 2020.01.19
 
 * Update license link/text

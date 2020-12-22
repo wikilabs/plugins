@@ -3,5 +3,5 @@
 	"name": "Custom Markup",
 	"description": "Adds a possibilty to style text content with wikitext syntax",
 	"list": "readme license history",
-	"version": "0.8.0"
+	"version": "0.9.0"
 }

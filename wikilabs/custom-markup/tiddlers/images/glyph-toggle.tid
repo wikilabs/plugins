@@ -1,0 +1,13 @@
+title: $:/plugins/wikilabs/custom-markup/icons/glyph-toggle
+
+<svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
+	<defs>
+		<g id="element">
+			{{$:/config/wikilabs/custom-markup/icons/glyphs/active##element}}
+		</g>
+	</defs>
+	<path d="m80.9 77.8h47.6v11.6h-47.6v-11.6z" fill-rule="evenodd"/>
+	<path d="m110 59.6v47.6h-11.6v-47.6h11.6z" fill-rule="evenodd"/>
+	<path d="m80.5 27.5h47.6v11.6h-47.6v-11.6z" fill-rule="evenodd"/>
+	<use href="#element"/>
+</svg>
