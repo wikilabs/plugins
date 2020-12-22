@@ -1,0 +1,20 @@
+title: $:/plugins/wikilabs/click-effect/readme
+
+! Basics
+
+This plugin shows a little "click animation" if the left mouse button is released
+
+! Settings
+
+Th current setting is: ''{{$:/config/clickEffect}}''
+
+| Setting | Description |h
+|<$radio field="text" tiddler="$:/config/clickEffect" value="clickEffect"> Click Effect</$radio> |A little click animation is shown at the cursor position |
+|<$radio field="text" tiddler="$:/config/clickEffect" value="pulse"> Element Pulse</$radio> |The html-element, that is clicked is highlighted |
+|<$radio field="text" tiddler="$:/config/clickEffect" value="no"> Off</$radio> |No click-animaiton is shown|
+
+----
+
+''Important'': This plugin modifies several core modules
+
+<$list filter="[[$:/plugins/wikilabs/click-effect]plugintiddlers[]prefix[$:/core/]]"><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></$list>

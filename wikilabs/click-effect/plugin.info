@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/click-effect",
+	"description": "ClickEffect - A simple button click effect",
+	"author": "pmario",
+	"core-version": ">=5.1.22",
+	"version": "0.1.0",
+	"list": "readme license history"
+}
