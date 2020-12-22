@@ -3,7 +3,6 @@ modified: 20201222092859057
 tags: $:/tags/Macro
 title: $:/plugins/wikilabs/tocP/macros
 tocp.external-plugin.parent.ref: #:/wiki/plugins/external-exploded/pmario/tocP
-tocp.main-parent.ref: #:/wiki/plugins/external/exploded/pmario/tocP
 type: text/vnd.tiddlywiki
 
 \define tocP-caption()

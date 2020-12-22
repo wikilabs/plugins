@@ -4,7 +4,6 @@ description: NewChildHere & add parent field
 modified: 20201222091526119
 tags: $:/tags/ViewToolbar
 title: $:/wikilabs/ui/buttons/new-child-alone
-tocp.main-parent.ref: #:/wiki/plugins/external/exploded/pmario/tocP
 type: text/vnd.tiddlywiki
 
 \define newHereValue()
