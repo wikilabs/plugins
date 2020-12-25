@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/pragma-comment",
+	"description": "Add possibility to add 'pragma comments'",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.1.15",
+	"version": "0.1.0",
+	"list": "readme license history"
+}

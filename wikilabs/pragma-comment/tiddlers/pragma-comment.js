@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/custom-markup/wikirules/pragma-comment.js
+title: $:/plugins/wikilabs/pragma-comment/pragma-comment.js
 type: application/javascript
 module-type: wikirule
 
