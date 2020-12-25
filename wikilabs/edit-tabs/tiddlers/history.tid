@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/edit-tabs/history
 
+V 2.0.1 - 2020-12-25
+
+* update license
+
 V 2.0.0 - 2020.12.05
 
 * Update $:/core/macros/tabs to V5.1.23

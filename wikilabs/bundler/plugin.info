@@ -3,6 +3,6 @@
 	"description": "Bundler - Simple UI to create tiddler bundles",
 	"author": "pmario",
 	"core-version": ">=5.1.14",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"list": "readme license history"
 }

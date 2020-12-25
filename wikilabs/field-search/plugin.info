@@ -3,6 +3,6 @@
 	"description": "'Field Search' tab is added to search results",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.18",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"list": "readme license history"
 }
