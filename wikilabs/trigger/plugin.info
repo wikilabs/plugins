@@ -1,6 +1,7 @@
 {
 	"title": "$:/plugins/wikilabs/trigger",
-	"description": "Trigger - actions, whenever the widget is shown",
+	"name": "Trigger",
+	"description": "Activate actions, whenever the widget is shown",
 	"author": "pmario",
 	"core-version": ">=5.1.14",
 	"version": "0.1.1",

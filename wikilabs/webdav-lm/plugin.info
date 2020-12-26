@@ -1,6 +1,7 @@
 {
 	"title": "$:/plugins/wikilabs/webdav-lm",
-	"description": "WebDav PUT saver - takes precednece",
+	"name": "WegDav lm",
+	"description": "WebDav PUT saver - takes precedence",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.14",
 	"version": "0.1.2",

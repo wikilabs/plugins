@@ -1,7 +1,7 @@
 {
 	"title": "$:/plugins/wikilabs/persistent-states",
 	"description": "Makes all state tiddlers persistent",
-	"name": "Persistent-States",
+	"name": "Persistent States",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.0",
 	"version":"1.0.1",

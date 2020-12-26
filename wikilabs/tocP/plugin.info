@@ -1,6 +1,7 @@
 {
 	"title": "$:/plugins/wikilabs/tocP",
-	"description": "Table of Contents - parent field based",
+	"name": "tocP",
+	"description": "Parent Based - Table of Contents",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.13",
 	"version": "0.1.2",

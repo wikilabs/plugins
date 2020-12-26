@@ -1,6 +1,7 @@
 {
 	"title": "$:/plugins/wikilabs/field-search",
-	"description": "'Field Search' tab is added to search results",
+	"name": "Field Search",
+	"description": "New tabs are added to search results",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.18",
 	"version": "0.2.4",

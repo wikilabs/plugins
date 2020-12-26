@@ -1,5 +1,6 @@
 {
 	"title": "$:/plugins/wikilabs/edit-tabs",
+	"name": "Edit Tabs",
 	"description": "Internal link- or edit-buttons are added to tabs if selected",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.15",

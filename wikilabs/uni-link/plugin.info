@@ -1,7 +1,7 @@
 {
 	"title": "$:/plugins/wikilabs/uni-link",
 	"description": "Enhances the prettylink-parser" ,
-	"name": "uni-link",
+	"name": "Uni-Link",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.22",
 	"version":"2.0.1",
