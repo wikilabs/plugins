@@ -1,5 +1,6 @@
 title: $:/core/ui/AdvancedSearch/Shadows
 caption:
+info: {{$:/language/Search/Shadows/Caption}}
 icon: $:/plugins/wikilabs/advanced-search-plus/shadow-search.svg
 tags: $:/tags/AdvancedSearch
 

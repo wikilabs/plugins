@@ -1,5 +1,6 @@
 title: $:/core/ui/AdvancedSearch/Filter
 caption:
+info: {{$:/language/Search/Filter/Caption}}
 icon: $:/plugins/wikilabs/advanced-search-plus/filter-search.svg
 tags: $:/tags/AdvancedSearch
 
