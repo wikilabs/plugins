@@ -1,6 +1,16 @@
 title: $:/plugins/wikilabs/click-effect/history
 
-V 0.1.0 - 2020-12-22
+V 0.2.0 - 2021.01.04
+
+* dom.js overwrite necessary utility functions only
+** add dom.clickAnimation()
+** fix dom.pulseElement() ... This should be part of the core
+* popup.js 
+** add popup.pulseElement()
+** add popup.clickAnimation()
+** Change popup.handleEvent()
+
+V 0.1.0 - 2020.12.22
 
 * initial release
 * name: click-effect
