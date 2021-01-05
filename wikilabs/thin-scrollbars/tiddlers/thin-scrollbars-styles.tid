@@ -1,0 +1,27 @@
+title: $:/plugins/wikilabs/thin-scrollbars/styles
+tags: $:/tags/Stylesheet
+type: text/css
+
+* {
+	scrollbar-width: thin;
+}
+
+.tc-tab-content:hover,
+.tc-sidebar-scrollable:hover {
+	scrollbar-width: auto;
+}
+
+*::-webkit-scrollbar {
+	width: .4em;
+	height: .4em;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: #bbb;
+}
+
+.tc-tab-content:hover::-webkit-scrollbar,
+.tc-sidebar-scrollable:hover::-webkit-scrollbar {
+	width: .8em;
+	height: .8em;
+}

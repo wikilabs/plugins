@@ -6,7 +6,7 @@ icon: $:/plugins/wikilabs/custom-markup/icons/tick-minus
 modified: 20200914083802568
 shortcuts: ((remove-tick))
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/remove-tick
-type: text/vnd.tiddlywiki
+tags: $:/tags/EditorToolbarXXX
 
 <$action-sendmessage
 	$message="tm-edit-text-operation"
