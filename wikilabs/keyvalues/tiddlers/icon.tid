@@ -1,0 +1,6 @@
+title: $:/plugins/wikilabs/keyvalues/icon
+type: image/svg+xml
+
+<svg width="22pt" height="22pt" version="1.1" viewBox="0 0 128 128">
+<path transform="scale(4.36)" d="m18.6 0-14.5 7.33-3.93 14.7 10.5 7.33 14.5-7.33 3.93-14.7-10.5-7.33zm-13.3 11.4h2.01v2.83l2.9-2.83h2.34l-3.76 3.67 4.15 4.08h-2.52l-3.11-3.05v3.05h-2.01v-7.75zm11.7 0h2.03l2.07 5.72 2.07-5.72h2.02l-2.89 7.75h-2.4l-2.89-7.75zm-3.14 1.94h1.89v2.01h-1.89v-2.01zm0 3.8h1.89v2.01h-1.89v-2.01z" style="stroke-width:.229"/>
+</svg>
