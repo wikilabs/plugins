@@ -1,5 +1,15 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 0.2.0 - 2021-01-25
+
+* Make `prefix[--- ]]` the standard for tiddler titles, that are used as comments
+** It's easy to read and we didn't get complains for 2 years, since the suggestion was made
+* Bundler import allows us to import `$:/state/` tiddlers.
+** The plugin overwrites [[$:/core/modules/upgraders/system.js]] now
+* $:/StoryList and $:/HistoryList are prefixes now. 
+** `DONT_IMPORT_PREFIX_LIST = ["$:/temp/","$:/Import","$:/StoryList","$:/HistoryList"],`
+** This will allow us to work with multiple stories
+
 V 0.1.3 - 2020-12-25
 
 * update license

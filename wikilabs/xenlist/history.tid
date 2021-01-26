@@ -1,0 +1,6 @@
+title: $:/plugins/wikilabs/xenlist/history
+
+V 0.0.1-experimental - 2021.01.25
+
+* initial release
+** needed by bundler and wltm-open-story plugins
