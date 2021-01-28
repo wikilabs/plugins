@@ -8,8 +8,10 @@ tags: $:/tags/AdvancedSearch/FilterButton
 </span>
 
 <$reveal state=<<qualify "$:/state/filterDropdown">> type="popup" position="belowleft" animate="yes" class="tc-block-dropdown tc-edit-type-dropdown tc-block-dropdown-wrapper">
+<$set name="tv-show-missing-links" value="yes">
 <$linkcatcher to="$:/temp/advancedsearch" >
 <$list filter="[all[shadows+tiddlers]tag[$:/tags/Filter]]"><$link to={{!!filter}}><$transclude field="description"/></$link>
 </$list>
 </$linkcatcher>
+</$set>
 </$reveal>
