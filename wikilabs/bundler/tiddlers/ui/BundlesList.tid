@@ -3,22 +3,7 @@ modified: 20170609084521841
 title: $:/plugins/wikilabs/bundler/ui/BundlesList
 type: text/vnd.tiddlywiki
 
-\define filter-exist() [enlist{$(currentTiddler)$}] +[has[title]]
-\define filter-list() [enlist{$(currentTiddler)$}!prefix[--- ]]
-\define get-info() <$count filter=<<filter-exist>> />/<$count filter=<<filter-list>> />
-\define get-tooltip() <$count filter=<<filter-exist>> />, out of <$count filter=<<filter-list>> /> tiddlers will be exported. Check for typos!
-\define count-filter() <$count filter={{$(currentTiddler)$!!filter}} /> 
-\define get-filter-tooltip() <<count-filter>> tiddlers will be exported
-
-\define go-advanced-search-filter()
-<$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
-<$action-setfield $tiddler="$:/temp/advancedsearch" $value={{$(currentTiddler)$!!filter}}/>
-\end
-\define test-filter()
-<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-invisible" tooltip="Test the filter" style="cursor:help">
- <<count-filter>> 
-</$button>
-\end
+\import [[$:/plugins/wikilabs/bundler/ui/BundlesFiltered]]
 
 <$button>
 <$action-sendmessage $message="tm-new-tiddler" 

@@ -20,6 +20,23 @@ type: text/vnd.tiddlywiki
  <<count-filter>> 
 </$button>
 \end
+\define test-filter-text()
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-boxed" tooltip="Test the filter">
+Open this filtered list in ~AdvancedSearch
+</$button>
+\end
+
+\define go-advanced-search-list()
+<$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
+<$action-setfield $tiddler="$:/temp/advancedsearch" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
+<$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
+\end
+
+\define test-list()
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-list>> class="tc-btn-boxed" tooltip="Test the filter">
+Open this list in ~AdvancedSearch
+</$button>
+\end
 
 <$button>
 <$action-sendmessage $message="tm-new-tiddler" 

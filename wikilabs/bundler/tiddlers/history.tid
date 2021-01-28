@@ -3,6 +3,7 @@ title: $:/plugins/wikilabs/bundler/history
 V 0.2.0 - 2021-01-28
 
 * Add a new tab to the tiddler (i)nfo area
+** The "Bundle" tab contains a "list", "export" and "open in ~AdvancedSearch" buttons
 
 * Improve configuration panel
 ** We have all important settings on 1 page now
