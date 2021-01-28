@@ -1,0 +1,13 @@
+created: 20191220145841901
+modified: 20210127211305677
+tags: 
+title: $:/plugins/wikilabs/bundler/list-links-custom/element-delete
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\rules only html transclude transcludeinline
+
+<span class={{{[all[current]has[title]then[tc-small-gap-right]else[wltc-15-gap]]}}} ><$list filter="[all[current]has[title]]" >{{||$:/core/ui/Buttons/delete}}</$list></span>
+<$link to={{!!title}}>
+<$view field=title format=text/>
+</$link>

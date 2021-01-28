@@ -1,0 +1,24 @@
+created: 20210125170030840
+modified: 20210128080707336
+tags: $:/tags/Macro
+title: $:/plugins/wikilabs/bundler/list-links-custom/macros
+type: text/vnd.tiddlywiki
+
+\define list-links-custom(tiddler,field:"list",type:"ul",subtype:"li",class:"",itemTemplate)
+\whitespace trim
+<$vars targetTiddler="""$tiddler$""" targetField="""$field$""">
+  <$type$ class="$class$">
+    <$list filter="[subfilter{$tiddler$!!$field$}]">
+    <$subtype$ class="sub-$class$">
+        <$transclude tiddler="""$itemTemplate$""">
+          <$link to={{!!title}}>
+            <$transclude field="caption"><$view field="title" /></$transclude>
+          </$link>
+        </$transclude>
+    </$subtype$>
+    </$list>
+  </$type$>
+</$vars>
+\end
+
+<pre><$view /></pre>

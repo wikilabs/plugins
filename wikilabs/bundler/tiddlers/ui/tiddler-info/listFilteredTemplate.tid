@@ -1,0 +1,7 @@
+created: 20210127184606709
+modified: 20210127213056496
+tags: 
+title: $:/plugins/wikilabs/ui/TiddlerInfo/listFilteredTemplate
+type: text/vnd.tiddlywiki
+
+<$macrocall $name="list-links-custom" tiddler=<<currentTiddler>> field="filter" type="div" subtype="div" class="" itemTemplate="$:/plugins/wikilabs/bundler/list-links-custom/element-delete"/>

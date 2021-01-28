@@ -5,25 +5,21 @@ tags: $:/tags/ControlPanel
 title: $:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config
 type: text/vnd.tiddlywiki
 
-!! Wikilabs [[Bundle Settings|$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config]]
+\define deleteTiddlerInfoDefault()
+<$action-deletetiddler $tiddler="$:/config/TiddlerInfo/Default"/>
+\end
 
+!! Enable Tiddler Info Button
+
+<$vars tv-config-toolbar-icons="yes" tv-config-toolbar-text="yes">
+
+><$checkbox tiddler="$:/config/ViewToolbarButtons/Visibility/$:/core/ui/Buttons/info" field="text" checked="show" unchecked="hide" default="show"/> <span class="tc-icon-wrapper"> {{$:/core/ui/Buttons/info}} -- {{$:/core/ui/Buttons/info!!description}}</span>
+
+</$vars>
+
+!! {{$:/core/ui/ControlPanel/Settings/InfoPanelMode!!caption}}
 <<<
-
-Select the position of the bundle tab:
-
-<$tiddler tiddler="$:/plugins/wikilabs/bundler/ui/Bundles">
-<$radio field=tags value="$:/tags/MoreSideBar"> "$:/tags/MoreSideBar"</$radio><br>
-<$radio field=tags value="$:/tags/SideBar"> "$:/tags/SideBar"</$radio>
-</$tiddler>
-
-<<<
-
-!! Enable Overwrite Check
-
-<<<
-<$checkbox tiddler="$:/config/wikilabs/enableOverwriteCheck" field="text" checked="yes" unchecked="no" default="no"> Enable Overwrite Check</$checkbox>
-
-By default, the import mechanism overwrites existing tiddlers. By enabling this option, you can activate a mechanism, that creates a new tiddler name. By default this option is off.
+{{$:/core/ui/ControlPanel/Settings/InfoPanelMode}}
 <<<
 
 !! Enable Import Bundle
@@ -47,6 +43,42 @@ You can rename or delete the tiddler, to store the setting or get rid of it.
 Bundle filters are already used by the "More" dropdown in the $:/AdvancedSearch - Filter tab. The filtered bundle settings provide a slightly different UI to export sets of tiddlers, configured by the user. 
 
 The "Filter Bundle" button creates compatible configurations. So user created filtered bundles show up in the advanced search panel too! Existing filters can be seen here: $:/plugins/wikilabs/bundler/doc/table-all-filters
+
+<<<
+
+!! Enable Overwrite Check
+
+<<<
+<$checkbox tiddler="$:/config/wikilabs/enableOverwriteCheck" field="text" checked="yes" unchecked="no" default="no"> Enable Overwrite Check</$checkbox>
+
+By default, the import mechanism overwrites existing tiddlers. By enabling this option, you can activate a mechanism, that creates a new tiddler name. By default this option is off.
+<<<
+
+!! {{$:/core/ui/ControlPanel/Settings/MissingLinks!!caption}}
+<<<
+{{$:/core/ui/ControlPanel/Settings/MissingLinks}}
+<<<
+
+!! Set the default ~TiddlerInfo tab
+
+<<<
+<$checkbox tiddler="$:/config/TiddlerInfo/Default" field="text" 
+checked="$:/plugins/wikilabs/ui/TiddlerInfo/BundleTab" 
+unchecked="disabled" 
+default="disabled"
+uncheckactions=<<deleteTiddlerInfoDefault>> > [[Set the default TiddlerInfo tab to TiddlerInfoBundle|$:/config/TiddlerInfo/Default]]</$checkbox>
+<<<
+
+!! Bundle Tab Settings
+
+<<<
+
+Select the position of the bundle tab:
+
+<$tiddler tiddler="$:/plugins/wikilabs/bundler/ui/Bundles">
+<$radio field=tags value="$:/tags/MoreSideBar"> "$:/tags/MoreSideBar"</$radio><br>
+<$radio field=tags value="$:/tags/SideBar"> "$:/tags/SideBar"</$radio>
+</$tiddler>
 
 <<<
 

@@ -20,15 +20,13 @@ exports.upgrade = function(wiki,titles,tiddlers) {
 		overwriteCheck = $tw.wiki.checkTiddlerText(ENABLE_OVERWRITE_CHECK,"yes");
 
 	$tw.utils.each(titles,function(title) {
-		var tiddler = {},
-			tiddlerData = wiki.getTiddler(title);
-		// Check for tiddlers on our list. Atm, we check for names only, since 5.1.14 allows modification date to be supressed.
-		// Creating a hash, would be a better option. ToDo
-		if (wiki.tiddlerExists(title)) {
+		var tiddler = {};
+		// If the tiddler has been removed, there will be no fields.
+		if (wiki.tiddlerExists(title) && tiddlers[title] && (tiddlers[title].title === title) ) {
 			messages[title] = "Existing tiddler will be overwritten!";
 			// create new tiddler with a new name
-			if (overwriteCheck) {
-				messages[title] = "A tiddler with that name exists. A new name will be used!";
+			if (overwriteCheck && !wiki.isSystemTiddler(title)) {
+				messages[title] = "Tiddler exists - A new name will be used!";
 				tiddler = new $tw.Tiddler(tiddlers[title], {"title": wiki.generateNewTitle(title) });
 				tiddlers[tiddler.fields.title] = tiddler.fields;
 				// remove the original tiddler
