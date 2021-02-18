@@ -8,7 +8,7 @@ tags: $:/tags/EditorToolbar
 
 <$action-sendmessage
 	$message="tm-edit-text-operation"
-	$param="add-tick"
+	$param="add-glyph"
 	character="»"
 	count="1"
 />

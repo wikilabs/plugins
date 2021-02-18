@@ -19,11 +19,12 @@ type: text/vnd.tiddlywiki
 
 \define idSelector()
 <$tiddler tiddler="$:/config/edit/linePrefix">
-	<$wl-radio field="id" value="›" actions=<<selectID>> name="single"> › </$wl-radio>|
-	<$wl-radio field="id" value="´" actions=<<selectID>> name="tick"> ´ </$wl-radio>|
-	<$wl-radio field="id" value="°" actions=<<selectID>> name="degree"> ° </$wl-radio>|
-	<$wl-radio field="id" value="»" actions=<<selectID>> name="angle"> » </$wl-radio>|
-	<$wl-radio field="id" value="≈" actions=<<selectID>> name="about"> ≈ </$wl-radio>|
+	<$wl-radio field="id" value="›" actions=<<selectID>> name="single"> `›` </$wl-radio>|
+	<$wl-radio field="id" value="´" actions=<<selectID>> name="tick"> `´` </$wl-radio>|
+	<$wl-radio field="id" value="°" actions=<<selectID>> name="degree"> `°` </$wl-radio>|
+	<$wl-radio field="id" value="»" actions=<<selectID>> name="angle"> `»` </$wl-radio>|
+	<$wl-radio field="id" value="≈" actions=<<selectID>> name="about"> `≈` </$wl-radio>|
+	<$wl-radio field="id" value="¶" actions=<<selectID>> name="pilcrow"> `¶` </$wl-radio>|
 </$tiddler>
 <$checkbox tiddler="$:/config/edit/linePrefix/force" 
 	field=text 

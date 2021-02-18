@@ -26,7 +26,7 @@ var CLASS_PREFIX = CLASS_GROUP + "-inline";
 exports.name = "tickinline";
 exports.types = {inline: true};
 	
-var idTypes = ["little", "braille", "slash"];
+var idTypes = ["corner", "braille", "slash"];
 
 exports.init = function(parser) {
 	this.parser = parser;
@@ -42,11 +42,12 @@ exports.init = function(parser) {
 //	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.0
 //	this.matchRegExp = /((?=¶[^¶])¶|(?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])_)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
 //	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])__|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
-	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.9.0
-	
+//	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1
+	this.matchRegExp = /((?=『[^『])『|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.10.0
+// 『』〘〙
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
-	
+
 	this.pc = this.p.configTickText;
 
 	idTypes.map( function(id) {
@@ -88,16 +89,22 @@ exports.parse = function() {
 	var useParagraph = false; // use paragraph by default
 
 	// global custom pragmas
-	var gPc = this.parser.wiki.caches["$:/config/custom-markup/pragma/PageTemplate"].blockParseTree.configTickText;
+	var gPc,
+		template = "$:/config/custom-markup/pragma/PageTemplate";
+
+	if (!this.parser.wiki.caches[template]) {
+		this.parser.wiki.parseTiddler(template);
+	}
+	gPc = this.parser.wiki.caches[template].blockParseTree.configTickText;
 
 	// "_debug" is a binary parameter
 	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "span", _classes : _classes,
 		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(":") : [] };
 
 	switch (this.match[1][0]) {
-		case "﹙":
-			id = "little";
-			options._endString = "﹚"
+		case "『":
+			id = "corner";
+			options._endString = "』"
 		break;
 		case "⠒":
 			id = "braille"
@@ -184,8 +191,8 @@ exports.parse = function() {
 		var xMaps = (config._params) ? config._params.split(":") : ["",""];
 		var lMaps = (options._params.length > 0 ) ? options._params : ["",""];
 
-		options._params[1] = (lMaps[1]) ? lMaps[1] : xMaps[1];
-		options._params[2] = (lMaps[2]) ? lMaps[2] : xMaps[2];
+		options._params[1] = (lMaps[1]) ? lMaps[1].replace(/"/g,'') : xMaps[1];
+		options._params[2] = (lMaps[2]) ? lMaps[2].replace(/"/g,'') : xMaps[2];
 
 		classes = (options._classes + _classes).split(".") // pragma _classes are added to tick _classes
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
@@ -232,7 +239,7 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 	
-	var fixAttributes = ["little", "braille", "slash", "symbol", 
+	var fixAttributes = ["corner", "braille", "slash", "symbol", 
 						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
 

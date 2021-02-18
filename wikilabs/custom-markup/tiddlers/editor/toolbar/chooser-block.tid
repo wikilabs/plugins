@@ -1,4 +1,4 @@
-title: $:/plugins/wikilabs/custom-markup/EditorToolbar/preview-type
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/chooser-block
 button-classes: tc-text-editor-toolbar-item-adjunct
 caption: choose glyph
 condition: [all[shadows+tiddlers]tag[$:/tags/EditPreview]!has[draft.of]butfirst[]limit[1]]

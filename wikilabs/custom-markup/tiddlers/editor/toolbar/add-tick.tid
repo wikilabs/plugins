@@ -10,7 +10,7 @@ type: text/vnd.tiddlywiki
 
 <$action-sendmessage
 	$message="tm-edit-text-operation"
-	$param="add-tick"
+	$param="add-glyph"
 	character={{{ [[$:/config/edit/linePrefix]get[text]] }}}
 	count="1"
 />

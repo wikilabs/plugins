@@ -16,7 +16,7 @@ exports["remove-custom-markers"] = function(event,operation) {
 	// regExp to detect custom markers like: 
 	// <ID><symol><class> some text
 	// ´span.myClass.otherClass some text
-	var regExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg;
+	var regExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg;
 	
 	var targetCount = parseInt(event.paramObject.count + "",10);
 	// Cut just past the preceding line break, or the start of the text

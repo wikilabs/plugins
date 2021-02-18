@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/custom-markup/icons/inline/braille
+type: application/json
+
+{
+"prefix": "⠒",
+"suffix": "⠶",
+"element": "<path d='m23.4 34.2h29.5v29.5h-29.5zm44.2 0h29.5v29.5h-29.5z' style='stroke-width:4.36'/>"
+}

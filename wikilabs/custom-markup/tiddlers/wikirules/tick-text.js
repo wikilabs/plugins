@@ -40,7 +40,8 @@ exports.init = function(parser) {
 //	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; // OK
 // 	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.6.x
 //	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.0
-	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
+//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
+	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -86,7 +87,13 @@ exports.parse = function() {
 	var useParagraph = false; // use paragraph by default
 
 	// global custom pragmas
-	var gPc = this.parser.wiki.caches["$:/config/custom-markup/pragma/PageTemplate"].blockParseTree.configTickText;
+	var gPc,
+		template = "$:/config/custom-markup/pragma/PageTemplate";
+
+	if (!this.parser.wiki.caches[template]) {
+		this.parser.wiki.parseTiddler(template);
+	}
+	gPc = this.parser.wiki.caches[template].blockParseTree.configTickText;
 
 	switch (this.match[1][0]) {
 		case "»":
@@ -191,8 +198,8 @@ exports.parse = function() {
 		var xMaps = (config._params) ? config._params.split(":") : ["",""];
 		var lMaps = (options._params.length > 0 ) ? options._params : ["",""];
 
-		options._params[1] = (lMaps[1]) ? lMaps[1] : xMaps[1];
-		options._params[2] = (lMaps[2]) ? lMaps[2] : xMaps[2];
+		options._params[1] = (lMaps[1]) ? lMaps[1].replace(/"/g,'') : xMaps[1];
+		options._params[2] = (lMaps[2]) ? lMaps[2].replace(/"/g,'') : xMaps[2];
 
 		classes = (options._classes + _classes).split(".") // pragma _classes are added to tick _classes
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element

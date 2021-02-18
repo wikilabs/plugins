@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/chooser-inline
+button-classes: tc-text-editor-toolbar-item-adjunct
+caption: choose inline glyph
+condition: [all[shadows+tiddlers]tag[$:/tags/EditPreview]!has[draft.of]butfirst[]limit[1]]
+description: Choose inline glyph
+dropdown: $:/plugins/wikilabs/custom-markup/EditorToolbar/inline-dropdown
+icon: $:/core/images/chevron-down
+tags: $:/tags/EditorToolbar

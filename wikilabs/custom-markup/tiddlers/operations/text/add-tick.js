@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/custom-markup/editor/operations/text/add-tick.js
+title: $:/plugins/wikilabs/custom-markup/editor/operations/text/add-glyph.js
 type: application/javascript
 module-type: texteditoroperation
 
@@ -12,7 +12,7 @@ Text editor operation to add a prefix to the selected lines
 /*global $tw: false */
 "use strict";
 
-exports["add-tick"] = function(event,operation) {
+exports["add-glyph"] = function(event,operation) {
 	var x="";
 	var targetCount = parseInt(event.paramObject.count + "",10);
 	// Cut just past the preceding line break, or the start of the text

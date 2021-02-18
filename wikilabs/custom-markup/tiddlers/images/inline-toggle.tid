@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/custom-markup/icons/inline-toggle
+
+<svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
+	<defs>
+		<g id="inline-element">
+			{{$:/config/wikilabs/custom-markup/icons/inline/active##element}}
+		</g>
+	</defs>
+	<use href="#inline-element"/>
+</svg>

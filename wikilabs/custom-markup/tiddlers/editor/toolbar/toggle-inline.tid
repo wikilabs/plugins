@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/toggle-inline
+tags: $:/tags/EditorToolbar
+icon: $:/plugins/wikilabs/custom-markup/icons/inline-toggle
+caption: inline
+description: wrap selection
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+shortcuts: ((toggle-inline))
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="wrap-selection"
+	prefix={{{ [{$:/config/wikilabs/custom-markup/icons/inline/active##prefix}addsuffix{$:/config/edit/inlinePrefix!!text}addsuffix[ ]] ~[[/° ]] }}}
+	suffix={{{ [{$:/config/wikilabs/custom-markup/icons/inline/active##suffix}] ~[[°/]]}}}
+/>

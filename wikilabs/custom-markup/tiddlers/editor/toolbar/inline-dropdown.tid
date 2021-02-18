@@ -1,0 +1,82 @@
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/inline-dropdown
+type: text/vnd.tiddlywiki
+
+\define getConfigName() $:/plugins/wikilabs/custom-markup/icons/inline/$(__name__)$
+
+\define selectID()
+<$action-createtiddler 
+	$basetitle="$:/config/wikilabs/custom-markup/icons/inline/active"
+	$overwrite="yes" $template=<<getConfigName>>
+/>
+\end
+\define selectActions()
+<$action-createtiddler $basetitle="$:/config/edit/inlinePrefix" $overwrite="yes" 
+		text={{{ [<inlinePrefix>get[text]] }}}
+		name="""$(inlinePrefix)$"""
+		id={{{ [{$:/config/wikilabs/custom-markup/icons/inline/active##prefix}] ~[[/°]] }}}
+/>
+<$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [{$:/config/wikilabs/custom-markup/icons/inline/active##prefix}addsuffix{$:/config/edit/inlinePrefix!!text}addsuffix{$:/config/wikilabs/custom-markup/icons/inline/active##suffix}] }}}/>
+<$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/id-prepared"/>
+<$action-deletetiddler $tiddler=<<dropdown-state>> />
+\end
+
+\define idSelector()
+<$tiddler tiddler="$:/config/edit/inlinePrefix">
+	<$wl-radio field="id" value="/°" actions=<<selectID>> name="slash"> `/°..°/` </$wl-radio>|
+	<$wl-radio field="id" value="⠒" actions=<<selectID>> name="braille"> `⠒..⠶` </$wl-radio>|
+	<$wl-radio field="id" value="『" actions=<<selectID>> name="corner"> `『..』` </$wl-radio>|
+</$tiddler>
+\end
+
+\define preview-type-button()
+<$button tag="a" actions=<<selectActions>> >
+
+<$transclude tiddler=<<inlinePrefix>> field="caption" mode="inline">
+
+<$view tiddler=<<inlinePrefix>> field="title" mode="inline"/>
+
+</$transclude> 
+
+<$reveal tag="span" stateTitle="$:/config/edit/inlinePrefix" stateField=name type="match" text=<<inlinePrefix>> default="XXXXX">
+
+<$entity entity="&nbsp;"/>
+
+<$entity entity="&#x2713;"/>
+
+</$reveal>
+
+</$button>
+\end
+
+Select inline glyph -- <$macrocall $name=idSelector />
+
+----
+
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/TextEditor/InlinePrefix]!has[draft.of]sort[title]]" variable="inlinePrefix">
+
+<<preview-type-button>>
+
+</$list>
+
+----
+
+<$button tag="a">
+
+<$action-sendmessage
+	$message="tm-new-tiddler"
+	tags="$:/tags/TextEditor/InlinePrefix"
+	caption="New Inline Prefix"
+	text=""
+/>
+
+<$action-deletetiddler 
+	$tiddler=<<dropdown-state>> 
+/>
+
+<em>
+
+<$text text={{$:/language/Buttons/Stamp/Caption/New}}/>
+
+</em>
+
+</$button>
