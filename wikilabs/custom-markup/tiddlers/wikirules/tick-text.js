@@ -185,7 +185,7 @@ exports.parse = function() {
 		options._endString = config._endString || options._endString;
 		options._mode = config._mode || options._mode;
 		options._element = config._element || options._element;
-		options._classes = config._classes || options._classes;
+		options._classes = options._classes + config._classes;
 		
 		if (forceDebug) options._debug = forceDebug;
 		else options._debug = config._debug || options._debug;
@@ -201,7 +201,7 @@ exports.parse = function() {
 		options._params[1] = (lMaps[1]) ? lMaps[1].replace(/"/g,'') : xMaps[1];
 		options._params[2] = (lMaps[2]) ? lMaps[2].replace(/"/g,'') : xMaps[2];
 
-		classes = (options._classes + _classes).split(".") // pragma _classes are added to tick _classes
+		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
 	}
 	
