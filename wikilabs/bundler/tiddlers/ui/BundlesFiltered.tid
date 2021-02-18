@@ -3,8 +3,8 @@ modified: 20170609084521844
 title: $:/plugins/wikilabs/bundler/ui/BundlesFiltered
 type: text/vnd.tiddlywiki
 
-\define filter-exist() [enlist{$(currentTiddler)$}] +[has[title]]
-\define filter-list() [enlist{$(currentTiddler)$}!prefix[--- ]]
+\define filter-exist() [subfilter{$(currentTiddler)$}] +[has[title]]
+\define filter-list() [subfilter{$(currentTiddler)$}!prefix[--- ]]
 \define get-info() <$count filter=<<filter-exist>> />/<$count filter=<<filter-list>> />
 \define get-tooltip() <$count filter=<<filter-exist>> />, out of <$count filter=<<filter-list>> /> tiddlers will be exported. Check for typos!
 \define count-filter() <$count filter={{$(currentTiddler)$!!filter}} /> 

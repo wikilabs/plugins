@@ -8,4 +8,5 @@ type: text/vnd.tiddlywiki
 \define makeExportFilter()
 [enlist{$(currentTiddler)$}]
 \end
+
 <$macrocall $name="exportButton" exportFilter=<<makeExportFilter>> lingoBase="$:/language/Buttons/ExportTiddler/" baseFilename=<<currentTiddler>>/>
