@@ -25,7 +25,7 @@ var CLASS_PREFIX = CLASS_GROUP + "-inline";
 
 exports.name = "tickinline";
 exports.types = {inline: true};
-	
+
 var idTypes = ["corner", "braille", "slash"];
 
 exports.init = function(parser) {
@@ -53,7 +53,7 @@ exports.init = function(parser) {
 	idTypes.map( function(id) {
 		self.pc[id] = self.pc[id] || {};
 	})
-	
+
 	this.pc.X = {}; // There is a naming problem
 };
 
@@ -123,7 +123,7 @@ exports.parse = function() {
 
 	// Move past the start symbol
 	this.parser.pos = this.matchRegExp.lastIndex;
-	
+
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 	// remember text postions for macro src handling
 	textStartInner = this.parser.pos
@@ -178,11 +178,11 @@ exports.parse = function() {
 		options._endString = config._endString || options._endString;
 		options._mode = config._mode || options._mode;
 		options._element = config._element || options._element;
-		options._classes = options._classes + config._classes;
-		
+		options._classes = options._classes + ((config._classes) ? config._classes : "");
+
 		if (forceDebug) options._debug = forceDebug;
 		else options._debug = config._debug || options._debug;
-		
+
 		options._debugString = (_useError) ? _useError : config._debugString || options._debugString;
 		options._srcName = config._srcName || options._srcName;
 		options._1 = config._1 || options._1;
@@ -191,16 +191,16 @@ exports.parse = function() {
 		var xMaps = (config._params) ? config._params.split(":") : ["",""];
 		var lMaps = (options._params.length > 0 ) ? options._params : ["",""];
 
-		options._params[1] = (lMaps[1]) ? lMaps[1].slice(1, lMaps[1].length-1) : xMaps[1];
-		options._params[2] = (lMaps[2]) ? lMaps[2].slice(1, lMaps[2].length-1) : xMaps[2];
+		options._params[1] = (lMaps[1]) ? lMaps[1].slice(1,lMaps[1].length-1) : xMaps[1];
+		options._params[2] = (lMaps[2]) ? lMaps[2].slice(1,lMaps[2].length-1) : xMaps[2];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
 	}
-	
+
 // done in line 122
 // 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
-	
+
 	var oneBlock = false;
 
 	if ((options._mode === "block") ) { //&& (options._endString !== "")) {
@@ -232,13 +232,13 @@ exports.parse = function() {
 	textEndInner = this.parser.pos;
 
 	skipEndString(options._endString);
-	
+
 	textEnd = this.parser.pos;
 
 	var attributes = {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
-	
+
 	var fixAttributes = ["corner", "braille", "slash", "symbol", 
 						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
@@ -279,7 +279,7 @@ exports.parse = function() {
 			break;
 		}
 	}
-	
+
 	if (showRendered) {
 		// check if element is a widget
 		if (options._element[0] === "$") {
