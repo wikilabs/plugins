@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.10.1 - 2021-02-22
+
+* fix class definition with missing pragma _classes
+
 V 0.10.0 - 2021-02-18
 
 * fix RSOD accessing cache without a check
