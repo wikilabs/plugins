@@ -19,6 +19,6 @@ title: $:/plugins/wikilabs/bundler/readme
 
 ---
 
-''Important:'' This plugin modifies a core module:
+''Important:'' This plugin modifies a core module and templates
 
-* $:/core/modules/upgraders/system.js
+<$list filter="[[$:/plugins/wikilabs/bundler]plugintiddlers[]prefix[$:/core/]] "><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></$list>
