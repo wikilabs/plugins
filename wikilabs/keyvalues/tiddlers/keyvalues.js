@@ -18,11 +18,12 @@ Export our filter function
 exports.keyvalues = function(source,operator,options) {
 	var results = [],
 		fieldList = [],
-		sep = ":",
+		sep = ": ",
 		p1 = "key",
 		p2 = "value",
 		useKey = true,
 		useValue = false,
+		useBoth = false,
 		v1, v2, flags, pass, match, data,
 		regexp, regexpString;
 
@@ -34,12 +35,14 @@ exports.keyvalues = function(source,operator,options) {
 	}
 	// Process <separator>
 	if(operator.suffixes && operator.suffixes[1]) {
-		sep = operator.suffixes[1][0] || ":";
+		sep = operator.suffixes[1][0] || sep;
+		sep = sep.replace(/&nbsp;/g," ").replace(/&#58;/g, ":");
 	}
 	// Process usekey or usevalue flags
 	if(operator.suffixes && operator.suffixes[2] && operator.suffixes[2][0]) {
 		useKey = (operator.suffixes[2][0].toLowerCase() === "usekey");
 		useValue = (operator.suffixes[2][0].toLowerCase() === "usevalue");
+		useBoth = (operator.suffixes[2][0].toLowerCase() === "useboth");
 	}
 	// Process regexp operand if available
 	regexpString = operator.operand;
@@ -72,7 +75,7 @@ exports.keyvalues = function(source,operator,options) {
 				v2 = (p2 === "key") ? key : (p2 === "value") ? value : "";
 
 				if (regexpString) {
-					pass = (useKey) ? regexp.exec(key) : (useValue) ? regexp.exec(value) : false;
+					pass = (useKey) ? regexp.exec(key) : (useValue) ? regexp.exec(value) : (useBoth) ? regexp.exec(v1+sep+v2) : "";
 					if (pass) {
 						results.push(v1+sep+v2);
 					}

@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/keyvalues/history
 
+V 2.1.0 - 2021-02-22
+
+* Fix for space ` ` use: `&nbsp;`
+* Add `<space>` after the colon for ''default separator'' `: `
+* Add for colon `:` use: `&#58;`
+* Add new filter flag: useBoth + docs
+
 V 2.0.1 - 2020-12-25
 
 * update license

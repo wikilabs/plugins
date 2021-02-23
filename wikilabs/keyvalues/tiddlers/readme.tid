@@ -13,9 +13,10 @@ The <<.op keyvalues>> operator uses an extended syntax that permits multiple fie
 * ''field list'': an ordered, comma delimited list. Either `key`, `value` or both
 ** defaults to `key,value` if blank
 * ''separator'': a separator string used to combine the output string
-** defaults to `:` if blank
+** defaults to `: ` = `<colon><space>` if blank <small>(new since V2.1.0)</small>
 ** If a space is needed, use: `&nbsp;`
-* ''flag'': `usekey` or `usevalue` 
+** If a colon `:` is needed, use: `&#58;`
+* ''flag'': `usekey`, `usevalue` or `useboth`
 ** (defaults to `usekey` if blank)
 ** only 1 flag is allowed. The first one will be used
 * ''operand'': filter operand
@@ -31,3 +32,4 @@ The available flags are:
 
 * ''usekey'' - the <<.field key>> will be used to filter the output. The `<operand>` contains a regexp filter
 * ''usevalue'' - the <<.field value>> will be used to filter the output. The `<operand>` contains a regexp filter
+* ''useboth'' - the <<.field key>>, the <<.field seperator>> and <<.field value>> will be used to filter the output. The `<operand>` contains a regexp filter
