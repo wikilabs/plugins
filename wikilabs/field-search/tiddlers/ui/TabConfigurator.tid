@@ -1,0 +1,94 @@
+created: 20210303150824820
+modified: 20210304110455642
+tags: 
+title: $:/plugins/wikilabs/field-search/ui/TabConfigurator
+type: text/vnd.tiddlywiki
+
+\define getTabName() $:/config/field-search/tab/$(tabName)$
+\define getConfigName() $:/config/field-search/data/$(tabName)$
+\define getTempName() $:/temp/field-search/tabName
+\define getTempSelect() $:/temp/field-search/select
+
+\define clearTemp()
+\whitespace trim
+<$button class="tc-btn-invisible">
+  <$action-deletetiddler $tiddler=<<getTempName>>/>
+  <$action-deletetiddler $tiddler=<<getTempSelect>>/>
+  {{$:/core/images/close-button}}
+</$button>
+\end
+
+\define createTab()
+<$set name=newConfigName value=<<getConfigName>> >
+  <$wikify name=aa text={{$:/plugins/wikilabs/field-search/templates/WrapperTemplate}} output=text>
+    <$action-createtiddler $basetitle=<<getTabName>> $overwrite=yes $template="$:/plugins/wikilabs/field-search/templates/WrapperTemplate" caption={{{ [<getTempName>get[caption]] }}} text=<<aa>> tags="$:/tags/SearchResults"/>
+    <$action-createtiddler $basetitle=<<getConfigName>> $template=<<getTempName>> $overwrite=yes tags="$:/tags/field-search/data"/>
+  </$wikify>
+</$set>
+\end
+
+\define selectActions()
+<$action-createtiddler $basetitle=<<getTempName>> $overwrite=yes $template={{{ [<getTempSelect>get[text]] }}} tags=""/>
+\end
+
+\define selectData()
+<$select tiddler=<<getTempSelect>> default="" actions=<<selectActions>> >
+  <option value="">---</option>
+  <$list filter="[tag[$:/tags/field-search/data]]" >
+    <option value=<<currentTiddler>> >{{!!caption}}</option>
+  </$list>
+</$select>
+\end
+
+!! Default Setting
+<<<
+* <$checkbox tiddler="$:/core/ui/DefaultSearchResultList" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default="$:/tags/SearchResults"> Add ''Default Search'' tab to the search dropdown!</$checkbox>
+* <$checkbox tiddler="$:/config/field-search/tab/Any Field" tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default="$:/tags/SearchResults"> Add ''Any Field'' tab to the search dropdown!</$checkbox>
+<<<
+
+{{$:/plugins/wikilabs/field-search/ui/ExistingTabs}}
+
+!! [[Create / Modify Configuration|$:/plugins/wikilabs/field-search/ui/TabConfigurator]]
+<<<
+New caption: <$edit-text tiddler=<<getTempName>> field="caption"/> <<clearTemp>> <!-- &nbsp; Load config: <<selectData>> -->
+
+Used fields: ''<$list filter="[<getTempName>indexes[]sortby{$:/config/field-search/sortby}]" variable=field><<field>>, </$list>''
+
+---
+
+<$vars tabName={{{ [<getTempName>get[caption]] }}}>
+
+@@.columns3.j
+<$list filter="[all[]!is[system]fields:exclude{$:/config/field-search/exclude}sort[]sortby{$:/config/field-search/sortby}]" variable="field">
+<$checkbox tiddler=<<getTempName>> index=<<field>> checked="comment"  default="closed" >&nbsp;<<field>><br></$checkbox>
+</$list>
+@@
+
+<table class="wltc-max-width"><tbody>
+<$list filter="[<getTempName>indexes[]sortby{$:/config/field-search/sortby}]" variable=field>
+<tr>
+<td><<field>></td><td><$edit-text class="wltc-max-width" tiddler=<<getTempName>> index=<<field>> tag=input/> </td>
+</tr>
+</$list>
+</tbody></table>
+
+---
+
+<$list filter="[<getTabName>get[caption]match<tabName>addprefix[Update ]else[Create]]" variable="buttonText" >
+<$button actions=<<createTab>> disabled={{{[<getTempName>get[caption]then[no]else[yes]]}}}>
+<<buttonText>>
+</$button>
+</$list>
+</$vars>
+<<<
+
+!! Tab Order
+<<<
+You can use ''drag&drop to sort'' the list:
+
+<<list-tagged-draggable tag:"$:/tags/SearchResults" itemTemplate:"$:/plugins/wikilabs/field-search/templates/ItemTemplate">>
+<<<
+
+{{$:/plugins/wikilabs/field-search/ui/edit/exclude}}
+
+{{$:/plugins/wikilabs/field-search/ui/edit/sortby}}

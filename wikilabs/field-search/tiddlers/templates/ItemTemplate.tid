@@ -1,0 +1,4 @@
+title: $:/plugins/wikilabs/field-search/templates/ItemTemplate
+type: text/vnd.tiddlywiki
+
+<span title="Drag & Drop sort">:::</span> <$link />

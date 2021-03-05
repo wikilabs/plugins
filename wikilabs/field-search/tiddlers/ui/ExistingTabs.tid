@@ -1,0 +1,47 @@
+created: 20210303160429327
+modified: 20210304104914538
+tags: 
+title: $:/plugins/wikilabs/field-search/ui/ExistingTabs
+type: text/vnd.tiddlywiki
+
+\define getTempName() $:/temp/field-search/tabName
+\define getCurrentDataName() $:/config/field-search/data/$(currentCaption)$
+\define getCurrentTabName() $:/config/field-search/tab/$(currentCaption)$
+
+\define editConfig()
+<$action-createtiddler $basetitle=<<getTempName>> $overwrite=yes $template=<<getCurrentDataName>> tags=""/>
+<$action-setfield $tiddler="$:/temp/field-search/select" text=<<getCurrentDataName>>/>
+\end
+
+\define editConfigButton()
+<$button tooltip="Load Configuration" class="tc-btn-invisible" actions=<<editConfig>>>{{$:/core/images/copy-clipboard}} Edit</$button>
+\end
+
+\define deleteConfig()
+<$action-sendmessage $message="tm-delete-tiddler" $param=<<getCurrentTabName>>/>
+<$action-sendmessage $message="tm-delete-tiddler" $param=<<getCurrentDataName>>/>
+\end
+
+\define deleteButton()
+<$button tooltip="Load Configuration" class="tc-btn-invisible" actions=<<deleteConfig>>>{{$:/core/images/delete-button}} Delete</$button>
+\end
+
+\define checkbox()
+<$checkbox tiddler=<<currentTiddler>> tag="$:/tags/SearchResults" checked="$:/tags/SearchResults" unchecked="" default=""/>
+\end
+
+!! [[Custom Search Configurations|$:/plugins/wikilabs/field-search/ui/ExistingTabs]]
+<<<
+If the element is checked, the configuration will be used:
+
+<table><tbody>
+<$list filter="[prefix[$:/config/field-search/tab/]]" emptyMessage="n/a">
+<tr>
+<$vars currentCaption={{!!caption}}>
+<td><<checkbox>></td><td><$link to=<<currentTiddler>>><<currentCaption>></$link> - used <$link to=<<getCurrentDataName>>> fields</$link>: ''<$list filter="[<getCurrentDataName>indexes[]sortby{$:/config/field-search/sortby}]" variable=field><<field>>, </$list>'' </td><td><<deleteButton>></td><td><<editConfigButton>></td>
+</$vars>
+</tr>
+</$list>
+</tbody></table>
+
+<<<

@@ -1,0 +1,8 @@
+created: 20210302153251801
+modified: 20210302153804707
+title: $:/plugins/wikilabs/field-search/templates/ListItemTemplate
+type: text/vnd.tiddlywiki
+
+<div class="tc-menu-list-item tc-small-gap-left">
+<$link />
+</div>

@@ -1,0 +1,16 @@
+caption: Any Field
+created: 20210304114703644
+modified: 20210304150445671
+opt-checked: [all[]]
+opt-unchecked: [!is[system]]
+search-set: [!is[system]]
+search-sort: [sort[title]limit[250]]
+tags: $:/tags/SearchResults
+title: $:/config/field-search/tab/Any Field
+type: text/vnd.tiddlywiki
+
+\define searchTerm() [search:$(field)$<userInput>]
+
+<$list filter="[[$:/config/field-search/data/Any Field]indexes[]sortby{$:/config/field-search/sortby}]" variable=field emptyMessage="[[- configuration needed -|$:/plugins/wikilabs/field-search/readme]]">
+{{||$:/plugins/wikilabs/field-search/templates/Results}}
+</$list>

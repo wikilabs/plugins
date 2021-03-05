@@ -1,0 +1,11 @@
+title: $:/plugins/wikilabs/field-search/templates/Results
+
+\define showAll()
+<small><$checkbox field="search-set" checked={{!!opt-checked}} unchecked={{!!opt-unchecked}} class="wltc-show-system">+ system</$checkbox></small>
+\end
+<$tiddler tiddler=<<currentTab>>>
+//Field: ''<<field>>''    <<showAll>>//
+
+<$list filter="[subfilter{!!search-set}] +[subfilter<searchTerm>] +[subfilter{!!search-sort}]" template="$:/core/ui/ListItemTemplate" emptyMessage="""<div class="tc-menu-list-item tc-small-gap-left">n/a</div>"""/>
+
+</$tiddler>

@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/field-search/ui/edit/exclude
+type: text/vnd.tiddlywiki
+
+!! [[Exclude Fields|$:/plugins/wikilabs/field-search/ui/edit/exclude]]
+<<<
+The following fields are excluded: ''{{$:/config/field-search/exclude}}'' 
+
+Exclude from field list: 
+<$edit-text class="wltc-max-width" tiddler="$:/config/field-search/exclude" tag="input"/>
+<<<

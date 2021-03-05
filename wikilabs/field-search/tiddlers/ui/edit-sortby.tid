@@ -1,0 +1,9 @@
+title: $:/plugins/wikilabs/field-search/ui/edit/sortby
+type: text/vnd.tiddlywiki
+
+!! [[Field Sort order|$:/plugins/wikilabs/field-search/ui/edit/sortby]]
+<<<
+Sort order: [[$:/config/field-search/sortby]]
+
+<$edit-text class="wltc-max-width" tiddler="$:/config/field-search/sortby" tag="input"/>
+<<<

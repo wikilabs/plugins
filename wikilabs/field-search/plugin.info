@@ -4,6 +4,6 @@
 	"description": "New tabs are added to search results",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.18",
-	"version": "0.2.4",
+	"version": "0.3.0",
 	"list": "readme license history"
 }

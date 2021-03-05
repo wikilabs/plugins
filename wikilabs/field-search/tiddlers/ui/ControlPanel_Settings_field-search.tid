@@ -1,0 +1,25 @@
+caption: Field-Search
+tags: $:/tags/ControlPanel
+title: $:/plugins/wikilabs/field-search/CP/Settings/field-search
+
+\define setDefault()
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/fieldWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/aliasWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/captionWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/textWrapper"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/titleWrapper"/>
+<$action-deletetiddler $tiddler="$:/core/ui/DefaultSearchResultList"/>
+\end
+
+{{$:/plugins/wikilabs/field-search/ui/TabConfigurator}}
+
+!! Return to Default
+
+The following shaddow tiddlers have been modified: 
+
+<<list-links filter:"[tag[$:/tags/SearchResults]is[tiddler]is[shadow]sort[title]]">>
+
+<$button actions=<<setDefault>> >
+Return to: Default Settings!
+</$button>
+

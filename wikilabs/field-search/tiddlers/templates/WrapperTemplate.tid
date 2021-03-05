@@ -1,0 +1,21 @@
+title: $:/plugins/wikilabs/field-search/templates/WrapperTemplate
+caption: Fields
+opt-checked: [all[]]
+opt-unchecked: [!is[system]]
+search-set: [!is[system]]
+search-sort: [sort[title]limit[250]]
+type: text/vnd.tiddlywiki
+
+`\define searchTerm() [search:$(field)$<userInput>]
+\define openConfig() 
+<$button>
+  <$action-setfield $tiddler="$:/state/tab-1749438307" text="$:/plugins/wikilabs/field-search/CP/Settings/field-search"/>
+  <$action-navigate $to="$:/ControlPanel"/>
+- configuration needed -
+</$button>
+\end
+
+<$list filter="[[`<<newConfigName>>`]indexes[]sortby{$:/config/field-search/sortby}]" variable=field emptyMessage="<<openConfig>>">
+{{||$:/plugins/wikilabs/field-search/templates/Results}}
+</$list>`
+

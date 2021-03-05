@@ -1,0 +1,15 @@
+/* columns responsive*/
+.c2, .c3, .columns2, .columns3 {
+  column-rule: 1px solid #ccc;
+  column-gap: 2em;
+}
+
+.c2, .columns2 { column-count:2;}
+.c3, .columns3 { column-count:3;}
+
+.-gap { column-gap: initial;}
+.-cr { column-rule: initial;}
+
+.wltc-max-width {
+  width: 100%;
+}

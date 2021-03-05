@@ -1,0 +1,4 @@
+title: $:/config/field-search/exclude
+type: text/vnd.tiddlywiki
+
+bag revision exclude draft.of draft.title
