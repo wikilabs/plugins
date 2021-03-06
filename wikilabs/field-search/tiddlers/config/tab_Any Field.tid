@@ -1,6 +1,4 @@
 caption: Any Field
-created: 20210304114703644
-modified: 20210304150445671
 opt-checked: [all[]]
 opt-unchecked: [!is[system]]
 search-set: [!is[system]]

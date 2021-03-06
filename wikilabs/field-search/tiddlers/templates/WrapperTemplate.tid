@@ -18,4 +18,3 @@ type: text/vnd.tiddlywiki
 <$list filter="[[`<<newConfigName>>`]indexes[]sortby{$:/config/field-search/sortby}]" variable=field emptyMessage="<<openConfig>>">
 {{||$:/plugins/wikilabs/field-search/templates/Results}}
 </$list>`
-
