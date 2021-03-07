@@ -3,3 +3,7 @@ title: $:/plugins/wikilabs/field-search/readme
 This plugin adds a "Field Search" tab to the search results
 
 {{$:/plugins/wikilabs/field-search/CP/Settings/field-search}}
+
+!! This plugin replaces the following system modules
+
+<$list filter="[[$:/plugins/wikilabs/field-search]plugintiddlers[]prefix[$:/core/]]"><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></$list>

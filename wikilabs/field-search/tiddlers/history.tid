@@ -1,10 +1,11 @@
 title: $:/plugins/wikilabs/field-search/history
 
-V 0.3.0 - 2021-03-02
+V 0.3.0 - 2021-03-06
 
 * "+system" is more visible if selected
 ** shows a "pointer cursor" now
 * show field-names in "all Fields" tab
+* complete redesign
 
 V 0.2.4 - 2020-12-25
 
