@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/advanced-search-plus/history
 
+V 0.2.0 - 2021-03-07
+
+* make plugin compatible with TW V5.1.23
+* make plugin compatible with field-search plugin V0.3.0
+
 V 0.1.2 - 2020-12-25
 
 * update license
