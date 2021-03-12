@@ -8,7 +8,7 @@ Use the following field as link text, if available. It defaults to tiddler ''tit
 <$tiddler tiddler="$:/config/wikilabs/uni-link/field">
 <$radio value="caption"> caption</$radio><br>
 <$radio value="subtitle"> subtitle</$radio><br>
-<$radio value=""> title</$radio><br>
+<$radio value="title"> title</$radio><br>
 </$tiddler>
 <<<
 

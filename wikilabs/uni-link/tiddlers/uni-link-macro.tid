@@ -5,7 +5,7 @@ tags: $:/tags/Macro
 <$uni-fields template="uni-$name$" include=$(field-name)$ sort="no"/> uni-link
 \end
 
-\define returnText()
+\define linkText()
 \whitespace trim
 <$set name="tv-wikilinks" value="no">
 <span class=<<class>> >
@@ -17,9 +17,9 @@ tags: $:/tags/Macro
 \define uni-link(tid)
 \whitespace trim
 <$tiddler tiddler="""$tid$""">
-  <$vars field-name={{$:/config/wikilabs/uni-link/field}} >
+  <$vars field-name={{{[[$:/config/wikilabs/uni-link/field]get[text]]~[[title]]}}} >
     <$wikify name=class text=<<getClass>> >
-      <$link to="""$tid$""" tooltip="""uni-link -> $tid$"""><<returnText>></$link>
+      <$link to="""$tid$""" tooltip="""uni-link -> $tid$"""><<linkText>></$link>
     </$wikify>
   </$vars>
 </$tiddler>
