@@ -86,7 +86,7 @@ title: $:/core/ui/ImportListing
 					{{$:/core/images/close-button}}<$action-deletetiddler $tiddler=<<newImportTitleTiddler>>/>
 				</$button>
 			</span>
-			<span class="tc-small-gap-right"/></span>
+			<span class="tc-small-gap-right"/>
 			<$button class="tc-btn-invisible" set=<<renameFieldState>> setTo="no" tooltip={{{[<lingo-base>addsuffix[Listing/Rename/ConfirmRename]get[text]]}}}>
 				{{$:/core/images/done-button}}
 				<$action-setfield $field=<<renameField>> $value={{{[<newImportTitleTiddler>get[text]minlength[1]else<payloadTiddler>]}}} />

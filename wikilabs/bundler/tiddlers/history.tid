@@ -1,6 +1,14 @@
 title: $:/plugins/wikilabs/bundler/history
 
-V 0.2.0 - 2021-01-28
+V 0.3.2 - 2021-03-16
+
+* Fix history tiddler version
+* Add Video
+* Fix Import edit name element
+
+V 0.3.1 - 2021-02-23
+
+* ''Important:'' The plugin overwrites [[$:/core/modules/upgraders/system.js]] now
 
 * Add a new tab to the tiddler (i)nfo area
 ** The "Bundle" tab contains a "list", "export" and "open in ~AdvancedSearch" buttons
@@ -24,8 +32,6 @@ V 0.2.0 - 2021-01-28
 
 * Known Issues!
 ** System tiddlers are always selected atm. This will change in the future, but we need core support here!
-
-* The plugin overwrites [[$:/core/modules/upgraders/system.js]] now
 
 V 0.1.3 - 2020-12-25
 
