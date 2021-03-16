@@ -56,6 +56,17 @@ exports.parse = function() {
 				type: "text", text: text
 			}]
 		}];
+	} else if (checkAlias && link === "?") {
+		var results = $tw.wiki.search(text,{caseSensitive:false, field: "title", invert:false, literal:true});
+		return [{
+			type: "link",
+			attributes: {
+				to: {type: "string", value: (results[0]) ? results[0] : text}
+			},
+			children: [{
+				type: "text", text: text
+			}]
+		}];
 	} else if(checkAlias) {
 		var field = "X"; // field names are alwayse lowercase!
 
@@ -78,7 +89,7 @@ exports.parse = function() {
 				]
 			}
 		];
-	} else if((text == link) && useUniLink) {
+	} else if((text === link) && useUniLink) {
 		// Since V 1.1.0 new link-backlink detection implemented
 		// Overwrites the core $tw.wiki.getTiddlerLinks() method with own version
 		return [{
