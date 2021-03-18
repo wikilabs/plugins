@@ -19,7 +19,7 @@ Wiki pragma rule to import pragmas from other tiddlers
 exports.name = "importcustom";
 exports.types = {pragma: true};
 
-var idTypes = ["tick", "single", "degree", "angle", "almost", "pilcrow", "corner", "braille", "slash"];
+var idTypes = ["tick", "single", "degree", "angle", "approx", "pilcrow", "corner", "braille", "slash"];
 /*
 Instantiate parse rule
 */

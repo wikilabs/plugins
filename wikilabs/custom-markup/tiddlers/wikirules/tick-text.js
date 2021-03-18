@@ -121,7 +121,7 @@ exports.parse = function() {
 
 	// "_debug" is a binary parameter
 	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _classes : _classes,
-		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(":") : [] };
+		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(':"') : [] };
 
 	var textEndInner,
 		textStartInner,
@@ -195,11 +195,11 @@ exports.parse = function() {
 		options._1 = config._1 || options._1;
 		options._2 = config._2 || options._2;
 
-		var xMaps = (config._params) ? config._params.split(":") : ["",""];
-		var lMaps = (options._params.length > 0 ) ? options._params : ["",""];
+		var xMaps = (config._params) ? config._params.split(":::") : ["","",""];
+		var lMaps = (options._params.length > 0 ) ? options._params : ["","",""];
 
-		options._params[1] = (lMaps[1]) ? lMaps[1].slice(1,lMaps[1].length-1) : xMaps[1];
-		options._params[2] = (lMaps[2]) ? lMaps[2].slice(1,lMaps[2].length-1) : xMaps[2];
+		options._params[1] = (lMaps[1]) ? lMaps[1].slice(0,lMaps[1].length-1) : xMaps[1];
+		options._params[2] = (lMaps[2]) ? lMaps[2].slice(0,lMaps[2].length-1) : xMaps[2];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element

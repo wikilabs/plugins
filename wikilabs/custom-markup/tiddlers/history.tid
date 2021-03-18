@@ -1,24 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 0.10.1 - 2021-02-22
-
-* fix class definition with missing pragma _classes
-
-V 0.10.0 - 2021-02-18
-
-* fix RSOD accessing cache without a check
-* Added the `corner 『 』` glyphs for inline markers
-** "little was removed"
-* Added `CTRL-0` as shortcut for "toggle inline selection"
-* Added dynamic icon for inline selection
-* Added dropdown to configure inline selection
-* fixed problem with class definition applied twice
-* local params allow spaces now. eg:`XX:"a_b_c":"param with spaces"`
-* `tc-editor-toolber` is `display: flex;` now. Style setting comes with the plugin
+V 0.11.0 - 2021-03-18
 
 ''Breaking change''
 
-* local `XX:"p1":"p2"` ''have to be covered with double qutes'' now.
-* did ''remove'' the ''little'' glyp from inline markers
+* Rename Glyph: `about` ''to'' `approx (≈)`, which is the official name of the char
+* Change the `_params` formatting to `_params=":::p1:::p2"`
 
 See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]

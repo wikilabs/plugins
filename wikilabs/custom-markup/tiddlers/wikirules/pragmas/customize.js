@@ -27,7 +27,7 @@ Wiki pragma rule for whitespace specifications
 exports.name = "customize";
 exports.types = {pragma: true};
 
-var idTypes = ["tick", "single", "degree", "angle", "almost", "pilcrow", "corner", "braille", "slash"];
+var idTypes = ["tick", "single", "degree", "angle", "approx", "pilcrow", "corner", "braille", "slash"];
 /*
 Instantiate parse rule
 */
@@ -117,7 +117,7 @@ exports.parse = function() {
 		switch(token.name) {
 			case "tick": // fall through
 			case "angle": // fall through
-			case "almost": // fall through
+			case "approx": // fall through
 			case "single": // fall through
 			case "degree": // fall through
 			case "pilcrow":
