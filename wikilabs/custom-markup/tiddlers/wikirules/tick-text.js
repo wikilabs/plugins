@@ -21,7 +21,7 @@ Detect
 "use strict";
 
 var CLASS_GROUP = "wltc";
-var CLASS_PREFIX = CLASS_GROUP + "-l"; // l .. level
+var CLASS_LEVEL = CLASS_GROUP + "-l"; // l .. level
 
 exports.name = "ticktext";
 exports.types = {block: true};
@@ -213,7 +213,7 @@ exports.parse = function() {
 	if ((options._mode === "block") ) { //&& (options._endString !== "")) {
 	// standard rendering
 		// no GROUP in block mode
-		classes.push(CLASS_PREFIX + level);
+		classes.push(CLASS_LEVEL + level + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
 			options._endString = (useParagraph) ? "\\r?\\n\\r?\\n" : "\\r?\\n";
@@ -225,7 +225,7 @@ exports.parse = function() {
 		tree = (oneBlock) ? this.parser.parseBlock(options._endString) : this.parser.parseBlocks(options._endString);
 	} else {
 		// apply CLASS_GROUP only if in inline mode. 
-		classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
+		classes.push(CLASS_LEVEL + level + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
 //			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg, {eatTerminator:true}); 
