@@ -1,7 +1,7 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/remove-glyph
 caption: remove-glyph
 condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
-description: Add a "glyph" at the start of the selected line(s)
+description: Remove a "glyph" at the start of the selected line(s)
 condition-disabled: [[$:/config/wikilabs/custom-markup/icons/glyphs/active]getindex[disabled]else[yes]]
 icon: $:/plugins/wikilabs/custom-markup/icons/glyph-minus
 shortcuts: ((remove-glyph))
