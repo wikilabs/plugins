@@ -21,7 +21,18 @@ exports["toggle-tick"] = function(event,operation) {
 	// Compose the required prefix
 	var prefix = $tw.utils.repeat(event.paramObject.character,targetCount);
 	// Process each line
-	var lines = operation.text.substring(operation.cutStart,operation.cutEnd).split(/\r?\n/mg);
+	var lines,
+		text = operation.text.substring(operation.cutStart,operation.cutEnd);
+	if (text === "\n" || text === "\r\n") {
+		if (operation.cutEnd < operation.cutStart) {
+			var x = operation.cutEnd;
+			operation.cutEnd = operation.cutStart
+			operation.cutStart = x;
+		}
+		lines = [""]; // only 1 line should be used
+	} else {
+		lines = text.split(/\r?\n/mg);
+	}
 	$tw.utils.each(lines,function(line,index) {
 		// Remove and count any existing prefix characters
 		var addPrefix = true;
