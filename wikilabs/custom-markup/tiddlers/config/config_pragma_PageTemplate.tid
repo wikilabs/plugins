@@ -2,3 +2,5 @@ title: $:/config/custom-markup/pragma/PageTemplate
 tags: $:/tags/PageTemplate
 
 \importcustom [tag[$:/tags/Pragma]]
+
+<pre><$view /></pre>
