@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.11.2 - 2021-03-20
+
+* allow html tags in inline text eg: `some /°mark marked°/ text`
+** creates: `<p>some <mark class="wltc-inline wltc">marked</mark> text</p>`
+
 V 0.11.1 - 2021-03-20
 
 * custom dropdown - "snippets" got new functionality
