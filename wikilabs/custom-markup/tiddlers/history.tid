@@ -1,8 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.11.1 - 2021-03-20
+
+* custom dropdown - "snippets" got new functionality
+
 V 0.11.0 - 2021-03-18
 
-''Breaking change''
+''Breaking changes''
 
 * Rename Glyph: `about` ''to'' `approx (≈)`, which is the official name of the char
 * Change the `_params` formatting to `_params=":::p1:::p2"`

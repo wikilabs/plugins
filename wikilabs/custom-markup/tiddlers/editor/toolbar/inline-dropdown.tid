@@ -10,18 +10,25 @@ type: text/vnd.tiddlywiki
 />
 \end
 \define selectActions()
-<$action-createtiddler $basetitle="$:/config/edit/inlinePrefix" $overwrite="yes" 
-		text={{{ [<inlinePrefix>get[text]] }}}
-		name="""$(inlinePrefix)$"""
-		id={{{ [{$:/config/wikilabs/custom-markup/icons/inline/active##prefix}] ~[[/°]] }}}
+<$action-createtiddler $basetitle="$:/config/edit/inlinePrefix" $overwrite="yes" $template="""$(inlinePrefix)$"""
+	name="""$(inlinePrefix)$"""
+	tags=""
 />
 <$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [{$:/config/wikilabs/custom-markup/icons/inline/active##prefix}addsuffix{$:/config/edit/inlinePrefix!!text}addsuffix{$:/config/wikilabs/custom-markup/icons/inline/active##suffix}] }}}/>
 <$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/id-prepared"/>
 <$action-deletetiddler $tiddler=<<dropdown-state>> />
+
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="wrap-selection"
+	prefix={{{ [{$:/config/edit/inlinePrefix##prefix}addsuffix[ ]] ~[[/° ]] }}}
+	suffix={{{ [{$:/config/edit/inlinePrefix##suffix}] ~[[°/]]}}}
+/>
+
 \end
 
 \define idSelector()
-<$tiddler tiddler="$:/config/edit/inlinePrefix">
+<$tiddler tiddler="$:/config/edit/inlinePrefix/xx">
 	<$wl-radio field="id" value="/°" actions=<<selectID>> name="slash"> `/°..°/` </$wl-radio>|
 	<$wl-radio field="id" value="⠒" actions=<<selectID>> name="braille"> `⠒..⠶` </$wl-radio>|
 	<$wl-radio field="id" value="『" actions=<<selectID>> name="corner"> `『..』` </$wl-radio>|
@@ -65,8 +72,10 @@ Select inline glyph -- <$macrocall $name=idSelector />
 <$action-sendmessage
 	$message="tm-new-tiddler"
 	tags="$:/tags/TextEditor/InlinePrefix"
+	type="application/x-tiddler-dictionary"
 	caption="New Inline Prefix"
-	text=""
+	text="prefix: 
+suffix: "
 />
 
 <$action-deletetiddler 
