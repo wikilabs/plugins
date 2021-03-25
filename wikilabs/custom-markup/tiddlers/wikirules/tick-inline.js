@@ -169,7 +169,7 @@ exports.parse = function() {
 		config = gPc[id][sym];
 	} else if (sym !== "") {
 	// Check if symbol is a custom-markup  validated HTML element
-		options._element = ($tw.config.cmInlineElements.indexOf(sym) !== -1) ? sym : options._element;
+		options._element = (($tw.config.cmInlineElements.indexOf(sym) !== -1) || ($tw.config.htmlBlockElements.indexOf(sym) !== -1)) ? sym : options._element;
 		config = this.pc[id][sym];
 	}
 

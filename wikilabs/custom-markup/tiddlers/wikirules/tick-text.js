@@ -176,7 +176,7 @@ exports.parse = function() {
 		config = gPc[id][sym];
 	} else if (sym !== "") {
 	// Check if symbol is an HTML element
-		options._element = ($tw.config.htmlBlockElements.indexOf(sym) !== -1) ? sym : options._element;
+		options._element = (($tw.config.htmlBlockElements.indexOf(sym) !== -1) || ($tw.config.cmInlineElements.indexOf(sym) !== -1)) ? sym : options._element;
 		config = this.pc[id][sym];
 	}
 
