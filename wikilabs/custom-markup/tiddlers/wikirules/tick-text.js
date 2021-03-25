@@ -154,7 +154,7 @@ exports.parse = function() {
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
 		if ((sym === this.pc[id][sym]._use) && (this.pc[id][sym].imported !== true)) {
 			// error Can't use itself
-			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!";
+			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!<br>Try: _useGlobal instead";
 			forceDebug = true;
 		}
 		tmpUse = this.pc[id][sym]._use;
