@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.11.3 - 2021-03-20
+
+* add a class `wltc-snippet-inline` and `wltc-snippet-block` to snippet dropdowns
+
+
 V 0.11.2 - 2021-03-20
 
 * allow html tags in inline text eg: `some /°mark marked°/ text`

@@ -36,7 +36,7 @@ type: text/vnd.tiddlywiki
 \end
 
 \define preview-type-button()
-<$button tag="a" actions=<<selectActions>> >
+<$button tag="a" class="wltc-snippet-inline" actions=<<selectActions>> >
 
 <$transclude tiddler=<<inlinePrefix>> field="caption" mode="inline">
 
