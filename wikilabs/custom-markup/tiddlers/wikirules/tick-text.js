@@ -26,7 +26,7 @@ var CLASS_LEVEL = CLASS_GROUP + "-l"; // l .. level
 exports.name = "ticktext";
 exports.types = {block: true};
 
-var idTypes = "tick,single,degree,angle,almost,pilcrow".split(",");
+var idTypes = "tick,single,degree,angle,approx,pilcrow".split(",");
 
 exports.init = function(parser) {
 	this.parser = parser;
@@ -101,7 +101,7 @@ exports.parse = function() {
 			useParagraph = true;
 		break;
 		case "≈":
-			id = "almost";
+			id = "approx";
 			useParagraph = true;
 		break;
 		case "¶":
@@ -138,7 +138,8 @@ exports.parse = function() {
 	var classes = _classes.split(".");
 
 	var forceDebug = false,
-		_useError = false;
+		_useError = false,
+		tmpUse = "";
 
 	var config = {};
 
@@ -156,8 +157,9 @@ exports.parse = function() {
 			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!";
 			forceDebug = true;
 		}
-		sym = this.pc[id][sym]._use;
-		config = this.pc[id][sym];
+		tmpUse = this.pc[id][sym]._use;
+		config = this.pc[id][tmpUse];
+		$tw.utils.extend(config, this.pc[id][sym])
 	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._useGlobal && gPc[id][this.pc[id][sym]._useGlobal] )  {
 		// Use global symbol 
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
@@ -246,7 +248,7 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 
-	var fixAttributes = ["pilcrow", "tick", "angle", "almost", "single", "degree", "symbol", 
+	var fixAttributes = ["pilcrow", "tick", "angle", "approx", "single", "degree", "symbol", 
 						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
 						"_srcName", "_debug", "_debugString"];
 

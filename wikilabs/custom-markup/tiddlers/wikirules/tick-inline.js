@@ -131,7 +131,8 @@ exports.parse = function() {
 	var classes = _classes.split(".");
 
 	var forceDebug = false,
-		_useError = false;
+		_useError = false,
+		tmpUse = "";
 
 	var config = {};
 
@@ -149,8 +150,9 @@ exports.parse = function() {
 			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!";
 			forceDebug = true;
 		}
-		sym = this.pc[id][sym]._use;
-		config = this.pc[id][sym];
+		tmpUse = this.pc[id][sym]._use;
+		config = this.pc[id][tmpUse];
+		$tw.utils.extend(config, this.pc[id][sym])
 	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._useGlobal && gPc[id][this.pc[id][sym]._useGlobal] )  {
 		// Use global symbol 
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
