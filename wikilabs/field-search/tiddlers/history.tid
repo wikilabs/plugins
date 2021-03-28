@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/field-search/history
 
+V 0.4.1 - 2021-03-28
+
+* add match counter into field-search dropdown
+
 V 0.3.0 - 2021-03-06
 
 * "+system" is more visible if selected
