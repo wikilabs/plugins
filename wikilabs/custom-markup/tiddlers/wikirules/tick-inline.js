@@ -152,7 +152,14 @@ exports.parse = function() {
 		}
 		tmpUse = this.pc[id][sym]._use;
 		config = this.pc[id][tmpUse];
-		$tw.utils.extend(config, this.pc[id][sym])
+		if (config) {
+			$tw.utils.extend(config, this.pc[id][sym])
+		} else {
+			// error no pragma with that name
+			_useError = "Error - \\customize " + id + "=" + tmpUse + " is not defined!";
+			forceDebug = true;
+			config = {};
+		}
 	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._useGlobal && gPc[id][this.pc[id][sym]._useGlobal] )  {
 		// Use global symbol 
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
@@ -171,7 +178,7 @@ exports.parse = function() {
 		config = gPc[id][sym];
 	} else if (sym !== "") {
 	// Check if symbol is a custom-markup  validated HTML element
-		options._element = (($tw.config.cmInlineElements.indexOf(sym) !== -1) || ($tw.config.htmlBlockElements.indexOf(sym) !== -1)) ? sym : options._element;
+		options._element = (($tw.config.cmInlineElements.indexOf(sym) !== -1) || ($tw.config.cmBlockElements.indexOf(sym) !== -1)) ? sym : options._element;
 		config = this.pc[id][sym];
 	}
 
