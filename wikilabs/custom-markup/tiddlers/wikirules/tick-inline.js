@@ -196,12 +196,16 @@ exports.parse = function() {
 		options._srcName = config._srcName || options._srcName;
 		options._1 = config._1 || options._1;
 		options._2 = config._2 || options._2;
+		options._3 = config._3 || options._3;
+		options._4 = config._4 || options._4;
 
-		var xMaps = (config._params) ? config._params.split(":::") : ["","",""];
-		var lMaps = (options._params.length > 0 ) ? options._params : ["","",""];
+		var xMaps = (config._params) ? config._params.split(":::") : ["","","","",""];
+		var lMaps = (options._params.length > 0 ) ? options._params : ["","","","",""];
 
 		options._params[1] = (lMaps[1]) ? lMaps[1].slice(0,lMaps[1].length-1) : xMaps[1];
 		options._params[2] = (lMaps[2]) ? lMaps[2].slice(0,lMaps[2].length-1) : xMaps[2];
+		options._params[3] = (lMaps[3]) ? lMaps[3].slice(0,lMaps[3].length-1) : xMaps[3];
+		options._params[4] = (lMaps[4]) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
@@ -249,7 +253,7 @@ exports.parse = function() {
 		}
 
 	var fixAttributes = ["corner", "braille", "slash", "symbol", 
-						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
+						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_3", "_4", "_params",
 						"_srcName", "_debug", "_debugString"];
 
 	// Callback is invoked with (element,title,object)
