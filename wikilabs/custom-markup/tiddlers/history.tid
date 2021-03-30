@@ -3,7 +3,6 @@ title: $:/plugins/wikilabs/custom-markup/history
 V 0.11.4 - 2021-03-29
 
 * remove some inline html elements, that can be directly created
-* remove some block html elements, that can be directly created, because they need parameters
+* move the block html elements, into the project, to be more flexible
 * fix [ext[_use RSOD #86|https://github.com/wikilabs/plugins/issues/86]]
 * add _3 and _4
-
