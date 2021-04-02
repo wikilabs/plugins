@@ -1,6 +1,6 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/toggle-glyph
 caption: toggle-glyph
-condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]] [<targetTiddler>type[application/x-tiddler-dictionary]]
 description: Toggle the "glyph" at the start of the selected line(s)
 icon: $:/plugins/wikilabs/custom-markup/icons/glyph-toggle
 shortcuts: ((toggle-glyph))
@@ -10,7 +10,7 @@ tags: $:/tags/EditorToolbar
 <$action-sendmessage
 	$message="tm-edit-text-operation"
 	$param="toggle-tick"
-	character={{{ [{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}addsuffix{$:/config/edit/linePrefix!!text}] }}}
+	character={{{ [{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}] }}}
 	count="1"
 	force={{{ [{$:/config/edit/linePrefix/force}] }}}
 />

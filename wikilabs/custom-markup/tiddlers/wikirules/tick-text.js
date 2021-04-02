@@ -21,12 +21,12 @@ Detect
 "use strict";
 
 var CLASS_GROUP = "wltc";
-var CLASS_PREFIX = CLASS_GROUP + "-l"; // l .. level
+var CLASS_LEVEL = CLASS_GROUP + "-l"; // l .. level
 
 exports.name = "ticktext";
 exports.types = {block: true};
 
-var idTypes = "tick,single,degree,angle,almost,pilcrow".split(",");
+var idTypes = "tick,single,degree,angle,approx,pilcrow".split(",");
 
 exports.init = function(parser) {
 	this.parser = parser;
@@ -101,7 +101,7 @@ exports.parse = function() {
 			useParagraph = true;
 		break;
 		case "≈":
-			id = "almost";
+			id = "approx";
 			useParagraph = true;
 		break;
 		case "¶":
@@ -121,7 +121,7 @@ exports.parse = function() {
 
 	// "_debug" is a binary parameter
 	var options = {symbol: sym, _mode : "inline", _element : (useParagraph) ? "p" : "div", _classes : _classes,
-		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(":") : [] };
+		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(':"') : [] };
 
 	var textEndInner,
 		textStartInner,
@@ -138,7 +138,8 @@ exports.parse = function() {
 	var classes = _classes.split(".");
 
 	var forceDebug = false,
-		_useError = false;
+		_useError = false,
+		tmpUse = "";
 
 	var config = {};
 
@@ -153,11 +154,20 @@ exports.parse = function() {
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
 		if ((sym === this.pc[id][sym]._use) && (this.pc[id][sym].imported !== true)) {
 			// error Can't use itself
-			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!";
+			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!<br>Try: _useGlobal instead";
 			forceDebug = true;
 		}
-		sym = this.pc[id][sym]._use;
-		config = this.pc[id][sym];
+		tmpUse = this.pc[id][sym]._use;
+		config = this.pc[id][tmpUse];
+
+		if (config) {
+			$tw.utils.extend(config, this.pc[id][sym])
+		} else {
+			// error no pragma with that name
+			_useError = "Error - \\customize " + id + "=" + tmpUse + " is not defined!";
+			forceDebug = true;
+			config = {};
+		}
 	} else if (sym && this.pc[id][sym] && this.pc[id][sym]._useGlobal && gPc[id][this.pc[id][sym]._useGlobal] )  {
 		// Use global symbol 
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
@@ -176,7 +186,7 @@ exports.parse = function() {
 		config = gPc[id][sym];
 	} else if (sym !== "") {
 	// Check if symbol is an HTML element
-		options._element = ($tw.config.htmlBlockElements.indexOf(sym) !== -1) ? sym : options._element;
+		options._element = (($tw.config.cmBlockElements.indexOf(sym) !== -1) || ($tw.config.cmInlineElements.indexOf(sym) !== -1)) ? sym : options._element;
 		config = this.pc[id][sym];
 	}
 
@@ -194,12 +204,16 @@ exports.parse = function() {
 		options._srcName = config._srcName || options._srcName;
 		options._1 = config._1 || options._1;
 		options._2 = config._2 || options._2;
+		options._3 = config._3 || options._3;
+		options._4 = config._4 || options._4;
 
-		var xMaps = (config._params) ? config._params.split(":") : ["",""];
-		var lMaps = (options._params.length > 0 ) ? options._params : ["",""];
+		var xMaps = (config._params) ? config._params.split(":::") : ["","","","",""];
+		var lMaps = (options._params.length > 0 ) ? options._params : ["","","","",""];
 
-		options._params[1] = (lMaps[1]) ? lMaps[1].slice(1,lMaps[1].length-1) : xMaps[1];
-		options._params[2] = (lMaps[2]) ? lMaps[2].slice(1,lMaps[2].length-1) : xMaps[2];
+		options._params[1] = (lMaps[1]) ? lMaps[1].slice(0,lMaps[1].length-1) : xMaps[1];
+		options._params[2] = (lMaps[2]) ? lMaps[2].slice(0,lMaps[2].length-1) : xMaps[2];
+		options._params[3] = (lMaps[3]) ? lMaps[3].slice(0,lMaps[3].length-1) : xMaps[3];
+		options._params[4] = (lMaps[4]) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 //		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
@@ -213,7 +227,7 @@ exports.parse = function() {
 	if ((options._mode === "block") ) { //&& (options._endString !== "")) {
 	// standard rendering
 		// no GROUP in block mode
-		classes.push(CLASS_PREFIX + level);
+		classes.push(CLASS_LEVEL + level + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
 			options._endString = (useParagraph) ? "\\r?\\n\\r?\\n" : "\\r?\\n";
@@ -225,7 +239,7 @@ exports.parse = function() {
 		tree = (oneBlock) ? this.parser.parseBlock(options._endString) : this.parser.parseBlocks(options._endString);
 	} else {
 		// apply CLASS_GROUP only if in inline mode. 
-		classes.push(CLASS_PREFIX + level + " " + CLASS_GROUP);
+		classes.push(CLASS_LEVEL + level + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
 //			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg, {eatTerminator:true}); 
@@ -246,8 +260,8 @@ exports.parse = function() {
 			"class": {type: "string", value: classes.join(" ").trim()}
 		}
 
-	var fixAttributes = ["pilcrow", "tick", "angle", "almost", "single", "degree", "symbol", 
-						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_params",
+	var fixAttributes = ["pilcrow", "tick", "angle", "approx", "single", "degree", "symbol", 
+						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_3", "_4", "_params",
 						"_srcName", "_debug", "_debugString"];
 
 	// Callback is invoked with (element,title,object)

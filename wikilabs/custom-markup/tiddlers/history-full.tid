@@ -3,6 +3,53 @@ title: $:/plugins/wikilabs/custom-markup/history-full
 
 {{$:/plugins/wikilabs/custom-markup/history}}
 
+V 0.11.3 - 2021-03-20
+
+* add a class `wltc-snippet-inline` and `wltc-snippet-block` to snippet dropdowns
+* Let all glyphs accept all html tags
+* fix some missing `approx` definitions
+* document the `_useGlobal` pragma attribute
+* `_use` allows us to overwrite predefined attributes
+
+V 0.11.2 - 2021-03-20
+
+* allow html tags in inline text eg: `some /°mark marked°/ text`
+** creates: `<p>some <mark class="wltc-inline wltc">marked</mark> text</p>`
+
+V 0.11.1 - 2021-03-20
+
+* custom dropdown - "snippets" got new functionality
+
+V 0.11.0 - 2021-03-18
+
+''Breaking changes''
+
+* Rename Glyph: `about` ''to'' `approx (≈)`, which is the official name of the char
+* Change the `_params` formatting to `_params=":::p1:::p2"`
+
+See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]
+
+V 0.10.1 - 2021-02-22
+
+* fix class definition with missing pragma _classes
+
+V 0.10.0 - 2021-02-18
+
+* fix RSOD accessing cache without a check
+* Added the `corner 『 』` glyphs for inline markers
+** "little was removed"
+* Added `CTRL-0` as shortcut for "toggle inline selection"
+* Added dynamic icon for inline selection
+* Added dropdown to configure inline selection
+* fixed problem with class definition applied twice
+* local params allow spaces now. eg:`XX:"a_b_c":"param with spaces"`
+* `tc-editor-toolber` is `display: flex;` now. Style setting comes with the plugin
+
+''Breaking change''
+
+* local `XX:"p1":"p2"` ''have to be covered with double qutes'' now.
+* did ''remove'' the ''little'' glyp from inline markers
+
 V 0.9.0 - 2020-12-11
 
 * Changed all keyboard shortcuts, to avoid overlapping
@@ -78,12 +125,12 @@ V 0.5.0 - 2020.09.20
 V 0.4.2 - 2020-09-18
 
 * docs is on the way
-* almost feature complete
+* approx feature complete
 ** \custominline needs to be improved
 
 V 0.4.0 2020.09.16
 
-* added IDs: single "›" and almost "≈"
+* added IDs: single "›" and approx "≈"
 * ID comma removed 
 * new toolbar buttons
 * new keyboard shortcuts

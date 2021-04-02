@@ -12,9 +12,16 @@ type: text/vnd.tiddlywiki
 		name="""$(linePrefix)$""" 
 		id={{{ [{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}] ~[[´]] }}}
 />
-<$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [{$:/config/edit/linePrefix!!id}addsuffix{$:/config/edit/linePrefix!!text}] }}}/>
+<$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [{$:/config/edit/linePrefix!!text}] }}}/>
 <$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/id-prepared"/>
 <$action-deletetiddler $tiddler=<<dropdown-state>> />
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="toggle-tick"
+	character={{{ [[$:/config/edit/linePrefix]get[text]] }}}
+	count="1"
+	force={{{ [{$:/config/edit/linePrefix/force}] ~[[no]] }}}
+/>
 \end
 
 \define idSelector()
@@ -28,26 +35,26 @@ type: text/vnd.tiddlywiki
 </$tiddler>
 <$checkbox tiddler="$:/config/edit/linePrefix/force" 
 	field=text 
-	checked="yes" unchecked="no" default="no" > Use all lines
+	checked="yes" unchecked="no" default="no" > Use empty lines
 </$checkbox>
 \end
 
 \define preview-type-button()
-<$button tag="a" actions=<<selectActions>> >
+<$button tag="a" class="wltc-snippet-block" actions=<<selectActions>> >
 
-<$transclude tiddler=<<linePrefix>> field="caption" mode="inline">
+	<$transclude tiddler=<<linePrefix>> field="caption" mode="inline">
 
-<$view tiddler=<<linePrefix>> field="title" mode="inline"/>
+		<$view tiddler=<<linePrefix>> field="title" mode="inline"/>
 
-</$transclude> 
+	</$transclude>
 
-<$reveal tag="span" stateTitle="$:/config/edit/linePrefix" stateField=name type="match" text=<<linePrefix>> default="XXXXX">
+	<$reveal tag="span" stateTitle="$:/config/edit/linePrefix" stateField=name type="match" text=<<linePrefix>> default="XXXXX">
 
-<$entity entity="&nbsp;"/>
+		<$entity entity="&nbsp;"/>
 
-<$entity entity="&#x2713;"/>
+		<$entity entity="&#x2713;"/>
 
-</$reveal>
+	</$reveal>
 
 </$button>
 \end
