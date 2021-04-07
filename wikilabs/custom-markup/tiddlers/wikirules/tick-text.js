@@ -37,11 +37,8 @@ exports.init = function(parser) {
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; // OK
-// 	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.6.x
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.0
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
-	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1
+//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1 - V0.11.4
+	this.matchRegExp = /([»≈]{1,4}|(?=¶[^¶])¶|(?=´[^´])´|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V????
 
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -186,7 +183,10 @@ exports.parse = function() {
 		config = gPc[id][sym];
 	} else if (sym !== "") {
 	// Check if symbol is an HTML element
-		options._element = (($tw.config.cmBlockElements.indexOf(sym) !== -1) || ($tw.config.cmInlineElements.indexOf(sym) !== -1)) ? sym : options._element;
+		var isBlock = ($tw.config.cmBlockElements.indexOf(sym) !== -1);
+		var isInline = ($tw.config.cmInlineElements.indexOf(sym) !== -1)
+		options._element = ( isBlock || isInline ) ? sym : options._element;
+		options._mode = (isBlock) ? "block" : options._mode;
 		config = this.pc[id][sym];
 	}
 
@@ -261,8 +261,8 @@ exports.parse = function() {
 		}
 
 	var fixAttributes = ["pilcrow", "tick", "angle", "approx", "single", "degree", "symbol", 
-						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_3", "_4", "_params",
-						"_srcName", "_debug", "_debugString"];
+						"_endString", "_mode", "_element", "_classes", "_use", "_useGlobal", "_1", "_2", "_3", "_4", 
+						"_params", "_srcName", "_debug", "_debugString"];
 
 	// Callback is invoked with (element,title,object)
 	$tw.utils.each(config, function(val,title,obj) {

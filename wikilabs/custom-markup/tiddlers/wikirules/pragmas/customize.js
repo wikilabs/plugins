@@ -138,8 +138,10 @@ exports.parse = function() {
 			case "_use":
 			case "_useGlobal":
 			case "_srcName":
-			// case "_1": 
-			// case "_2": 
+//			case "_1": 
+//			case "_2": 
+//			case "_3": 
+//			case "_4": 
 				configTickText[token.name] = token.value;
 				debugString += " " + token.name + "='" + token.value + "'";
 			break;

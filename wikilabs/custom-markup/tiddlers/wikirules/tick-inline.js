@@ -37,14 +37,7 @@ exports.init = function(parser) {
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg; // OK
-// 	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=_[^_])_)((?:[^\.:\r\n\s´°]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.6.x
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.0
-//	this.matchRegExp = /((?=¶[^¶])¶|(?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])_)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
-//	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=__[^_])__|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?(\:(?:[^.\r\n\s]+))?/mg; // V0.7.1
-//	this.matchRegExp = /((?=﹙[^﹙])﹙|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1
 	this.matchRegExp = /((?=『[^『])『|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.10.0
-// 『』〘〙
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
 
@@ -253,8 +246,8 @@ exports.parse = function() {
 		}
 
 	var fixAttributes = ["corner", "braille", "slash", "symbol", 
-						"_endString", "_mode", "_element", "_classes", "_use", "_1", "_2", "_3", "_4", "_params",
-						"_srcName", "_debug", "_debugString"];
+						"_endString", "_mode", "_element", "_classes", "_use", "_useGlobal", "_1", "_2", "_3", "_4",
+						"_params", "_srcName", "_debug", "_debugString"];
 
 	// Callback is invoked with (element,title,object)
 	$tw.utils.each(config, function(val,title,obj) {
