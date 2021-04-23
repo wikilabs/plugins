@@ -1,3 +1,5 @@
+created: 20210413114419185
+modified: 20210423140232638
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 type: text/vnd.tiddlywiki
 
@@ -62,16 +64,17 @@ type: text/vnd.tiddlywiki
 Select glyph -- <$macrocall $name=idSelector />
 
 ----
-
+<$transclude tiddler="dropdown-replacement">
 <$list filter="[all[shadows+tiddlers]tag[$:/tags/TextEditor/LinePrefix]!has[draft.of]sort[title]]" variable="linePrefix">
 
 <<preview-type-button>>
 
 </$list>
+</$transclude>
 
 ----
 
-<$button tag="a">
+<$button tag="a" class="wltc-snippet-block">
 
 <$action-sendmessage
 	$message="tm-new-tiddler"
