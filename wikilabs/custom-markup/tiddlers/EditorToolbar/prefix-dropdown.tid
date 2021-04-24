@@ -64,7 +64,7 @@ type: text/vnd.tiddlywiki
 Select glyph -- <$macrocall $name=idSelector />
 
 ----
-<$transclude tiddler="dropdown-replacement">
+<$transclude tiddler="$:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown/snippet-selector">
 <$list filter="[all[shadows+tiddlers]tag[$:/tags/TextEditor/LinePrefix]!has[draft.of]sort[title]]" variable="linePrefix">
 
 <<preview-type-button>>
