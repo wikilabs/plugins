@@ -1,0 +1,4 @@
+title: $:/config/ShortcutInfo/open-block-dropdown
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/custom-markup/EditorToolbar/chooser-block!!description}}

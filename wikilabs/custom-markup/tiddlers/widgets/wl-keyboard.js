@@ -29,16 +29,14 @@ exports.prototype.handleChangeEvent = function(event) {
 			$tw.utils.each(this.attributes,function(val,key) {
 				if (key.substring(0,4) === "usr-") {
 					variables[key] = "" + val;
-				} else {
-					variables["__" + key + "__"] = "" + val;
+				// } else {
+				// 	variables["__" + key + "__"] = "" + val;
 				}
 			});
-			$tw.utils.each(this.keyInfoArray[0],function(val,key) {
-				temp = "" + event[key];
-				variables["__" + key + "__"] = (temp === "true") ? "yes" : (temp === "false") ? "no" : temp;
-			});
-			// "tiddler" and/or "field" parameter may be missing in the widget call. See radio widget .execute() 
-			variables = $tw.utils.extend(variables, {"__key__": event.key});
+			variables = $tw.utils.extend(variables, 
+				{ "key": event.key, 
+					modifierKey: $tw.keyboardManager.getEventModifierKeyDescriptor(event),
+				});
 			this.invokeActionString(this.actions,this,event,variables);
 		}
 		this.dispatchMessage(event);

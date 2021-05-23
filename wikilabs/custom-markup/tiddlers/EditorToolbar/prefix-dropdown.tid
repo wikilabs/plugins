@@ -1,7 +1,4 @@
-created: 20210413114419185
-modified: 20210423140232638
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
-type: text/vnd.tiddlywiki
 
 \define getConfigName() $:/plugins/wikilabs/custom-markup/icons/glyphs/$(__name__)$
 
@@ -63,34 +60,35 @@ type: text/vnd.tiddlywiki
 
 Select glyph -- <$macrocall $name=idSelector />
 
-----
+---
+
 <$transclude tiddler="$:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown/snippet-selector">
-<$list filter="[all[shadows+tiddlers]tag[$:/tags/TextEditor/LinePrefix]!has[draft.of]sort[title]]" variable="linePrefix">
+
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/WL/Snippet/LinePrefix]!has[draft.of]sort[title]]" variable="linePrefix">
 
 <<preview-type-button>>
 
 </$list>
-</$transclude>
 
-----
+---
 
 <$button tag="a" class="wltc-snippet-block">
 
 <$action-sendmessage
 	$message="tm-new-tiddler"
-	tags="$:/tags/TextEditor/LinePrefix"
+	tags="$:/tags/WL/Snippet/LinePrefix"
 	caption="New Line Prefix"
 	text=""
 />
 
-<$action-deletetiddler 
-	$tiddler=<<dropdown-state>> 
-/>
+<$action-deletetiddler $tiddler=<<dropdown-state>> />
 
 <em>
 
-<$text text={{$:/language/Buttons/Stamp/Caption/New}}/>
+<$text text="Add a new configuration!"/>
 
 </em>
 
 </$button>
+
+</$transclude>
