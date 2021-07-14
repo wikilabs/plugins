@@ -1,0 +1,11 @@
+{
+	"title": "$:/plugins/wikilabs/presentation-test",
+	"name": "Presentation Test",
+	"description": "A plugin to test subtypes",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.2.0",
+	"version": "0.0.1",
+	"list": "readme license history",
+	"plugin-type": "content",
+	"plugin-subtype": "Presentation"
+}
