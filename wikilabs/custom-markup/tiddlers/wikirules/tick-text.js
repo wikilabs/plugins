@@ -37,8 +37,7 @@ exports.init = function(parser) {
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1 - V0.11.4
-	this.matchRegExp = /([»≈]{1,4}|(?=¶[^¶])¶|(?=´[^´])´|(?=°[^°])°|(?=›[^›])›)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V????
+	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1
 
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -216,16 +215,12 @@ exports.parse = function() {
 		options._params[4] = (lMaps[4]) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
-//		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
 	}
-
-// done in line 122
-// 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 
 	var oneBlock = false;
 
 	if ((options._mode === "block") ) { //&& (options._endString !== "")) {
-	// standard rendering
+		// standard rendering
 		// no GROUP in block mode
 		classes.push(CLASS_LEVEL + level + " " + CLASS_GROUP);
 
@@ -234,18 +229,14 @@ exports.parse = function() {
 			oneBlock = true;
 		} 
 
-//		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options._endString) + "$");
-//		tree = this.parser.parseBlocks($tw.utils.escapeRegExp(options._endString));
 		tree = (oneBlock) ? this.parser.parseBlock(options._endString) : this.parser.parseBlocks(options._endString);
 	} else {
 		// apply CLASS_GROUP only if in inline mode. 
 		classes.push(CLASS_LEVEL + level + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
-//			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg, {eatTerminator:true}); 
 			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg);// OK for single new-line
 		} else {
-//			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options._endString) + "$)","mg")); // V0.7.0
 			tree = this.parser.parseInlineRun(new RegExp("(" + $tw.utils.escapeRegExp(options._endString) + "$)","mg"));
 		}
 	}

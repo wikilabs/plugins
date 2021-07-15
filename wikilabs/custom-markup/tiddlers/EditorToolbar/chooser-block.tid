@@ -6,3 +6,4 @@ description: Choose glyph
 dropdown: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 icon: $:/core/images/chevron-down
 tags: $:/tags/EditorToolbar
+shortcuts: ((open-block-dropdown))

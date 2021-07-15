@@ -201,11 +201,7 @@ exports.parse = function() {
 		options._params[4] = (lMaps[4]) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
-//		classes[0] = options._classes.split(".").join(" ").trim() // replace the name element
 	}
-
-// done in line 122
-// 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 
 	var oneBlock = false;
 
@@ -219,18 +215,14 @@ exports.parse = function() {
 			oneBlock = true;
 		} 
 
-//		tree = this.parser.parseBlocks("^" + $tw.utils.escapeRegExp(options._endString) + "$");
-//		tree = this.parser.parseBlocks($tw.utils.escapeRegExp(options._endString));
 		tree = (oneBlock) ? this.parser.parseBlock(options._endString) : this.parser.parseBlocks(options._endString);
 	} else {
 		// apply CLASS_GROUP only if in inline mode. 
 		classes.push(CLASS_LEVEL + " " + CLASS_GROUP);
 
 		if (options._endString === "") {
-//			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg, {eatTerminator:true}); 
 			tree = this.parser.parseInlineRun((useParagraph) ? /(\r?\n\r?\n)/mg : /(\r?\n)/mg);// OK for single new-line
 		} else {
-//			tree = this.parser.parseInlineRun(new RegExp("(^" + $tw.utils.escapeRegExp(options._endString) + "$)","mg")); // V0.7.0
 			tree = this.parser.parseInlineRun(new RegExp("(" + $tw.utils.escapeRegExp(options._endString) + ")","mg"));
 		}
 	}

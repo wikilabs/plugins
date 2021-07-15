@@ -1,0 +1,107 @@
+\whitespace trim
+
+\define choose-a-set()
+\whitespace trim
+<$select class="wltc-tiny-push-down wltc-small-push-left" tiddler="/config/WLCM/LineSet/selected" default='xxx'>
+	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/LinePrefix/Set]]'>
+		<option value=<<currentTiddler>>><$transclude field='caption'><$text text=<<currentTiddler>>/></$transclude></option>
+	</$list>
+</$select>
+\end
+
+\define editConfig()
+\whitespace trim
+<$set name=currentTiddler value={{{ [[$:/temp/set-$(index)$]get[title]] }}}>
+	<$list filter="[all[current]has[title]]">
+		<$edit-text tiddler=<<currentTiddler>> placeholder="- new line prefix -" tag=input />
+		<$button class="tc-btn-invisible" disabled={{{ [<currentTiddler>get[text]has[title]then[yes]else[no]] }}}>{{$:/core/images/done-button}}
+			<$action-sendmessage $message="tm-new-tiddler" title={{{ [<currentTiddler>get[text]] }}} tags="$:/tags/WL/Snippet/LinePrefix" caption="New Line Prefix" text="" />
+			<$action-setfield $tiddler="prefix-set"  $index="$(index)$" $value={{{ [<currentTiddler>get[text]] }}} />
+			<$action-deletetiddler $tiddler=<<currentTiddler>> />
+		</$button>
+		<$button class="tc-btn-invisible">{{$:/core/images/close-button}}
+			<$action-deletetiddler $tiddler=<<currentTiddler>> />
+		</$button>
+	</$list>
+</$set>
+\end
+
+\define Warnings()
+\whitespace trim
+<p>If the following list is empty we are good to go!<p>
+<table class="">
+	<$list filter='[[prefix-set]keyvalues:value[]]'>
+		<$list filter="[<currentTiddler>!has[title]]">
+		<tr>
+			<td>Tiddler - <<currentTiddler>> - doesn't exist </td> <td>
+			<$button >{{$:/core/images/new-button}}
+				<$action-sendmessage $message="tm-new-tiddler" title=<<currentTiddler>> tags="$:/tags/WL/Snippet/LinePrefix" caption="New Line Prefix" text="" />
+			</$button>
+			</td>
+		</tr>
+		</$list>
+	</$list>
+</table>
+\end
+
+\define element()
+\whitespace trim
+<span class="wltc-gap-right">$(index)$</span>
+<$select class="wltc-tiny-push-down wltc-small-push-left" tiddler="prefix-set" index="$(index)$" default='xxx'>
+	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/Snippet/LinePrefix]]'>
+		<option value=<<currentTiddler>>>
+			<$transclude field='caption'>{{{[<currentTiddler>!has[title]then[ - doesn't exist!]addprefix<currentTiddler>addprefix[Error - ]else<currentTiddler>]}}}</$transclude>
+		</option>
+	</$list>
+</$select>
+\end
+
+\define linkConfig()
+\whitespace trim
+<$set name=currentTiddler value={{{[[prefix-set]getindex<index>get[title]]}}}>
+	<$set name=captionMissing value={{{[[prefix-set]getindex<index>get[caption]then[]else[Info: caption is missing]]}}}>
+		<$reveal type=nomatch text=<<currentTiddler>>>
+			<$button to=<<currentTiddler>> class="tc-btn-invisible">{{$:/core/images/link}}</$button> <<captionMissing>>
+		</$reveal>
+	</$set>
+</$set>
+\end
+
+\define clearConfig()
+\whitespace trim
+<$set name=currentTiddler value={{{[[prefix-set]getindex<index>get[title]]}}}>
+	<$reveal type=nomatch text=<<currentTiddler>>>
+		<$button class="tc-btn-invisible">{{$:/core/images/delete-button}}
+			<$action-confirm $message="Remove element: -$(index)$- from the set?" >
+				<$action-setfield $tiddler="prefix-set" $index=<<index>> />
+			</$action-confirm>
+		</$button>
+	</$reveal>
+</$set>
+\end
+
+\define addConfig()
+\whitespace trim
+<$set name=currentTiddler value={{{[[prefix-set]getindex<index>get[title]]}}}>
+	<$reveal type=match text=<<currentTiddler>>>
+		<$button class="tc-btn-invisible">{{$:/core/images/new-button}}
+			<$action-setfield $tiddler={{{ [[$:/temp/set-$(index)$]] }}}  $field="" />
+		</$button>
+	</$reveal>
+</$set>
+\end
+
+\define main()
+\whitespace trim
+<$set name=range filter="[range[1, 9]] 0 [enlist<characterRange>]">
+	<$set name=keys filter="""[enlist<range>] enter escape""">
+		<$list filter=<<range>> variable=index>
+			<<element>> <<addConfig>> <<editConfig>> <<clearConfig>> <<linkConfig>><br>
+		</$list>
+	</$set>
+</$set>
+
+<<Warnings>>
+\end
+
+<pre><code><$view /></code></pre>

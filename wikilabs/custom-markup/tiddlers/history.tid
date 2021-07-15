@@ -1,9 +1,8 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 0.11.5 - 2021-04-04
+V 0.11.5 - 2021-04-10
 
-* improve internal consistency
-
-
+* Add a bit more docs
+* Remove old comments from code
 
 See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]

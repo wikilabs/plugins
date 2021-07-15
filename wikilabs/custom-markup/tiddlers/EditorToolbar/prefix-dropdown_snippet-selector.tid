@@ -1,0 +1,84 @@
+created: 20210419150632308
+modified: 20210424141436922
+tags: 
+title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown/snippet-selector
+type: text/vnd.tiddlywiki
+
+\import "[[$:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown]]"
+\whitespace trim
+
+\\ debug helper
+\define notify(key)
+<$action-sendmessage $message="tm-notify" $param="test-note" index=$key$/>
+\end
+
+\\ not used atm
+\define copyToClipboard()
+<$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [[/config/WLCM/edit-default]get[text]get[text]] }}}/>
+<$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/snippet-prepared"/>
+\end
+
+\define actionKey()
+<$list filter="[<key>match[Escape]]">
+</$list>
+
+<$list filter="[<key>match[Enter]]">
+<$action-sendmessage $message="tm-edit-text-operation" $param="toggle-tick" 
+	character={{{ [[/config/WLCM/edit-default]get[text]get[text]] }}}
+	count="1"
+	force={{{ [{$:/config/edit/linePrefix/force}] ~[[no]] }}} 
+/>
+</$list>
+
+<$list filter="[<key>!match[Escape]!match[Enter]]">
+<$action-sendmessage $message="tm-edit-text-operation" $param="toggle-tick" 
+	character={{{ [{/config/WLCM/LineSet/selected}getindex<key>get[text]] }}}
+	count="1"
+	force={{{ [{$:/config/edit/linePrefix/force}] ~[[no]] }}} 
+/>
+<$action-createtiddler $basetitle="/config/WLCM/edit-default" $overwrite=yes text={{{ [{/config/WLCM/LineSet/selected}getindex<key>] }}}  />
+</$list>
+
+<$action-deletetiddler $tiddler="$:/state/EditorToolbarDropdown--124516744"/>
+\end
+
+\define actionClick()
+<$action-sendmessage $message="tm-edit-text-operation"
+	$param="toggle-tick"
+	character={{{ [{/config/WLCM/LineSet/selected}getindex<key>get[text]] }}}
+	count="1"
+	force={{{ [{$:/config/edit/linePrefix/force}] ~[[no]] }}}
+/>
+<$action-createtiddler $basetitle="/config/WLCM/edit-default" $overwrite=yes text={{{ [{/config/WLCM/LineSet/selected}getindex<key>] }}}  />
+\end
+
+<$select class="wltc-selector" tiddler="/config/WLCM/LineSet/selected" default='xxx'>
+	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/LinePrefix/Set]]'>
+		<option value=<<currentTiddler>>><$transclude field='caption'><$text text=<<currentTiddler>>/></$transclude></option>
+	</$list>
+</$select>
+
+<hr>
+
+<$set name=range filter="[{/config/WLCM/LineSet/selected}keyvalues:key[]]">
+<$set name=keys filter="""[enlist<range>] enter escape""">
+<span class="fr">
+	<$button to="/config/WLCM/LineSet/Config" class="tc-btn-invisible" tag=a>
+		{{$:/core/images/options-button}}
+	</$button>
+</span>
+<$wl-keyboard key=<<keys>> actions=<<actionKey>> >
+	<$list filter=<<range>> variable=key>
+		<$tiddler tiddler={{{[{/config/WLCM/LineSet/selected}getindex<key>has[title]else[Error - Tiddler doesn't exist]]}}}>
+			-<<key>>-&nbsp;:&nbsp;
+			<span class="wltc-snippet ">
+			<$button class="tc-btn-invisible" actions=<<actionClick>> >
+				<$transclude field=caption>&nbsp;<$transclude field=title/></$transclude>
+			</$button>
+			</span><br>
+		</$tiddler>
+	</$list><br>
+	Enter:&nbsp;<$edit-text tiddler="/config/WLCM/edit-default" placeholder="- hit key -" tag=input disabled=yesX focus />
+</$wl-keyboard>
+</$set>
+</$set>
