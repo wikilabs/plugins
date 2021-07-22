@@ -7,12 +7,12 @@ type: text/vnd.tiddlywiki
 \import "[[$:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown]]"
 \whitespace trim
 
-\\ debug helper
+<!-- debug helper -->
 \define notify(key)
 <$action-sendmessage $message="tm-notify" $param="test-note" index=$key$/>
 \end
 
-\\ not used atm
+<!-- not used atm -->
 \define copyToClipboard()
 <$action-sendmessage $message="tm-copy-to-clipboard" $param={{{ [[/config/WLCM/edit-default]get[text]get[text]] }}}/>
 <$action-sendmessage $message="tm-notify" $param="$:/plugins/wikilabs/custom-markup/EditorToolbar/notify/snippet-prepared"/>
