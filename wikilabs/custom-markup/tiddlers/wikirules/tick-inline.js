@@ -195,10 +195,10 @@ exports.parse = function() {
 		var xMaps = (config._params) ? config._params.split(":::") : ["","","","",""];
 		var lMaps = (options._params.length > 0 ) ? options._params : ["","","","",""];
 
-		options._params[1] = (lMaps[1]) ? lMaps[1].slice(0,lMaps[1].length-1) : xMaps[1];
-		options._params[2] = (lMaps[2]) ? lMaps[2].slice(0,lMaps[2].length-1) : xMaps[2];
-		options._params[3] = (lMaps[3]) ? lMaps[3].slice(0,lMaps[3].length-1) : xMaps[3];
-		options._params[4] = (lMaps[4]) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
+		options._params[1] = ((lMaps[1] !== undefined) && (lMaps[1] !== "\"")) ? lMaps[1].slice(0,lMaps[1].length-1) : xMaps[1];
+		options._params[2] = ((lMaps[2] !== undefined) && (lMaps[2] !== "\"")) ? lMaps[2].slice(0,lMaps[2].length-1) : xMaps[2];
+		options._params[3] = ((lMaps[3] !== undefined) && (lMaps[3] !== "\"")) ? lMaps[3].slice(0,lMaps[3].length-1) : xMaps[3];
+		options._params[4] = ((lMaps[4] !== undefined) && (lMaps[4] !== "\"")) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 	}
