@@ -189,6 +189,10 @@ exports.parse = function() {
 		config = this.pc[id][sym];
 	}
 
+	function use_lMaps(cnt) {
+		return (lMaps[cnt] !== undefined) && (lMaps[cnt] !== "") && (lMaps[cnt] !== "\"")
+	}
+
 	if (config) {
 		options.symbol = config.symbol || options.symbol;
 		options._endString = config._endString || options._endString;
@@ -209,10 +213,17 @@ exports.parse = function() {
 		var xMaps = (config._params) ? config._params.split(":::") : ["","","","",""];
 		var lMaps = (options._params.length > 0 ) ? options._params : ["","","","",""];
 
-		options._params[1] = ((lMaps[1] !== undefined) && (lMaps[1] !== "\"")) ? lMaps[1].slice(0,lMaps[1].length-1) : xMaps[1];
-		options._params[2] = ((lMaps[2] !== undefined) && (lMaps[2] !== "\"")) ? lMaps[2].slice(0,lMaps[2].length-1) : xMaps[2];
-		options._params[3] = ((lMaps[3] !== undefined) && (lMaps[3] !== "\"")) ? lMaps[3].slice(0,lMaps[3].length-1) : xMaps[3];
-		options._params[4] = ((lMaps[4] !== undefined) && (lMaps[4] !== "\"")) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
+		for (var i = 1; i <= 4; i++) {
+			if (use_lMaps(i)) {
+				options._params[i] = lMaps[i].slice(0,lMaps[i].length-1);
+			} else {
+				options._params[i] = xMaps[i];
+			}
+		}
+		// options._params[1] = ((lMaps[1] !== undefined) && (lMaps[1] !== "\"")) ? lMaps[1].slice(0,lMaps[1].length-1) : xMaps[1];
+		// options._params[2] = ((lMaps[2] !== undefined) && (lMaps[2] !== "\"")) ? lMaps[2].slice(0,lMaps[2].length-1) : xMaps[2];
+		// options._params[3] = ((lMaps[3] !== undefined) && (lMaps[3] !== "\"")) ? lMaps[3].slice(0,lMaps[3].length-1) : xMaps[3];
+		// options._params[4] = ((lMaps[4] !== undefined) && (lMaps[4] !== "\"")) ? lMaps[4].slice(0,lMaps[4].length-1) : xMaps[4];
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 	}
@@ -255,6 +266,7 @@ exports.parse = function() {
 						"_endString", "_mode", "_element", "_classes", "_use", "_useGlobal", "_1", "_2", "_3", "_4", 
 						"_params", "_srcName", "_debug", "_debugString"];
 
+	// Add attributes, that are not part of the standard attributes
 	// Callback is invoked with (element,title,object)
 	$tw.utils.each(config, function(val,title,obj) {
 		if (fixAttributes.indexOf(title) === -1) {
