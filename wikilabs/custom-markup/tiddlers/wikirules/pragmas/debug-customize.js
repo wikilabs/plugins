@@ -97,7 +97,7 @@ exports.parse = function() {
 			text += "local " + test[0] + ":\n" + JSON.stringify(config[test[0]], null, 2)
 		}
 	}
-	
+
 	return [{
 		type: "codeblock",
 		attributes: {

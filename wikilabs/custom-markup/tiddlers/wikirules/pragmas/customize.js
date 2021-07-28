@@ -111,18 +111,19 @@ exports.parse = function() {
 //		configTickText = {_mode:"", _element:"", _classes:"", _endString:""};
 		configTickText = {};
 
-	var debugString = "\\customize";
+	var debugString = "\\customize",
+		tValue = "";
 	
 	$tw.utils.each(attributes,function(token) {
 		switch(token.name) {
-			case "tick": // fall through
-			case "angle": // fall through
-			case "approx": // fall through
-			case "single": // fall through
-			case "degree": // fall through
+			case "tick": // All fall through's are intentional
+			case "angle": 
+			case "approx":
+			case "single":
+			case "degree":
 			case "pilcrow":
-			case "corner": // fall through
-			case "braille": // fall through
+			case "corner":
+			case "braille":
 			case "slash": // fall through
 				id = token.name;
 				configTickText.symbol = token.value;
@@ -137,7 +138,7 @@ exports.parse = function() {
 			case "_endString":
 			case "_use":
 			case "_useGlobal":
-			case "_srcName":
+			case "_srcName": // falltrough
 //			case "_1": 
 //			case "_2": 
 //			case "_3": 
@@ -147,11 +148,13 @@ exports.parse = function() {
 			break;
 			default:
 				configTickText[token.name] = token || {};
-				debugString += " " + token.name + "='" + "{..}" + "'"; 
+				tValue = (token.type === "macro") ? "<<" + token.value.name + ">>": 
+						(token.type === "indirect") ? "{{" + token.textReference + "}}" : "'" + token.value + "'";
+				debugString += " " + token.name + "=" + tValue; 
 		}
 	});
-	
-	// if _debug is set by _use in an other tiddler, we need the _debugString!
+
+// if _debug is set by _use in an other tiddler, we need the _debugString!
 // 	var debugString = "\\customize";
 // 	Object.keys(configTickText).map( function(x) {
 // 		if (x == "symbol") debugString += ' ' + id + '="' + configTickText[x] + '"';
