@@ -3,6 +3,11 @@ title: $:/plugins/wikilabs/custom-markup/history-full
 
 {{$:/plugins/wikilabs/custom-markup/history}}
 
+V 0.11.5 - 2021-04-10
+
+* Add a bit more docs
+* Remove old comments from code
+
 V 0.11.4 - 2021-03-29
 
 * remove some inline html elements, that can be directly created
@@ -89,7 +94,8 @@ V 0.7.0 - 2020-10-23
 ** `_symbol.class.clsss:param:param some text__`
 ** `.class` and `:param` work the same way as "block" definitions
 * Removed underscore from "block" definitions, because it's used by "inline"
-* Added: `\\ pragma comments`
+* Added: `#
+ pragma comments`
 ** It's faster than HTML comments `<!-- comments -->`, since it can be used outside macro `\define x()` blocks
 
 V 0.6.0 - 2020-10-03
