@@ -1,0 +1,17 @@
+created: 20210425113849845
+modified: 20210426141701028
+tags: 
+title: /config/WLCM/LineSet/Config
+type: text/vnd.tiddlywiki
+
+\import [[/config/WLCM/LineSet/Config/Macros]]
+
+\define characterRange() a b c d e f g h
+
+! Select a Prefix Set
+
+<<selectSet>>
+
+This configuration allows you to define "line prefixes" for the selected set
+
+<<main>>

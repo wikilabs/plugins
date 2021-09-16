@@ -23,7 +23,8 @@ type: text/vnd.tiddlywiki
 </$list>
 
 <$list filter="[<key>match[Enter]]">
-<$action-sendmessage $message="tm-edit-text-operation" $param="toggle-tick" 
+<$action-sendmessage $message="tm-edit-text-operation"
+	$param="toggle-tick" 
 	character={{{ [[/config/WLCM/edit-default]get[text]get[text]] }}}
 	count="1"
 	force={{{ [{$:/config/edit/linePrefix/force}] ~[[no]] }}} 
@@ -31,7 +32,8 @@ type: text/vnd.tiddlywiki
 </$list>
 
 <$list filter="[<key>!match[Escape]!match[Enter]]">
-<$action-sendmessage $message="tm-edit-text-operation" $param="toggle-tick" 
+<$action-sendmessage $message="tm-edit-text-operation"
+	$param="toggle-tick" 
 	character={{{ [{/config/WLCM/LineSet/selected}getindex<key>get[text]] }}}
 	count="1"
 	force={{{ [{$:/config/edit/linePrefix/force}] ~[[no]] }}} 

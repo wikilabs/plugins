@@ -6,3 +6,4 @@ description: Choose inline glyph
 dropdown: $:/plugins/wikilabs/custom-markup/EditorToolbar/inline-dropdown
 icon: $:/core/images/chevron-down
 tags: $:/tags/EditorToolbar
+shortcuts: ((open-inline-dropdown))
