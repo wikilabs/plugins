@@ -1,0 +1,6 @@
+title: $:/language/Buttons/XX
+
+# TODO
+
+ExportTiddlyWikiCore/Caption: export TiddlyWiki core
+ExportTiddlyWikiCore/Hint: Export the ~TiddlyWiki core code for running with external ~JavaScript   
