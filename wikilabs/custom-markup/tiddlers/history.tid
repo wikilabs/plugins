@@ -1,15 +1,13 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.20.0 - 2021-09-16
+
+* Rebuild the _params to be more generic
+
 V 0.11.7 - 2021-09-16
 
 * Add inline snippet dropdown
 * Add support for inline snippets
-
-
-V 0.11.6 - 2021-07-22
-
-* Fixes issue #98 [[Custom Markup "in text" Parameters overwrite defaults when empty|https://github.com/wikilabs/plugins/issues/98]]
-* Changed `\\ pragma comment` to `<!-- pragma comment -->`, since the later is part of the TW core now
 
 
 See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]
