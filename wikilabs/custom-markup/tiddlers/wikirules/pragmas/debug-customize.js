@@ -27,7 +27,7 @@ exports.init = function(parser) {
 	var self = this;
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /^\\debugcustomi[zs]e[^\S\n]/mg;
+	this.matchRegExp = /^\\debugcustom[^\S\n]/mg;
 	
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText  || {};
