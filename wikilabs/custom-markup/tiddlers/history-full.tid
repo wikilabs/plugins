@@ -115,7 +115,7 @@ V 0.6.0 - 2020-10-03
 ** `_maps` renamed to -> `_params` !!
 ** Adjusted the docs accordingly
 * Improved debug modes
-** `\debugcustomize` new parameters: `no`, `list`, `global`, `global list`, `global ID`
+** `\debugcustom` new parameters: `no`, `list`, `global`, `global list`, `global ID`
 ** `_debug` new parameter: `no`,
 * `angel` renamed to: `angle` + docs
 
@@ -131,7 +131,7 @@ V 0.5.2 - 2020-09-23
 * fixed \importcustom
 * new parameter _srcName
 * \customize or \customise can be used
-* \debugcustomize or \debugcustomise can be used
+* \debugcustom or \debugcustomise can be used
 
 V 0.5.0 - 2020.09.20
 
@@ -161,7 +161,7 @@ V 0.2.1 2020-09.12
 
 * add more IDs comma, degree, underline
 * \ticktect becomes \customize
-* \tickdebug becomes \debugcustomize
+* \tickdebug becomes \debugcustom
 
 V 0.0.1 - 2020-08-28
 

@@ -6,7 +6,7 @@ module-type: wikirule
 Returns a JSON info of parser.configTickText
 
 ```
-\debugcustomize
+\debugcustom
 ```
 
 \*/
@@ -16,7 +16,7 @@ Returns a JSON info of parser.configTickText
 /*global $tw:false, exports:false*/
 "use strict";
 
-exports.name = "debugcustomize";
+exports.name = "debugcustom";
 exports.types = {pragma: true};
 	
 var idTypes = ["tick", "single", "degree", "angle", "approx", "pilcrow", "corner", "braille", "slash"];
