@@ -140,7 +140,7 @@ exports.parse = function() {
 		forceDebug = (this.pc[id][sym]._debug) ? this.pc[id][sym]._debug : false;
 		if ((sym === this.pc[id][sym]._use) && (this.pc[id][sym].imported !== true)) {
 			// error Can't use itself
-			_useError = "Error - \\customize " + id + "=" + sym + " _use=" + sym + " is not possible!<br>Try: _useGlobal instead";
+			_useError = "Error - \\custom " + id + "=" + sym + " _use=" + sym + " is not possible!<br>Try: _useGlobal instead";
 			forceDebug = true;
 		}
 		tmpUse = this.pc[id][sym]._use;
@@ -149,7 +149,7 @@ exports.parse = function() {
 			$tw.utils.extend(config, this.pc[id][sym])
 		} else {
 			// error no pragma with that name
-			_useError = "Error - \\customize " + id + "=" + tmpUse + " is not defined!";
+			_useError = "Error - \\custom " + id + "=" + tmpUse + " is not defined!";
 			forceDebug = true;
 			config = {};
 		}

@@ -1,20 +1,20 @@
 /*\
-title: $:/plugins/wikilabs/custom-markup/wikirules/customize.js
+title: $:/plugins/wikilabs/custom-markup/wikirules/custom.js
 type: application/javascript
 module-type: wikirule
 
 Wiki pragma rule for whitespace specifications
 
 ```
-\customize tick=§ _element=div _endString= _mode= _classes= _use=
+\custom tick=§ _element=div _endString= _mode= _classes= _use=
 
-\customize angle=x _element=span _classes=.i.j.c.cp _endString=eee
+\custom angle=x _element=span _classes=.i.j.c.cp _endString=eee
 
-\customize single=det _element="details" _classes="" _endString="—"
+\custom single=det _element="details" _classes="" _endString="—"
 
-\customize degree=sum _element="summary"
+\custom degree=sum _element="summary"
 
-\customize tick _element=span
+\custom tick _element=span
 ```
 
 \*/
@@ -24,7 +24,7 @@ Wiki pragma rule for whitespace specifications
 /*global $tw:false, exports:false*/
 "use strict";
 
-exports.name = "customize";
+exports.name = "custom";
 exports.types = {pragma: true};
 
 var idTypes = ["tick", "single", "degree", "angle", "approx", "pilcrow", "corner", "braille", "slash"];
@@ -35,7 +35,7 @@ exports.init = function(parser) {
 	var self = this;
 	this.parser = parser;
 	// Regexp to match
-	this.matchRegExp = /^\\customi[zs]e[^\S\n]/mg;
+	this.matchRegExp = /^\\custom[^\S\n]/mg;
 
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText  || {};
@@ -111,7 +111,7 @@ exports.parse = function() {
 //		configTickText = {_mode:"", _element:"", _classes:"", _endString:""};
 		configTickText = {};
 
-	var debugString = "\\customize",
+	var debugString = "\\custom",
 		tValue = "";
 	
 	$tw.utils.each(attributes,function(token) {
@@ -154,7 +154,7 @@ exports.parse = function() {
 	});
 
 // if _debug is set by _use in an other tiddler, we need the _debugString!
-// 	var debugString = "\\customize";
+// 	var debugString = "\\custom";
 // 	Object.keys(configTickText).map( function(x) {
 // 		if (x == "symbol") debugString += ' ' + id + '="' + configTickText[x] + '"';
 // 		else if (x == "_debug") debugString;

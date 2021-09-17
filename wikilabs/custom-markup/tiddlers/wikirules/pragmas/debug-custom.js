@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/custom-markup/wikirules/pragmas/debug-customize.js
+title: $:/plugins/wikilabs/custom-markup/wikirules/pragmas/debug-custom.js
 type: application/javascript
 module-type: wikirule
 
