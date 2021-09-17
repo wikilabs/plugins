@@ -17,7 +17,7 @@ exports["remove-custom-markers"] = function(event,operation) {
 	// <ID><symol><class> some text
 	// ´span.myClass.otherClass some text
 	var regExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg;
-	
+
 	var targetCount = parseInt(event.paramObject.count + "",10);
 	// Cut just past the preceding line break, or the start of the text
 	operation.cutStart = $tw.utils.findPrecedingLineBreak(operation.text,operation.selStart);
@@ -27,14 +27,13 @@ exports["remove-custom-markers"] = function(event,operation) {
 	var prefix = $tw.utils.repeat(event.paramObject.character,targetCount);
 	// Process each line
 	var lines = operation.text.substring(operation.cutStart,operation.cutEnd).split(/\r?\n/mg);
-	
+
 	var test = "›´°_»≈";
-	
+
 	$tw.utils.each(lines,function(line,index) {
 		var fragments = line.split(" ");
-		
 		var match = fragments[0].match(regExp); 
-		
+
 		if (match && (fragments[0] === match[0])) {
 			line = fragments.slice(1).join(" ");
 		} else if (!match && (test.indexOf(fragments[0]) !== -1)) {

@@ -129,7 +129,6 @@ exports.parse = function() {
 				configTickText.symbol = token.value;
 				debugString += " " + id + "='" + token.value + "'";
 				break;
-			case "_params": // falltrough
 			case "_classes":
 			case "_debug":
 			case "_mode":
@@ -139,11 +138,11 @@ exports.parse = function() {
 			case "_use":
 			case "_useGlobal":
 			case "_srcName": // falltrough
-//			case "_1": 
-//			case "_2": 
-//			case "_3": 
-//			case "_4": 
 				configTickText[token.name] = token.value;
+				debugString += " " + token.name + "='" + token.value + "'";
+			break;
+			case "_params":
+				configTickText[token.name] = parseAttributes(token.value);
 				debugString += " " + token.name + "='" + token.value + "'";
 			break;
 			default:

@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/custom-markup/wikirules/tickinline.js
+title: $:/plugins/wikilabs/custom-markup/wikirules/glyphinline.js
 type: application/javascript
 module-type: wikirule
 
@@ -175,10 +175,6 @@ exports.parse = function() {
 		config = this.pc[id][sym];
 	}
 
-	function use_lMaps(cnt) {
-		return (lMaps[cnt] !== undefined) && (lMaps[cnt] !== "") && (lMaps[cnt] !== "\"")
-	}
-
 	if (config) {
 		options.symbol = config.symbol || options.symbol;
 		options._endString = config._endString || options._endString;
@@ -191,21 +187,6 @@ exports.parse = function() {
 
 		options._debugString = (_useError) ? _useError : config._debugString || options._debugString;
 		options._srcName = config._srcName || options._srcName;
-		options._1 = config._1 || options._1;
-		options._2 = config._2 || options._2;
-		options._3 = config._3 || options._3;
-		options._4 = config._4 || options._4;
-
-		var xMaps = (config._params) ? config._params.split(":::") : ["","","","",""];
-		var lMaps = (options._params.length > 0 ) ? options._params : ["","","","",""];
-
-		for (var i = 1; i <= 4; i++) {
-			if (use_lMaps(i)) {
-				options._params[i] = lMaps[i].slice(0,lMaps[i].length-1);
-			} else {
-				options._params[i] = xMaps[i];
-			}
-		}
 
 		classes = (options._classes).split(".") // pragma _classes are added to tick _classes
 	}
@@ -245,7 +226,7 @@ exports.parse = function() {
 		}
 
 	var fixAttributes = ["corner", "braille", "slash", "symbol", 
-						"_endString", "_mode", "_element", "_classes", "_use", "_useGlobal", "_1", "_2", "_3", "_4",
+						"_endString", "_mode", "_element", "_classes", "_use", "_useGlobal",
 						"_params", "_srcName", "_debug", "_debugString"];
 
 	// Callback is invoked with (element,title,object)
@@ -291,16 +272,14 @@ exports.parse = function() {
 	//		var textOuter = this.parser.source.slice(textStart, textEnd);
 			var textInner = this.parser.source.slice(textStartInner, textEndInner);
 			var type = options._element.slice(1);
-			var maps = options._params,
-				ml = maps.length,
-				x = "";
 
-			if (ml > 0) {
-				for (var i=1; i <= ml; i++) {
-					x = (maps[i] && options["_"+i]) ? options["_"+i].value : "";
-					if (x) attributes[x] = {type: "string", value: maps[i]}
+			if (config._params && config._params.length > 0 ) {
+				for (var i=0; i < config._params.length; i++) {
+					attributes[config._params[i].name] = (options._params[i+1] && options._params[i+1] !== "\"") ? 
+						{ type:"string", value: options._params[i+1].slice(0,options._params[i+1].length-1)} : config._params[i];
 				}
 			}
+
 			attributes[options._srcName] = {type: "string", value: textInner}
 			root.push({ type: type,
 						tag: options._element,

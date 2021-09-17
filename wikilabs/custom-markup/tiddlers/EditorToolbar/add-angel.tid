@@ -11,4 +11,5 @@ tags: $:/tags/EditorToolbar
 	$param="add-glyph"
 	character="»"
 	count="1"
+	force="no"
 />

@@ -6,7 +6,7 @@ module-type: wikirule
 Returns a JSON info of parser.configTickText
 
 ```
-\debugcostomize
+\debugcustomize
 ```
 
 \*/

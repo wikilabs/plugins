@@ -62,7 +62,7 @@ type: text/vnd.tiddlywiki
 
 <hr>
 
-<$set name=range filter="[{/config/WLCM/LineSet/selected}keyvalues:key[]]">
+<$set name=range filter="[{/config/WLCM/LineSet/selected}keyvalues:key[]sort[]]">
 <$set name=keys filter="""[enlist<range>] enter escape""">
 <span class="fr">
 	<$button to="/config/WLCM/LineSet/Config" class="tc-btn-invisible" tag=a>
