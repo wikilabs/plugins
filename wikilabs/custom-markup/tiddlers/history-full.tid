@@ -3,6 +3,11 @@ title: $:/plugins/wikilabs/custom-markup/history-full
 
 {{$:/plugins/wikilabs/custom-markup/history}}
 
+V 0.11.7 - 2021-09-16
+
+* Add inline snippet dropdown
+* Add support for inline snippets
+
 V 0.11.6 - 2021-07-22
 
 * Fixes issue #98 [[Custom Markup "in text" Parameters overwrite defaults when empty|https://github.com/wikilabs/plugins/issues/98]]
@@ -131,7 +136,7 @@ V 0.5.2 - 2020-09-23
 * fixed \importcustom
 * new parameter _srcName
 * \customize or \customise can be used
-* \debugcustom or \debugcustomise can be used
+* \debugcustomize or \debugcustomise can be used
 
 V 0.5.0 - 2020.09.20
 
@@ -160,7 +165,7 @@ V 0.3.0 2020.09.10
 V 0.2.1 2020-09.12
 
 * add more IDs comma, degree, underline
-* \ticktect becomes \customize
+* \ticktect becomes \custom
 * \tickdebug becomes \debugcustom
 
 V 0.0.1 - 2020-08-28

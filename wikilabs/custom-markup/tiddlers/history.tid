@@ -1,13 +1,16 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+! Breaking Changes in V0.20.0 and V0.21.0
+
+V 0.21.0 - 2021-09-17
+
+* renamed pragma: `\customize` to `\custom`
+* renamed pragma: `\debugcustomize` to `\debugcustom`
+
 V 0.20.0 - 2021-09-16
 
 * Rebuild the _params to be more generic
-
-V 0.11.7 - 2021-09-16
-
-* Add inline snippet dropdown
-* Add support for inline snippets
+* Removed `_1, _2, _3, _4` ... there is _no_ limit anymore
 
 
 See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]
