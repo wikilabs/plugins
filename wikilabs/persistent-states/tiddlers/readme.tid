@@ -1,12 +1,17 @@
 title: $:/plugins/wikilabs/persistent-states/readme
 
-! Important
-
-WORK IN PROGRESS -> DOESN'T WORK ATM !!!!!
-
 ! Overview
 
 This plugin saves all $:/state/ tiddlers and creates a simple UI, to remove them manually.
+
+! Important
+
+This plugin in meant to be used for single-file wikis. It does ''not'' work in a "multi user" environment, since it will overwrite other users states if they are synchronized. 
+
+This plugin changes the following core tiddlers:
+
+* $:/config/SyncFilter
+* $:/config/SaverFilter
 
 ! Simple UI
 
