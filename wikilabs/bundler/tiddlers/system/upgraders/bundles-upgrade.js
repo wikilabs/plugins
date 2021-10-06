@@ -23,7 +23,7 @@ exports.upgrade = function(wiki,titles,tiddlers) {
 		var tiddler = {};
 		// If the tiddler has been removed, there will be no fields.
 		if (wiki.tiddlerExists(title) && tiddlers[title] && (tiddlers[title].title === title) ) {
-			messages[title] = "Existing tiddler will be overwritten!";
+//			messages[title] = "Existing tiddler will be overwritten!";
 			// create new tiddler with a new name
 			if (overwriteCheck && !wiki.isSystemTiddler(title)) {
 				messages[title] = "Tiddler exists - A new name will be used!";
