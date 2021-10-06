@@ -2,7 +2,10 @@ title: $:/plugins/wikilabs/bundler/history
 
 V 0.4.0 - 2021-10-06
 
-* "New Bundle" button uses $:/StoryList to seed the text field
+* "New Bundle" button uses $:/StoryList list-field to seed the text field
+* ''Important:''
+** $:/core/ui/ImportListing is  ''not overwritten'' anymore
+** [[$:/core/modules/upgraders/system.js]] is ''not overwritten'' anymore
 
 V 0.3.2 - 2021-03-16
 

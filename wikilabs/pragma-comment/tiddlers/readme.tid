@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/pragma-comment/readme
 
+! Deprecated
+
+A similar function is part of the TW core since V5.2.0 See: https://tiddlywiki.com/#HTML%20in%20WikiText : Pragma Comments
+
 ! Pragma Comment
 
 The following lines will not create a parse-tree element and it will not interrupt the "pragma parser". So comments can be placed outside of macro definitions, which is much faster during macro execution.

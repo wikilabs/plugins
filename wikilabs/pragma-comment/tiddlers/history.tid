@@ -1,6 +1,10 @@
 title: $:/plugins/wikilabs/pragma-comment/history
 
 
+V 0.1.1 - 2020.10.06
+
+* Deprecated since there is a similar function in the core
+
 V 0.1.0 - 2020.12.25
 
 * Initial release
