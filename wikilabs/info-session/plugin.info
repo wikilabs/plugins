@@ -4,6 +4,6 @@
 	"description": "Info button, with session persistent open/closed status",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.6",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"list": "readme license history"
 }
