@@ -5,7 +5,7 @@ type: text/vnd.tiddlywiki
 
 \import [[$:/plugins/wikilabs/bundler/ui/BundlesFiltered]]
 
-<$vars nl={{{[charcode[13]]}}}>
+<$vars nl={{{[charcode[10]]}}}>
 <$vars text={{{ [enlist{$:/StoryList!!list}format:titlelist[]join<nl>] }}}>
 <$button>
 <$action-sendmessage $message="tm-new-tiddler" 

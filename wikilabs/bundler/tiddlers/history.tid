@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 0.4.1 - 2021-10-07
+
+* fix newline character
+
 V 0.4.0 - 2021-10-06
 
 * "New Bundle" button uses $:/StoryList list-field to seed the text field
