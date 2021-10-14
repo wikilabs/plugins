@@ -2,7 +2,7 @@
 
 \define choose-a-set()
 \whitespace trim
-<$select class="wltc-tiny-push-down wltc-small-push-left" tiddler="/config/WLCM/LineSet/selected" default='xxx'>
+<$select class="wltc-tiny-push-down wltc-small-push-left" tiddler="$:/config/WLCM/LineSet/selected" default='xxx'>
 	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/LinePrefix/Set]]'>
 		<option value=<<currentTiddler>>><$transclude field='caption'><$text text=<<currentTiddler>>/></$transclude></option>
 	</$list>

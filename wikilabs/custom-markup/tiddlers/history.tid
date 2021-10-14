@@ -1,5 +1,14 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.21.1 - 2021-10-14
+
+* Code cleaning
+* Improve documentation
+* Add Presentation examples
+* Add global .clip and .example pragmas
+* Add bundler plugins
+** Create some bundles to export line and inline snippets
+
 ! Breaking Changes in V0.20.0 and V0.21.0
 
 V 0.21.0 - 2021-09-17

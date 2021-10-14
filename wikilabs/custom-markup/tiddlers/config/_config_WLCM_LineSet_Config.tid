@@ -1,10 +1,10 @@
 created: 20210425113849845
 modified: 20210426141701028
 tags: 
-title: /config/WLCM/LineSet/Config
+title: $:/config/WLCM/LineSet/Config
 type: text/vnd.tiddlywiki
 
-\import [[/config/WLCM/LineSet/Config/Macros]]
+\import [[$:/config/WLCM/LineSet/Config/Macros]]
 
 \define characterRange() a b c d e f g h
 

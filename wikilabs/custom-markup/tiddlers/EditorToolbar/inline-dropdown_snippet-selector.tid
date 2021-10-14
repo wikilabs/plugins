@@ -19,17 +19,17 @@ type: text/vnd.tiddlywiki
 <$list filter="[<key>match[Enter]]">
 <$action-sendmessage $message="tm-edit-text-operation"
 	$param="wrap-selection"
-	prefix={{{ [{/config/WLCM/inline/default}get[prefix]addsuffix[ ]] ~[[/° ]] }}}
-	suffix={{{ [{/config/WLCM/inline/default}get[suffix]] ~[[°/]]}}}
+	prefix={{{ [{$:/config/WLCM/inline/default}get[prefix]addsuffix[ ]] ~[[/° ]] }}}
+	suffix={{{ [{$:/config/WLCM/inline/default}get[suffix]] ~[[°/]]}}}
 />
 </$list>
 
 <$list filter="[<key>!match[Escape]!match[Enter]]">
-<$action-createtiddler $basetitle="/config/WLCM/inline/default" $overwrite=yes text={{{ [{/config/WLCM/InlineSet/selected}getindex<key>] }}}  />
+<$action-createtiddler $basetitle="$:/config/WLCM/inline/default" $overwrite=yes text={{{ [{$:/config/WLCM/InlineSet/selected}getindex<key>] }}}  />
 <$action-sendmessage $message="tm-edit-text-operation"
 	$param="wrap-selection"
-	prefix={{{ [{/config/WLCM/inline/default}get[prefix]addsuffix[ ]] ~[[/° ]] }}}
-	suffix={{{ [{/config/WLCM/inline/default}get[suffix]] ~[[°/]]}}}
+	prefix={{{ [{$:/config/WLCM/inline/default}get[prefix]addsuffix[ ]] ~[[/° ]] }}}
+	suffix={{{ [{$:/config/WLCM/inline/default}get[suffix]] ~[[°/]]}}}
 />
 </$list>
 
@@ -37,15 +37,15 @@ type: text/vnd.tiddlywiki
 \end
 
 \define actionClick()
-<$action-createtiddler $basetitle="/config/WLCM/inline/default" $overwrite=yes text={{{ [{/config/WLCM/InlineSet/selected}getindex<key>] }}}  />
+<$action-createtiddler $basetitle="$:/config/WLCM/inline/default" $overwrite=yes text={{{ [{$:/config/WLCM/InlineSet/selected}getindex<key>] }}}  />
 <$action-sendmessage $message="tm-edit-text-operation"
 	$param="wrap-selection"
-	prefix={{{ [{/config/WLCM/inline/default}get[prefix]addsuffix[ ]] ~[[/° ]] }}}
-	suffix={{{ [{/config/WLCM/inline/default}get[suffix]] ~[[°/]]}}}
+	prefix={{{ [{$:/config/WLCM/inline/default}get[prefix]addsuffix[ ]] ~[[/° ]] }}}
+	suffix={{{ [{$:/config/WLCM/inline/default}get[suffix]] ~[[°/]]}}}
 />
 \end
 
-<$select class="wltc-selector" tiddler="/config/WLCM/InlineSet/selected" default='xxx'>
+<$select class="wltc-selector" tiddler="$:/config/WLCM/InlineSet/selected" default='xxx'>
 	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/Inline/Set]]'>
 		<option value=<<currentTiddler>>><$transclude field='caption'><$text text=<<currentTiddler>>/></$transclude></option>
 	</$list>
@@ -53,7 +53,7 @@ type: text/vnd.tiddlywiki
 
 <hr>
 
-<$set name=range filter="[{/config/WLCM/InlineSet/selected}keyvalues:key[]]">
+<$set name=range filter="[{$:/config/WLCM/InlineSet/selected}keyvalues:key[]]">
 <$set name=keys filter="""[enlist<range>] enter escape""">
 <span class="fr">
 	<$button to="/config/WLCM/InlineSet/Config" class="tc-btn-invisible" tag=a>
@@ -62,16 +62,16 @@ type: text/vnd.tiddlywiki
 </span>
 <$wl-keyboard key=<<keys>> actions=<<actionKey>> >
 	<$list filter=<<range>> variable=key>
-		<$tiddler tiddler={{{[{/config/WLCM/InlineSet/selected}getindex<key>has[title]else[Error - Tiddler doesn't exist]]}}}>
+		<$tiddler tiddler={{{[{$:/config/WLCM/InlineSet/selected}getindex<key>has[title]else[Error - Tiddler doesn't exist]]}}}>
 			-<<key>>-&nbsp;:&nbsp;
 			<span class="wltc-snippet ">
 			<$button class="tc-btn-invisible" actions=<<actionClick>> >
-				<$transclude field=caption>&nbsp;<$transclude field=title/></$transclude>
+				<$view field="caption">&nbsp;<$transclude field=title/></$view>
 			</$button>
 			</span><br>
 		</$tiddler>
 	</$list><br>
-	Enter:&nbsp;<$edit-text tiddler="/config/WLCM/inline/default" placeholder="- hit key -" tag=input disabled=yesX focus />
+	Enter:&nbsp;<$edit-text tiddler="$:/config/WLCM/inline/default" placeholder="- hit key -" tag=input disabled=yesX focus />
 </$wl-keyboard>
 </$set>
 </$set>

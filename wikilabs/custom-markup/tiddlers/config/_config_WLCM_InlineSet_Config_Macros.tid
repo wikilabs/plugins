@@ -8,18 +8,18 @@ type: text/vnd.tiddlywiki
 
 \define selectSet()
 \whitespace trim
-<$select class="wltc-selector-big" tiddler="/config/WLCM/InlineSet/selected" default='hugo'>
-	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/Inline/Set]]'>
+<$select class="wltc-selector-big" tiddler="$:/config/WLCM/InlineSet/selected" default="hugo">
+	<$list filter="[all[shadows+tiddlers]tag[$:/tags/WL/Inline/Set]]">
 		<option value=<<currentTiddler>>><$transclude field='caption'><$text text=<<currentTiddler>>/></$transclude></option>
 	</$list>
 </$select> <<linkSet>> <<addSet>>
 \end
 
-\define linkSet() <$button to={{/config/WLCM/InlineSet/selected}} class="wltc-push-right wltc-btn-big tc-btn-invisible" >{{$:/core/images/link}} </$button>
+\define linkSet() <$button to={{$:/config/WLCM/InlineSet/selected}} class="wltc-push-right wltc-btn-big tc-btn-invisible" >{{$:/core/images/link}} </$button>
 
 \define add-actions()
-<$vars template={{/config/WLCM/InlineSet/selected}} >
-<$action-sendmessage $message="tm-new-tiddler" $param={{/config/WLCM/InlineSet/selected}}
+<$vars template={{$:/config/WLCM/InlineSet/selected}} >
+<$action-sendmessage $message="tm-new-tiddler" $param={{$:/config/WLCM/InlineSet/selected}}
 text={{{ [<template>get[text]] }}}
 tags={{{ [<template>get[tags]] }}}
 type={{{ [<template>get[type]] }}}
@@ -30,7 +30,7 @@ caption={{{ [<template>get[caption]] }}}
 
 \define addSet()
 \whitespace trim
-<$set name=currentTiddler value={{{[{/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
+<$set name=currentTiddler value={{{[{$:/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
 	<$reveal type=match text=<<currentTiddler>>>
 		<$button class="wltc-push-right wltc-btn-big tc-btn-invisible" actions=<<add-actions>> >{{$:/core/images/clone-button}}</$button>
 	</$reveal>
@@ -50,11 +50,11 @@ caption={{{ [<template>get[caption]] }}}
 			suffix="°/"
 			caption="New Inline Snippet" 
 text='"""
-caption: {{!!caption}}
-prefix: {{!!prefix}}
-suffix: {{!!suffix}}
+caption: <$text text={{!!caption}}/>
+prefix: <$text text={{!!prefix}}/>
+suffix: <$text text={{!!suffix}}/>
 """'/>
-			<$action-setfield $tiddler={{/config/WLCM/InlineSet/selected}}  $index="$(index)$" $value={{{ [<currentTiddler>get[text]] }}} />
+			<$action-setfield $tiddler={{$:/config/WLCM/InlineSet/selected}}  $index="$(index)$" $value={{{ [<currentTiddler>get[text]] }}} />
 			<$action-deletetiddler $tiddler=<<currentTiddler>> />
 		</$button>
 		<$button class=" wltc-small-push-right tc-btn-invisible">{{$:/core/images/close-button}}
@@ -68,7 +68,7 @@ suffix: {{!!suffix}}
 \whitespace trim
 <p>If the following list is empty, we are good to go!<p>
 <table class="">
-	<$list filter='[{/config/WLCM/InlineSet/selected}keyvalues:value[]]'>
+	<$list filter='[{$:/config/WLCM/InlineSet/selected}keyvalues:value[]]'>
 		<$list filter="[<currentTiddler>!has[title]]">
 		<tr>
 			<td>Tiddler - <<currentTiddler>> - doesn't exist </td> <td>
@@ -80,9 +80,9 @@ suffix: {{!!suffix}}
 				suffix="°/"
 				caption="New Inline Snippet" 
 text='"""
-caption: {{!!caption}}
-prefix: {{!!prefix}}
-suffix: {{!!suffix}}
+caption: <$text text={{!!caption}}/>
+prefix: <$text text={{!!prefix}}/>
+suffix: <$text text={{!!suffix}}/>
 """' />
 			</$button>
 			</td>
@@ -95,10 +95,10 @@ suffix: {{!!suffix}}
 \define element()
 \whitespace trim
 <span class="wltc-gap-right wltc-font-mono">$(index)$</span>
-<$select class="wltc-tiny-push-down wltc-small-push-right" tiddler={{/config/WLCM/InlineSet/selected}} index="$(index)$" default='xxx'>
+<$select class="wltc-tiny-push-down wltc-small-push-right" tiddler={{$:/config/WLCM/InlineSet/selected}} index="$(index)$" default='xxx'>
 	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/Snippet/Inline]]'>
 		<option value=<<currentTiddler>>>
-			<$transclude field='caption'>{{{[<currentTiddler>!has[title]then[ - doesn't exist!]addprefix<currentTiddler>addprefix[Error - ]else<currentTiddler>]}}}</$transclude>
+			<$view field='caption'>{{{[<currentTiddler>!has[title]then[ - doesn't exist!]addprefix<currentTiddler>addprefix[Error - ]else<currentTiddler>]}}}</$view>
 		</option>
 	</$list>
 </$select>
@@ -106,8 +106,8 @@ suffix: {{!!suffix}}
 
 \define linkConfig()
 \whitespace trim
-<$set name=currentTiddler value={{{[{/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
-	<$set name=captionMissing value={{{[{/config/WLCM/InlineSet/selected}getindex<index>get[caption]then[]else[Info: caption is missing]]}}}>
+<$set name=currentTiddler value={{{[{$:/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
+	<$set name=captionMissing value={{{[{$:/config/WLCM/InlineSet/selected}getindex<index>get[caption]then[]else[Info: caption is missing]]}}}>
 		<$reveal type=nomatch text=<<currentTiddler>>>
 			<$button to=<<currentTiddler>> class="wltc-small-push-right tc-btn-invisible">{{$:/core/images/link}}</$button><span class="wltc-small-push-right"><<captionMissing>></span>
 		</$reveal>
@@ -117,11 +117,11 @@ suffix: {{!!suffix}}
 
 \define clearConfig()
 \whitespace trim
-<$set name=currentTiddler value={{{[{/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
+<$set name=currentTiddler value={{{[{$:/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
 	<$reveal type=nomatch text=<<currentTiddler>>>
 		<$button class="wltc-small-push-right tc-btn-invisible">{{$:/core/images/delete-button}}
 			<$action-confirm $message="Remove element: -$(index)$- from the set?" >
-				<$action-setfield $tiddler={{/config/WLCM/InlineSet/selected}} $index=<<index>> />
+				<$action-setfield $tiddler={{$:/config/WLCM/InlineSet/selected}} $index=<<index>> />
 			</$action-confirm>
 		</$button>
 	</$reveal>
@@ -130,7 +130,7 @@ suffix: {{!!suffix}}
 
 \define addConfig()
 \whitespace trim
-<$set name=currentTiddler value={{{[{/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
+<$set name=currentTiddler value={{{[{$:/config/WLCM/InlineSet/selected}getindex<index>get[title]]}}}>
 	<$reveal type=match text=<<currentTiddler>>>
 		<$button class=" wltc-small-push-right tc-btn-invisible">{{$:/core/images/new-button}}
 			<$action-setfield $tiddler={{{ [[$:/temp/set-$(index)$]] }}}  $field="" />

@@ -1,0 +1,163 @@
+/* Make the toolbar more flexible */
+.tc-editor-toolbar {
+  display: flex;
+}
+
+/* WikiLabs tiddler classes defined by js code */
+
+.wltc {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/*------------------------------------------*/
+/* Indent by level adjusted to bullet lists */
+
+.i, .indent, .wltc-l2 {
+  margin-left: 2.65rem;
+}
+
+.ii, .wltc-l3, .indent2 {
+  margin-left: 5.3rem;
+}
+
+.iii, .wltc-l4, .indent3 {
+  margin-left: 7.95rem;
+}
+
+/*------------------------------------------*/
+/* Outdent elements */
+
+
+.-i {
+  margin-left: -2.65rem;
+}
+
+.-ii {
+  margin-left: -5.3rem;
+}
+
+.-iii {
+  margin-left: -7.95rem;
+}
+
+/*------------------------------------------*/
+/* Right margin elements */
+
+.r, .right-dedent {
+  margin-right: 2.65rem;
+}
+
+.rr, .right-dedent2 {
+  margin-right: 5.3rem;
+}
+
+.-rrr, .right-dedent3 {
+  margin-right: 7.95rem;
+}
+
+/*------------------------------------------*/
+/* Text alignment                           */
+
+il1, .indentLine1 {
+  text-indent: 2.65em;
+}
+
+ol1, .outdentLine1 {
+  text-indent: -2.65rem;
+}
+
+.j, .justify {
+  text-align: justify;
+}
+
+
+/*------------------------------------------*/
+/* Simple custom list bullet                */
+ul .star{
+  list-style-type: "★ "
+}
+
+/*------------------------------------------*/
+/* Margin double, margin half               */
+
+.md, .margin-double {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.mtd, .margin-top-double {
+  margin-top: 2rem;
+}
+
+.-mh, .margin-half {
+  margin-top: -.5rem;
+  margin-bottom: -.5rem;
+}
+
+.-mbh, .-margin-bottom-half {
+  margin-bottom: -.5rem;
+}
+
+/*------------------------------------------------------*/
+/* Undo some default definitions to get more variations */
+
+.-m, .margin-init {
+  margin: initial;
+}
+
+.-mt, .margin-top-init {
+  margin-top: initial;
+}
+
+.-mb, .margion-bottom-init {
+  margin-bottom: initial;
+}
+
+/*-----------------------------------------------*/
+/* Remove margin-top for headings in color-boxes */
+.c h1, .c h2, .c h3, .c h4, .c h5, .c h6  {
+  margin-top: initial;
+}
+
+/*------------------------------------------*/
+/* Float and .clearfixes                    */
+
+.fl, .float-left {
+  float: left;
+}
+
+.fr, float-right {
+  float: right;
+}
+
+.clearfix:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/*------------------------------------------*/
+/* ASIDE needs float and .clearfixes        */
+
+.aside-class {
+    width: 40%;
+    padding: .5rem 1rem;
+    margin-left: .5rem;
+    float: right;
+    box-shadow: inset 5px 0 5px -5px #29627e;
+    font-style: italic;
+    color: #29627e;
+}
+
+/*------------------------------------------*/
+/* UL, OL and P inside a table              */
+
+td p {
+  margin: .5rem 0;
+}
+
+td ul, td ol {
+  margin:  .5rem 0;
+  padding-left: 2rem;
+}
