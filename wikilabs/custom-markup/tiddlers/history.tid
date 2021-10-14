@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.21.2 - 2021-10-14
+
+* Fix "approx" glyph selector
+* Adjust default stylesheet class names
+* Improve keyboard handling for both snippet configuration dialogs
+
 V 0.21.1 - 2021-10-14
 
 * Code cleaning

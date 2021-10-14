@@ -57,18 +57,46 @@
 }
 
 /*------------------------------------------*/
-/* Text alignment                           */
+/* Text formatting                          */
 
-il1, .indentLine1 {
+.btitle, book-title {
+  font-size: 200%;
+}
+
+.bchapter, book-chapter {
+  font-size: 150%;
+}
+
+div.cap::first-letter,
+p.cap::first-letter {
+  font-size: 250%;
+  text-indent: initial;
+  float: left;
+}
+
+.ti, .text-indent {
   text-indent: 2.65em;
 }
 
-ol1, .outdentLine1 {
+.to, .text-outdent {
   text-indent: -2.65rem;
 }
 
 .j, .justify {
   text-align: justify;
+}
+
+.center {
+  text-align: center;
+}
+
+.b, bold {
+  font-weight: bold;
+}
+
+.serif {
+  font-family: serif;
+  font-size: 110%;
 }
 
 

@@ -13,10 +13,10 @@ type: text/vnd.tiddlywiki
 \end
 
 \define actionKey()
-<$list filter="[<key>match[Escape]]">
+<$list filter="[<key>match[Escape]]" variable=none>
 </$list>
 
-<$list filter="[<key>match[Enter]]">
+<$list filter="[<key>match[Enter]]" variable=none>
 <$action-sendmessage $message="tm-edit-text-operation"
 	$param="wrap-selection"
 	prefix={{{ [{$:/config/WLCM/inline/default}get[prefix]addsuffix[ ]] ~[[/° ]] }}}
@@ -24,7 +24,7 @@ type: text/vnd.tiddlywiki
 />
 </$list>
 
-<$list filter="[<key>!match[Escape]!match[Enter]]">
+<$list filter="[<key>!match[Escape]!match[Enter]]" variable=none>
 <$action-createtiddler $basetitle="$:/config/WLCM/inline/default" $overwrite=yes text={{{ [{$:/config/WLCM/InlineSet/selected}getindex<key>] }}}  />
 <$action-sendmessage $message="tm-edit-text-operation"
 	$param="wrap-selection"

@@ -37,29 +37,49 @@ caption={{{ [<template>get[caption]] }}}
 </$set>
 \end
 
-\define editConfig()
-\whitespace trim
-<$set name=currentTiddler value={{{ [[$:/temp/set-$(index)$]get[title]] }}}>
-	<$list filter="[all[current]has[title]]">
-		<$edit-text tiddler=<<currentTiddler>> placeholder="- new inline prefix -" tag=input class="wltc-small-push-right" />
-		<$button class=" wltc-small-push-right tc-btn-invisible" disabled={{{ [<currentTiddler>get[text]has[title]then[yes]else[no]] }}}>{{$:/core/images/done-button}}
-			<$action-sendmessage $message="tm-new-tiddler" 
-			title={{{ [<currentTiddler>get[text]] }}} 
-			tags="$:/tags/WL/Snippet/Inline"
-			prefix="/° "
-			suffix="°/"
-			caption="New Inline Snippet" 
+
+\define enterAction()
+	<$action-sendmessage $message="tm-new-tiddler" 
+	title={{{ [<currentTiddler>get[text]] }}} 
+	tags="$:/tags/WL/Snippet/Inline"
+	prefix="/° "
+	suffix="°/"
+	caption="New Inline Snippet" 
 text='"""
 caption: <$text text={{!!caption}}/>
 prefix: <$text text={{!!prefix}}/>
 suffix: <$text text={{!!suffix}}/>
 """'/>
-			<$action-setfield $tiddler={{$:/config/WLCM/InlineSet/selected}}  $index="$(index)$" $value={{{ [<currentTiddler>get[text]] }}} />
-			<$action-deletetiddler $tiddler=<<currentTiddler>> />
+	<$action-setfield $tiddler={{$:/config/WLCM/InlineSet/selected}}  $index="$(index)$" $value={{{ [<currentTiddler>get[text]] }}} />
+	<$action-deletetiddler $tiddler=<<currentTiddler>> />
+\end
+
+\define cancelAction()
+	<$action-deletetiddler $tiddler=<<currentTiddler>> />
+\end
+
+\define keyAction()
+<$list filter="[<event-key>match[Escape]]" variable=none>
+	<<cancelAction>>
+</$list>
+
+<$list filter="[<event-key>match[Enter]]" variable=none>
+	<<enterAction>>
+</$list>
+\end
+
+\define editConfig()
+\whitespace trim
+<$set name=currentTiddler value={{{ [[$:/temp/set-$(index)$]get[title]] }}}>
+	<$list filter="[all[current]has[title]]">
+		<$set name=keys filter="enter escape">
+			<$keyboard key=<<keys>> actions=<<keyAction>> >
+				<$edit-text tiddler=<<currentTiddler>> placeholder="- new inline prefix -" tag=input class="wltc-small-push-right" />
+			</$keyboard>
+		</$set>
+		<$button class=" wltc-small-push-right tc-btn-invisible" disabled={{{ [<currentTiddler>get[text]has[title]then[yes]else[no]] }}}>{{$:/core/images/done-button}}
 		</$button>
-		<$button class=" wltc-small-push-right tc-btn-invisible">{{$:/core/images/close-button}}
-			<$action-deletetiddler $tiddler=<<currentTiddler>> />
-		</$button>
+		<$button class=" wltc-small-push-right tc-btn-invisible">{{$:/core/images/close-button}}</$button>
 	</$list>
 </$set>
 \end

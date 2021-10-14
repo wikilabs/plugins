@@ -37,19 +37,37 @@ caption={{{ [<template>get[caption]] }}}
 </$set>
 \end
 
+\define enterAction()
+	<$action-sendmessage $message="tm-new-tiddler" title={{{ [<currentTiddler>get[text]] }}} tags="$:/tags/WL/Snippet/LinePrefix" caption="New Line Prefix" text="" />
+	<$action-setfield $tiddler={{$:/config/WLCM/LineSet/selected}}  $index="$(index)$" $value={{{ [<currentTiddler>get[text]] }}} />
+	<$action-deletetiddler $tiddler=<<currentTiddler>> />
+\end
+
+\define cancelAction()
+	<$action-deletetiddler $tiddler=<<currentTiddler>> />
+\end
+
+\define keyAction()
+<$list filter="[<event-key>match[Escape]]" variable=none>
+	<<cancelAction>>
+</$list>
+
+<$list filter="[<event-key>match[Enter]]" variable=none>
+	<<enterAction>>
+</$list>
+\end
+
 \define editConfig()
 \whitespace trim
 <$set name=currentTiddler value={{{ [[$:/temp/set-$(index)$]get[title]] }}}>
 	<$list filter="[all[current]has[title]]">
-		<$edit-text tiddler=<<currentTiddler>> placeholder="- new line prefix -" tag=input class="wltc-small-push-right" />
-		<$button class=" wltc-small-push-right tc-btn-invisible" disabled={{{ [<currentTiddler>get[text]has[title]then[yes]else[no]] }}}>{{$:/core/images/done-button}}
-			<$action-sendmessage $message="tm-new-tiddler" title={{{ [<currentTiddler>get[text]] }}} tags="$:/tags/WL/Snippet/LinePrefix" caption="New Line Prefix" text="" />
-			<$action-setfield $tiddler={{$:/config/WLCM/LineSet/selected}}  $index="$(index)$" $value={{{ [<currentTiddler>get[text]] }}} />
-			<$action-deletetiddler $tiddler=<<currentTiddler>> />
-		</$button>
-		<$button class=" wltc-small-push-right tc-btn-invisible">{{$:/core/images/close-button}}
-			<$action-deletetiddler $tiddler=<<currentTiddler>> />
-		</$button>
+		<$set name=keys filter="enter escape">
+			<$keyboard key=<<keys>> actions=<<keyAction>> >
+				<$edit-text tiddler=<<currentTiddler>> placeholder="- new line prefix -" tag=input class="wltc-small-push-right" />
+			</$keyboard>
+		</$set>
+		<$button actions=<<enterAction>> class=" wltc-small-push-right tc-btn-invisible" disabled={{{ [<currentTiddler>get[text]has[title]then[yes]else[no]] }}}>{{$:/core/images/done-button}} </$button>
+		<$button class=" wltc-small-push-right tc-btn-invisible" actions=<<cancelAction>> >{{$:/core/images/close-button}}</$button>
 	</$list>
 </$set>
 \end
