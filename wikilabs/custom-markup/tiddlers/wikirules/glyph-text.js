@@ -26,18 +26,33 @@ var CLASS_LEVEL = CLASS_GROUP + "-l"; // l .. level
 exports.name = "ticktext";
 exports.types = {block: true};
 
-var idTypes = "tick,single,degree,angle,approx,pilcrow".split(",");
+var idTypes = "tick,single,degree,angle,approx,pilcrow,glyph".split(",");
 
 exports.init = function(parser) {
 	this.parser = parser;
 
-	var self = this;
+	var self = this,
+		glyphs = [],
+		customGlyphs = "";
 
 	// Regexp to match 
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1
+//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1 -> V0.21.2
+
+	if (glyphs.length > 0) {
+		glyphs.map( function(glyph) {
+			customGlyphs += `|(?=${glyph}[^${glyph}])${glyph}`;
+			idTypes.push(glyph); // make sure registered glyphs are known. 
+		})
+		customGlyphs += `)`;
+	} else {
+		customGlyphs = `)`;
+	}
+
+	this.matchRegExp = new RegExp( `((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶` + customGlyphs + 
+									'((?:[^\\.:\\r\\n\\s]+))?(\\.(?:[^:\\r\\n\\s]+))?((:".*?")*)', "mg"); // V0.22.0
 
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
@@ -48,7 +63,7 @@ exports.init = function(parser) {
 		self.pc[id] = self.pc[id] || {};
 	})
 
-	this.pc.X = {}; // There is a naming problem
+	this.pc.X = {}; // There is a naming problem  TODO .. X is possible now. 
 };
 
 /*
@@ -112,6 +127,10 @@ exports.parse = function() {
 		break;
 		case "°":
 			id = "degree"
+		break;
+		default:
+			id = this.match[1][0];
+			useParagraph = true;
 		break;
 	}
 

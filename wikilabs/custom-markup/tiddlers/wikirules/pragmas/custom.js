@@ -115,20 +115,32 @@ exports.parse = function() {
 		tValue = "";
 	
 	$tw.utils.each(attributes,function(token) {
+		if (idTypes.indexOf(token.name) >= 0) {
+			id = token.name;
+			configTickText.symbol = token.value;
+			debugString += " " + id + "='" + token.value + "'";
+		}
+		// switch(token.name) {
+		// 	case "tick": // All fall through's are intentional
+		// 	case "angle": 
+		// 	case "approx":
+		// 	case "single":
+		// 	case "degree":
+		// 	case "pilcrow":
+		// 	case "corner":
+		// 	case "braille":
+		// 	case "slash": // fall through
+		// 		id = token.name;
+		// 		configTickText.symbol = token.value;
+		// 		debugString += " " + id + "='" + token.value + "'";
+		// 	break;
+		// 	default: // define the glyph itself
+		// 		id = attributes[0].name
+		// 		configTickText.symbol = token.value;
+		// 		debugString += " " + id + "='" + token.value + "'";
+		// 	break;
+		// }
 		switch(token.name) {
-			case "tick": // All fall through's are intentional
-			case "angle": 
-			case "approx":
-			case "single":
-			case "degree":
-			case "pilcrow":
-			case "corner":
-			case "braille":
-			case "slash": // fall through
-				id = token.name;
-				configTickText.symbol = token.value;
-				debugString += " " + id + "='" + token.value + "'";
-				break;
 			case "_classes":
 			case "_debug":
 			case "_mode":

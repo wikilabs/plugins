@@ -12,4 +12,5 @@ tags: $:/tags/EditorToolbar
 	$param="add-glyph"
 	character={{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}}
 	count="1"
+	force={{{ [{$:/config/edit/linePrefix/force}]  ~[[no]] }}}
 />

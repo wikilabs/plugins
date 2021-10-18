@@ -38,7 +38,11 @@ exports["add-glyph"] = function(event,operation) {
 		}
 		// We're done if we removed the exact required prefix, otherwise add it
 		// Apply the prefix
-		line = x + prefix + " " + line;
+		if (event.paramObject && event.paramObject.force === "yes") {
+			line = x + prefix + " " + line;
+		} else {
+			line = (line === "") ? line : x + prefix + " " + line;
+		}
 //		}
 		// Save the modified line
 		lines[index] = line;

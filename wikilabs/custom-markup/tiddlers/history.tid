@@ -1,8 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 0.21.3 - 2021-10-18
+
+* Fix "force glyph in empty line" for add-glyph button
+
 V 0.21.2 - 2021-10-14
 
-* Fix "approx" glyph selector
+* Fix "approx" glyph shown in button
 * Adjust default stylesheet class names
 * Improve keyboard handling for both snippet configuration dialogs
 

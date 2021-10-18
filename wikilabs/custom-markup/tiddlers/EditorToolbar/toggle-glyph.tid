@@ -12,5 +12,5 @@ tags: $:/tags/EditorToolbar
 	$param="toggle-tick"
 	character={{{ [{$:/config/wikilabs/custom-markup/icons/glyphs/active##glyph}] }}}
 	count="1"
-	force={{{ [{$:/config/edit/linePrefix/force}] }}}
+	force={{{ [{$:/config/edit/linePrefix/force}]  ~[[no]] }}}
 />
