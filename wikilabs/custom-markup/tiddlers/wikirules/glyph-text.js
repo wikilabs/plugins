@@ -29,6 +29,7 @@ exports.types = {block: true};
 var idTypes = "tick,single,degree,angle,approx,pilcrow,glyph".split(",");
 
 var userConfig = require("$:/plugins/wikilabs/custom-markup/wikirules/glyphs.js").glyphs;
+var config = new userConfig;
 
 // Create glyph stirng for regexp from config tiddler
 function createRegexpStr(list) {
@@ -53,7 +54,7 @@ function createRegexpStr(list) {
 exports.init = function(parser) {
 	this.parser = parser;
 
-	this.gConfig = new userConfig;
+	this.gConfig = config;
 
 	var self = this,
 		regexpFree = "",
