@@ -1,0 +1,18 @@
+title: $:/plugins/wikilabs/field-visibility/readme
+
+\define showInfo()
+<$action-setfield $tiddler="$:/state/popup/tiddler-info-471453735" text="yes" />
+\end
+
+This plugin adds a toggle button to the Fields tab in the tiddler info area, which can be seen in tiddler view mode.
+
+If you need the tiddler info button in edit mode you will need to install the: "Tiddler Info in Edit Mode" plugin.
+
+<$button actions=<<showInfo>> to="test-field-visibility" >
+Click this button to show the tiddler info area
+</$button>
+
+''Important:'' This plugin changes the following core tiddlers
+
+* $:/core/ui/TiddlerInfo/Fields
+* $:/core/ui/TiddlerFieldTemplate

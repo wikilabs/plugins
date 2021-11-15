@@ -1,0 +1,5 @@
+created: 20211108190659353
+list: $:/core/ui/EditTemplate/controls $:/plugins/wikilabs/ui/EditTemplate/TiddlerInfo $:/core/ui/EditTemplate/title $:/ContributionBanner $:/core/ui/EditTemplate/tags $:/core/ui/EditTemplate/shadow $:/core/ui/ViewTemplate/classic $:/core/ui/EditTemplate/body $:/core/ui/EditTemplate/type $:/core/ui/EditTemplate/fields
+modified: 20211108192650647
+title: $:/tags/EditTemplate
+type: text/vnd.tiddlywiki

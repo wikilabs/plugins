@@ -1,0 +1,15 @@
+condition: a
+created: 20211108152946445
+modified: 20211109093829562
+tags: $:/tags/EditorTools/NoteXXX
+title: $:/plugins/wikilabs/ui/EditTemplate/body/show-active-note-fieldXXXXX
+type: text/vnd.tiddlywiki
+
+\define vis-prefix() $:/config/EditTemplateFields/Visibility/
+<div>Field: <$select tiddler=<<targetTiddler>> field="wl-field-name-note" default="text">
+<$set name="field-list" filter="[<targetTiddler>fields[]addprefix<vis-prefix>!is[shadow]] :map[get[text]match[hide]then{!!title}removeprefix<vis-prefix>] [[text]] +[sort[]]">
+  <$list filter="[enlist<field-list>]">
+    <option value=<<currentTiddler>>><$view field="title"/></option>
+  </$list>
+</$set>
+</$select></div>

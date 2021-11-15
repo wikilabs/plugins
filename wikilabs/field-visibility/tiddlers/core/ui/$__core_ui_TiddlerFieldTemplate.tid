@@ -1,0 +1,30 @@
+created: 20211108163205528
+modified: 20211108173611854
+title: $:/core/ui/TiddlerFieldTemplate
+type: text/vnd.tiddlywiki
+
+\define getFieldName() $:/config/EditTemplateFields/Visibility/$(listItem)$
+\define toggle-field-visibility()
+\whitespace trim
+<$button class="tc-btn-invisible" disabled={{{ [<getFieldName>is[shadow]then[yes]] }}}>
+  <$reveal state=<<getFieldName>> type="match" text="hide" default="show" tag="span">
+    {{$:/plugins/wikilabs/field-visibility/images/eye-strikethrough}}
+    <$action-deletetiddler $tiddler=<<getFieldName>>/>
+  </$reveal>
+  <$reveal state=<<getFieldName>> type="match" text="show" default="show" tag="span">
+    {{$:/core/images/preview-open}}
+    <$action-setfield $tiddler=<<getFieldName>> $value="hide"/>
+  </$reveal>
+</$button>
+\end
+<tr class="tc-view-field">
+<td class="tc-view-field-name">
+<$text text=<<listItem>>/>
+</td>
+<td class="tc-view-field-value">
+<$view field=<<listItem>>/>
+</td>
+<td class="tc-view-field-value">
+<<toggle-field-visibility>>
+</td>
+</tr>

@@ -1,0 +1,29 @@
+title: $:/config/WLCM/lineGlyphs/default
+type: application/json
+
+[
+	{
+		"idType": "tick",
+		"glyph": "´"
+	},
+	{
+		"idType": "single",
+		"glyph": "›"
+	},
+	{
+		"idType": "degree",
+		"glyph": "°"
+	},
+	{
+		"idType": "angle",
+		"glyph": "»"
+	},
+	{
+		"idType": "approx",
+		"glyph": "≈"
+	},
+	{
+		"idType": "pilcrow",
+		"glyph": "¶"
+	}
+]

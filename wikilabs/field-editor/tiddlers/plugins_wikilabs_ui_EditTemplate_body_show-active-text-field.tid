@@ -1,0 +1,13 @@
+condition: swow
+created: 20211109092433941
+modified: 20211109092547081
+tags: $:/tags/EditorTools
+title: $:/plugins/wikilabs/ui/EditTemplate/body/show-active-text-field
+type: text/vnd.tiddlywiki
+
+\define vis-prefix() $:/config/EditTemplateFields/Visibility/
+<div>Field: <$select tiddler=<<targetTiddler>> field="wl-field-name-text" default="text">
+  <$list filter="[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]get[text]trim[]]">
+    <option value=<<currentTiddler>>><$view field="title"/></option>
+  </$list>
+</$select></div>

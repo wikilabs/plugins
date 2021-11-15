@@ -1,0 +1,26 @@
+created: 20211112161113072
+modified: 20211113175557649
+tags: 
+title: $:/plugins/wikilabs/field-editor/snippets/fieldswitcher
+type: text/vnd.tiddlywiki
+
+\define fieldSwitcherConfig() $:/config/wikilabs/viewtemplate/body/field-config
+
+<$linkcatcher to=<<fieldSwitcherConfig>> >
+<div class="tc-chooser tcwl-note-chooser">
+    <$list filter="[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]]" >
+        <div class={{{ [[tc-chooser-item]] [<fieldSwitcherConfig>get[text]match<currentTiddler>then[tc-chosen]] +[join[ ]] }}} >
+        <$link to=<<currentTiddler>> >
+          <span class="tc-image-button">
+            <$list filter="[all[current]has[icon]]">
+              <$transclude field=icon />
+            </$list>
+          </span>
+          <$view field="description">
+            <$view field="title"/>
+          </$view>
+        </$link>
+        </div>
+    </$list>
+</div>
+</$linkcatcher>

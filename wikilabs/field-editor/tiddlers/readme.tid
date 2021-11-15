@@ -1,0 +1,57 @@
+title: $:/plugins/wikilabs/field-editor/readme
+
+\define createFieldSwitcherElement()
+<$action-createtiddler $basetitle="$:/config/wikilabs/field/<your field name comes here>" $template="$:/config/wikilabs/field/text" tags="$:/tags/wikilabs/fieldswitcher" description="Add a short description text here and replace the icon below" icon="{{$:/core/images/spiral}}" $overwrite="yes" text="yourFieldName"/>
+<$action-sendmessage $message="tm-edit-tiddler" $param="$:/config/wikilabs/field/<your field name comes here>"/>
+\end
+
+!! About
+
+This plugin adds a field selector above the text editor and a new button that allows you to edit different fields in multiline edit mode side by side
+
+!! Video
+
+TODO
+
+!! Create a new Field Switcher Element
+
+To create a new field-switcher button click the button below and follow the instructions.
+
+<$button actions=<<createFieldSwitcherElement>> >
+Create a new Field Switcher Element
+</$button>
+
+!! Toggle Field label
+
+By default a label is shown, when the tiddler shows a filed different to the "text" field.
+
+<$checkbox tiddler="$:/config/wikilabs/show-field-label" field=text checked="yes" unchecked="no" default="yes"> Show Field Label</$checkbox>
+
+!!! ''Imporant''
+
+* If you use an icon it has to be covered in double curly braces eg: `{{$:/core/images/globe}}`.
+* Icons can be found at the [[Image Gallery Examples|https://tiddlywiki.com/#Icon%20Gallery:%5B%5BIcon%20Gallery%5D%5D%20%5B%5BLanguageGallery%20Example%5D%5D]]
+* [["TW Icons" by morosanuae|https://tiddlywiki.com/#%22TW%20Icons%22%20by%20morosanuae]]
+
+!! Existing Field Switcher Elements
+
+<<list-links "[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]]">>
+
+!! Dependencies
+
+This plugin depends on the: [[Field Visibility Plugin|https://wikilabs.github.io/editions/field-visibility]]
+
+!! Modified Core Tiddles
+
+This plugin changes the following core tiddlers:
+
+* $:/core/ui/Buttons/info
+* $:/core/ui/EditTemplate
+* $:/core/ui/EditTemplate/body
+* $:/core/ui/EditTemplate/body/editor
+* $:/core/ui/EditTemplate/body/preview/output
+* $:/core/ui/EditTemplate/fields
+* $:/core/ui/ViewTemplate
+* $:/core/ui/ViewTemplate/body 
+
+The full list of tiddlers in the plugin can be found at: [[$:/plugins/wikilabs/field-editor]] '': contents'' tab.

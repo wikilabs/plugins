@@ -1,0 +1,23 @@
+created: 20211109115905374
+modified: 20211109131804609
+tags: $:/tags/ViewTemplate
+title: $:/core/ui/ViewTemplate/body
+type: text/vnd.tiddlywiki
+
+<$reveal tag="div" class="tc-tiddler-body" type="nomatch" stateTitle=<<folded-state>> text="hide" retain="yes" animate="yes">
+
+<$list filter="[all[current]!has[plugin-type]!field:hide-body[yes]]">
+
+<$transclude field={{{ [all[current]has<Field>then<Field>else[]] }}}>
+
+<$transclude>
+
+<$transclude tiddler="$:/language/MissingTiddler/Hint"/>
+
+</$transclude>
+
+</$transclude>
+
+</$list>
+
+</$reveal>
