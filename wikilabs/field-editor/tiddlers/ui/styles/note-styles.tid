@@ -9,9 +9,8 @@ type: text/vnd.tiddlywiki
 }
 
 .tcwl-field-label {
-  padding: 0 1em;
-  background: #2a9bc0;
-  color: white;
+  float: right;
+  color: #50adb1;
 }
 
 .tc-tiddler-frame.field-info {

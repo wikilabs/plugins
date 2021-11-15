@@ -1,0 +1,13 @@
+title: $:/core/ui/ViewTemplate/subtitle
+tags: $:/tags/ViewTemplate
+
+\whitespace trim
+<$reveal type="nomatch" stateTitle=<<folded-state>> text="hide" tag="div" retain="yes" animate="yes">
+<div class="tc-subtitle">
+<$link to={{!!modifier}} />
+<$view field="modified" format="date" template={{$:/language/Tiddler/DateFormat}}/>
+<$list filter="[all[current]has<Field>]">
+<$reveal state="$:/config/wikilabs/show-field-label" type="match" text="yes" default="yes" tag="span" class="tcwl-field-label"><<Field>></$reveal>
+</$list>
+</div>
+</$reveal>

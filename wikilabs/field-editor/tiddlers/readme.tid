@@ -52,6 +52,7 @@ This plugin changes the following core tiddlers:
 * $:/core/ui/EditTemplate/body/preview/output
 * $:/core/ui/EditTemplate/fields
 * $:/core/ui/ViewTemplate
-* $:/core/ui/ViewTemplate/body 
+* $:/core/ui/ViewTemplate/body
+* $:/core/ui/ViewTemplate/subtitle
 
 The full list of tiddlers in the plugin can be found at: [[$:/plugins/wikilabs/field-editor]] '': contents'' tab.
