@@ -6,7 +6,6 @@ module-type: filteroperator
 Filter operator for returning the keys and values of a data tiddler
 
 \*/
-(function(){
 
 /*jslint node: true, browser: true */
 /*global $tw: false */
@@ -87,5 +86,5 @@ exports.keyvalues = function(source,operator,options) {
 	});
 	return results;
 };
-})();
+
 
