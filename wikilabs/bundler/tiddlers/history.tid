@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 0.4.2 - 
+
+* Add seconds to $:/config/wikilabs/bundler/importHeaderTemplate
+
 V 0.4.1 - 2021-10-07
 
 * fix newline character
