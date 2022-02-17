@@ -5,7 +5,9 @@ title: $:/plugins/wikilabs/bundler/ui/Buttons/test-filter
 type: text/vnd.tiddlywiki
 
 \define go-advanced-search-filter()
+<!-- states for default TW and Advanced Search Plus Plugin -->>
 <$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
+<$action-setfield $tiddler="$:/state/tab-1610021602" $value="$:/core/ui/AdvancedSearch/Filter"/>
 <$action-setfield $tiddler="$:/temp/advancedsearch" $value={{$(currentTiddler)$!!filter}}/>
 \end
 \define test-filter()

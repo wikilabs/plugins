@@ -1,5 +1,3 @@
-created: 20170604154246985
-modified: 20170609084521844
 title: $:/plugins/wikilabs/bundler/ui/BundlesFiltered
 type: text/vnd.tiddlywiki
 
@@ -11,7 +9,9 @@ type: text/vnd.tiddlywiki
 \define get-filter-tooltip() <<count-filter>> tiddlers will be exported
 
 \define go-advanced-search-filter()
+<!-- states for default TW and Advanced Search Plus Plugin -->>
 <$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
+<$action-setfield $tiddler="$:/state/tab-1610021602" $value="$:/core/ui/AdvancedSearch/Filter"/>
 <$action-setfield $tiddler="$:/temp/advancedsearch" $value={{$(currentTiddler)$!!filter}}/>
 <$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{$(currentTiddler)$!!filter}}/>
 \end
@@ -27,7 +27,9 @@ Open this filtered list in ~AdvancedSearch
 \end
 
 \define go-advanced-search-list()
+<!-- states for default TW and Advanced Search Plus Plugin -->>
 <$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
+<$action-setfield $tiddler="$:/state/tab-1610021602" $value="$:/core/ui/AdvancedSearch/Filter"/>
 <$action-setfield $tiddler="$:/temp/advancedsearch" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
 <$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
 \end
