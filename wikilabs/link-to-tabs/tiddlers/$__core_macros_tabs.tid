@@ -1,12 +1,9 @@
-created: 20220215124806998
-modified: 20220215135907159
-tags: $:/tags/Macro
 title: $:/core/macros/tabs
-type: text/vnd.tiddlywiki
+tags: $:/tags/Macro
 
 \define tabs-button()
 \whitespace trim
-<$button set=<<tabsState>> setTo=<<currentTab>> default=<<__default__>> selectedClass="tc-tab-selected" tooltip={{!!tooltip}}>
+<$button set=<<tabsState>> setTo=<<currentTab>> default={{{ [<currentTab>] :cascade[<__default__>] }}} selectedClass="tc-tab-selected" tooltip={{!!tooltip}}>
 	<$tiddler tiddler=<<save-currentTiddler>>>
 		<$set name="tv-wikilinks" value="no">
 			<$transclude tiddler=<<__buttonTemplate__>> mode="inline">
@@ -20,16 +17,46 @@ type: text/vnd.tiddlywiki
 </$button>
 \end
 
+\define tabs-tab-indicator()
+<span class="wltc-link-to-tab">
+	<$link overrideClass="" to=<<currentTiddler>> >{{$:/core/images/link}}</$link>
+</span>
+\end
+
 \define tabs-tab()
 \whitespace trim
 <$set name="save-currentTiddler" value=<<currentTiddler>>>
 	<$tiddler tiddler=<<currentTab>>>
 		<<tabs-button>>
-		<span class="wltc-link-to-tab">
-			<$link overrideClass="" to=<<currentTiddler>> >{{$:/core/images/link}}</$link>
-		</span>
+		<<tabs-tab-indicator>>
 	</$tiddler>
 </$set>
+\end
+
+\define tabs-tab-list()
+\whitespace trim
+<$list filter=<<__tabsList__>> variable="currentTab" storyview="pop">
+	<$set name=getCondition filter="[<currentTab>get[condition]]">
+		<$list filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]" variable="ignore">
+			<<tabs-tab>>
+		</$list>
+	</$set>
+</$list>
+\end
+
+\define tabs-tab-body()
+\whitespace trim
+<$list filter=<<__tabsList__>> variable="currentTab">
+	<$set name=getCondition filter="[<currentTab>get[condition]]">
+		<$list filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]" variable="ignore"> 
+			<$reveal type="match" state=<<tabsState>> text=<<currentTab>> default={{{ [<currentTab>] :cascade[<__default__>] }}} retain=<<__retain__>> tag="div">
+				<$transclude tiddler=<<__template__>> mode="block">
+					<$transclude tiddler=<<currentTab>> mode="block"/>
+				</$transclude>
+			</$reveal>
+		</$list>
+	</$set>
+</$list>
 \end
 
 \define tabs(tabsList,default,state:"$:/state/tab",class,template,buttonTemplate,retain,actions,explicitState)
@@ -38,27 +65,11 @@ type: text/vnd.tiddlywiki
 	<$set name="tabsState" filter="[<__explicitState__>minlength[1]] ~[<qualifiedState>]">
 		<div class={{{ [[tc-tab-set]addsuffix[ ]addsuffix<__class__>] }}}>
 			<div class={{{ [[tc-tab-buttons]addsuffix[ ]addsuffix<__class__>] }}}>
-				<$list filter=<<__tabsList__>> variable="currentTab" storyview="pop">
-					<$set name=getCondition filter="[<currentTab>get[condition]]">
-						<$list filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]" variable="ignore"> 
-							<<tabs-tab>>
-						</$list>
-					</$set>
-				</$list>
+				<<tabs-tab-list>>
 			</div>
-			<div class={{{ [[tc-tab-divider]addsuffix[ ]addsuffix<__class__>] }}}/>
+		<div class={{{ [[tc-tab-divider]addsuffix[ ]addsuffix<__class__>] }}}/>
 			<div class={{{ [[tc-tab-content]addsuffix[ ]addsuffix<__class__>] }}}>
-				<$list filter=<<__tabsList__>> variable="currentTab">
-					<$set name=getCondition filter="[<currentTab>get[condition]]">
-						<$list filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]" variable="ignore"> 
-							<$reveal type="match" state=<<tabsState>> text=<<currentTab>> default=<<__default__>> retain=<<__retain__>> >
-								<$transclude tiddler=<<__template__>> mode="block">
-									<$transclude tiddler=<<currentTab>> mode="block"/>
-								</$transclude>
-							</$reveal>
-						</$list>
-					</$set>
-				</$list>
+				<<tabs-tab-body>>
 			</div>
 		</div>
 	</$set>

@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 2.1.0 - 2022-02-17
+
+* New $:/core/macros/tabs
+* much more hackable and added dynamic tabs
+** tabs can have a `condition` field now.
+
 V 2.0.1 - 2020-12-25
 
 * update license
