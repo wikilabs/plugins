@@ -85,7 +85,7 @@ exports.parse = function() {
 	var gPc,
 		template = "$:/config/custom-markup/pragma/PageTemplate";
 
-	if (!this.parser.wiki.caches[template]) {
+	if (!this.parser.wiki.caches[template].blockParseTree) {
 		this.parser.wiki.parseTiddler(template);
 	}
 	gPc = this.parser.wiki.caches[template].blockParseTree.configTickText;
