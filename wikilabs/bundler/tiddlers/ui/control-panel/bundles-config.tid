@@ -54,6 +54,21 @@ The "Filter Bundle" button creates compatible configurations. So user created fi
 By default, the import mechanism overwrites existing tiddlers. By enabling this option, you can activate a mechanism, that creates a new tiddler name. By default this option is off.
 <<<
 
+!! Rename Title on Import
+
+<<<
+
+<$checkbox tiddler="$:/config/wikilabs/enableImportRename" field="text" checked="yes" unchecked="no" default="no"> [[Enable Automatic Import Renaming|$:/config/wikilabs/enableImportRename]]</$checkbox>
+
+This feature was created to allow users to quickly import images from the clipbaord. ''But'' it can also be used with every content, that is imported with the ''clipboard'', where the "title" doesn't change. 
+
+;[[Default Import Title|$:/config/wikilabs/import/image/default-title]]
+:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/image/default-title" default="image.png" tag="input"/>
+
+;[[Import Title Template|$:/config/wikilabs/import/image/title-template]]
+:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/image/title-template" default="image YYYY-0MM-0DD, 0hh:0mm:0XXX.png" tag="input"/>
+<<<
+
 !! {{$:/core/ui/ControlPanel/Settings/MissingLinks!!caption}}
 <<<
 {{$:/core/ui/ControlPanel/Settings/MissingLinks}}

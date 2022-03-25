@@ -15,3 +15,7 @@ tags: $:/tags/Stylesheet
 	float: right;
 	margin-top: -7px;
 }
+
+.wltc-full-width {
+	width: 100%;
+}
