@@ -4,6 +4,6 @@
 	"description": "Adds a Tag-Map tab to the tiddler info section",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.0",
-	"version": "0.1.3",
+	"version": "0.2.0",
 	"list": "readme license history"
 }
