@@ -3,7 +3,7 @@ tags: $:/tags/Macro
 
 \define tabs-button()
 \whitespace trim
-<$button set=<<tabsState>> setTo=<<currentTab>> default={{{ [<currentTab>] :cascade[<__default__>] }}} selectedClass="tc-tab-selected" tooltip={{!!tooltip}}>
+<$button set=<<tabsState>> setTo=<<currentTab>> default=<<__default__>> selectedClass="tc-tab-selected" tooltip={{!!tooltip}}>
 	<$tiddler tiddler=<<save-currentTiddler>>>
 		<$set name="tv-wikilinks" value="no">
 			<$transclude tiddler=<<__buttonTemplate__>> mode="inline">
@@ -49,7 +49,7 @@ tags: $:/tags/Macro
 <$list filter=<<__tabsList__>> variable="currentTab">
 	<$set name=getCondition filter="[<currentTab>get[condition]]">
 		<$list filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]" variable="ignore"> 
-			<$reveal type="match" state=<<tabsState>> text=<<currentTab>> default={{{ [<currentTab>] :cascade[<__default__>] }}} retain=<<__retain__>> tag="div">
+			<$reveal type="match" state=<<tabsState>> text=<<currentTab>> default=<<__default__>> retain=<<__retain__>> tag="div">
 				<$transclude tiddler=<<__template__>> mode="block">
 					<$transclude tiddler=<<currentTab>> mode="block"/>
 				</$transclude>
@@ -75,3 +75,4 @@ tags: $:/tags/Macro
 	</$set>
 </$qualify>
 \end
+
