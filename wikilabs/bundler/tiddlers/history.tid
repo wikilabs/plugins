@@ -2,7 +2,7 @@ title: $:/plugins/wikilabs/bundler/history
 
 V 0.4.2 - 2022-03-25
 
-* ''IMPORTANT'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/bundler/license]]
+* ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/bundler/license]]
 * Some plugin configurations are enabled now, for convenience
 * Add new upgrader to rename images comming from the clipboard
 ** Add new settings to $:/ControlPanel

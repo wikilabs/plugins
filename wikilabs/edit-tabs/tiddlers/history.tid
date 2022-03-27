@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/edit-tabs/history
 
+V 3.0.0 - 2020-03-27
+
+* Update edition to TW v5.2.2
+* ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/bundler/license]]
+
+
 V 2.0.1 - 2020-12-25
 
 * update license
