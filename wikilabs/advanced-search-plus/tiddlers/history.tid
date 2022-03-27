@@ -1,9 +1,10 @@
 title: $:/plugins/wikilabs/advanced-search-plus/history
 
-V 0.2.1 - 2022-03-27
+V 0.3.0 - 2022-03-27
 
 * Update to TW version v5.2.2
 * remove tiddler info button from view template
+* change license to CC-BY-NC-SA
 
 V 0.2.0 - 2021-03-07
 
