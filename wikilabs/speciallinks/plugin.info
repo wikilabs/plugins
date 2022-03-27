@@ -3,6 +3,6 @@
 	"name": "Speciallinks",
 	"description": "Camel_Case wikilinks are possible",
 	"core-version": ">=5.1.13",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"list": "readme license history"
 }
