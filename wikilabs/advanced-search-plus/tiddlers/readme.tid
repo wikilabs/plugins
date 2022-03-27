@@ -9,4 +9,4 @@ title: $:/plugins/wikilabs/advanced-search-plus/readme
 
 ''Important'': This plugin modifies several core templates
 
-<$list filter="[[$:/plugins/wikilabs/advanced-search-plus]plugintiddlers[]prefix[$:/core/]] $:/AdvancedSearch $:/tags/AdvancedSearch"><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></$list>
+<ul><$list filter="[[$:/plugins/wikilabs/advanced-search-plus]plugintiddlers[]prefix[$:/core/]] $:/AdvancedSearch $:/tags/AdvancedSearch"><li><$link to=<<currentTiddler>>><<currentTiddler>></$link></li></$list></ul>
