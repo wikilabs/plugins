@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/info-session/history
 
+V 0.1.5 - 2022-03-27
+
+* removed from landing page
+* not maintained anymore
+
 V 0.1.5 - 2020-12-25
 
 * Deprecated plugin since the core has a similar function since 5.1.14
