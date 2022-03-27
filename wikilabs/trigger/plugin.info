@@ -4,6 +4,6 @@
 	"description": "Activate actions, whenever the widget is shown",
 	"author": "pmario",
 	"core-version": ">=5.1.14",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"list": "readme license history"
 }

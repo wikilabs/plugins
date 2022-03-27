@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/trigger/history
 
+V 0.2.0 - 2022-03-27
+
+* update to TW v5.2.2
+* ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/trigger/license]]
+
+
 V 0.1.1 - 2020.12.25
 
 * update license
