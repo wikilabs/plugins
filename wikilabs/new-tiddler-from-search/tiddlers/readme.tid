@@ -5,6 +5,6 @@ This plugin provides a minimal "new Tiddler" interface, if a search doesn't retu
 * {{$:/core/images/cancel-button}} .. Clear the temporary template tiddler
 * {{$:/core/images/done-button}} .. Save the tiddler
 
-''Important'': This plugin overwrites core template tiddlers:
+''Important:'' This plugin modifies a core module and templates
 
-* $:/core/ui/DefaultSearchResultList
+<ul><$list filter="[[$:/plugins/wikilabs/new-tiddler-from-search]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
