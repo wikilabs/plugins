@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 2.2.0 - 2022-03-27
+
+* update to TW v5.2.2
+* ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/uni-link/license]]
+
 V 2.1.0 - 2021.03.16
 
 * add `[[tiddler title case insensitve|??]]` ... will show the text, but search for a case insensitve title.

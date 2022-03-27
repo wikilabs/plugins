@@ -26,7 +26,9 @@ Delete example tiddlers!
 
 ! Important
 
-This plugin overwrites the core tiddler: $:/core/ui/TiddlerInfo/References
+This plugin modifies a core module and / or templates
+
+<ul><$list filter="[[$:/plugins/wikilabs/uni-link]plugintiddlers[]prefix[$:/core/]] -[[$:/plugins/wikilabs/uni-link]plugintiddlers[]suffix[/aliasify]]"><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
 
 ''This uni-link version is compatible with ~TiddlyWiki >= V5.1.22''
 
@@ -104,3 +106,4 @@ You can use the following buttons to create example tiddlers!
 
 <<createExampleTiddlers>> -- <<deleteExampleTiddlers>>
 <<<
+
