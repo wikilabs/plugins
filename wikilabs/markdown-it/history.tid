@@ -1,0 +1,6 @@
+title: $:/plugins/wikilabs/markdown-it/history
+
+V 9.1.1 - 2022-03-27
+
+* update to TW v5.2.2
+* Deprecate this plugin. The used library is 9.1.1
