@@ -14,5 +14,4 @@ Click this button to show the tiddler info area
 
 ''Important:'' This plugin changes the following core tiddlers
 
-* $:/core/ui/TiddlerInfo/Fields
-* $:/core/ui/TiddlerFieldTemplate
+<ul><$list filter="[[$:/plugins/wikilabs/field-visibility]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
