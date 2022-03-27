@@ -4,6 +4,6 @@
 	"description": "Add possibility to add 'pragma comments'",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.15",
-	"version": "0.1.1",
+	"version": "0.1.1-DEPRECATED",
 	"list": "readme license history"
 }
