@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/field-search/history
 
+V 0.5.0 - 2022-03-27
+
+* update to TW v5.2.2
+* ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/field-search/license]]
+
 V 0.4.1 - 2021-03-28
 
 * add match counter into field-search dropdown
