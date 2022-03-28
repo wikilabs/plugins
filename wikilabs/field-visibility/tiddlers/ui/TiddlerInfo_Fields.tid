@@ -1,0 +1,5 @@
+caption: Visibility
+tags: $:/tags/TiddlerInfo
+title: $:/plugins/wikilabs/field-visibility/TiddlerInfo/Fields
+
+<$transclude tiddler="$:/plugins/wikilabs/field-visibility/TiddlerFields"/>

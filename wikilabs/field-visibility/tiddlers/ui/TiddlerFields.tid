@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/field-visibility/TiddlerFields
+
+<table class="tc-view-field-table">
+<tbody>
+<tr><th>Field&nbsp;Name</th><th>Value</th><th>Editor</th></tr>
+<$list filter="[all[current]fields[]sort[title]] -text" template="$:/plugins/wikilabs/field-visibility/TiddlerFieldTemplate" variable="listItem"/>
+</tbody>
+</table>

@@ -1,7 +1,4 @@
-created: 20211108163205528
-modified: 20211108173611854
-title: $:/core/ui/TiddlerFieldTemplate
-type: text/vnd.tiddlywiki
+title: $:/plugins/wikilabs/field-visibility/TiddlerFieldTemplate
 
 \define getFieldName() $:/config/EditTemplateFields/Visibility/$(listItem)$
 \define toggle-field-visibility()

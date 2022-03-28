@@ -12,6 +12,8 @@ If you need the tiddler info button in edit mode you will need to install the: "
 Click this button to show the tiddler info area
 </$button>
 
-''Important:'' This plugin changes the following core tiddlers
+''Important''
 
-<ul><$list filter="[[$:/plugins/wikilabs/field-visibility]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
+This plugin changes the following core tiddlers
+
+<ul><$list filter="[[$:/plugins/wikilabs/field-visibility]plugintiddlers[]prefix[$:/core/]]" emptyMessage="<li>none</li>"><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>

@@ -1,7 +1,8 @@
 title: $:/plugins/wikilabs/field-visibility/history
 
-V 0.0.2 - 2022-03-27
+V 0.1.0 - 2022-03-27
 
+* plugin now creates a new tab in the tiddler info area instead of modifying the core tab
 * ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/field-visibility/license]]
 
 V 0.0.1
