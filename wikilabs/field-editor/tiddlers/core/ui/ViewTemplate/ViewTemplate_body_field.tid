@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/field-editor/ViewTemplate/body/field
+code-body: yes
+
+<$transclude field={{{[{$:/config/wikilabs/viewtemplate/body/field-config}get[text]trim[]!match[text]]}}}>
+
+<$transclude tiddler="$:/core/ui/ViewTemplate/body/default" />
+
+</$transclude>
