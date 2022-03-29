@@ -7,7 +7,7 @@ code-body: yes
 <div class="tc-subtitle">
 <$link to={{!!modifier}} />
 <$view field="modified" format="date" template={{$:/language/Tiddler/DateFormat}}/>
-<$vars Field={{{ [{$:/config/wikilabs/viewtemplate/body/field-config}get[text]trim[]!match[text]] }}}>
+<$vars Field={{{ [{$:/state/wikilabs/viewtemplate/body/active/field}get[text]trim[]!match[text]] }}}>
 <$list filter="[all[current]has<Field>]">
 <$reveal state="$:/config/wikilabs/show-field-label" type="match" text="yes" default="yes" tag="span" class="tcwl-field-label"><<Field>></$reveal>
 </$list>

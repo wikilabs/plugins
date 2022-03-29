@@ -2,4 +2,4 @@ tags: $:/tags/ViewTemplateBodyFilter
 title: $:/config/wikilabs/ViewTemplateBodyFilters/body/field
 list-before: $:/config/ViewTemplateBodyFilters/default
 
-[{$:/config/wikilabs/viewtemplate/body/field-config}get[text]trim[]!match[text]then[$:/plugins/wikilabs/field-editor/ViewTemplate/body/field]else[]]
+[{$:/state/wikilabs/viewtemplate/body/active/field}get[text]trim[]!match[text]then[$:/plugins/wikilabs/field-editor/ViewTemplate/body/field]else[]]
