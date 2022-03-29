@@ -1,0 +1,5 @@
+title: $:/config/wikilabs/FieldEditorFilters/special
+list-before: $:/config/FieldEditorFilters/default
+tags: $:/tags/FieldEditorFilter
+
+[[$:/plugins/wikilabs/field-editor/ui/EditTemplate/fieldEditor/special]]

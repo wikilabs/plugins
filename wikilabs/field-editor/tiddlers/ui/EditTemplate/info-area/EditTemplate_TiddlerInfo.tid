@@ -1,8 +1,6 @@
-created: 20211108190929166
-modified: 20211108192757827
 tags: $:/tags/EditTemplate
 title: $:/plugins/wikilabs/ui/EditTemplate/TiddlerInfo
-type: text/vnd.tiddlywiki
+list-before: $:/core/ui/EditTemplate/title
 
 <$reveal type="nomatch" text="" default="" state=<<tiddlerInfoState>> class="tc-tiddler-info tc-popup-handle" animate="yes" retain="yes">
 

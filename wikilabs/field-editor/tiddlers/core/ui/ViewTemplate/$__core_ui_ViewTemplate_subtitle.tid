@@ -1,5 +1,6 @@
 title: $:/core/ui/ViewTemplate/subtitle
 tags: $:/tags/ViewTemplate
+code-body: yes
 
 \whitespace trim
 <$reveal type="nomatch" stateTitle=<<folded-state>> text="hide" tag="div" retain="yes" animate="yes">

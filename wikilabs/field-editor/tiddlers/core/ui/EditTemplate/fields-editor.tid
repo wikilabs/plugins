@@ -1,8 +1,4 @@
-created: 20211114134402387
-modified: 20211114134402387
-tags: $:/tags/EditTemplate
-title: $:/core/ui/EditTemplate/fields
-type: text/vnd.tiddlywiki
+title: $:/plugins/wikilabs/field-editor/ui/EditTemplate/fieldEditor/special
 
 \define lingo-base() $:/language/EditTemplate/
 
@@ -27,12 +23,14 @@ $:/config/EditTemplateFields/Visibility/$(currentField)$
 \define delete-state-tiddlers()	<$action-deletetiddler $filter="[<newFieldNameTiddler>] [<storeTitle>] [<searchListState>]" />
 
 \define cancel-search-actions-inner()
+\whitespace trim
 <$list filter="[<storeTitle>has[text]] [<newFieldNameTiddler>has[text]]" variable="ignore" emptyMessage="""<<cancel-delete-tiddler-actions " cancel">>""">
 	<<delete-state-tiddlers>>
 </$list>
 \end
 
 \define cancel-search-actions()
+\whitespace trim
 <$set name="userInput" value={{{ [<storeTitle>get[text]] }}}>
 	<$list filter="[<newFieldNameTiddler>get[text]!match<userInput>]"
 		emptyMessage="""<<cancel-search-actions-inner>>""">

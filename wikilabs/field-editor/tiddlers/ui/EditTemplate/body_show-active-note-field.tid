@@ -1,10 +1,8 @@
 condition: a
-created: 20211108152946445
-modified: 20211109093829562
 tags: $:/tags/EditorTools/Note
 title: $:/plugins/wikilabs/ui/EditTemplate/body/show-active-note-field
-type: text/vnd.tiddlywiki
 
+\whitespace trim
 \define vis-prefix() $:/config/EditTemplateFields/Visibility/
 <div>Field: <$select tiddler=<<targetTiddler>> field="wl-field-name-note" default="text">
   <$list filter="[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]get[text]trim[]]">

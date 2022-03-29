@@ -45,14 +45,6 @@ This plugin depends on the: [[Field Visibility Plugin|https://wikilabs.github.io
 
 This plugin changes the following core tiddlers:
 
-* $:/core/ui/Buttons/info
-* $:/core/ui/EditTemplate
-* $:/core/ui/EditTemplate/body
-* $:/core/ui/EditTemplate/body/editor
-* $:/core/ui/EditTemplate/body/preview/output
-* $:/core/ui/EditTemplate/fields
-* $:/core/ui/ViewTemplate
-* $:/core/ui/ViewTemplate/body
-* $:/core/ui/ViewTemplate/subtitle
+<ul><$list filter="[[$:/plugins/wikilabs/field-editor]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
 
 The full list of tiddlers in the plugin can be found at: [[$:/plugins/wikilabs/field-editor]] '': contents'' tab.

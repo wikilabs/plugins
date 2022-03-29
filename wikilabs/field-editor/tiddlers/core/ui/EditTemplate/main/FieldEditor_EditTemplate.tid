@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/field-editor/EditTemplate
+description: This template adds tiddlerInfoState, which is needed for the info-area-button in edit mode then it calls the core EditTemplate
+
+<$let tiddlerInfoState=<<qualify "$:/state/popup/tiddler-info">> >
+
+<$transclude tiddler="$:/core/ui/EditTemplate" />
+
+</$let>

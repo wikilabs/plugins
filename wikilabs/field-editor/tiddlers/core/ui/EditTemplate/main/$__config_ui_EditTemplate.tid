@@ -1,0 +1,5 @@
+title: $:/config/ui/EditTemplate
+type: text/vnd.tiddlywiki
+description: This configuration changes the default EditTemplate
+
+$:/plugins/wikilabs/field-editor/EditTemplate
