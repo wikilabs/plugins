@@ -1,0 +1,7 @@
+description: This filter completely replaces the default EditTemplate/body
+list-before: $:/config/EditTemplateBodyFilters/default
+tags: $:/tags/EditTemplateBodyFilter
+title: $:/config/wikilabs/EditTemplateBodyFilters/default
+type: text/vnd.tiddlywiki
+
+[[$:/plugins/wikilabs/ui/EditTemplate/body]]

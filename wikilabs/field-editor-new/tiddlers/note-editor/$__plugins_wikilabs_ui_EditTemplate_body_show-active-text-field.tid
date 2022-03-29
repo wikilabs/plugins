@@ -1,0 +1,12 @@
+condition: show
+tags: $:/tags/EditorTools
+title: $:/plugins/wikilabs/ui/EditTemplate/body/show-active-text-field
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\define vis-prefix() $:/config/EditTemplateFields/Visibility/
+<div>Field: <$select tiddler=<<targetTiddler>> field="wl-field-name-text" default="text">
+  <$list filter="[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]get[text]trim[]]">
+    <option value=<<currentTiddler>>><$view field="title"/></option>
+  </$list>
+</$select></div>
