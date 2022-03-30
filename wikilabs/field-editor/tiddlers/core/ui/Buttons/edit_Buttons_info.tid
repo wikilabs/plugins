@@ -1,7 +1,0 @@
-caption: {{$:/core/images/info-button}} {{$:/language/Buttons/Info/Caption}}
-description: {{$:/language/Buttons/Info/Hint}}
-tags: $:/tags/EditToolbar
-list-before: $:/core/ui/Buttons/cancel
-title: $:/plugins/wikilabs/field-editor/edit/Buttons/info
-
-<$transclude tiddler="$:/core/ui/Buttons/info"/>

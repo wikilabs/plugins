@@ -1,0 +1,6 @@
+title: $:/config/wikilabs/field-editor/text
+tags: $:/tags/wikilabs/fieldswitcher
+icon: {{$:/core/images/globe}}
+description: Text field (default)
+
+text

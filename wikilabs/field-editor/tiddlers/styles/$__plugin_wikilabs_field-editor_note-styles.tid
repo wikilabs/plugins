@@ -1,0 +1,32 @@
+tags: $:/tags/Stylesheet
+title: $:/plugin/wikilabs/field-editor/note-styles
+
+.field-warning textarea.tc-edit-texteditor {
+  border: 2px solid red;
+}
+
+.tcwl-field-label {
+  float: right;
+  color: #50adb1;
+}
+
+.tc-tiddler-frame.field-info {
+  border: 1px solid blue;
+}
+
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.both .left-half {
+  float: left;
+  width: 49%;
+}
+
+.both .right-half {
+  float: right;
+  width: 49%;
+}
+

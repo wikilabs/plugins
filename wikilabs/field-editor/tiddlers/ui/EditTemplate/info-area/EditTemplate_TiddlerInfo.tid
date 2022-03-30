@@ -1,9 +1,0 @@
-tags: $:/tags/EditTemplate
-title: $:/plugins/wikilabs/ui/EditTemplate/TiddlerInfo
-list-before: $:/core/ui/EditTemplate/title
-
-<$reveal type="nomatch" text="" default="" state=<<tiddlerInfoState>> class="tc-tiddler-info tc-popup-handle" animate="yes" retain="yes">
-
-<$transclude tiddler="$:/core/ui/TiddlerInfo" mode="block"/>
-
-</$reveal>
