@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/field-editor/history
 
+V 0.1.0
+
+* Complete rewrite to avoid changing core components as much as possible
+* ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/field-editor/license]]
+
 V 0.0.1
 
 * Initial release tested down to TODO
