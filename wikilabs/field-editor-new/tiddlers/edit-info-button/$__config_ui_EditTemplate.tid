@@ -1,4 +1,0 @@
-description: This configuration changes the default EditTemplate
-title: $:/config/ui/EditTemplate
-
-$:/plugins/wikilabs/field-editor/EditTemplate

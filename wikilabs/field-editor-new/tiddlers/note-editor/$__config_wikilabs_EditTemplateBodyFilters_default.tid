@@ -1,6 +1,0 @@
-description: This filter completely replaces the default EditTemplate/body
-list-before: $:/config/EditTemplateBodyFilters/default
-tags: $:/tags/EditTemplateBodyFilter
-title: $:/config/wikilabs/EditTemplateBodyFilters/default
-
-[[$:/plugins/wikilabs/ui/EditTemplate/body]]
