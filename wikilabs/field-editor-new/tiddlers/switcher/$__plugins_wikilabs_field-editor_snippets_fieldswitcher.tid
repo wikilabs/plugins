@@ -1,8 +1,4 @@
-created: 20211112161113072
-modified: 20211113175557649
-tags: 
 title: $:/plugins/wikilabs/field-editor/snippets/fieldswitcher
-type: text/vnd.tiddlywiki
 
 \define fieldSwitcherConfig() $:/state/wikilabs/viewtemplate/body/active/field
 

@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/EditTemplate/fieldEditor/overwrite-warning
+list-after: $:/core/ui/EditTemplate/fields
+tags: $:/tags/EditTemplate
+
+\whitespace trim
+<$set name="Field" value={{{ [<newFieldNameTiddler>get[text]] }}}>
+	<$list filter={{{ [all[current]has<Field>then[yes]else[]] }}} variable=ignore>
+		<div class="tc-message-box">''Warning:''&nbsp;The field&nbsp;''"<<Field>>"''&nbsp;exists. It may be hidden
+		<details><summary>It contains</summary>
+			<pre><code><$view field=<<Field>> format=text/></code></pre>
+		</details>
+		</div>
+	</$list>
+</$set>

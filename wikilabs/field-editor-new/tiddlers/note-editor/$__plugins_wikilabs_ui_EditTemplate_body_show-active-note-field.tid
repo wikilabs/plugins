@@ -1,7 +1,6 @@
 condition: a
 tags: $:/tags/EditorTools/Note
 title: $:/plugins/wikilabs/ui/EditTemplate/body/show-active-note-field
-type: text/vnd.tiddlywiki
 
 \whitespace trim
 \define vis-prefix() $:/config/EditTemplateFields/Visibility/

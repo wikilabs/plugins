@@ -1,6 +1,5 @@
-list-before: $:/config/ViewTemplateBodyFilters/default
-tags: $:/tags/ViewTemplateBodyFilter
 title: $:/config/wikilabs/ViewTemplateBodyFilters/body/field
-type: text/vnd.tiddlywiki
+tags: $:/tags/ViewTemplateBodyFilter
+list-before: $:/config/ViewTemplateBodyFilters/default
 
 [{$:/state/wikilabs/viewtemplate/body/active/field}get[text]trim[]!match[text]then[$:/plugins/wikilabs/field-editor/ViewTemplate/body/field]else[]]

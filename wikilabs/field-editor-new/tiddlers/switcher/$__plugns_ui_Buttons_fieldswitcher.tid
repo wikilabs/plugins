@@ -1,10 +1,7 @@
-caption: {{$:/core/images/globe}} Field Switcher
-created: 20211113172034338
-description: Switch Tiddler Body Field
-modified: 20211113175843810
-tags: $:/tags/PageControls
 title: $:/plugns/ui/Buttons/fieldswitcher
-type: text/vnd.tiddlywiki
+caption: {{$:/core/images/globe}} Field Switcher
+tags: $:/tags/PageControls
+description: Switch Tiddler Body Field
 
 \whitespace trim
 \define configName() 

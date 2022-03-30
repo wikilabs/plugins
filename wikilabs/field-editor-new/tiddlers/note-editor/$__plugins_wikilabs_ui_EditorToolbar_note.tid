@@ -7,7 +7,6 @@ icon: $:/core/images/spiral
 shortcuts: ((note))
 tags: $:/tags/EditorToolbar
 title: $:/plugins/wikilabs/ui/EditorToolbar/note
-type: text/vnd.tiddlywiki
 
 <$reveal state=<<edit-note-state>> type="match" text="yes" tag="span">
 {{$:/images/layout-full}}

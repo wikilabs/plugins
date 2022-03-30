@@ -1,6 +1,5 @@
-code-body: yes
 title: $:/plugins/wikilabs/field-editor/ViewTemplate/body/field
-type: text/vnd.tiddlywiki
+code-body: yes
 
 <$transclude field={{{[{$:/state/wikilabs/viewtemplate/body/active/field}get[text]trim[]!match[text]]}}}>
 

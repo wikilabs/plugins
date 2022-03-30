@@ -1,5 +1,4 @@
 title: $:/plugins/wikilabs/ui/EditTemplate/body
-type: text/vnd.tiddlywiki
 
 \define config-visibility-title()
 $:/config/EditorToolbarButtons/Visibility/$(currentTiddler)$

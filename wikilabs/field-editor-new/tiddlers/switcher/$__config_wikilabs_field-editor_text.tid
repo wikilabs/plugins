@@ -1,9 +1,6 @@
-created: 20211113135143117
-description: Text field (default)
-icon: {{$:/core/images/globe}}
-modified: 20211113173124952
-tags: $:/tags/wikilabs/fieldswitcher
 title: $:/config/wikilabs/field-editor/text
-type: text/vnd.tiddlywiki
+tags: $:/tags/wikilabs/fieldswitcher
+icon: {{$:/core/images/globe}}
+description: Text field (default)
 
 text
