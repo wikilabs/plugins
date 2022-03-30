@@ -27,7 +27,7 @@ Wiki pragma rule for whitespace specifications
 exports.name = "custom";
 exports.types = {pragma: true};
 
-//var idTypes = ["tick", "single", "degree", "angle", "approx", "pilcrow", "corner", "braille", "slash"];
+var idTypes = ["tick", "single", "degree", "angle", "approx", "pilcrow", "corner", "braille", "slash"];
 /*
 Instantiate parse rule
 */
@@ -42,9 +42,9 @@ exports.init = function(parser) {
 	
 	this.pc = this.p.configTickText;
 	
-	// idTypes.map( function(id) {
-	// 	self.pc[id] = self.pc[id] || {};
-	// })
+	idTypes.map( function(id) {
+		self.pc[id] = self.pc[id] || {};
+	})
 };
 
 
@@ -103,7 +103,7 @@ exports.parse = function() {
 		// Match the next token
 		match = reMatch.exec(this.parser.source);
 	}
-
+	
 	var attributes = parseAttributes(line);
 
 	// \ticktext tick=x htmlTag=div params=".i.j.c.cp" end="eee"
@@ -112,17 +112,34 @@ exports.parse = function() {
 		configTickText = {};
 
 	var debugString = "\\custom",
-		tValue = "",
-		self = this;
-
+		tValue = "";
+	
 	$tw.utils.each(attributes,function(token) {
-//		if (idTypes.indexOf(token.name) >= 0) {
-		if (attributes[0].name === token.name) {
+		if (idTypes.indexOf(token.name) >= 0) {
 			id = token.name;
 			configTickText.symbol = token.value;
-			self.pc[id] = (self.pc[id]) ? self.pc[id] : {}; 
-//			debugString += " " + id + "='" + token.value + "'";
+			debugString += " " + id + "='" + token.value + "'";
 		}
+		// switch(token.name) {
+		// 	case "tick": // All fall through's are intentional
+		// 	case "angle": 
+		// 	case "approx":
+		// 	case "single":
+		// 	case "degree":
+		// 	case "pilcrow":
+		// 	case "corner":
+		// 	case "braille":
+		// 	case "slash": // fall through
+		// 		id = token.name;
+		// 		configTickText.symbol = token.value;
+		// 		debugString += " " + id + "='" + token.value + "'";
+		// 	break;
+		// 	default: // define the glyph itself
+		// 		id = attributes[0].name
+		// 		configTickText.symbol = token.value;
+		// 		debugString += " " + id + "='" + token.value + "'";
+		// 	break;
+		// }
 		switch(token.name) {
 			case "_classes":
 			case "_debug":
@@ -148,6 +165,14 @@ exports.parse = function() {
 		}
 	});
 
+// if _debug is set by _use in an other tiddler, we need the _debugString!
+// 	var debugString = "\\custom";
+// 	Object.keys(configTickText).map( function(x) {
+// 		if (x == "symbol") debugString += ' ' + id + '="' + configTickText[x] + '"';
+// 		else if (x == "_debug") debugString;
+// 		else debugString += ' ' + x + '="' + "{...}" + '"'; 
+// //		else debugString += ' ' + x + '="' + JSON.stringify(configTickText[x], null, 2) + '"'; 
+// 	})
 	configTickText._debugString = debugString;
 
 	this.pc[id][configTickText.symbol] = configTickText;

@@ -28,39 +28,32 @@ exports.types = {block: true};
 
 var idTypes = "tick,single,degree,angle,approx,pilcrow,glyph".split(",");
 
-var userConfig = require("$:/plugins/wikilabs/custom-markup/wikirules/glyphs.js").glyphs;
-var config = new userConfig;
-
-// Create glyph stirng for regexp from config tiddler
-function createRegexpStr(list) {
-	var glyphString = "";
-	if (list.length > 0) {
-		list.map( function(definition) {
-			if (definition.disabled === true) return;
-			if (definition.glyph === "»") {
-				glyphString += "»{1,4}|"
-			} else if (definition.glyph === "≈") {
-				glyphString += "≈{1,4}|"
-			} else {
-				glyphString += `(?=${definition.glyph}[^${definition.glyph}])${definition.glyph}|`;
-			}
-			idTypes.push(definition.idType); // make sure registered glyphs are known. 
-		})
-	 	glyphString = glyphString.slice(0,glyphString.length-1);
-	}
-	return glyphString;
-}
-
 exports.init = function(parser) {
 	this.parser = parser;
 
-	this.gConfig = config;
-
 	var self = this,
-		regexpFree = "",
-		regexpDefault = "";
+		glyphs = [],
+		customGlyphs = "";
 
-	// get global glyph info
+	// Regexp to match 
+	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
+	// match[2] ... htmlTag ... default DIV
+	// match[3] ... classString
+//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1 -> V0.21.2
+
+	if (glyphs.length > 0) {
+		glyphs.map( function(glyph) {
+			customGlyphs += `|(?=${glyph}[^${glyph}])${glyph}`;
+			idTypes.push(glyph); // make sure registered glyphs are known. 
+		})
+		customGlyphs += `)`;
+	} else {
+		customGlyphs = `)`;
+	}
+
+	this.matchRegExp = new RegExp( `((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶` + customGlyphs + 
+									'((?:[^\\.:\\r\\n\\s]+))?(\\.(?:[^:\\r\\n\\s]+))?((:".*?")*)', "mg"); // V0.22.0
+
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
 
@@ -70,25 +63,7 @@ exports.init = function(parser) {
 		self.pc[id] = self.pc[id] || {};
 	})
 
-	this.pc.XXXX = {}; // Start with something, that shouldn't be used by users
-
-	// Regexp to match 
-	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
-	// match[2] ... htmlTag ... default DIV
-	// match[3] ... classString
-//	this.matchRegExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.9.1 -> V0.21.2
-
-	// define the dynamic regexp -> isn't used -> fully dynamic is used
-	// this.matchRegExp = new RegExp( `((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶` + regexpFree + 
-	// 								'((?:[^\\.:\\r\\n\\s]+))?(\\.(?:[^:\\r\\n\\s]+))?((:".*?")*)', "mg"); // V0.22.0
-
-	regexpDefault = createRegexpStr(this.gConfig.defaultGlyphs);
-	regexpFree = createRegexpStr(this.gConfig.freeGlyphs);
-
-	// BE AWARE: useParagraph and [»≈]{1,4} are hardcoded atm !!!
-	this.matchRegExp = new RegExp( `(${regexpDefault}|${regexpFree})` +
-									'((?:[^\\.:\\r\\n\\s]+))?(\\.(?:[^:\\r\\n\\s]+))?((:".*?")*)', "mg"); // >=V0.22.0
-
+	this.pc.X = {}; // There is a naming problem  TODO .. X is possible now. 
 };
 
 /*
@@ -146,23 +121,16 @@ exports.parse = function() {
 		break;
 		case "´":
 			id = "tick"
-			useParagraph = false;
 		break;
 		case "›":
 			id = "single"
-			useParagraph = false;
 		break;
 		case "°":
 			id = "degree"
-			useParagraph = false;
 		break;
 		default:
-			for (var i=0; i<this.gConfig.freeGlyphs.length; i++) {
-				if (this.match[1] === this.gConfig.freeGlyphs[i].glyph) {
-					id = this.gConfig.freeGlyphs[i].idType;
-					useParagraph = this.gConfig.freeGlyphs[i].useParagraph;
-				}
-			}
+			id = this.match[1][0];
+			useParagraph = true;
 		break;
 	}
 

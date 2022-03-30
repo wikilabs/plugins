@@ -1,9 +1,9 @@
 created: 20210915084029691
 modified: 20210915084041216
-title: $:/config/WLCM/InlineSet/Config
+title: /config/WLCM/InlineSet/Config
 type: text/vnd.tiddlywiki
 
-\import [[$:/config/WLCM/InlineSet/Config/Macros]]
+\import [[/config/WLCM/InlineSet/Config/Macros]]
 
 \define characterRange() a b c d e f g h
 
