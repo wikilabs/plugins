@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 0.4.2 - 2022-03-31
+
+* Fix import viewtemplate cascade
+* Temporarily use core default import dialogue, till filter can be improved
+
 V 0.4.2 - 2022-03-25
 
 * ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/bundler/license]]

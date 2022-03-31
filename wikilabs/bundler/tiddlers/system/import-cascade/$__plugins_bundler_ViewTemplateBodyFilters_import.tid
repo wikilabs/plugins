@@ -1,0 +1,5 @@
+title: $:/plugins/bundler/ViewTemplateBodyFilters/import
+list-before: $:/config/ViewTemplateBodyFilters/import
+tags: $:/tags/ViewTemplateBodyFilterXX
+
+[field:plugin-type[import]then[$:/plugins/bundler/ui/ViewTemplate/body/import]]
