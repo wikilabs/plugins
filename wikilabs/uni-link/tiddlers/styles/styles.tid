@@ -1,0 +1,21 @@
+title: $:/plugins/wikilabs/bundler/styles
+tags: $:/tags/Stylesheet
+
+.wltc-15-gap {
+	margin-left: 1.5em;
+}
+
+.wltc-muted-forground {
+	color: #ffffff;
+}
+
+.wltc-options-button svg {
+	fill: #ccc;
+	width: 1.3em;
+	float: right;
+	margin-top: -7px;
+}
+
+.wltc-full-width {
+	width: 100%;
+}
