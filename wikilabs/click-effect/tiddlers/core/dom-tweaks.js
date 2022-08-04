@@ -4,7 +4,7 @@ type: application/javascript
 module-type: utils
 
 Fix .pulseElement()
-Add . clcikAnimation()
+Add .clickAnimation()
 
 Various static DOM-related utility functions.
 \*/
