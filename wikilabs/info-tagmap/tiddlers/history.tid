@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/info-tagmap/history
 
+V 0.2.1 - 2022-08-04
+
+* Fix whitespace handling for TW v5.2.3
+
 V 0.2.0 - 2022-03-27
 
 * ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/info-tagmap/license]]

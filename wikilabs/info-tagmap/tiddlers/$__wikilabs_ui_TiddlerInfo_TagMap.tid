@@ -2,6 +2,7 @@ title: $:/wikilabs/ui/TiddlerInfo/TagMap
 tags: $:/tags/TiddlerInfo
 caption: Tag Map
 
+\whitespace trim
 <div class="flexbox">
 <$list filter="[all[current]tags[]sort[title]]" emptyMessage="This tiddler has no tags">
 <div class="col">
