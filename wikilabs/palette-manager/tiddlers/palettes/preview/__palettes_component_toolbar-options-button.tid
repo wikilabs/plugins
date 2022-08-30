@@ -1,0 +1,11 @@
+created: 20220825144706827
+modified: 20220825150118568
+tags: 
+title: :/palettes/preview/toolbar-options-button
+type: text/vnd.tiddlywiki
+
+TODO: CSS specificity problem
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/options-button}}</$button>
+</span>

@@ -1,0 +1,9 @@
+created: 20220824233018470
+modified: 20220826141024791
+tags: 
+title: :/palettes/preview/selection-foreground
+type: text/vnd.tiddlywiki
+
+''Select some text'' in the text-area. 
+
+<$edit-text class="tc-edit-max-width" tiddler="$:/temp/palette/test" />

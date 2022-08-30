@@ -1,0 +1,9 @@
+created: 20220824104445923
+modified: 20220826211846478
+tags: 
+title: :/palettes/preview/alert-muted-foreground
+type: text/vnd.tiddlywiki
+
+<$tiddler tiddler=":/palettes/preview/alert/example">
+{{||$:/core/ui/AlertTemplate}}
+</$tiddler>

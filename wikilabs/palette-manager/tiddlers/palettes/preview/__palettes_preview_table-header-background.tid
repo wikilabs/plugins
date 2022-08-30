@@ -1,0 +1,12 @@
+created: 20220825112945378
+modified: 20220826143108522
+tags: 
+title: :/palettes/preview/table-header-background
+type: text/vnd.tiddlywiki
+
+|myclass anotherClass|k
+|This is a caption |c
+|Header|Header|h
+|Cell1 |Cell2 |
+|Cell3 |Cell3 |
+|Footer|Footer|f

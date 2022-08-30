@@ -1,0 +1,11 @@
+created: 20220825130350869
+modified: 20220826143431337
+tags: 
+title: :/palettes/preview/tiddler-info-tab-background
+type: text/vnd.tiddlywiki
+
+<div class="tc-tiddler-info" style="margin: 1em;">
+
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/TiddlerInfoSegment]!has[draft.of]] [[$:/core/ui/TiddlerInfo]]" variable="listItem"><$transclude tiddler=<<listItem>> mode="block"/></$list>
+
+</div>

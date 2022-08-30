@@ -1,0 +1,15 @@
+created: 20220824123436276
+modified: 20220824204812500
+tags: 
+title: :/palettes/preview/dirty-indicator
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$button tooltip={{$:/language/Buttons/SaveWiki/Hint}} aria-label={{$:/language/Buttons/SaveWiki/Caption}} class=<<tv-config-toolbar-class>>>
+<span class="tc-dirty-indicator">
+{{$:/core/images/save-button}}
+<span class="tc-btn-text">
+<$text text={{$:/language/Buttons/SaveWiki/Caption}}/>
+</span>
+</span>
+</$button>

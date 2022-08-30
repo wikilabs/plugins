@@ -1,0 +1,13 @@
+created: 20220825131927189
+modified: 20220826143546662
+tags: 
+title: :/palettes/preview/tiddler-title-foreground
+type: text/vnd.tiddlywiki
+
+<div class="tc-tiddler-title tc-titlebar" style="font-size:1.6em">
+
+{{:/palettes/preview/tiddler-editor/example||$:/core/ui/ViewTemplate/title/default}}
+
+{{$:/PaletteManager||$:/core/ui/ViewTemplate/title/system}}
+
+</div>

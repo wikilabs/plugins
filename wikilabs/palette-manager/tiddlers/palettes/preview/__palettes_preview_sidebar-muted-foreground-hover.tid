@@ -1,0 +1,12 @@
+created: 20220825003704176
+modified: 20220826142311125
+tags: 
+title: :/palettes/preview/sidebar-muted-foreground-hover
+type: text/vnd.tiddlywiki
+
+<div class="tc-sidebar-lists">
+{{$:/core/ui/SideBar/Open}}
+<div>
+
+[[$:/PaletteManager]]<br>
+[[:/palettes/components]]

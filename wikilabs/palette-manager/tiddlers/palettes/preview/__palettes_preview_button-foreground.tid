@@ -1,0 +1,19 @@
+created: 20220824121449584
+modified: 20220826211750643
+tags: 
+title: :/palettes/preview/button-foreground
+type: text/vnd.tiddlywiki
+
+\define config-title()
+$:/config/PageControlButtons/Visibility/$(listItem)$
+\end
+
+<$let tv-config-toolbar-icons="yes" tv-config-toolbar-text="yes" tv-config-toolbar-class="" preview-button="$:/core/ui/Buttons/palette">
+
+<div style="position:relative;" class={{{ [<listItem>encodeuricomponent[]addprefix[tc-btn-]] }}}>
+
+<$transclude tiddler=<<preview-button>>/> <i class="tc-muted"><$transclude tiddler=<<preview-button>> field="description"/></i>
+
+</div>
+
+</$let>

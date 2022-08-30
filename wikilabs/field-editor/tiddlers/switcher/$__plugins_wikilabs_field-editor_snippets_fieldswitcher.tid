@@ -1,7 +1,7 @@
 title: $:/plugins/wikilabs/field-editor/snippets/fieldswitcher
 
 \define fieldSwitcherConfig() $:/state/wikilabs/viewtemplate/body/active/field
-
+\whitespace trim
 <$linkcatcher to=<<fieldSwitcherConfig>> >
 <div class="tc-chooser tcwl-note-chooser">
     <$list filter="[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]]" >

@@ -1,0 +1,9 @@
+created: 20220825144531255
+modified: 20220825144541852
+tags: 
+title: :/palettes/preview/toolbar-info-button
+type: text/vnd.tiddlywiki
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/info-button}}</$button>
+</span>

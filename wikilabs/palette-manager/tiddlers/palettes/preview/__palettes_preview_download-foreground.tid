@@ -1,0 +1,9 @@
+created: 20220824124713351
+modified: 20220826125950253
+tags: 
+title: :/palettes/preview/download-foreground
+type: text/vnd.tiddlywiki
+
+<$button class="tc-btn-download">
+Dummy Download {{$:/core/images/save-button}}
+</$button>

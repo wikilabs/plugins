@@ -1,0 +1,17 @@
+created: 20220824141830974
+modified: 20220826145814123
+tags: 
+title: :/palettes/preview/dragger-foreground
+type: text/vnd.tiddlywiki
+
+ToDo -- don't know how to see that atm
+
+```
+.tc-tiddler-dragger-inner {
+...
+	color: <<colour dragger-foreground>>;
+...
+	background-color: <<colour dragger-background>>;
+... 
+}
+```

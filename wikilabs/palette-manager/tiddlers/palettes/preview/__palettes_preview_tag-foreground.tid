@@ -1,0 +1,11 @@
+created: 20220825113231577
+modified: 20220826145128727
+tags: 
+title: :/palettes/preview/tag-foreground
+type: text/vnd.tiddlywiki
+
+Important: Tag foreground is dynamically adjusted based on the brightness of the background<br>
+Know issue: https://github.com/Jermolene/TiddlyWiki5/issues/6929
+
+* <<tag DoesNotExit>>
+* {{$:/core/ui/UntaggedTemplate}} --- <$transclude tiddler="$:/language/Docs/PaletteColours/untagged-background"/>

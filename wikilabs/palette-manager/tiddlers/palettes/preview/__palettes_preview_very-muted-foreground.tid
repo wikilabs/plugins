@@ -1,0 +1,18 @@
+created: 20220825150410478
+modified: 20220826143917127
+tags: 
+title: :/palettes/preview/very-muted-foreground
+type: text/vnd.tiddlywiki
+
+ToDo very-muted
+
+```
+.tc-tiddler-help a.tc-tiddlylink {
+	color: <<colour very-muted-foreground>>;
+}
+
+.tc-import-table .tc-row-disabled {
+	background: <<colour very-muted-foreground>>10;
+	opacity: 0.8;
+}
+```

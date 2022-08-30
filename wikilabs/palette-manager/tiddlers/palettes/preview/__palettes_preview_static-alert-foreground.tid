@@ -1,0 +1,13 @@
+created: 20220825012735305
+modified: 20220826143003051
+tags: 
+title: :/palettes/preview/static-alert-foreground
+type: text/vnd.tiddlywiki
+
+<style>
+.tc-static-alert,
+.tc-static-alert-inner {
+  position: initial;
+}
+</style>
+{{$:/StaticBanner}}

@@ -1,0 +1,21 @@
+created: 20220824191547998
+modified: 20220826140420133
+tags: 
+title: :/palettes/preview/modal-header-border
+type: text/vnd.tiddlywiki
+
+<div class="tc-modal-backdrop" 
+	style="position:initial; top:initial; right:initial; bottom:initial; left:initial; padding: 0 1em 1em 1em; opacity:0.7;">
+	<p style="color:white;">backdrop</p>
+	<div class="tc-modal" style="position: initial; margin-left: auto; margin-right: auto;">
+		<div class="tc-modal-header">
+			<h3>Modal header</h3>
+		</div>
+		<div class="tc-modal-body">
+			<p> modal body text </p>
+		</div>
+		<div class="tc-modal-footer">
+			<span> modal footer text <$button>Close</$button> </span>
+		</div>
+	</div>
+</div>

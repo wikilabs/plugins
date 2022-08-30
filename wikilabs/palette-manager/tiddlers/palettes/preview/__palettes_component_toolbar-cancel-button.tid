@@ -1,0 +1,9 @@
+created: 20220825143342214
+modified: 20220825143954258
+tags: 
+title: :/palettes/preview/toolbar-cancel-button
+type: text/vnd.tiddlywiki
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/cancel-button}}</$button>
+</span>

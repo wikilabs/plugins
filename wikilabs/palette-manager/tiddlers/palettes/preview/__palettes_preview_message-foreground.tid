@@ -1,0 +1,9 @@
+created: 20220824190822151
+modified: 20220826202748725
+tags: 
+title: :/palettes/preview/message-foreground
+type: text/vnd.tiddlywiki
+
+<$linkcatcher>
+<div class="tc-message-box" style="margin:initial;"><p>This is a shadow tiddler. Any changes you make will override the default version from the plugin <a class="tc-tiddlylink tc-tiddlylink-resolves" href="#%24%3A%2Fcore">$:/core</a></p></div>
+</$linkcatcher>

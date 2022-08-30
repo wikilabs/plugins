@@ -1,0 +1,9 @@
+created: 20220825144020435
+modified: 20220825144049565
+tags: 
+title: :/palettes/preview/toolbar-close-button
+type: text/vnd.tiddlywiki
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/close-button}}</$button>
+</span>

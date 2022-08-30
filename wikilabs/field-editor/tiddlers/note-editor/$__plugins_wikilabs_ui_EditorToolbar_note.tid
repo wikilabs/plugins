@@ -8,6 +8,8 @@ shortcuts: ((note))
 tags: $:/tags/EditorToolbar
 title: $:/plugins/wikilabs/ui/EditorToolbar/note
 
+\whitespace trim
+
 <$reveal state=<<edit-note-state>> type="match" text="yes" tag="span">
 {{$:/images/layout-full}}
 <$action-setfield $tiddler=<<edit-note-state>> $value="no"/>

@@ -1,0 +1,29 @@
+created: 20220825121021869
+modified: 20220826203521485
+tags: 
+title: :/palettes/preview/tiddler-controls-foreground-selected
+type: text/vnd.tiddlywiki
+
+* All buttons are ''dummy buttons''
+* View- Edit-toolbar buttons
+* Editor toolbar buttons
+** Classes are inverted on :hover
+* Page Control if $:/ControlPanel is open
+
+<span class="tc-tiddler-controls tc-titlebar">
+<$button class="tc-btn-invisible">{{$:/core/images/down-arrow}}</$button>
+<$button class="tc-btn-invisible">{{$:/core/images/cancel-button}}</$button>
+<$button class="tc-btn-invisible">{{$:/core/images/done-button}}</$button>
+</span>
+
+<div class="tc-editor-toolbar">
+<span class="tc-text-editor-toolbar-item-wrapper tc-reveal">
+<$button class="tc-btn-invisible">{{$:/core/images/bold}}</$button>
+<$button class="tc-btn-invisible">{{$:/core/images/italic}}</$button>
+<$button class="tc-btn-invisible">{{$:/core/images/quote}}</$button>
+</span>
+</div>
+
+<div class="tc-page-controls">
+<$button class="tc-btn-invisible tc-selected">{{$:/core/images/options-button}}</$button>
+</div>

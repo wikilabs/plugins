@@ -1,0 +1,9 @@
+created: 20220825144128867
+modified: 20220825144139947
+tags: 
+title: :/palettes/preview/toolbar-done-button
+type: text/vnd.tiddlywiki
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/done-button}}</$button>
+</span>

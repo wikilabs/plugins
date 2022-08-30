@@ -1,0 +1,9 @@
+created: 20220825144515940
+modified: 20220825144528275
+tags: 
+title: :/palettes/preview/toolbar-edit-button
+type: text/vnd.tiddlywiki
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/edit-button}}</$button>
+</span>

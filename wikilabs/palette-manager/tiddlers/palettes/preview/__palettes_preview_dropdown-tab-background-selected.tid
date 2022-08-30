@@ -1,0 +1,17 @@
+created: 20220824143436354
+modified: 20220826185649360
+tags: 
+title: :/palettes/preview/dropdown-tab-background-selected
+type: text/vnd.tiddlywiki
+
+TODO not in use at the moment. Some problems with CSS
+
+
+''Dummy Tabs ''
+
+<div class="tc-drop-down" style="min-width:initial; white-space: initial;">
+
+<<tabs "SampleTabOne SampleTabTwo SampleTabThree SampleTabFour" "SampleTabOne" "$:/state/tab1">>
+
+</div>
+

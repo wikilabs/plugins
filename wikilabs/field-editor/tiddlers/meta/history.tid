@@ -1,6 +1,12 @@
 title: $:/plugins/wikilabs/field-editor/history
 
-V 0.1.0
+
+V 0.1.1 2022.08.04
+
+* Update to TW v5.2.3
+*
+
+V 0.1.0 2021.11.21
 
 * Complete rewrite to avoid changing core components as much as possible
 * ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/field-editor/license]]

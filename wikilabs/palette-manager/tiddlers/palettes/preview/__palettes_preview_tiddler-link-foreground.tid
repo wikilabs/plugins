@@ -1,0 +1,15 @@
+created: 20220824220417170
+modified: 20220826203736548
+tags: 
+title: :/palettes/preview/tiddler-link-foreground
+type: text/vnd.tiddlywiki
+
+<$linkcatcher>
+
+|tc-table-no-border|k
+|<$link to=<<currentTiddler>>/> |To a tiddler that exists |
+|[[ATiddlerThatDoesntExist]] |To a tiddler that doesn't exist |
+|[[$:/core/copyright.txt]] |To a shadow tiddler that has not been overridden |
+|[[$:/SiteTitle]] |To a shadow tiddler that has been overridden by an ordinary tiddler |
+
+</$linkcatcher>

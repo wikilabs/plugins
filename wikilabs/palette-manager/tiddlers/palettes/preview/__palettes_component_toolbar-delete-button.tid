@@ -1,0 +1,9 @@
+created: 20220825144114937
+modified: 20220825144125226
+tags: 
+title: :/palettes/preview/toolbar-delete-button
+type: text/vnd.tiddlywiki
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/delete-button}}</$button>
+</span>

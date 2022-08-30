@@ -1,20 +1,20 @@
 /*\
-title: $:/plugins/wikilabs/bundler/import-image.js
+title: $:/plugins/wikilabs/bundler/import-untitled.js
 type: application/javascript
 module-type: upgrader
 
-This module checks, if tiddlers, that are imported are named "image.png". 
+This module checks, if tiddlers, that are imported are named "untitled.png". 
 If so, they are renamed according the template config tiddler.
 
-The default image name comming from the clipboard depends on the browser language setting.
+The default untitled name comming from the clipboard depends on the browser language setting.
 \*/
 
 /*jslint node: true, browser: true */
 /*global $tw: false */
 "use strict";
 
-var IMAGE_DEFAULT_TITLE = "$:/config/wikilabs/import/image/default-title",
-	IMAGE_TITLE_TEMPLATE = "$:/config/wikilabs/import/image/title-template",
+var UNTITLED_DEFAULT_TITLE = "$:/config/wikilabs/import/untitled/default-title",
+	UNTITLED_TITLE_TEMPLATE = "$:/config/wikilabs/import/untitled/title-template",
 	ENABLE_IMPORT_RENAME = "$:/config/wikilabs/enableImportRename";
 
 exports.upgrade = function(wiki,titles,tiddlers) {
@@ -24,8 +24,8 @@ exports.upgrade = function(wiki,titles,tiddlers) {
 	}
 	var self = this,
 		messages = {},
-		defaultTitle = $tw.wiki.getTiddlerText(IMAGE_DEFAULT_TITLE,"image.png").trim(),
-		targetTitle = $tw.wiki.getTiddlerText(IMAGE_TITLE_TEMPLATE,"image YYYY-0MM-0DD, 0hh:0mm:0XXX.png").trim();
+		defaultTitle = $tw.wiki.getTiddlerText(UNTITLED_DEFAULT_TITLE,"Untitled").trim(),
+		targetTitle = $tw.wiki.getTiddlerText(UNTITLED_TITLE_TEMPLATE,"Clipboard YYYY-0MM-0DD, 0hh:0mm:0XXX").trim();
 
 	$tw.utils.each(titles,function(title) {
 		var tiddler = {};

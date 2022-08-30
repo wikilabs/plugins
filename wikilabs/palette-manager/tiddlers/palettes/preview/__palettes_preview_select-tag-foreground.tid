@@ -1,0 +1,13 @@
+created: 20220824231600724
+modified: 20220826140944852
+tags: 
+title: :/palettes/preview/select-tag-foreground
+type: text/vnd.tiddlywiki
+
+\define text() Lorem ipsum ''dolor sit amet'', consectetur adipisicing elit
+
+<$select tiddler="$:/temp/palette/test" >
+<option value=<<text>> >aaaaaaaaaaaaa</option>
+<option value=<<text>> >bbbbbbbbbbb</option>
+<option value=<<text>> >ccccccccccccc</option>
+</$select>

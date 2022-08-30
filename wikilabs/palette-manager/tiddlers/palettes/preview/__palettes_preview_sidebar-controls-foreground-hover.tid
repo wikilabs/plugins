@@ -1,0 +1,11 @@
+created: 20220824235800427
+modified: 20220826203559303
+tags: 
+title: :/palettes/preview/sidebar-controls-foreground-hover
+type: text/vnd.tiddlywiki
+
+''HOT buttons!''
+
+<div style="position:relative;">
+{{$:/core/ui/PageTemplate/pagecontrols}}
+<div>

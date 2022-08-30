@@ -1,0 +1,20 @@
+created: 20220825005920939
+modified: 20220826210828714
+tags: 
+title: :/palettes/preview/sidebar-tiddler-link-foreground-hover
+type: text/vnd.tiddlywiki
+
+The area below is a scrollable
+
+<style>
+.xx-sidebar-tabs .tc-tab-buttons button:nth-of-type(4),
+.xx-sidebar-tabs .tc-tab-buttons button:nth-of-type(5) {
+  display:none
+}
+</style>
+
+<$linkcatcher>
+<div class="xx-sidebar-tabs" style="height:300px; overflow:auto; border: 1px solid gray; padding: 0 1em;">
+{{$:/core/ui/SideBarSegments/tabs}}
+</div>
+</$linkcatcher>

@@ -1,0 +1,13 @@
+created: 20220826142022991
+modified: 20220826142202783
+tags: 
+title: :/palettes/preview/sidebar-foreground-shadow
+type: text/vnd.tiddlywiki
+
+ToDo: Part of snowwhite theme
+
+```
+.tc-sidebar-header {
+	text-shadow: 0 1px 0 <<colour sidebar-foreground-shadow>>;
+}
+```

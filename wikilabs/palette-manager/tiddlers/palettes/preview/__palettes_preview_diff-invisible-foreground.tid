@@ -1,0 +1,11 @@
+created: 20220824121516065
+modified: 20220826125956423
+tags: 
+title: :/palettes/preview/diff-invisible-foreground
+type: text/vnd.tiddlywiki
+
+<$diff-text source="Hey Jude, don't make it bad. Take a sad song and make it better.
+Remember to let her into your heart
+Then you can start to make it better." dest="Hey Jude, don't be afraid. You were made to go out and get her. The minute you let her under your skin. Then you begin to make it better.
+
+"/>

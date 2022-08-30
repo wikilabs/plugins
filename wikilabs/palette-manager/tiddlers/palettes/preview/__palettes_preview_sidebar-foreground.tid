@@ -1,0 +1,39 @@
+created: 20220826141712110
+modified: 20220826142926597
+tags: 
+title: :/palettes/preview/sidebar-foreground
+type: text/vnd.tiddlywiki
+
+ToDo 5 different settings in base
+
+* Sidebar -> More -> Missing
+* TOC icon forgeround
+* subtitle foreground
+* Sidebar -> Recent ... date devider
+
+<details><summary>show CSS code</summary>
+
+```
+.tc-sidebar-header {
+	color: <<colour sidebar-foreground>>;
+	fill: <<colour sidebar-foreground>>;
+}
+
+.tc-sidebar-header .tc-missing-tiddler-label {
+	color: <<colour sidebar-foreground>>;
+}
+
+.tc-table-of-contents button {
+	color: <<colour sidebar-foreground>>;
+}
+
+.tc-table-of-contents svg {
+	width: 0.7em;
+	height: 0.7em;
+	vertical-align: middle;
+	fill: <<colour sidebar-foreground>>;
+}
+```
+
+</details>
+

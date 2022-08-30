@@ -1,0 +1,16 @@
+created: 20220825120243619
+modified: 20220826143235089
+tags: 
+title: :/palettes/preview/tiddler-border
+type: text/vnd.tiddlywiki
+
+These colours will be visible for every tiddler here
+
+TODO create previews
+
+4 elements in base
+
+* tc-tiddler-frame
+* tc-tiddler-border
+* tiddler in new window background
+

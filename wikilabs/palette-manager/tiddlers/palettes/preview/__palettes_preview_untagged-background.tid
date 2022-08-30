@@ -1,0 +1,12 @@
+created: 20220825150355695
+modified: 20220826145403940
+tags: 
+title: :/palettes/preview/untagged-background
+type: text/vnd.tiddlywiki
+
+Important: It seems the untagged tag-pill uses the `tag-foreground` colour
+
+* Related to issue: https://github.com/Jermolene/TiddlyWiki5/issues/6929
+* ToDo untagged should also use dynamic forground-colour adjustment
+
+{{$:/core/ui/UntaggedTemplate}}

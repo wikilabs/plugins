@@ -1,0 +1,20 @@
+created: 20220825124849856
+modified: 20220826143352924
+tags: 
+title: :/palettes/preview/tiddler-editor-fields-odd
+type: text/vnd.tiddlywiki
+
+tc-tiddler-edit-frame
+
+<div class="tc-tiddler-frame tc-tiddler-edit-frame" style="width:initial;">
+
+<$tiddler tiddler=":/palettes/preview/tiddler-editor/example" >
+
+<$edit-text class="tc-edit-max-width" tiddler=<<currentTiddler>> />
+
+{{||$:/core/ui/EditTemplate/fields}}
+
+{{||$:/core/ui/EditTemplate/type}}
+
+</$tiddler>
+<div>

@@ -1,0 +1,11 @@
+created: 20220825012034243
+modified: 20220826142455341
+tags: 
+title: :/palettes/preview/site-title-foreground
+type: text/vnd.tiddlywiki
+
+\define tv-wikilinks() no
+
+!.tc-site-title {{$:/SiteTitle}}
+
+Only work for "non-links" titles

@@ -3,8 +3,8 @@ caption: {{$:/core/images/globe}} Field Switcher
 tags: $:/tags/PageControls
 description: Switch Tiddler Body Field
 
+\define configName()
 \whitespace trim
-\define configName() 
 <span class="tc-popup-keep">
   <$button popup=<<qualify "$:/state/popup/fieldswitcher">> tooltip="Switch Tiddler Body Field" aria-label="Switch Tiddler Body Field" class=<<tv-config-toolbar-class>> selectedClass="tc-selected">
     <$list filter="[<tv-config-toolbar-icons>match[yes]]">
@@ -22,3 +22,4 @@ description: Switch Tiddler Body Field
     {{$:/plugins/wikilabs/field-editor/snippets/fieldswitcher}}
   </div>
 </$reveal>
+\end

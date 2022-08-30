@@ -1,0 +1,11 @@
+created: 20220825144738980
+modified: 20220825150125610
+tags: 
+title: :/palettes/preview/toolbar-save-button
+type: text/vnd.tiddlywiki
+
+TODO: CSS specificity problem
+
+<span class="tc-tiddler-controls tc-titlebar" style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/save-button}}</$button>
+</span>
