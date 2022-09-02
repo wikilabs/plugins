@@ -1,5 +1,14 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 0.0.3 - 2022.09.01
+
+* Improve workflow if palette is cloned
+* Implement undo function if origin-field exists
+* Preview text is now clickable and opens the preview tiddler
+* Add "activate" button to palette title (needed for clone workflow)
+** needs to be in the title if tiddler is folded
+* Preview elements are in a separate tiddler now, which improves hackability
+
 V 0.0.2 - 2022.08.30
 
 This plugin is intended to be included into the TW core. It's a temporary plugin that will hopefully go away in the future.
