@@ -1,0 +1,8 @@
+created: 20220901092557267
+list-before: $:/config/ViewTemplateTitleFilters/system
+modified: 20220901120329231
+tags: $:/tags/ViewTemplateTitleFilter
+title: $:/config/ViewTemplateTitleFilters/palette
+type: text/vnd.tiddlywiki
+
+[tag[$:/tags/Palette]then[$:/core/ui/ViewTemplate/title/palette]]

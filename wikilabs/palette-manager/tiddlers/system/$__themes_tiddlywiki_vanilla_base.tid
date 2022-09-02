@@ -1152,6 +1152,10 @@ button.tc-btn-invisible.tc-remove-tag-button {
 	margin: 0;
 }
 
+.tc-title-button {
+	font-size: initial;
+}
+
 .tc-site-title {
 	color: <<colour site-title-foreground>>;
 }
@@ -2740,8 +2744,12 @@ a.tc-tiddlylink.tc-plugin-info:hover > .tc-plugin-info-chunk > svg {
 	border: 1px solid #888;
 }
 
-input.tc-palette-manager-colour-input {
-	width: 100%;
+input[type=text].tc-palette-manager-text-input {
+	width: 90%;
+}
+
+input[type=color].tc-palette-manager-colour-input {
+	width: 90%;
 	padding: 0;
 }
 

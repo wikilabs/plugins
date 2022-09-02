@@ -1,0 +1,23 @@
+created: 20220901092849554
+modified: 20220901130646532
+title: $:/core/ui/ViewTemplate/title/palette
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+\define myConfig() $:/config/ViewTemplateTitleFilters/palette
+
+\define setPalette()
+<$action-setfield $tiddler="$:/palette" text=<<currentTiddler>>/>
+\end
+
+\define showActivateButton()
+<$list filter="[{$:/palette}trim[]!match<currentTiddler>]" variable="ignore">
+<$button actions=<<setPalette>> class="tc-title-button tc-gap-left">activate</$button>
+</$list>
+\end
+
+<!-- Redefine my cascade without me -->
+<$set name="without-me" filter="[all[shadows+tiddlers]tag[$:/tags/ViewTemplateTitleFilter]!is[draft]] :except[<myConfig>] +[!is[draft]get[text]]">
+<$transclude tiddler={{{ [<currentTiddler>] :cascade[<without-me>] :and[!is[blank]else[$:/core/ui/ViewTemplate/title/default]] }}} /><<showActivateButton>>
+</$set>
