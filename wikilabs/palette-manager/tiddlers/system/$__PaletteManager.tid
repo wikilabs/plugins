@@ -1,5 +1,5 @@
 created: 20220831132430521
-modified: 20220901183917473
+modified: 20220902164022776
 title: $:/PaletteManager
 type: text/vnd.tiddlywiki
 
@@ -20,6 +20,7 @@ edit $(colourName)$
 </$wikify>
 \end
 
+<!-- Show alternative color swatch if <<colour xx>> macro is used -->
 \define show-colour-macro-editor()
 <$list filter="[<currentTiddler>getindex<colourName>removeprefix[<<]removesuffix[>>]] [<currentTiddler>getindex<colourName>removeprefix[<$]removesuffix[/>]]" variable="ignore">
 	<$set name="state" value={{{ [[$:/state/palettemanager/]addsuffix<currentTiddler>addsuffix[/]addsuffix<colourName>] }}}>
@@ -95,7 +96,7 @@ edit $(colourName)$
 <table>
 <tbody>
 	<$set name="colorList" filter="[{$:/state/palettemanager/showexternal}match[yes]]"
-		value="[all[shadows+tiddlers]tag[$:/tags/Palette]indexes[]]" emptyValue="[<currentTiddler>indexes[]]">
+		value="[all[shadows+tiddlers]tag[$:/tags/Palette]indexes[]]" emptyValue="[<currentTiddler>indexes[]search{$:/temp/search-term}]">
 		<$list filter=<<colorList>> variable="colourName">
 			<<palette-manager-colour-row>>
 		</$list>
@@ -112,6 +113,10 @@ edit $(colourName)$
            name={{{ [{$:/palette}get[name]addsuffix<now " YYYY-0MM-0DD 0hh:0mm:0ss">] }}}>
   <$action-sendmessage $message="tm-edit-tiddler" $param=<<createTiddler-title>>/>
 </$action-createtiddler>
+\end
+
+\define clearSearch()
+<$action-deletetiddler $tiddler="$:/temp/search-term"/>
 \end
 
 \whitespace trim
@@ -151,5 +156,7 @@ Origin:
 <$checkbox tiddler="$:/state/palettemanager/showexternal" field="text" checked="yes" unchecked="no">
 	<span class="tc-small-gap-left"><<lingo "Editor/Names/External/Show">></span>
 </$checkbox>
+
+Search: <$edit-text tiddler="$:/temp/search-term" tag="input" placeholder="colour name" default="" class="tc-palette-manager-text-input tc-small-gap-left"/><$button actions=<<clearSearch>> class="tc-btn-invisible tc-small-gap-left">{{$:/core/images/close-button}}</$button>
 
 <<palette-manager-table>>

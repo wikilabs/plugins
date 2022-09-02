@@ -1,6 +1,6 @@
 code-body: yes
 created: 20220901134315261
-modified: 20220901184801730
+modified: 20220902175048137
 tags: 
 title: $:/PaletteManager/preview
 type: text/vnd.tiddlywiki
@@ -9,14 +9,22 @@ type: text/vnd.tiddlywiki
 <!-- if you create a tiddler named: $:/palettes/preview/_custom with empty text, you can replace all previews -->
 <!-- if you create a tiddler named: $:/palettes/preview/<colourName>/_custom with empty text, you can hide a single preview -->
 
+\define blank() [is[blank]then<previewName>]
+\define search-is-token() [match<token>then<previewName>]
+\define search() [all[shadows+tiddlers]prefix<tokenPrefix>search:search-term{$:/temp/search-term}]
+
 \define palette-preview-row-segment()
-<$let palettePrefix=":/palettes/preview/">
-	<$transclude tiddler={{{ [<colourName>addprefix<palettePrefix>addsuffix[/_custom]] }}} mode="block">
-		<$list filter="[<colourName>addprefix<palettePrefix>has[text]]" variable="preview">
+<$vars previewName={{{ [<colourName>addprefix[:/palettes/preview/]] }}} 
+		token={{{ [<colourName>split[-]nth[1]] }}} 
+		tokenPrefix={{{ [<colourName>split[-]nth[1]addprefix[:/palettes/preview/]] }}} >
+	<$transclude tiddler={{{ [<previewName>addsuffix[/_custom]] }}} mode="block">
+	<$set name=previewName filter="[{$:/temp/search-term}trim[]] :cascade[<blank>append<search-is-token>append<search>]" >
+		<$list filter="[<previewName>has[text]]" variable="preview">
 			<<palette-manager-preview-row>>
 		</$list>
+	</$set>
 	</$transclude>
-</$let>
+</$vars>
 \end
 
 \define palette-manager-preview-row()
