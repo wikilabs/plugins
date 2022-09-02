@@ -1,11 +1,11 @@
 created: 20220824141931472
-modified: 20220826135933756
+modified: 20220831041932445
 tags: 
 title: :/palettes/preview/dropdown-border
 type: text/vnd.tiddlywiki
 
 <$linkcatcher> <!-- we don't want any actions -->
-<div class="tc-drop-down" style="min-width:initial;">
+<div class="tc-drop-down" style="min-width:initial;white-space:normal;">
 [[ see -- color: <<colour tiddler-link-background>>;]]
 [[ see -- background-color: <<colour tiddler-link-foreground>>;]]
 </div>

@@ -1,5 +1,5 @@
 created: 20220825013206625
-modified: 20220826203355139
+modified: 20220831121023938
 tags: 
 title: :/palettes/preview/tab-foreground-selected
 type: text/vnd.tiddlywiki
@@ -7,7 +7,7 @@ type: text/vnd.tiddlywiki
 The area below is a scrollable
 
 <$linkcatcher>
-<div style="height:300px; overflow:auto; border: 1px solid gray; padding: 1em;">
-{{$:/core/ui/ControlPanel/Info}}
+<div style="height:100px; overflow:auto; border: 1px solid gray; padding: 1em;">
+<<tabs "SampleTabOne SampleTabTwo SampleTabThree SampleTabFour" "SampleTabOne" "$:/state/tab1">>
 </div>
 </$linkcatcher>

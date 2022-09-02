@@ -1,5 +1,5 @@
 created: 20220824230802380
-modified: 20220826140844266
+modified: 20220831042012345
 tags: 
 title: :/palettes/preview/pre-border
 type: text/vnd.tiddlywiki
@@ -10,4 +10,7 @@ consectetur adipisicing elit
 ```
 
 <<<.tc-big-quote
+@@white-space:normal;
 ''The ~TiddlyWiki is the best software I've ever found for organising my ideas.''
+@@
+<<<

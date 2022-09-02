@@ -1,0 +1,11 @@
+created: 20220825144706827
+modified: 20220901173437379
+tags: 
+title: :/palettes/preview/toolbar-options-button
+type: text/vnd.tiddlywiki
+
+''Page Controls''
+
+<span class="tc-page-controls " style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/options-button}}</$button>
+</span>

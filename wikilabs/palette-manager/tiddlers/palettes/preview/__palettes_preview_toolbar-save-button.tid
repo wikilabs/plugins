@@ -1,0 +1,11 @@
+created: 20220825144738980
+modified: 20220901173429979
+tags: 
+title: :/palettes/preview/toolbar-save-button
+type: text/vnd.tiddlywiki
+
+''Page Controls''
+
+<span class="tc-page-controls " style="float:initial;">
+<$button class="tc-btn-invisible">{{$:/core/images/save-button}}</$button>
+</span>

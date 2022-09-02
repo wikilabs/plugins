@@ -1,5 +1,5 @@
 created: 20220825012735305
-modified: 20220826143003051
+modified: 20220901164618752
 tags: 
 title: :/palettes/preview/static-alert-foreground
 type: text/vnd.tiddlywiki
@@ -10,4 +10,5 @@ type: text/vnd.tiddlywiki
   position: initial;
 }
 </style>
-{{$:/StaticBanner}}
+<div class="tc-static-alert"><div class="tc-static-alert-inner">This page is part of a static HTML representation of the ~TiddlyWiki at https://tiddlywiki.com/</div></div>
+

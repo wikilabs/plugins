@@ -1,8 +1,10 @@
 created: 20220825003704176
-modified: 20220826142311125
+modified: 20220831122100589
 tags: 
 title: :/palettes/preview/sidebar-muted-foreground-hover
 type: text/vnd.tiddlywiki
+
+Info: hover the "{{$:/language/CloseAll/Button}}" below to see the related hover color
 
 <div class="tc-sidebar-lists">
 {{$:/core/ui/SideBar/Open}}
