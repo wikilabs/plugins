@@ -1,6 +1,6 @@
 code-body: yes
 created: 20220901134315261
-modified: 20220902175048137
+modified: 20220903114147915
 tags: 
 title: $:/PaletteManager/preview
 type: text/vnd.tiddlywiki
@@ -11,6 +11,7 @@ type: text/vnd.tiddlywiki
 
 \define blank() [is[blank]then<previewName>]
 \define search-is-token() [match<token>then<previewName>]
+\define colour-is-preview() [<previewName>has[search-term]then<previewName>]
 \define search() [all[shadows+tiddlers]prefix<tokenPrefix>search:search-term{$:/temp/search-term}]
 
 \define palette-preview-row-segment()
@@ -18,7 +19,7 @@ type: text/vnd.tiddlywiki
 		token={{{ [<colourName>split[-]nth[1]] }}} 
 		tokenPrefix={{{ [<colourName>split[-]nth[1]addprefix[:/palettes/preview/]] }}} >
 	<$transclude tiddler={{{ [<previewName>addsuffix[/_custom]] }}} mode="block">
-	<$set name=previewName filter="[{$:/temp/search-term}trim[]] :cascade[<blank>append<search-is-token>append<search>]" >
+	<$set name=previewName filter="[{$:/temp/search-term}trim[]] :cascade[<blank>append<search-is-token>append<colour-is-preview>append<search>]" >
 		<$list filter="[<previewName>has[text]]" variable="preview">
 			<<palette-manager-preview-row>>
 		</$list>
@@ -27,9 +28,21 @@ type: text/vnd.tiddlywiki
 </$vars>
 \end
 
+\define set-focus() 
+<$action-setfield $tiddler="$:/temp/search-term" text={{{ [<preview>get[search-term]enlist-input[]nth[1]] }}}/>
+\end
+
+\define focus-button()
+<span style="float:right;">
+	<$button actions=<<set-focus>> tooltip="Set focus to this preview" aria-label="Set focus to this preview" class="tc-btn-invisible">
+		{{$:/core/images/close-others-button}}
+	</$button>
+</span>
+\end
+
 \define palette-manager-preview-row()
 \whitespace trim
-<tr><th colspan="2" class="tc-preview-title"><$link to=<<preview>> > {{$:/language/Import/Listing/Preview}} @@.tc-tiny-gap-left <$transclude tiddler=<<preview>> field="caption" />@@</$link></th></tr>
+<tr><th colspan="2" class="tc-preview-title"><$link to=<<preview>> > {{$:/language/Import/Listing/Preview}} @@.tc-tiny-gap-left <$transclude tiddler=<<preview>> field="caption" />@@</$link><<focus-button>></th></tr>
 <tr class="tc-palette-preview-row">
 	<td colspan="2">
 		<$transclude mode="block" tiddler=<<preview>> />
