@@ -1,14 +1,14 @@
 created: 20220825013206625
-modified: 20220831121023938
-tags: 
+modified: 20220903092441701
+search-term: tab background selected border divider foreground
+tags: $:/tags/palette/preview
 title: :/palettes/preview/tab-foreground-selected
 type: text/vnd.tiddlywiki
-search-term: tab background selected border divider foreground
 
 The area below is a scrollable
 
 <$linkcatcher>
-<div style="height:100px; overflow:auto; border: 1px solid gray; padding: 1em;">
+<div style="height:130px; overflow:auto; border: 1px solid gray; padding: 1em;">
 <<tabs "SampleTabOne SampleTabTwo SampleTabThree SampleTabFour" "SampleTabOne" "$:/state/tab1">>
 </div>
 </$linkcatcher>

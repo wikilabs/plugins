@@ -1,7 +1,7 @@
 created: 20220825005920939
-modified: 20220902170532084
+modified: 20220903092544393
 search-term: sidebar tab background selected border divider foreground tiddler link hover
-tags: 
+tags: $:/tags/palette/preview
 title: :/palettes/preview/sidebar-tiddler-link-foreground-hover
 type: text/vnd.tiddlywiki
 
@@ -15,7 +15,7 @@ The area below is a scrollable
 </style>
 
 <$linkcatcher>
-<div class="xx-sidebar-tabs" style="height:300px; overflow:auto; border: 1px solid gray; padding: 0 1em;">
+<div class="xx-sidebar-tabs" style="height:200px; overflow:auto; border: 1px solid gray; padding: 0 1em;">
 {{$:/core/ui/SideBarSegments/tabs}}
 </div>
 </$linkcatcher>
