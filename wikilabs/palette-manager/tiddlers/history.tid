@@ -1,10 +1,12 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
-V 0.0.4 - 2022.09.02
+V 0.0. - 2022.09.04
 
 * add search to palette manager
 * add search-terms to preview tiddlers
 * add focus button to preview heading for easier search grouping. It uses the first search-term element
+* palette manager is now a scrollable, to avoid jumpy scroll behaviour on search 
+* <<colour search is possible
 
 V 0.0.3 - 2022.09.01
 
