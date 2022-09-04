@@ -1,6 +1,6 @@
 code-body: yes
 created: 20220901134315261
-modified: 20220903114147915
+modified: 20220903171744665
 tags: 
 title: $:/PaletteManager/preview
 type: text/vnd.tiddlywiki
@@ -8,6 +8,7 @@ type: text/vnd.tiddlywiki
 <!-- developers can use this element to replace it with their own handling preview -->
 <!-- if you create a tiddler named: $:/palettes/preview/_custom with empty text, you can replace all previews -->
 <!-- if you create a tiddler named: $:/palettes/preview/<colourName>/_custom with empty text, you can hide a single preview -->
+<!-- if $:/temp/search-term is << the colours come pre-filtered -->
 
 \define blank() [is[blank]then<previewName>]
 \define search-is-token() [match<token>then<previewName>]

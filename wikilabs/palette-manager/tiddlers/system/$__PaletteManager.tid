@@ -1,5 +1,5 @@
 created: 20220831132430521
-modified: 20220903111215071
+modified: 20220903200643120
 title: $:/PaletteManager
 type: text/vnd.tiddlywiki
 
@@ -91,16 +91,29 @@ edit $(colourName)$
 {{||$:/PaletteManager/preview}}
 \end
 
+<!-- first list filter .. decide if colours with macro values are returned -->
+
+\define activateShortList() [{$:/temp/search-term}prefix[<<]then<useValue>else<getColour>]
+\define getColour() [{$:/palette}indexes[]search:title{$:/temp/search-term}]
+\define useValue() [{$:/palette}indexes[]] :filter[{$:/palette}getindex<currentTiddler>prefix{$:/temp/search-term}]
+
+\define activateLongList() [match[yes]then<longList>]
+\define longList() [all[shadows+tiddlers]tag[$:/tags/Palette]indexes[]search{$:/temp/search-term}]
+
 \define palette-manager-table()
 \whitespace trim
 <table>
 <tbody>
-	<$set name="colorList" filter="[{$:/state/palettemanager/showexternal}match[yes]]"
-		value="[all[shadows+tiddlers]tag[$:/tags/Palette]indexes[]]" emptyValue="[<currentTiddler>indexes[]search{$:/temp/search-term}]">
-		<$list filter=<<colorList>> variable="colourName">
+<$let colorList={{{ [{$:/state/palettemanager/showexternal}] :cascade[<activateLongList>append<activateShortList>] }}}>
+<!--<colorList>-->
+	<!-- $set name="colorList" filter="[{$:/state/palettemanager/showexternal}match[yes]]"
+		value="[subfilter<longList>]" emptyValue="[subfilter<activeFilter>]"-->
+		<!-- $list filter="[subfilter<activeFilter>]" variable="colourName" -->
+		<$list filter="[subfilter<colorList>]" variable="colourName">
 			<<palette-manager-colour-row>>
 		</$list>
-	</$set>
+	<!-- /$set -->
+</$let>
 </tbody>
 </table>
 \end
@@ -120,6 +133,7 @@ edit $(colourName)$
 \end
 
 \whitespace trim
+
 <$set name="currentTiddler" value={{$:/palette}}>
 
 <<lingo "Editor/Prompt">>: 
@@ -163,7 +177,7 @@ Search: <$edit-text tiddler="$:/temp/search-term" tag="input" placeholder="colou
 .tc-palette-editor-scrollable {
 	height: 85vh;
 	position: relative;
-	border: 1px solid <<colour "tiddler-border">>;
+	border: 1px solid <<colour "tiddler-editor-border">>;
 	padding: 0 1em;
 }
 </style>
