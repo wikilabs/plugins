@@ -1,5 +1,5 @@
 created: 20220824124713351
-modified: 20220902165345548
+modified: 20220907155237043
 search-term: download background foreground
 tags: $:/tags/palette/preview
 title: :/palettes/preview/download-foreground
@@ -8,3 +8,5 @@ type: text/vnd.tiddlywiki
 <$button class="tc-btn-download">
 Dummy Download {{$:/core/images/save-button}}
 </$button>
+
+{{$:/core||$:/core/ui/Components/plugin-info}}
