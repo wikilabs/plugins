@@ -2549,6 +2549,7 @@ a.tc-tiddlylink.tc-plugin-info:hover > .tc-plugin-info-chunk > svg {
 	font-size: 0.8em;
 	line-height: 1.2;
 	margin: 2px 0 2px 0;
+	color: <<colour download-background>>;
 }
 
 .tc-plugin-info-chunk.tc-plugin-info-description div {
@@ -2723,6 +2724,11 @@ a.tc-tiddlylink.tc-plugin-info:hover > .tc-plugin-info-chunk > svg {
 /*
 ** Palette swatches
 */
+
+/* Don't show those buttons in color-picker dropdown */
+.tc-drop-down .tc-handle-palette-button {
+	display: none;
+}
 
 .tc-palette-preview-empty-row,
 .tc-palette-preview-empty-row td {

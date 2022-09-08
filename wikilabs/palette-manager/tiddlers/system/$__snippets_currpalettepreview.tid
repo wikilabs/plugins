@@ -1,0 +1,78 @@
+created: 20220907172300686
+modified: 20220907184028690
+title: $:/snippets/currpalettepreview
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+\define resolve-colour(macrocall)
+\import $:/core/macros/utils
+\whitespace trim
+	<$wikify name="name" text="""$macrocall$""">
+		<<name>>
+	</$wikify>
+\end
+
+\define swatchStyle()
+	background-color: $(swatchColour)$;
+\end
+
+\define swatch-inner()
+\whitespace trim
+<$set name="swatchColour" value={{##$(colourResolved)$}}>
+	<$list filter="[<swatchColour>!prefix[<<colour ]!suffix[>>]]" variable="ignore">
+		<div class="tc-swatch" style=<<swatchStyle>> title=<<swatchTitle>>/>
+	</$list>
+	<$list filter="[<swatchColour>prefix[<<colour ]suffix[>>]]" variable="ignore">
+		<$wikify name="colourResolved" text="<$macrocall $name='resolve-colour' macrocall=<<swatchColour>>/>">
+			<<swatch-inner>>
+		</$wikify>
+	</$list>
+</$set>
+\end
+
+\define swatch()
+\whitespace trim
+<$set name="swatchColour" value={{##$(colour)$}}>
+	<$set name="swatchTitle" value=<<colour>>>
+		<$list filter="[<swatchColour>!prefix[<<colour ]!suffix[>>]]" variable="ignore">
+			<div class="tc-swatch" style=<<swatchStyle>> title=<<swatchTitle>>/>
+		</$list>
+		<$list filter="[<swatchColour>prefix[<<colour ]suffix[>>]]" variable="ignore">
+			<$wikify name="colourResolved" text="<$macrocall $name='resolve-colour' macrocall=<<swatchColour>>/>">
+				<<swatch-inner>>
+			</$wikify>
+		</$list>
+	</$set>
+</$set>
+\end
+
+\define getMessage(text) Do you wish to --$text$-- this palette?
+\define getTooltip(text) $text$ this palette
+
+<!-- TDOD add ARIA labeling -->
+
+\define handle-palette-button(text)
+\whitespace trim
+<$list filter="[{$:/state/ShowPaletteEditor}match[yes]]" variable=ignore>
+	<$list filter="[all[current]is[tiddler]]" variable=ignore>
+		<$button class="tc-handle-palette-button tc-btn-invisible tc-float-right" tooltip=<<getTooltip $text$>> >
+			<$action-confirm $message=<<getMessage $text$>> >
+				<$action-deletetiddler $tiddler=<<currentTiddler>>/>
+					<$list filter="[<__text__>match[reset]then[$:/core/images/refresh-button]else[$:/core/images/delete-button]]" variable="button">
+						<$transclude tiddler=<<button>>/>
+					</$list>
+			</$action-confirm>
+		</$button>
+	</$list>
+</$list>
+\end
+
+<div class="tc-swatches-horiz">
+	<$list filter="background foreground muted-foreground primary page-background tab-background tiddler-info-background" variable="colour">
+		<<swatch>>
+	</$list>
+	<$list filter="[all[current]is[shadow]is[tiddler]then[reset]else[delete]]" variable="text">
+		<$macrocall $name="handle-palette-button" text=<<text>>/>
+	</$list>
+</div> 
