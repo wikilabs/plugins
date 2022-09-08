@@ -1,9 +1,22 @@
 created: 20220824120108043
 description: TODO
-modified: 20220902175645788
+modified: 20220907192803123
 search-term: background general
 tags: $:/tags/palette/preview
 title: :/palettes/preview/background
 type: text/vnd.tiddlywiki
 
+\import [[$:/PaletteManager]]
+
+\define xx()
+<$let colourName="foreground">
+<$tiddler tiddler={{$:/palette}} >
+<<palette-manager-colour-row-segment>>
+</$tiddler>
+</$let>
+\end
+
 {{$:/language/Docs/PaletteColours/background}}
+
+
+|Usually goes with "{{$:/language/Docs/PaletteColours/foreground}}" |<<xx>> |

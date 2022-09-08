@@ -1,8 +1,23 @@
 created: 20220824190539420
-modified: 20220902175637781
+modified: 20220907192637742
 search-term: foreground general
 tags: $:/tags/palette/preview
 title: :/palettes/preview/foreground
 type: text/vnd.tiddlywiki
 
+\import [[$:/PaletteManager]]
+
+\define xx()
+<$let colourName="background">
+<$tiddler tiddler={{$:/palette}} >
+<<palette-manager-colour-row-segment>>
+</$tiddler>
+</$let>
+\end
+
 general tiddler text -- ''general tiddler text in bold''
+
+---
+
+|Usually goes with "{{$:/language/Docs/PaletteColours/background}}" |<<xx>> |
+
