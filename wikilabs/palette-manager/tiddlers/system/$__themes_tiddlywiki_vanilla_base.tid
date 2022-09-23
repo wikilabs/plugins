@@ -246,6 +246,10 @@ input:not([type]) {
 	color: <<colour foreground>>;
 }
 
+input[type=color]:disabled {
+	border: none;
+}
+
 input[type="checkbox"] {
 	vertical-align: middle;
 }
@@ -2736,6 +2740,18 @@ a.tc-tiddlylink.tc-plugin-info:hover > .tc-plugin-info-chunk > svg {
 	border-right: 1px solid <<colour "tiddler-background">>;
 }
 
+.tc-palette-editor-scrollable {
+	height: 80vh;
+	position: relative;
+	border: 1px solid <<colour "tiddler-editor-border">>;
+	padding: 0 1em;
+}
+
+.tc-palette-editor .tc-swatch {
+	width: 1.2em;
+	height: 1.2em;
+}
+
 .tc-swatches-horiz {
 }
 
@@ -2751,11 +2767,11 @@ a.tc-tiddlylink.tc-plugin-info:hover > .tc-plugin-info-chunk > svg {
 }
 
 input[type=text].tc-palette-manager-text-input {
-	width: 90%;
+	width: 75%;
 }
 
 input[type=color].tc-palette-manager-colour-input {
-	width: 90%;
+	width: 75%;
 	padding: 0;
 }
 

@@ -1,5 +1,5 @@
 created: 20220831132430521
-modified: 20220903200643120
+modified: 20220915115426885
 title: $:/PaletteManager
 type: text/vnd.tiddlywiki
 
@@ -54,22 +54,28 @@ edit $(colourName)$
 \end
 
 \define palette-manager-colour-row-segment()
+\import [[$:/snippets/currpalettepreview]]
 \whitespace trim
 <$edit-text index=<<colourName>> tag="input" type="text" placeholder=<<edit-colour-placeholder>> default="" class="tc-palette-manager-text-input"/>
 <br>
-<$edit-text index=<<colourName>> type="color" tag="input" class="tc-palette-manager-colour-input"/>
+<$edit-text index=<<colourName>> type="color" tag="input" class="tc-palette-manager-colour-input" default="#ff0000"/>
 <span style="float:right;">
 <$let originColour={{{ [{!!origin}getindex<colourName>] }}} currentColour={{{ [all[current]getindex<colourName>] }}}>
-	<$button tooltip={{$:/language/ControlPanel/Palette/Editor/Reset/Caption}} 
+	<$button tooltip={{{ [{$:/language/ControlPanel/Palette/Editor/Reset/Caption}addsuffix[ to: ]addsuffix<originColour>] }}} 
 				aria-label={{$:/language/ControlPanel/Palette/Editor/Reset/Caption}} 
 				class="tc-btn-invisible" 
 				actions=<<reset-colour-index-actions>>
 				disabled={{{ [all[current]!has[origin]then[yes]] :else[<originColour>match<currentColour>then[yes]else[no]] }}} >
 		{{$:/core/images/refresh-button}}
 	</$button>
+	<$let currentTiddler={{!!origin}} colour=<<colourName>> >
+		<div class="tc-palette-editor tc-float-right"><<swatch x:"swatchColour">></div>
+	</$let>
 </$let>
 </span>
+<div>
 <<show-colour-macro-editor>>
+</div>
 \end
 
 \define palette-manager-colour-row()
@@ -105,17 +111,19 @@ edit $(colourName)$
 <table>
 <tbody>
 <$let colorList={{{ [{$:/state/palettemanager/showexternal}] :cascade[<activateLongList>append<activateShortList>] }}}>
-<!--<colorList>-->
-	<!-- $set name="colorList" filter="[{$:/state/palettemanager/showexternal}match[yes]]"
-		value="[subfilter<longList>]" emptyValue="[subfilter<activeFilter>]"-->
-		<!-- $list filter="[subfilter<activeFilter>]" variable="colourName" -->
 		<$list filter="[subfilter<colorList>]" variable="colourName">
 			<<palette-manager-colour-row>>
 		</$list>
-	<!-- /$set -->
 </$let>
 </tbody>
 </table>
+\end
+
+\define countResults()
+<$let colorList={{{ [{$:/state/palettemanager/showexternal}] :cascade[<activateLongList>append<activateShortList>] }}}
+		counter={{{[subfilter<colorList>count[]]}}}>
+		<<counter>>
+</$let>
 \end
 
 \define cloneActions()
@@ -130,6 +138,18 @@ edit $(colourName)$
 
 \define clearSearch()
 <$action-deletetiddler $tiddler="$:/temp/search-term"/>
+\end
+
+\define open-tiddler-in-window()
+<$button actions=<<activateTiddlerWindow>> class="tc-btn-invisible tc-tiddlylink">
+Open the Palette Manager in a new Window
+</$button>
+\end
+
+\define activateTiddlerWindow()
+<$action-sendmessage $message="tm-open-window"
+  $param="$:/PaletteManager" windowTitle="Palette Editor -- Side by Side View"
+  width="800" height="600" />
 \end
 
 \whitespace trim
@@ -171,16 +191,9 @@ Origin:
 	<span class="tc-small-gap-left"><<lingo "Editor/Names/External/Show">></span>
 </$checkbox>
 
-Search: <$edit-text tiddler="$:/temp/search-term" tag="input" placeholder="colour name" default="" class="tc-palette-manager-text-input tc-small-gap"/> -- {{{[{$:/palette}indexes[]search:title{$:/temp/search-term}count[]]}}}--<$button actions=<<clearSearch>> class="tc-btn-invisible tc-small-gap-left">{{$:/core/images/close-button}}</$button>
+<<open-tiddler-in-window>>
 
-<style>
-.tc-palette-editor-scrollable {
-	height: 85vh;
-	position: relative;
-	border: 1px solid <<colour "tiddler-editor-border">>;
-	padding: 0 1em;
-}
-</style>
+Search: <$edit-text tiddler="$:/temp/search-term" tag="input" placeholder="colour name" default="" class="tc-palette-manager-text-input tc-small-gap"/> -- <<countResults>>--<$button actions=<<clearSearch>> class="tc-btn-invisible tc-small-gap-left">{{$:/core/images/close-button}}</$button>
 
 <$scrollable class="tc-palette-editor-scrollable">
 <<palette-manager-table>>

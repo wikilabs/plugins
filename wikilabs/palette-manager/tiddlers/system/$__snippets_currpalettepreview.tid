@@ -1,5 +1,5 @@
 created: 20220907172300686
-modified: 20220907184028690
+modified: 20220909102505354
 title: $:/snippets/currpalettepreview
 type: text/vnd.tiddlywiki
 
@@ -21,7 +21,7 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 <$set name="swatchColour" value={{##$(colourResolved)$}}>
 	<$list filter="[<swatchColour>!prefix[<<colour ]!suffix[>>]]" variable="ignore">
-		<div class="tc-swatch" style=<<swatchStyle>> title=<<swatchTitle>>/>
+		<div class="tc-swatch" style=<<swatchStyle>> title=<<$(__x__)$>> />
 	</$list>
 	<$list filter="[<swatchColour>prefix[<<colour ]suffix[>>]]" variable="ignore">
 		<$wikify name="colourResolved" text="<$macrocall $name='resolve-colour' macrocall=<<swatchColour>>/>">
@@ -31,12 +31,12 @@ type: text/vnd.tiddlywiki
 </$set>
 \end
 
-\define swatch()
+\define swatch(x:swatchTitle)
 \whitespace trim
 <$set name="swatchColour" value={{##$(colour)$}}>
 	<$set name="swatchTitle" value=<<colour>>>
 		<$list filter="[<swatchColour>!prefix[<<colour ]!suffix[>>]]" variable="ignore">
-			<div class="tc-swatch" style=<<swatchStyle>> title=<<swatchTitle>>/>
+			<div class="tc-swatch" style=<<swatchStyle>> title=<<$x$>>/>
 		</$list>
 		<$list filter="[<swatchColour>prefix[<<colour ]suffix[>>]]" variable="ignore">
 			<$wikify name="colourResolved" text="<$macrocall $name='resolve-colour' macrocall=<<swatchColour>>/>">
