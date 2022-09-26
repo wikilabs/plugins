@@ -84,6 +84,7 @@ EditColourWidget.prototype.getValue = function() {
 		this.colourValue = this.default;
 		this.setValue();
 	}
+	this.value = this.colourValue;
 	return this.colourValue;
 };
 
