@@ -1,0 +1,40 @@
+created: 20221003090255582
+modified: 20221004171742789
+tags: $:/tags/Macro
+title: $:/core/macros/colour-picker-resolved
+type: text/vnd.tiddlywiki
+
+\define macroPrefix() <<colour
+\define macroSuffix() >>
+
+\define getTooltip() $(colourValue)$ -- $(resolvedColour)$
+
+\define colour-picker-resolved(palette colourName resolver:resolveColourMacro)
+\whitespace trim
+<$set name="colourValue" value={{{ [<__palette__>getindex<__colourName__>] }}} > 
+	<$wikify name="resolvedColour" text="""<<$resolver$ "$palette$" "$colourName$">>""" output=text mode=inline>
+		<$colour tiddler=<<__palette__>> index=<<__colourName__>> default=<<colourValue>> resolvedColour=<<resolvedColour>> detectMacroFilter="[<colourValue>prefix<macroPrefix>suffix<macroSuffix>]" tooltip=<<getTooltip>>/>
+	</$wikify>
+</$set>
+\end
+
+\define resolveColourMacro(palette colourName)
+\whitespace trim
+<$set name=colourResolved value={{{ [<__palette__>getindex<__colourName__>] }}}>
+	<$list filter="[<colourResolved>!prefix<macroPrefix>]" variable="ignore">
+		<$text text=<<colourResolved>>/>
+	</$list>
+	<$list filter="[<colourResolved>prefix<macroPrefix>]" variable="ignore">
+		<$set name=colourName filter={{{ [<colourResolved>removeprefix<macroPrefix>removesuffix<macroSuffix>] }}}>
+			<!-- $text text=<<colourName>>/> / -->
+			<$macrocall $name="resolveColourMacro" palette=<<__palette__>> colourName=<<colourName>>/>
+		</$set>
+	</$list>
+</$set>
+\end
+
+\define resolveRgbMacro()
+<!-- ToDo -->
+\end
+
+<pre><$view/></pre>
