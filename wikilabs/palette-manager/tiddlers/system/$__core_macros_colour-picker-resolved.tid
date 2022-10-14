@@ -9,11 +9,11 @@ type: text/vnd.tiddlywiki
 
 \define getTooltip() $(colourValue)$ -- $(resolvedColour)$
 
-\define colour-picker-resolved(palette colourName resolver:resolveColourMacro)
+\define colour-picker-resolved(palette colourName class resolver:resolveColourMacro)
 \whitespace trim
 <$set name="colourValue" value={{{ [<__palette__>getindex<__colourName__>] }}} > 
 	<$wikify name="resolvedColour" text="""<<$resolver$ "$palette$" "$colourName$">>""" output=text mode=inline>
-		<$colour tiddler=<<__palette__>> index=<<__colourName__>> default=<<colourValue>> resolvedColour=<<resolvedColour>> detectMacroFilter="[<colourValue>prefix<macroPrefix>suffix<macroSuffix>]" tooltip=<<getTooltip>>/>
+		<$colour tiddler=<<__palette__>> index=<<__colourName__>> default=<<colourValue>> class=<<__class__>> resolvedColour=<<resolvedColour>> detectMacroFilter="[<colourValue>prefix<macroPrefix>suffix<macroSuffix>]" tooltip=<<getTooltip>>/>
 	</$wikify>
 </$set>
 \end

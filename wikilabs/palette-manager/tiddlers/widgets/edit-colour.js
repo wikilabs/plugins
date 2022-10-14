@@ -76,7 +76,7 @@ Set a field or index at a given tiddler to a colour
 			}
 			if (this.detectMacroFilter) {
 				if ((this.wiki.filterTiddlers(this.detectMacroFilter, this)[0]) && (this.resolvedColour)) {
-					this.value = this.resolvedColour; //this.wiki.filterTiddlers(this.resolvedColour, this)[0]
+					this.value = this.validateRGB(this.resolvedColour);
 					return this.value;
 				}
 			}
@@ -84,7 +84,7 @@ Set a field or index at a given tiddler to a colour
 			this.colourValue = this.default;
 			this.setValue();
 		}
-		this.value = this.colourValue;
+		this.value = this.validateRGB(this.colourValue);
 		return this.colourValue;
 	};
 	
@@ -116,6 +116,20 @@ Set a field or index at a given tiddler to a colour
 		}
 	};
 	
+	EditColourWidget.prototype.validateRGB = function(value) {
+		var x = value.trim().split("");
+		var newColour = [];
+		if ((x[0] === "#") && (x.length === 4)) {
+			// probably RGB short form is used eg: #abc, which can be savely resolved to #aabbcc
+			$tw.utils.each(x, function(v){
+				(v === "#") ? newColour.push(v) : newColour.push(v+v);
+			})
+		} else {
+			return x.join("");
+		}
+		return newColour.join("");
+	}
+
 	/*
 	Compute the internal state of the widget
 	*/
@@ -133,7 +147,7 @@ Set a field or index at a given tiddler to a colour
 		this.cClass = this.getAttribute("class","");
 		this.default = this.getAttribute("default");
 		this.detectMacroFilter = this.getAttribute("detectMacroFilter");
-		this.resolvedColour = this.getAttribute("resolvedColour");
+		this.resolvedColour = this.validateRGB(this.getAttribute("resolvedColour"));
 		this.isDisabled = this.getAttribute("disabled","no");
 		this.onChangeActions = this.getAttribute("onChangeActions","");
 	
