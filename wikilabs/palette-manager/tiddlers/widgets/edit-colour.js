@@ -98,21 +98,20 @@ Set a field or index at a given tiddler to a colour
 			this.wiki.addTiddler(new $tw.Tiddler(this.wiki.getCreationFields(),{title: this.title},tiddler,addition,this.wiki.getModificationFields()));
 		}
 	};
-	
+
 	EditColourWidget.prototype.handleInputEvent = function(event) {
-		this.newColour = event.target.value;
-		if(this.liveUpdate === "yes") { this.handleChangeEvent(event); }
-	}
-	
-	
-	EditColourWidget.prototype.handleChangeEvent = function(event) {
-		if(this.colourValue !== this.newColour) {
-			this.colourValue = this.newColour;
+		this.colourValue = event.target.value;
+		if(this.liveUpdate === "yes") {
 			this.setValue();
-			// Trigger actions
-			if(this.onChangeActions) {
-				this.invokeActionString(this.onChangeActions,this,event,{"colourValue": this.colourValue});
-			}
+		}
+	}
+
+	EditColourWidget.prototype.handleChangeEvent = function(event) {
+		this.colourValue = event.target.value;
+		this.setValue();
+		// Trigger actions
+		if(this.onChangeActions) {
+			this.invokeActionString(this.onChangeActions,this,event,{"colourValue": this.colourValue});
 		}
 	};
 	
@@ -171,8 +170,7 @@ Set a field or index at a given tiddler to a colour
 			return this.refreshChildren(changedTiddlers);
 		}
 	};
-	
+
 	exports.colour = EditColourWidget;
-	
+
 	})();
-	

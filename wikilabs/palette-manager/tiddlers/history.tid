@@ -1,6 +1,16 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
-V 0.0. - 2022.09.04
+V 0.1.0 - 2022.11.02
+
+* New EditColourWidget
+** New docs and examples for EditColourWidget
+* New "colour-picker-resolved Macro"
+** New docs and examples for "colour-picker-resolved Macro"
+** The macro and the widget belong together
+** The macro is responsible to "resolve" different color-mode macros
+
+
+V 0.0.4 - 2022.09.04
 
 * add search to palette manager
 * add search-terms to preview tiddlers

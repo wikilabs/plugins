@@ -1,5 +1,5 @@
 created: 20220831132430521
-modified: 20220915115426885
+modified: 20221005105747807
 title: $:/PaletteManager
 type: text/vnd.tiddlywiki
 
@@ -30,6 +30,7 @@ edit $(colourName)$
 					{{$:/core/images/down-arrow}}<span class="tc-tiny-gap-left"><$text text=<<newColourName>>/></span>
 				</$button>
 			</$reveal>
+			<br y>
 			<$reveal state=<<state>> type="match" text="show">
 				<$button tooltip=<<colour-tooltip hide>> aria-label=<<colour-tooltip show>> class="tc-btn-invisible" actions="""<$action-deletetiddler $tiddler=<<state>>/>""">
 					{{$:/core/images/up-arrow}}<span class="tc-tiny-gap-left"><$text text=<<newColourName>>/></span>
@@ -37,9 +38,8 @@ edit $(colourName)$
 			</$reveal>
 			<$reveal class="tc-palette-manager-colour-macro" tag="div" state=<<state>> type="match" text="show">
 				<$set name="colourName" value=<<newColourName>>>
-					<br>
 					<<palette-manager-colour-row-segment>>
-					<br>
+					<br z>
 				</$set>
 			</$reveal>
 		</$wikify>
@@ -57,20 +57,24 @@ edit $(colourName)$
 \import [[$:/snippets/currpalettepreview]]
 \whitespace trim
 <$edit-text index=<<colourName>> tag="input" type="text" placeholder=<<edit-colour-placeholder>> default="" class="tc-palette-manager-text-input"/>
-<br>
-<$edit-text index=<<colourName>> type="color" tag="input" class="tc-palette-manager-colour-input" default="#ff0000"/>
+<br x>
+
+<$macrocall $name="colour-picker-resolved" palette=<<currentTiddler>> colourName=<<colourName>> class="tc-palette-manager-colour-input" />
+
 <span style="float:right;">
-<$let originColour={{{ [{!!origin}getindex<colourName>] }}} currentColour={{{ [all[current]getindex<colourName>] }}}>
+<$let originColour={{{ [{!!origin}getindex<colourName>] }}} currentColour={{{ [all[current]getindex<colourName>] }}} resetDisabled={{{ [all[current]!has[origin]then[yes]] :else[<originColour>match<currentColour>then[yes]else[no]] }}} >
 	<$button tooltip={{{ [{$:/language/ControlPanel/Palette/Editor/Reset/Caption}addsuffix[ to: ]addsuffix<originColour>] }}} 
 				aria-label={{$:/language/ControlPanel/Palette/Editor/Reset/Caption}} 
 				class="tc-btn-invisible" 
 				actions=<<reset-colour-index-actions>>
-				disabled={{{ [all[current]!has[origin]then[yes]] :else[<originColour>match<currentColour>then[yes]else[no]] }}} >
+				disabled=<<resetDisabled>> >
 		{{$:/core/images/refresh-button}}
 	</$button>
-	<$let currentTiddler={{!!origin}} colour=<<colourName>> >
-		<div class="tc-palette-editor tc-float-right"><<swatch x:"swatchColour">></div>
-	</$let>
+	<$list filter="[<resetDisabled>match[no]]" variable="ignore">
+		<$let currentTiddler={{!!origin}} colour=<<colourName>> >
+			<div class="tc-palette-editor tc-float-right"><<swatch x:"swatchColour">></div>
+		</$let>
+	</$list>
 </$let>
 </span>
 <div>
@@ -176,7 +180,11 @@ Open the Palette Manager in a new Window
 </$button> <span class="tc-small-gap-left"><$text text={{{ [all[current]get[name]] }}}/></span>
 
 Origin:
-<$link  class="tc-small-gap" to={{$:/palette}}>{{!!origin}}</$link>
+<$link  class="tc-small-gap" to={{!!origin}}>
+	<$let tv-wikilinks="no">
+		{{!!origin}}
+	</$let>
+</$link>
 <!-- This text is shown, when the shadow palette referenced as origin -- has been changed -- by the user -->
 <$list filter="[{!!origin}is[shadow]is[tiddler]]" variable="listItem">
 	''<<lingo "Editor/Prompt/Modified">>''
