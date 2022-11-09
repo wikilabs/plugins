@@ -1,33 +1,59 @@
 created: 20221003090255582
-modified: 20221004171742789
+modified: 20221109105649733
 tags: $:/tags/Macro
 title: $:/core/macros/colour-picker-resolved
 type: text/vnd.tiddlywiki
 
+<!-- see FieldsWidget for template -->
+\define getTooltip() $colourValue$ -- $resolvedColour$
+
 \define macroPrefix() <<colour
 \define macroSuffix() >>
 
-\define getTooltip() $(colourValue)$ -- $(resolvedColour)$
+\define inputActions()
+<$action-setfield $tiddler=<<tiddler>> $index=<<index>> $value=<<value>> />
+\end
+
+\define changeActions()
+<$action-setfield $tiddler=<<tiddler>> $index=<<index>> $value=<<value>> />
+\end
+
+\define resolveColourActions()
+<$wikify name="resolvedColour" text="""<$macrocall $name=<<__resolver__>> tiddler=<<__palette__>> index=<<__colourName__>> />""" output=text mode=inline>
+	<$action-setfield $tiddler=<<col-temp-tiddler>> $index=<<__colourName__>> $value=<<resolvedColour>> />
+</$wikify>
+\end
 
 \define colour-picker-resolved(palette colourName class resolver:"resolveColourMacro" liveUpdate:"yes")
 \whitespace trim
-<$set name="colourValue" value={{{ [<__palette__>getindex<__colourName__>] }}} > 
-	<$wikify name="resolvedColour" text="""<<$resolver$ "$palette$" "$colourName$">>""" output=text mode=inline>
-		<$colour tiddler=<<__palette__>> index=<<__colourName__>> default=<<colourValue>> class=<<__class__>> resolvedColour=<<resolvedColour>> detectMacroFilter="[<colourValue>prefix<macroPrefix>suffix<macroSuffix>]" tooltip=<<getTooltip>> liveUpdate=<<__liveUpdate__>>/>
-	</$wikify>
-</$set>
+	<$colour tiddler=<<__palette__>> 
+		index=<<__colourName__>> 
+		liveUpdate=<<__liveUpdate__>>
+		class=<<__class__>> 
+
+		default="/temp/"
+		
+		tooltipTemplate=<<tooltipTemplate>> 
+		
+		macroPrefix=<<macroPrefix>>
+		macroSuffix=<<macroSuffix>>
+		
+		$input=<<inputActions>>
+		$change=<<changeActions>>
+		resolveColourActions=<<resolveColourActions>>
+	/>
 \end
 
-\define resolveColourMacro(palette colourName)
+\define resolveColourMacro(tiddler index)
 \whitespace trim
-<$set name=colourResolved value={{{ [<__palette__>getindex<__colourName__>] }}}>
+<$set name=colourResolved value={{{ [<__tiddler__>getindex<__index__>] }}}>
 	<$list filter="[<colourResolved>!prefix<macroPrefix>]" variable="ignore">
 		<$text text=<<colourResolved>>/>
 	</$list>
 	<$list filter="[<colourResolved>prefix<macroPrefix>]" variable="ignore">
-		<$set name=colourName filter={{{ [<colourResolved>removeprefix<macroPrefix>removesuffix<macroSuffix>] }}}>
-			<!-- $text text=<<colourName>>/> / -->
-			<$macrocall $name="resolveColourMacro" palette=<<__palette__>> colourName=<<colourName>>/>
+		<$set name=index filter={{{ [<colourResolved>removeprefix<macroPrefix>removesuffix<macroSuffix>] }}}>
+			<!-- $text text=<<index>>/> / -->
+			<$macrocall $name="resolveColourMacro" tiddler=<<__tiddler__>> index=<<index>>/>
 		</$set>
 	</$list>
 </$set>
@@ -37,4 +63,3 @@ type: text/vnd.tiddlywiki
 <!-- ToDo -->
 \end
 
-<pre><$view/></pre>
