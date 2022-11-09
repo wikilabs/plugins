@@ -122,7 +122,7 @@ Set a field or index at a given tiddler to a colour
 
 	EditColourWidget.prototype.handleInitActions = function() {
 		if(this.initActions) {
-			this.invokeActionString(this.initActions,this,null, {"col-temp-tiddler": this.tempTiddlerName()});
+			this.invokeActionString(this.initActions,this,null, {"resolved-temp-tiddler": this.tempTiddlerName()});
 			return this.getValue(this.tempTiddlerName())
 		} else {
 			return this.getValue()

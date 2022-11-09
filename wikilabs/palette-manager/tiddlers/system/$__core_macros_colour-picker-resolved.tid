@@ -20,7 +20,7 @@ type: text/vnd.tiddlywiki
 
 \define resolveColourActions()
 <$wikify name="resolvedColour" text="""<$macrocall $name=<<__resolver__>> tiddler=<<__palette__>> index=<<__colourName__>> />""" output=text mode=inline>
-	<$action-setfield $tiddler=<<col-temp-tiddler>> $index=<<__colourName__>> $value=<<resolvedColour>> />
+	<$action-setfield $tiddler=<<resolved-temp-tiddler>> $index=<<__colourName__>> $value=<<resolvedColour>> />
 </$wikify>
 \end
 
