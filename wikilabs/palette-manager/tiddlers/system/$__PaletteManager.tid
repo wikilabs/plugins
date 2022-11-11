@@ -132,11 +132,11 @@ edit $(colourName)$
 
 \define cloneActions()
 <$action-createtiddler 
-         $basetitle={{{ [[$:/palettes/]addsuffix<now "YYYY-0MM-0DD 0hh:0mm:0ss">] }}} 
-         $template={{$:/palette}} 
-           origin={{$:/palette}} 
-           name={{{ [{$:/palette}get[name]addsuffix<now " YYYY-0MM-0DD 0hh:0mm:0ss">] }}}>
-  <$action-sendmessage $message="tm-edit-tiddler" $param=<<createTiddler-title>>/>
+	$basetitle={{{ [[$:/palettes/]addsuffix<now "YYYY-0MM-0DD 0hh:0mm:0ss">] }}}
+	$template={{$:/palette}}
+		origin={{$:/palette}}
+		name={{{ [{$:/palette}get[name]addsuffix<now " YYYY-0MM-0DD 0hh:0mm:0ss">] }}}>
+	<$action-sendmessage $message="tm-edit-tiddler" $param=<<createTiddler-title>>/>
 </$action-createtiddler>
 \end
 
@@ -152,8 +152,8 @@ Open the Palette Manager in a new Window
 
 \define activateTiddlerWindow()
 <$action-sendmessage $message="tm-open-window"
-  $param="$:/PaletteManager" windowTitle="Palette Editor -- Side by Side View"
-  width="800" height="600" />
+	$param="$:/PaletteManager" windowTitle="Palette Editor -- Side by Side View"
+	width="800" height="600" />
 \end
 
 \whitespace trim

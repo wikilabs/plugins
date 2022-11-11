@@ -25,6 +25,8 @@ This plugin ''at the moment'' overwrites or adds the following system tiddlers:
 |$:/_tw5.com-styles |This is needed to test the "Big Download Button" settings |
 |[[$:/core/ui/DefaultSearchResultList 1]] |This element is used to see a tab in a dropdown. It doesn't make too much sense in a production wiki |
 |$:/PaletteManager |This is needed to get the new UI as shown in the image below |
+|$:/core/macros/colour-picker-resolved |This macro is used by the $:/PaletteManager to show resolved colours|
 |$:/PaletteManager/preview |contains the whole preview code, which is `\import`ed to $:/PaletteManager |
 |$:/themes/tiddlywiki/vanilla/base |Changes here are needed so that some colour settings take effect, which isn't the case with the default setting in the core at the moment |
 
+The full list of plugin tiddlers can be seen at: $:/plugins/wikilabs/palette-manager -> content tab
