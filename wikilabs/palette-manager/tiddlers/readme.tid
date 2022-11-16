@@ -6,13 +6,20 @@ title: $:/plugins/wikilabs/palette-manager/readme
 
 [[$:/plugins/wikilabs/palette-manager/license]]
 
+!! Video
+
+Youtube will start collecting user-info, if you play the video!
+
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/20mQwPuMv6w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
 !! Feedback
 
-This plugin is intended [[to get feedback at Talk-TiddlyWiki|https://talk.tiddlywiki.org/t/palette-manager-test-version/4434/8]]
+Feedback will be welcome at: [[to get feedback at Talk-TiddlyWiki|https://talk.tiddlywiki.org/t/palette-manager-feature-complete-preview/5095]]
 
 ! Overview
 
-This plugin is an ''experimental'' plugin, that should be implemented into the TW core in the future.
+This plugin is an ''preview'' plugin, that should be implemented into the TW core in the future.
 
 * You can open it using the [[$:/PaletteManager]] ... where the previews look a bit different as if you open it with the 
 * $:/ControlPanel --> Appearence --> Palette -> <kbd>show editor</kbd> button
@@ -22,11 +29,10 @@ This plugin is an ''experimental'' plugin, that should be implemented into the T
 This plugin ''at the moment'' overwrites or adds the following system tiddlers:
 
 |Shadow Tiddler |Reason to change it atm |h
-|$:/_tw5.com-styles |This is needed to test the "Big Download Button" settings |
-|[[$:/core/ui/DefaultSearchResultList 1]] |This element is used to see a tab in a dropdown. It doesn't make too much sense in a production wiki |
 |$:/PaletteManager |This is needed to get the new UI as shown in the image below |
-|$:/core/macros/colour-picker-resolved |This macro is used by the $:/PaletteManager to show resolved colours|
 |$:/PaletteManager/preview |contains the whole preview code, which is `\import`ed to $:/PaletteManager |
+|$:/core/macros/colour-picker-resolved |This macro is used by the $:/PaletteManager to show resolved colours|
+|$:/_tw5.com-styles |This is needed to test the "Big Download Button" settings |
 |$:/themes/tiddlywiki/vanilla/base |Changes here are needed so that some colour settings take effect, which isn't the case with the default setting in the core at the moment |
 
 The full list of plugin tiddlers can be seen at: $:/plugins/wikilabs/palette-manager -> content tab

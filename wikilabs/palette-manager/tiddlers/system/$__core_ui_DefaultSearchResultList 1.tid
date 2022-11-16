@@ -3,7 +3,7 @@ created: 20220824150118236
 first-search-filter: [!is[system]search:title<userInput>sort[title]limit[250]]
 modified: 20220824150119755
 second-search-filter: [!is[system]search<userInput>sort[title]limit[250]]
-tags: $:/tags/SearchResults
+tags: $:/tags/SearchResultsXXXX
 title: $:/core/ui/DefaultSearchResultList 1
 type: text/vnd.tiddlywiki
 

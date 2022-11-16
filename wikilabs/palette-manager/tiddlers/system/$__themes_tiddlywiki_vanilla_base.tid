@@ -246,10 +246,6 @@ input:not([type]) {
 	color: <<colour foreground>>;
 }
 
-input[type=color]:disabled {
-	border: none;
-}
-
 input[type="checkbox"] {
 	vertical-align: middle;
 }
@@ -293,6 +289,11 @@ kbd {
 	color: HighlightText;
 	background-color: <<colour selection-background>>;
 	color: <<colour selection-foreground>>;
+}
+
+.tc-inline-style {
+	background: <<colour highlight-background>>;
+	color: <<colour highlight-foreground>>;
 }
 
 form.tc-form-inline {
@@ -402,6 +403,7 @@ a.tc-tiddlylink {
 	font-weight: 500;
 	color: <<colour tiddler-link-foreground>>;
 	-webkit-user-select: inherit; /* Otherwise the draggable attribute makes links impossible to select */
+	-webkit-touch-callout: none; /* Prevents long presses from bringing up a link preview */
 }
 
 .tc-sidebar-lists a.tc-tiddlylink {
@@ -524,6 +526,11 @@ a.tc-tiddlylink-external:hover {
 
 .tc-sidebar-tab-open-item {
 	position: relative;
+}
+
+.tc-sidebar-tab-open .tc-btn-invisible.tc-btn-mini svg {
+	font-size: 0.7em;
+	fill: <<colour muted-foreground>>;
 }
 
 /*

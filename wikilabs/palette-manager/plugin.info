@@ -1,10 +1,10 @@
 {
 	"title": "$:/plugins/wikilabs/palette-manager",
 	"description": " - to be included into the TW core",
-	"name": "Palette Manager - Experimental",
+	"name": "Palette Manager - Preview",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.14",
-	"version":"0.1.0",
+	"version":"0.2.0",
 	"plugin-type": "plugin",
 	"list": "license readme history"
 }

@@ -85,8 +85,8 @@ Set a field or index at a given tiddler to a colour
 		if(this.index) {
 			this.wiki.setText(title,"",this.index,value);
 		} else {
-			var tiddler = this.wiki.getTiddler(title),
-				addition = {};
+			var tiddler = this.wiki.getTiddler(title);
+			var addition = {};
 			addition[this.field] = value;
 			this.wiki.addTiddler(new $tw.Tiddler(this.wiki.getCreationFields(),{title:title},tiddler,addition,this.wiki.getModificationFields()));
 		}
@@ -130,7 +130,7 @@ Set a field or index at a given tiddler to a colour
 	}
 
 	EditColourWidget.prototype.validateRGB = function(value, recurse) {
-		recurse = recurse || false
+		recurse = recurse;
 //TODO get https://colorjs.io/ and create a custom colour picker
 //as shown at: https://stackoverflow.com/a/39399649
 
@@ -141,8 +141,8 @@ Set a field or index at a given tiddler to a colour
 			$tw.utils.each(x, function(v){
 				(v === "#") ? newColour.push(v) : newColour.push(v+v);
 			})
-		} else if (x[0] != "#") {
-				if (recurse === false) {
+		} else if (x[0] !== "#") {
+				if (recurse) {
 					return this.validateRGB(this.default, true); // use default value
 				} else {
 					return this.default;
@@ -159,8 +159,8 @@ Set a field or index at a given tiddler to a colour
 	EditColourWidget.prototype.execute = function() {
 		// Get the parameters from the attributes
 		// According to MDN example: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/color
-		this.id = this.getAttribute("id","");			// Can be used together with <label> element
-		this.name = this.getAttribute("name","");		// Can be used together with <label> element
+//		this.id = this.getAttribute("id","");			// Can be used together with <label> element
+//		this.name = this.getAttribute("name","");		// Can be used together with <label> element
 		this.isDisabled = this.getAttribute("disabled","no");
 		this.tooltip = this.getAttribute("tooltip","");	// Show tooltip
 		this.liveUpdate = this.getAttribute("liveUpdate","yes");	// Continous update values ... for backwards compatibility
@@ -179,7 +179,7 @@ Set a field or index at a given tiddler to a colour
 		this.inputActions = this.getAttribute("$input");
 		this.initActions = this.getAttribute("resolveColourActions");
 
-		this.template = this.getAttribute("template");
+//		this.template = this.getAttribute("template");
 
 		// Initialisation
 		this.handleInitActions();

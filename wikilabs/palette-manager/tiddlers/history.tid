@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 0.2.0 - 2022.11.16
+
+* Docs refactoring and improvements
+* Cherrypick changes from master vanilla/base CSS
+* remove second search tab 
+* add `@@highlighted text@@` preview
+
 V 0.1.0 - 2022.11.02
 
 * New EditColourWidget
