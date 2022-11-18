@@ -1,0 +1,10 @@
+{
+	"title": "$:/plugins/wikilabs/youtube-lite",
+	"name": "Youtube Lite Viewer",
+	"description": "A light weight youtube view using a no-cookie embed",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.1.15",
+	"version": "0.0.1",
+	"icon": "$:/plugins/wikilabs/youtube-lite/icon",
+	"list": "readme license history"
+}

@@ -1,0 +1,25 @@
+title: $:/plugins/wikilabs/youtube-lite/readme
+
+
+!! About
+
+This plugin adds a field selector above the text editor and a new button that allows you to edit different fields in multiline edit mode side by side
+
+!! Video
+
+See: [[Video]]
+
+!!! ''Imporant''
+
+
+!! Dependencies
+
+
+
+!! Modified Core Tiddles
+
+This plugin changes the following core tiddlers:
+
+<ul><$list filter="[[$:/plugins/wikilabs/youtube-lite]plugintiddlers[]prefix[$:/core/]] [[$:/config/ui/EditTemplate]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
+
+The full list of tiddlers in the plugin can be found at: [[$:/plugins/wikilabs/youtube-lite]] '': contents'' tab.

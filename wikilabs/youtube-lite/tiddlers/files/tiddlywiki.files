@@ -1,0 +1,22 @@
+{
+	"tiddlers": [
+		{
+			"file": "lite-yt-embedd.js",
+			"fields": {
+				"type": "application/javascript",
+				"title": "$:/plugins/wikilabs/youtube-lite/lite-yt-embedd.js",
+				"module-type": "library",
+				"code-version": "v0.2.0",
+				"repo": "https://github.com/paulirish/lite-youtube-embed"
+			}
+		},{
+			"file": "codemirror.css",
+			"fields": {
+				"type": "text/vnd.tiddlywiki",
+				"title": "$:/plugins/wikilabs/youtube-lite/lite-yt-embedd.css",
+				"tags": "[[$:/tags/Stylesheet]]",
+				"repo": "https://github.com/paulirish/lite-youtube-embed"
+			}
+		}
+	]
+}
