@@ -1,8 +1,9 @@
+caption: Message
 created: 20220824190822151
 modified: 20220902165825318
 search-term: message background border foreground
 tags: $:/tags/palette/preview
-title: :/palettes/preview/message-foreground
+title: $:/palettes/preview/message-foreground
 type: text/vnd.tiddlywiki
 
 <$linkcatcher>

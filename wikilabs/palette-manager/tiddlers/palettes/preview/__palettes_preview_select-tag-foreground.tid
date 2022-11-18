@@ -1,8 +1,9 @@
+caption: Select
 created: 20220824231600724
 modified: 20220902170111059
 search-term: select tag background foreground
 tags: $:/tags/palette/preview
-title: :/palettes/preview/select-tag-foreground
+title: $:/palettes/preview/select-tag-foreground
 type: text/vnd.tiddlywiki
 
 \define text() Lorem ipsum ''dolor sit amet'', consectetur adipisicing elit

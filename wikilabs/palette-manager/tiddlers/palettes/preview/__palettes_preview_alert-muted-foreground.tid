@@ -3,9 +3,9 @@ created: 20220824104445923
 modified: 20220903111935250
 search-term: alert background border highlight muted foreground
 tags: 
-title: :/palettes/preview/alert-muted-foreground
+title: $:/palettes/preview/alert-muted-foreground
 type: text/vnd.tiddlywiki
 
-<$tiddler tiddler=":/palettes/preview/alert/example">
+<$tiddler tiddler="$:/palettes/preview/alert/example">
 {{||$:/core/ui/AlertTemplate}}
 </$tiddler>

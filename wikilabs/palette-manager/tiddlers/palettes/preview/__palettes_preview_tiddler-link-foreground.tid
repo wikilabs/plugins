@@ -1,8 +1,9 @@
+caption: Tiddler Links
 created: 20220824220417170
 modified: 20220902171050604
 search-term: tiddler link background foreground
 tags: $:/tags/palette/preview
-title: :/palettes/preview/tiddler-link-foreground
+title: $:/palettes/preview/tiddler-link-foreground
 type: text/vnd.tiddlywiki
 
 <$linkcatcher>

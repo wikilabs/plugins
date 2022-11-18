@@ -1,8 +1,9 @@
+caption: Site Title
 created: 20220825012034243
 modified: 20220902181834158
 search-term: site title foreground
 tags: $:/tags/palette/preview
-title: :/palettes/preview/site-title-foreground
+title: $:/palettes/preview/site-title-foreground
 type: text/vnd.tiddlywiki
 
 \define tv-wikilinks() no

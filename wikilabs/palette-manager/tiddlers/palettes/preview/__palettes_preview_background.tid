@@ -1,9 +1,9 @@
+caption: Background
 created: 20220824120108043
-description: TODO
 modified: 20220907192803123
 search-term: background general
 tags: $:/tags/palette/preview
-title: :/palettes/preview/background
+title: $:/palettes/preview/background
 type: text/vnd.tiddlywiki
 
 \import [[$:/PaletteManager]]

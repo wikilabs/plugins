@@ -1,8 +1,9 @@
+caption: Tiddler Info
 created: 20220825130350869
 modified: 20220902171011371
 search-term: tiddler info background border tab
 tags: $:/tags/palette/preview
-title: :/palettes/preview/tiddler-info-tab-background
+title: $:/palettes/preview/tiddler-info-tab-background
 type: text/vnd.tiddlywiki
 
 <div class="tc-tiddler-info" style="margin: 1em;">

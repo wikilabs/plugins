@@ -1,8 +1,9 @@
+caption: Toolbar Close
 created: 20220825144020435
 modified: 20220902171248255
 search-term: toolbar close button
 tags: $:/tags/palette/preview
-title: :/palettes/preview/toolbar-close-button
+title: $:/palettes/preview/toolbar-close-button
 type: text/vnd.tiddlywiki
 
 <span class="tc-tiddler-controls tc-titlebar" style="float:initial;">

@@ -1,8 +1,9 @@
+caption: Notification
 created: 20220824225128841
 modified: 20220902165947829
 search-term: notification background border
 tags: $:/tags/palette/preview
-title: :/palettes/preview/notification-border
+title: $:/palettes/preview/notification-border
 type: text/vnd.tiddlywiki
 
 <div class="tc-notification" style="position:initial; top:initial; right:initial;">

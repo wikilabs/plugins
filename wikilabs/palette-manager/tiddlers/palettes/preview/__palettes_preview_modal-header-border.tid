@@ -1,8 +1,9 @@
+caption: Modal
 created: 20220824191547998
 modified: 20220907135816042
 search-term: modal backdrop background border footer header
 tags: $:/tags/palette/preview
-title: :/palettes/preview/modal-header-border
+title: $:/palettes/preview/modal-header-border
 type: text/vnd.tiddlywiki
 
 <div class="tc-modal-backdrop" 

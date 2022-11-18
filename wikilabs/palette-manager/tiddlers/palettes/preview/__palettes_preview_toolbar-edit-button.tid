@@ -1,8 +1,9 @@
+caption: Toolbar Edit
 created: 20220825144515940
 modified: 20220902171333252
 search-term: toolbar edit button
 tags: $:/tags/palette/preview
-title: :/palettes/preview/toolbar-edit-button
+title: $:/palettes/preview/toolbar-edit-button
 type: text/vnd.tiddlywiki
 
 <span class="tc-tiddler-controls tc-titlebar" style="float:initial;">

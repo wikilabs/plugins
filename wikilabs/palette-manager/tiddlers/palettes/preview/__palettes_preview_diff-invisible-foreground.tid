@@ -1,8 +1,9 @@
+caption: Diff
 created: 20220824121516065
 modified: 20220902165240929
 search-term: diff delete background foreground equal insert invisible
 tags: $:/tags/palette/preview
-title: :/palettes/preview/diff-invisible-foreground
+title: $:/palettes/preview/diff-invisible-foreground
 type: text/vnd.tiddlywiki
 
 <$diff-text source="Hey Jude, don't make it bad. Take a sad song and make it better.

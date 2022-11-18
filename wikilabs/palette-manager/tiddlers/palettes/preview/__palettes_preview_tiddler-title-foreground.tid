@@ -1,13 +1,14 @@
+caption: Tiddler Title
 created: 20220825131927189
 modified: 20220902171208562
 search-term: tiddler title foreground
 tags: $:/tags/palette/preview
-title: :/palettes/preview/tiddler-title-foreground
+title: $:/palettes/preview/tiddler-title-foreground
 type: text/vnd.tiddlywiki
 
 <div class="tc-tiddler-title tc-titlebar" style="font-size:1.6em">
 
-{{:/palettes/preview/tiddler-editor/example||$:/core/ui/ViewTemplate/title/default}}
+{{$:/palettes/preview/tiddler-editor/example||$:/core/ui/ViewTemplate/title/default}}
 
 {{$:/PaletteManager||$:/core/ui/ViewTemplate/title/system}}
 

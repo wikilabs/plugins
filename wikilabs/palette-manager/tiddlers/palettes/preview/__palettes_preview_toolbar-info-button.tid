@@ -1,8 +1,9 @@
+caption: Toolbar Info
 created: 20220825144531255
 modified: 20220902171346971
 search-term: toolbar info button
 tags: $:/tags/palette/preview
-title: :/palettes/preview/toolbar-info-button
+title: $:/palettes/preview/toolbar-info-button
 type: text/vnd.tiddlywiki
 
 <span class="tc-tiddler-controls tc-titlebar" style="float:initial;">

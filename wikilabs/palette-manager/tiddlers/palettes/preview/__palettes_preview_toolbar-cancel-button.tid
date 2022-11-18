@@ -1,8 +1,9 @@
+caption: Toolbar Cancel
 created: 20220825143342214
 modified: 20220902171228730
 search-term: toolbar cancel button
 tags: $:/tags/palette/preview
-title: :/palettes/preview/toolbar-cancel-button
+title: $:/palettes/preview/toolbar-cancel-button
 type: text/vnd.tiddlywiki
 
 <span class="tc-tiddler-controls tc-titlebar" style="float:initial;">

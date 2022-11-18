@@ -1,8 +1,9 @@
+caption: Primary
 created: 20220824231002539
 modified: 20221104142353056
 search-term: primary
 tags: $:/tags/palette/preview
-title: :/palettes/preview/primary
+title: $:/palettes/preview/primary
 type: text/vnd.tiddlywiki
 
 Select an input element. The outline uses the `primary` colour

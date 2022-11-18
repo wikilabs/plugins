@@ -1,8 +1,9 @@
+caption: Untagged
 created: 20220825150355695
 modified: 20220902171454168
 search-term: untagged background
 tags: $:/tags/palette/preview
-title: :/palettes/preview/untagged-background
+title: $:/palettes/preview/untagged-background
 type: text/vnd.tiddlywiki
 
 Important: It seems the untagged tag-pill uses the `tag-foreground` colour

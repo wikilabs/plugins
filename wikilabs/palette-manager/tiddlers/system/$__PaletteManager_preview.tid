@@ -16,9 +16,9 @@ type: text/vnd.tiddlywiki
 \define search() [all[shadows+tiddlers]prefix<tokenPrefix>search:search-term{$:/temp/search-term}]
 
 \define palette-preview-row-segment()
-<$vars previewName={{{ [<colourName>addprefix[:/palettes/preview/]] }}} 
+<$vars previewName={{{ [<colourName>addprefix[$:/palettes/preview/]] }}} 
 		token={{{ [<colourName>split[-]nth[1]] }}} 
-		tokenPrefix={{{ [<colourName>split[-]nth[1]addprefix[:/palettes/preview/]] }}} >
+		tokenPrefix={{{ [<colourName>split[-]nth[1]addprefix[$:/palettes/preview/]] }}} >
 	<$transclude tiddler={{{ [<previewName>addsuffix[/_custom]] }}} mode="block">
 	<$set name=previewName filter="[{$:/temp/search-term}trim[]] :cascade[<blank>append<search-is-token>append<colour-is-preview>append<search>]" >
 		<$list filter="[<previewName>has[text]]" variable="preview">

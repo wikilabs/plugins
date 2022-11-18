@@ -1,14 +1,15 @@
+caption: Muted
 created: 20220824224151203
 modified: 20220902165929287
 search-term: muted foreground
 tags: $:/tags/palette/preview
-title: :/palettes/preview/muted-foreground
+title: $:/palettes/preview/muted-foreground
 type: text/vnd.tiddlywiki
 
 There are 43 CSS rules that use `muted-foreground`
 
 <$tiddler tiddler="$:/temp/palette/muted">
-{{:/palettes/preview/button}}
+{{$:/palettes/preview/button}}
 {{$:/core/ui/EditTemplate/fields}}
 {{$:/core/ui/EditTemplate/type}}
 </$tiddler>

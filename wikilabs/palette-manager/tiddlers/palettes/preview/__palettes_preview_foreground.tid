@@ -1,8 +1,9 @@
+caption: Foreground
 created: 20220824190539420
 modified: 20220907192637742
 search-term: foreground general
 tags: $:/tags/palette/preview
-title: :/palettes/preview/foreground
+title: $:/palettes/preview/foreground
 type: text/vnd.tiddlywiki
 
 \import [[$:/PaletteManager]]

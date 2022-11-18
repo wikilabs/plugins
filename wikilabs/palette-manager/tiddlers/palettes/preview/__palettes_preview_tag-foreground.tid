@@ -1,8 +1,9 @@
+caption: Tags
 created: 20220825113231577
 modified: 20220902170757586
 search-term: tag background foreground
 tags: $:/tags/palette/preview
-title: :/palettes/preview/tag-foreground
+title: $:/palettes/preview/tag-foreground
 type: text/vnd.tiddlywiki
 
 @@white-space:normal;

@@ -1,15 +1,16 @@
+caption: Tiddler Editor Fields
 created: 20220825124849856
 modified: 20220902211014375
 search-term: tiddler editor background border image fields even odd
 tags: $:/tags/palette/preview
-title: :/palettes/preview/tiddler-editor-fields-odd
+title: $:/palettes/preview/tiddler-editor-fields-odd
 type: text/vnd.tiddlywiki
 
 tc-tiddler-edit-frame
 
 <div class="tc-tiddler-frame tc-tiddler-edit-frame" style="width:initial;">
 
-<$tiddler tiddler=":/palettes/preview/tiddler-editor-fields-odd/example" >
+<$tiddler tiddler="$:/palettes/preview/tiddler-editor-fields-odd/example" >
 
 <$edit-text class="tc-edit-max-width" tiddler=<<currentTiddler>> />
 
