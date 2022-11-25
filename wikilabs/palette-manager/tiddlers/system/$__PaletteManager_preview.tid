@@ -43,7 +43,7 @@ type: text/vnd.tiddlywiki
 
 \define palette-manager-preview-row()
 \whitespace trim
-<tr><th colspan="2" class="tc-preview-title"><$link to=<<preview>> > {{$:/language/Import/Listing/Preview}} @@.tc-tiny-gap-left <$transclude tiddler=<<preview>> field="caption" />@@</$link><<focus-button>></th></tr>
+<tr><th colspan="2" class="tc-preview-title"><$link to=<<preview>> > {{$:/language/Import/Listing/Preview}} <span class="tc-tiny-gap-left"><$transclude tiddler=<<preview>> field="caption" /></span></$link><<focus-button>></th></tr>
 <tr class="tc-palette-preview-row">
 	<td colspan="2">
 		<$transclude mode="block" tiddler=<<preview>> />
