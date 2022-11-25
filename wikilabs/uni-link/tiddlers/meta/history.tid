@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 2.3.0 - 2022-11-24
+
+* Fix problem with alias that contain round braces `()` eg: `[[aqua (water)]]`
+* Use `<<__name__>>` instead of `$name$`
+* Add `\witespace trim` to improve readability
+
 V 2.2.0 - 2022-03-27
 
 * update to TW v5.2.2
