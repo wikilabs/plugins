@@ -11,9 +11,9 @@ Tiddler -> <<aka-no-links target:"""$(alias)$""">>
 \define searchResultList()
 \whitespace trim
 <$list filter="[all[aliases]search:{$(searchTiddler)$}sort[title]]" variable=alias>
-  <div class="tc-menu-list-item">
-   <$link to=<<alias>> tooltip=<<getRealName>> ><<alias>></$link>
-  </div>
+    <div class="tc-menu-list-item">
+        <$link to=<<alias>> tooltip=<<getRealName>> ><<alias>></$link>
+    </div>
 </$list>
 \end
 <<searchResultList>>

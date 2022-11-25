@@ -11,8 +11,6 @@ type: text/vnd.tiddlywiki
 <$transclude mode="block"/>
 </$list>
 """>
-
-<$macrocall $name="tabs" tabsList="[all[shadows+tiddlers]tag[$:/tags/AliasResults]!has[draft.of]]" default={{$:/config/SearchResults/Default}}/>
-
+	<$macrocall $name="tabs" tabsList="[all[shadows+tiddlers]tag[$:/tags/AliasResults]!has[draft.of]]" default={{$:/config/SearchResults/Default}}/>
 </$list>
 </div>

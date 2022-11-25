@@ -19,35 +19,27 @@ type: text/vnd.tiddlywiki
 \end
 
 \define body(config-title)
-''<<lingo Hint>>''
-
+\whitespace trim
+''<<lingo Hint>>''<br><br>
 <$vars searchTiddler="""$config-title$/search""" linkTiddler="""$config-title$/link""" linktext="" >
-
-<$vars linkTiddler=<<searchTiddler>>>
-<$keyboard key="ENTER" actions=<<add-link-actions>>>
-<$edit-text tiddler=<<searchTiddler>> type="search" tag="input" focus="true" placeholder={{$:/language/Search/Search}} default=""/>
-<$reveal tag="span" state=<<searchTiddler>> type="nomatch" text="">
-<<external-link>>
-<$button class="tc-btn-invisible" style="width:auto; display:inline-block; background:none; padding:0;">
-<$action-setfield $tiddler=<<searchTiddler>> text="" />
-{{$:/core/images/close-button}}
-</$button>
-</$reveal>
-</$keyboard>
+	<$vars linkTiddler=<<searchTiddler>>>
+		<$keyboard key="ENTER" actions=<<add-link-actions>>>
+			<$edit-text tiddler=<<searchTiddler>> type="search" tag="input" focus="true" placeholder={{$:/language/Search/Search}} default=""/>
+			<$reveal tag="span" state=<<searchTiddler>> type="nomatch" text="">
+				<<external-link>>
+				<$button class="tc-btn-invisible" style="width:auto; display:inline-block; background:none; padding:0;">
+					<$action-setfield $tiddler=<<searchTiddler>> text="" />
+					{{$:/core/images/close-button}}
+				</$button>
+			</$reveal>
+		</$keyboard>
+	</$vars>
+	<$reveal tag="div" state=<<searchTiddler>> type="nomatch" text="">
+		<$linkcatcher actions=<<add-link-actions>> to=<<linkTiddler>>>
+			{{$:/plugins/wikilabs/uni-link/ui/EditorToolbar/SearchResults}}
+		</$linkcatcher>
+	</$reveal>
 </$vars>
-
-<$reveal tag="div" state=<<searchTiddler>> type="nomatch" text="">
-
-<$linkcatcher actions=<<add-link-actions>> to=<<linkTiddler>>>
-
-{{$:/plugins/wikilabs/uni-link/ui/EditorToolbar/SearchResults}}
-
-</$linkcatcher>
-
-</$reveal>
-
-</$vars>
-
 \end
 
 <$macrocall $name="body" config-title=<<qualify "$:/state/Link/">>/>
