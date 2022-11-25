@@ -10,7 +10,7 @@
 				"repo": "https://github.com/paulirish/lite-youtube-embed"
 			}
 		},{
-			"file": "codemirror.css",
+			"file": "lite-yt-embedd.css",
 			"fields": {
 				"type": "text/vnd.tiddlywiki",
 				"title": "$:/plugins/wikilabs/youtube-lite/lite-yt-embedd.css",
