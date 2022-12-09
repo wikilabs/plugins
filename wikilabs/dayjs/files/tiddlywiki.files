@@ -1,0 +1,12 @@
+{
+	"tiddlers": [
+		{
+			"file": "dayjs-min.js",
+			"fields": {
+				"type": "application/javascript",
+				"title": "$:/plugins/wikilabs/dayjs/dayjs-min.js",
+				"module-type": "library"
+			}
+		}
+	]
+}

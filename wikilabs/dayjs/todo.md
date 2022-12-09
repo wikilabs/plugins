@@ -1,0 +1,21 @@
+## Oberators
+
+- [ ] date:<field-name>[tiddler] .. convert to date object
+- [ ] [all[current]get[modified]date[]] ... convert TW-like date into a dayjs instance.
+- [ ] <date>dateToIsoString<tw-format> .. convert a date to a formatted tiddlywiki string
+- [ ] is[date] .. return a date if it is valid
+- [ ] <date>dateAdd:days,months,years<json>
+- [ ] <date>dateAdd:days,months,years,hh,mm[],[],[],[],[] ... eg: <date>add:years[1] ... or so
+- [ ] <date>dateSubtract:days,months,years<json> ... the JSON looks like {"days":1, "months":<variable>, "years": "operand"}
+- [ ] <date>dateLocal[] ... show local date
+- [ ] <date>dateDiff<date>
+- [ ] <date>dateUnix[] ... convert to unix tiemstamp ... for compatibility with "timestamp"
+- [ ] 
+- [ ] 
+- [ ] 
+- [ ] 
+- [ ] 
+- [ ] 
+- [ ] 
+- [ ] 
+- [ ] 

@@ -1,0 +1,9 @@
+{
+	"title": "$:/plugins/wikilabs/dayjs",
+	"name": "Date Picker",
+	"description": "A flexible date picker for TiddlyWiki",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.2.0",
+	"version": "0.0.1",
+	"list": "readme history license"
+}
