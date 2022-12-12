@@ -1,0 +1,8 @@
+caption: ~MagicTabs
+icon: $:/plugins/amp/MagicTabs/images/config
+mt-dashboard.heading: Configuration
+mt-dashboard.icon: $:/plugins/amp/MagicTabs/images/config
+tags: $:/tags/ControlPanel
+title: $:/plugins/amp/MagicTabs/dashboard/configuration
+
+<<tabs "$:/plugins/amp/MagicTabs/config/plugins $:/plugins/amp/MagicTabs/config/TypeManager $:/plugins/amp/MagicTabs/config/TabManager $:/plugins/amp/MagicTabs/config/appearance" "$:/plugins/amp/MagicTabs/config/plugins">>
