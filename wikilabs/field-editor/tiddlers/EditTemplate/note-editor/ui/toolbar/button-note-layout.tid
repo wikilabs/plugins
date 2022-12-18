@@ -9,13 +9,12 @@ tags: $:/tags/EditorToolbar
 title: $:/plugins/wikilabs/ui/EditorToolbar/note
 
 \whitespace trim
-
 <$reveal state=<<edit-note-state>> type="match" text="yes" tag="span">
-{{$:/images/layout-full}}
-<$action-setfield $tiddler=<<edit-note-state>> $value="no"/>
+	{{$:/images/layout-full}}
+	<$action-setfield $tiddler=<<edit-note-state>> $value="no"/>
 </$reveal>
 <$reveal state=<<edit-note-state>> type="nomatch" text="yes" tag="span">
-{{$:/images/layout-half}}
-<$action-setfield $tiddler=<<edit-note-state>> $value="yes"/>
-<$action-setfield $tiddler=<<edit-preview-state>> $value="no"/>
+	{{$:/images/layout-half}}
+	<$action-setfield $tiddler=<<edit-note-state>> $value="yes"/>
+	<$action-setfield $tiddler=<<edit-preview-state>> $value="no"/>
 </$reveal>
