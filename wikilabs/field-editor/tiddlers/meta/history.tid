@@ -1,9 +1,10 @@
 title: $:/plugins/wikilabs/field-editor/history
 
 
-V 0.2.0 2022.12.18
+V 0.2.0 2022.12.21
 
 * fix problem with field switcher
+* Add modified EditTemplate back
 * Update to TW v5.2.5
 
 V 0.1.1 2022.08.04
