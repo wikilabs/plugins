@@ -1,10 +1,11 @@
 title: $:/plugins/wikilabs/field-editor/history
 
 
-V 0.2.0 2022.12.21
+V 0.2.0 2022.12.29
 
+* fix preview - new option in preview output dropdown
+* adjust EditTemplate to use cascade filters
 * fix problem with field switcher
-* Add modified EditTemplate back
 * Update to TW v5.2.5
 
 V 0.1.1 2022.08.04

@@ -22,7 +22,7 @@ $:/config/EditorToolbarButtons/Visibility/$(currentTiddler)$
 			<$reveal stateTitle=<<edit-preview-state>> type="match" text="yes" tag="div" 
 					class={{{[<wl-field-name-text>match[text]then[tc-tiddler-preview]else[field-warning tc-tiddler-preview]]}}}>
 				<!-- text editor -->
-				<$transclude tiddler="$:/core/ui/EditTemplate/body/editor" mode="inline"/>
+				<$transclude tiddler="$:/plugins/wikilabs/ui/EditTemplate/body/editor" mode="inline"/>
 				<!-- preview output -->
 				<div class="tc-tiddler-preview-preview">
 					<!-- preview selected -->
@@ -36,7 +36,7 @@ $:/config/EditorToolbarButtons/Visibility/$(currentTiddler)$
 			<div class={{{[<edit-note-state>get[text]match[yes]then[both clearfix]else[]]}}}>
 				<$reveal stateTitle=<<edit-preview-state>> type="match" text="no" default="no"
 						class={{{[<wl-field-name-text>match[text]then[left-half]else[left-half field-warning]]}}} tag="div">
-					<$transclude tiddler="$:/core/ui/EditTemplate/body/editor" mode="inline"/>
+					<$transclude tiddler="$:/plugins/wikilabs/ui/EditTemplate/body/editor" mode="inline"/>
 				</$reveal>
 			<!-- note editor -->
 				<$reveal stateTitle=<<edit-note-state>> type="match" text="yes"

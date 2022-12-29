@@ -1,4 +1,4 @@
 description: This configuration changes the edit-cascade default from: $:/core/ui/EditTemplate to: $:/plugins/wikilabs/field-editor/EditTemplate
-title: $:/config/ui/EditTemplate
+title: $:/config/ui/EditTemplateXXX
 
 $:/plugins/wikilabs/field-editor/EditTemplate
