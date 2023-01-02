@@ -1,9 +1,10 @@
 title: $:/plugins/wikilabs/advanced-search-plus/readme
 
-* Adds the "Advanced Search" tab also to the right sidebar
+* Change the default "Advanced Search" tiddler
+* Adds the "Advanced Search" tab to the right sidebar
 * Replaces the default search option with an icon
-* Adds a "+" button to the advanced search function
-** Allows to pin existing search settings to a new tab
+* Adds a "new search tab" button to the advanced search function
+* Allows to pin existing search settings to a new tab
 
 ----
 

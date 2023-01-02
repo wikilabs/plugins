@@ -1,5 +1,15 @@
 title: $:/plugins/wikilabs/advanced-search-plus/history
 
+V 0.4.0 - 2023-01-01
+
+* fix standard search-template to work with latest TW version
+* fix automatic tab-switching problems
+* improved code readabilty
+* improved new search-tab UI
+* update copyright info
+* new shadow search icon
+* update to TW version v5.2.5
+
 V 0.3.0 - 2022-03-27
 
 * Update to TW version v5.2.2
