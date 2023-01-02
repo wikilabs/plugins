@@ -1,3 +1,8 @@
 title: $:/plugins/wikilabs/advanced-search-plus/filter-search-plus-new
 
-<<expandMe "$:/plugins/wikilabs/advanced-search-plus/filter-search-plus" showText:{{$:/core/images/unfold-button}} hideText:{{$:/core/images/fold-button}} showTooltip:"Create a new FILTER search tab">>
+\whitespace trim
+<<expandMe "$:/plugins/wikilabs/advanced-search-plus/filter-search-plus"
+    showText:{{$:/core/images/unfold-button}}
+    hideText:{{$:/core/images/fold-button}}
+    showTooltip:"Create a new FILTER search tab"
+    hideButtonText:"New Filter Tab">>

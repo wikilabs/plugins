@@ -1,3 +1,7 @@
 title: $:/plugins/wikilabs/advanced-search-plus/system-search-plus-new
 
-<<expandMe "$:/plugins/wikilabs/advanced-search-plus/system-search-plus" showText:{{$:/core/images/unfold-button}} hideText:{{$:/core/images/fold-button}} showTooltip:"Create a new SYSTEM search tab">>
+<<expandMe "$:/plugins/wikilabs/advanced-search-plus/system-search-plus"
+    showText:{{$:/core/images/unfold-button}}
+    hideText:{{$:/core/images/fold-button}}
+    showTooltip:"Create a new SYSTEM search tab"
+    hideButtonText:"New System Tab">>
