@@ -20,15 +20,15 @@ exports.upgrade = function(wiki,titles,tiddlers) {
 		overwriteCheck = $tw.wiki.checkTiddlerText(ENABLE_OVERWRITE_CHECK,"yes");
 
 	$tw.utils.each(titles,function(title) {
-		var tiddler = {};
+		var newTitle;
 		// If the tiddler has been removed, there will be no fields.
 		if (wiki.tiddlerExists(title) && tiddlers[title] && (tiddlers[title].title === title) ) {
-//			messages[title] = "Existing tiddler will be overwritten!";
-			// create new tiddler with a new name
+			// copy content from old tiddler, to new tiddler and assign a new title
 			if (overwriteCheck && !wiki.isSystemTiddler(title)) {
 				messages[title] = "Tiddler exists - A new name will be used!";
-				tiddler = new $tw.Tiddler(tiddlers[title], {"title": wiki.generateNewTitle(title) });
-				tiddlers[tiddler.fields.title] = tiddler.fields;
+				newTitle = wiki.generateNewTitle(title);
+				tiddlers[newTitle] = tiddlers[title];
+				tiddlers[newTitle].title = newTitle;
 				// remove the original tiddler
 				tiddlers[title] = Object.create(null);
 			}
