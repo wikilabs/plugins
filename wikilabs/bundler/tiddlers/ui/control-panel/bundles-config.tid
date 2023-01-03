@@ -18,6 +18,7 @@ type: text/vnd.tiddlywiki
 </$vars>
 
 !! {{$:/core/ui/ControlPanel/Settings/InfoPanelMode!!caption}}
+
 <<<
 {{$:/core/ui/ControlPanel/Settings/InfoPanelMode}}
 <<<
@@ -25,7 +26,6 @@ type: text/vnd.tiddlywiki
 !! Enable Import Bundle
 
 <<<
-
 <$checkbox tiddler="$:/config/wikilabs/enableImportBundle" field="text" checked="yes" unchecked="no" default="no"> Enable Import Bundle</$checkbox>
 
 Everytime you import content, an [[import.bundle]] tiddler will be created. If the tiddler already exists, the new imported titles will be appended. 
@@ -46,12 +46,14 @@ The "Filter Bundle" button creates compatible configurations. So user created fi
 
 <<<
 
-!! Enable Overwrite Check
+!! New Title for Existing Titles
 
 <<<
-<$checkbox tiddler="$:/config/wikilabs/enableOverwriteCheck" field="text" checked="yes" unchecked="no" default="no"> Enable Overwrite Check</$checkbox>
 
-By default, the import mechanism overwrites existing tiddlers. By enabling this option, you can activate a mechanism, that creates a new tiddler name. By default this option is off.
+<$checkbox tiddler="$:/config/wikilabs/enableOverwriteCheck" field="text" checked="yes" unchecked="no" default="no"> Enable Automatic Title Renaming</$checkbox>
+
+By default, the TW import mechanism overwrites existing tiddlers. This option allows you, to activate a mechanism, that automatically creates a new tiddler title. Eg: `HelloThere` will be renamed to `HelloThere 1`. Initially this option is disabled.
+
 <<<
 
 !! Rename Title on Import
@@ -60,9 +62,9 @@ By default, the import mechanism overwrites existing tiddlers. By enabling this 
 
 <$checkbox tiddler="$:/config/wikilabs/enableImportRename" field="text" checked="yes" unchecked="no" default="no"> [[Enable Automatic Import Renaming|$:/config/wikilabs/enableImportRename]]</$checkbox>
 
-This feature was created to allow users to quickly import images from the clipbaord. ''But'' it can also be used with every content, that is imported with the ''clipboard'', where the "title" doesn't change. 
+This feature was created to allow users to quickly import images from the clipbaord. It can also be used with text content, that is imported with the ''clipboard'', where the browser always uses the same title. Those names depend on the browser language settings. So they can be different in your browser. English: `image.png` for images and `untitled` for text content.
 
-;[[Default Import Title|$:/config/wikilabs/import/image/default-title]]
+;[[Browser Defined Title|$:/config/wikilabs/import/image/default-title]] (eg: image.png or untitled)
 :<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/image/default-title" default="image.png" tag="input"/>
 
 ;[[Import Title Template|$:/config/wikilabs/import/image/title-template]]
@@ -97,7 +99,7 @@ Select the position of the bundle tab:
 
 <<<
 
-!! Filter Format
+!! Filtered Bundles -- Filter Format
 
 <<<
 
