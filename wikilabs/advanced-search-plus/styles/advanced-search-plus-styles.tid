@@ -2,5 +2,10 @@ title: $:/plugins/wikilabs/advanced-search-plus/styles
 tags: $:/tags/Stylesheet
 
 .tc-tab-buttons svg {
-  fill: #555;
+	fill: #555;
+}
+
+.wltc-image-button svg {
+	height: 1em;
+	width: 1em;
 }
