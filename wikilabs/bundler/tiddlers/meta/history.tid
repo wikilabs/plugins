@@ -1,0 +1,89 @@
+title: $:/plugins/wikilabs/bundler/history
+
+V 0.4.3 - 2023-01-03
+
+* Fix [[ bundler: auto-renamed tiddlers have wrong date #121|https://github.com/wikilabs/plugins/issues/121]]
+* Add new ViewTemplate cascade option for tiddlers tagged: `$:/tags/Filter`
+** This template shows the `description` and the `filter` fields
+** Also works for core filter infos
+
+V 0.4.2 - 2022-03-31
+
+* Fix import viewtemplate cascade
+* Temporarily use core default import dialogue, till filter can be improved
+
+V 0.4.2 - 2022-03-25
+
+* ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/bundler/license]]
+* Some plugin configurations are enabled now, for convenience
+* Add new upgrader to rename images comming from the clipboard
+** Add new settings to $:/ControlPanel
+* Add seconds to $:/config/wikilabs/bundler/importHeaderTemplate
+
+V 0.4.1 - 2021-10-07
+
+* fix newline character
+
+V 0.4.0 - 2021-10-06
+
+* "New Bundle" button uses $:/StoryList list-field to seed the text field
+* ''Important:''
+** $:/core/ui/ImportListing is  ''not overwritten'' anymore
+** [[$:/core/modules/upgraders/system.js]] is ''not overwritten'' anymore
+
+V 0.3.2 - 2021-03-16
+
+* Fix history tiddler version
+* Fix Import edit name element
+
+V 0.3.1 - 2021-02-23
+
+* ''Important:'' The plugin overwrites [[$:/core/modules/upgraders/system.js]] now
+
+* Add a new tab to the tiddler (i)nfo area
+** The "Bundle" tab contains a "list", "export" and "open in ~AdvancedSearch" buttons
+
+* Improve configuration panel
+** We have all important settings on 1 page now
+** The config panel can be reached from the "bundles" tab in the sidebar
+
+* Make `prefix[--- ]]` the standard for tiddler titles, that are used as comments
+** It's easy to read and we didn't get complains for 2 years, since the suggestion was made
+
+* $:/StoryList*, $:/HistoryList*, "$:/state/*" and "$:/temp/*" are importable now
+** This will allow us to work with multiple stories
+
+* We use `subfilter` instead of `enlist` now
+** This unifies simple-list and filtered-list handling
+
+* Add a plugin icon {{$:/plugins/wikilabs/bundler/icon}}
+
+* Slightly improved docs ;) [[Tips and Tricks]]
+
+* Known Issues!
+** System tiddlers are always selected atm. This will change in the future, but we need core support here!
+
+V 0.1.3 - 2020-12-25
+
+* update license
+
+V 0.1.2 - 2020.01.19
+
+* Update license link/text
+
+V 0.1.1 - beta 2017.06.18
+
+* improve license links and readme
+* fix upgrade.js title
+
+V 0.1.0 - beta
+
+* new name: bundler
+* this name change makes it incompatible to older settings!
+
+** new "Enable Overwrite Check" option. default = no
+
+V 0.0.1 - beta
+
+* initial release
+* name: bundles
