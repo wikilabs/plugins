@@ -1,0 +1,9 @@
+created: 20230103230023478
+modified: 20230103230115806
+tags: 
+title: $:/plugin/wikilabs/ui/ViewTemplate/body/filters
+type: text/vnd.tiddlywiki
+
+{{!!description}}
+
+<pre><code>{{!!filter}}</code></pre>

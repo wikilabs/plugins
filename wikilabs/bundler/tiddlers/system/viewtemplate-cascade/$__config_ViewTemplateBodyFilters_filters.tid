@@ -1,0 +1,8 @@
+created: 20230103225817080
+list-before: $:/config/ViewTemplateBodyFilters/code-body
+modified: 20230103230312279
+tags: $:/tags/ViewTemplateBodyFilter
+title: $:/config/ViewTemplateBodyFilters/filters
+type: text/vnd.tiddlywiki
+
+[tag[$:/tags/Filter]then[$:/plugin/wikilabs/ui/ViewTemplate/body/filters]]
