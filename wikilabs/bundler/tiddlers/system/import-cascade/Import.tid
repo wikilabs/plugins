@@ -1,4 +1,4 @@
-title: $:/plugins/bundler/ui/ViewTemplate/body/import
+title: $:/plugins/wikilabs/bundler/ui/ViewTemplate/body/import
 code-body: yes
 
 \whitespace trim
@@ -7,10 +7,12 @@ code-body: yes
 \define clearSearch() 
 <$action-deletetiddler $tiddler=<<import-search>>/>
 \end
+
 \define buttons()
 <$button message="tm-delete-tiddler" param=<<currentTiddler>> actions=<<clearSearch>>><<lingo Listing/Cancel/Caption>></$button>
 <$button message="tm-perform-import" param=<<currentTiddler>> actions=<<clearSearch>>><<lingo Listing/Import/Caption>></$button>
 \end
+
 \define topBar()
 \whitespace trim
 <<lingo Listing/Preview>> <$select tiddler="$:/state/importpreviewtype" default="$:/core/ui/ImportPreviews/Text" class="tc-small-gap">
@@ -18,14 +20,14 @@ code-body: yes
 		<option value=<<currentTiddler>>>{{!!caption}}</option>
 	</$list>
 </$select>
-<!-- <lingo Listing/Filter/Prompt>>
+<<lingo Listing/Filter/Prompt>>
 <$edit-text tiddler=<<import-search>> field="text" tag="input" default="" class="tc-small-gap-left"/>
 <$reveal state=<<import-search>> type="nomatch" text="" class="tc-small-gap-left">
 	<$button class="tc-btn-invisible">
 		<$action-setfield $tiddler=<<import-search>> $field=text $value=""/>
 		{{$:/core/images/close-button}}
 	</$button>
-</$reveal -->
+</$reveal>
 \end
 
 <$list filter="[all[current]field:plugin-type[import]]">
