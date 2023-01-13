@@ -4,6 +4,10 @@ tags:
 title: $:/plugin/wikilabs/ui/ViewTemplate/body/filters
 type: text/vnd.tiddlywiki
 
-{{!!description}}
+<$transclude />
 
-<pre><code>{{!!filter}}</code></pre>
+---
+
+Description: {{!!description}}
+
+Filter: <code>{{!!filter}}</code>
