@@ -1,8 +1,8 @@
 title: $:/plugins/wikilabs/bundler/history
 
-V 0.4.4 - 2023-01-13
+V 0.4.4 - 2023-01-18
 
-* Fix ViewTemplate to show text-field
+* Fix ViewTemplate for tiddlers tagged $:/tags/Filter to show text-field
 * Add more documentation to the edition
 * Add several screenshots to the docs
 
