@@ -4,12 +4,12 @@ tags:
 title: $:/plugins/wikilabs/bundler/doc/table-all-filters
 type: text/vnd.tiddlywiki
 
-!! ~TiddlyWiki Default Filters
+!! Filters This Wiki
 
 <table>
 <tbody>
 <th>Description</th><th>Filter</th><th>Test</th>
-<$list filter="[all[shadows]tag[$:/tags/Filter]]">
+<$list filter="[all[tiddlers]tag[$:/tags/Filter]]">
   <tr>
     <td>{{!!description}}</td>
     <td><$view field=filter/></td>
@@ -19,12 +19,12 @@ type: text/vnd.tiddlywiki
 </tbody>
 </table>
 
-!! This Wiki
+!! ~TiddlyWiki Default Filters
 
 <table>
 <tbody>
 <th>Description</th><th>Filter</th><th>Test</th>
-<$list filter="[all[tiddlers]tag[$:/tags/Filter]]">
+<$list filter="[all[shadows]tag[$:/tags/Filter]]">
   <tr>
     <td>{{!!description}}</td>
     <td><$view field=filter/></td>

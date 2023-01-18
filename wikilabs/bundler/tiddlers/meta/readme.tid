@@ -1,14 +1,35 @@
 title: $:/plugins/wikilabs/bundler/readme
 
+\define baseURL() https://wikilabs.github.io/editions/bundler/#
+
+\define link(text tid) <$link to={{{ [<__tid__>slugify[]] }}} ><<__text__>></$link>
+\define extLink(text tid) <a class="tc-tiddlylink-external" href={{{ [<baseURL>] [<__tid__>slugify[]] +[join[]] }}} rel="noopener noreferrer" target="_blank"><<__text__>></a>
+
+\define .xL(text tid)
+\whitespace trim
+<$let macro={{{ [<__tid__>slugify[]is[tiddler]then[link]else[extLink]] }}}>
+<$macrocall $name=<<macro>> text=<<__text__>> tid=<<__tid__>> />
+</$let>
+\end
+
+\define openControlBundlesTab()
+<$action-setfield $tiddler="$:/state/tab-1749438307" text="$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config"/>
+<$action-navigate $to="$:/ControlPanel"/>
+\end
+
+\define rightSidebarBundlesTab()
+<$action-setfield $tiddler="$:/state/tab/sidebar--595412856" text="$:/plugins/wikilabs/bundler/ui/Bundles"/>
+\end
+
 ! ~ReadMe
 
 * Documentation and more can be found at: https://wikilabs.github.io/editions/bundler
-* The position of the "Bundles" tab can be selected in the $:/ControlPanel : Bundles tab
+* The position of the "Bundles" tab can be selected in the <$button actions=<<openControlBundlesTab>> class="tc-btn-invisible tc-tiddlylink">~$:/ControlPanel : Bundles tab</$button>
 * There are 2 version of bundles
-** Bundle lists
-** Filtered Bundles ... which have to be activated by the user
+** <<.xL "Bundle Lists" "doc-bundle-lists">> ... Enabled by default
+** <<.xL "Filtered Bundles" "doc-filtered-bundles">> ... Have to be activated by the user
 * The filter examples can be live tested, clicking on the number besides the "export button"
-* The Bundler can bundled itself and other plugins into a bundle :-)
+* The Bundler can bundled itself and other plugins into a bundle. See: <<.xL "comment-self.bundle" "comment-self.bundle">>
 * You can create several "selections". Those combinations are persistently stored for reuse. 
 * Bundle lists can be built up, over time. Just as the TW evolves
 * The "Enable Import Bundle" option lets you collect / log imported tiddlers and create a new bundle, for future use.

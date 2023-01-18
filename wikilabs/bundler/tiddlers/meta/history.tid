@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 0.4.4 - 2023-01-13
+
+* Fix ViewTemplate to show text-field
+* Add more documentation to the edition
+* Add several screenshots to the docs
+
+
 V 0.4.3 - 2023-01-03
 
 * Fix [[ bundler: auto-renamed tiddlers have wrong date #121|https://github.com/wikilabs/plugins/issues/121]]
