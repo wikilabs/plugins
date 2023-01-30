@@ -1,7 +1,14 @@
 title: $:/plugins/wikilabs/advanced-search-plus/history
 
+V 0.5.0 - 2023-01-27
+
+* add language-hint to tab icon and caption
+* clear the caption temp tiddler when enter is cliced
+* fix close `<<expandMe>>` state, when enter is clicked
+
 V 0.4.0 - 2023-01-01
 
+* add CTRL-Enter to create a new search tab
 * fix standard search-template to work with latest TW version
 * fix automatic tab-switching problems
 * improved code readabilty

@@ -1,5 +1,6 @@
 title: $:/plugins/wikilabs/advanced-search-plus/readme
 
+* Important: This plugin needs ''no browser reload''
 * Change the default "Advanced Search" tiddler
 * Adds the "Advanced Search" tab to the right sidebar
 * Replaces the default search option with an icon
