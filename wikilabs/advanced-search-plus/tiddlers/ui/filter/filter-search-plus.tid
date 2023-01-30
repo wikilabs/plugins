@@ -5,18 +5,20 @@ title: $:/plugins/wikilabs/advanced-search-plus/filter-search-plus
 \define add-tab-actions()
 <$let input-tiddler={{{ "$:/search-flt/" "inp/" [<new-tiddler-input>get[caption]] +[join[]] }}}
 		search-title={{{ "$:/search-flt/" [<new-tiddler-input>get[caption]] +[join[]] }}}>
-	<$action-deletetiddler $tiddler="$:/state/expandMe/-$:/plugins/wikilabs/advanced-search-plus/filter-search-plus"/>
+	<$action-deletetiddler $tiddler="$:/state/expandMe/$:/plugins/wikilabs/advanced-search-plus/filter-search-plus"/>
 	<$action-setfield $tiddler="$:/state/tab-54561037" text=<<search-title>>/>
 	<$action-setfield $tiddler="$:/state/tab--1498284803" text=<<search-title>> />
 	<$action-setfield $tiddler=<<input-tiddler>> text={{$:/temp/advancedsearch}} />
 	<$action-setfield $tiddler=<<search-title>>
 		caption={{{ [<new-tiddler-input>get[caption]] }}}
+		hint={{{ [<currentTab>get[hint]] }}}
 		input-title=<<search-title>>
 		input-tiddler=<<input-tiddler>>
 		text={{$:/plugins/wikilabs/advanced-search-plus/FilterSearchTemplate}}
 		tags="$:/tags/AdvancedSearch"
 		icon="$:/plugins/wikilabs/advanced-search-plus/filter-search.svg"
 	/>
+	<$action-deletetiddler $tiddler=<<new-tiddler-input>>/>
 </$let>
 \end
 

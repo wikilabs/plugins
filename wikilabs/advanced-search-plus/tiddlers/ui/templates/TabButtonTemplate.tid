@@ -1,8 +1,13 @@
 title: $:/plugins/wikilabs/advanced-search-plus/TabButtonTemplate
 
+\whitespace trim
+
 <$tiddler tiddler=<<currentTab>>>
-<$transclude tiddler={{!!icon}}/>
-<$transclude tiddler=<<currentTab>> field="caption">
-<$macrocall $name="currentTab" $type="text/plain" $output="text/plain"/>
-</$transclude>
+	<$wikify name="hint" text={{!!hint}}>
+		<span title=<<hint>>><$transclude tiddler={{!!icon}}/>
+			<$transclude tiddler=<<currentTab>> field="caption">
+				<$macrocall $name="currentTab" $type="text/plain" $output="text/plain"/>
+			</$transclude>
+		</span>
+	</$wikify>
 </$tiddler>
