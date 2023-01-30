@@ -1,10 +1,9 @@
-caption: 
-created: 20210307133825573
+title: $:/core/ui/AdvancedSearch/Standard
+caption:
 icon: $:/plugins/wikilabs/advanced-search-plus/standard-search.svg
 info: {{$:/language/Search/Standard/Caption}}
-modified: 20210307134515843
+hint: {{$:/language/Search/Standard/Hint}}
 tags: $:/tags/AdvancedSearch
-title: $:/core/ui/AdvancedSearch/Standard
 type: text/vnd.tiddlywiki
 
 \define lingo-base() $:/language/Search/
