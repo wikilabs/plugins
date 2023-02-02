@@ -17,7 +17,7 @@ type: text/vnd.tiddlywiki
 \end
 
 \define test-filter()
-<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-invisible" tooltip="Test the filter" style="cursor:help">
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-boxed" tooltip="Test the filter" style="cursor:help">
  <<count-filter>> 
 </$button>
 \end
@@ -36,9 +36,25 @@ Open this filtered list in ~AdvancedSearch
 <$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
 \end
 
-\define test-list()
-<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-list>> class="tc-btn-boxed" tooltip="Test the filter">
-Open this list in ~AdvancedSearch
+\define open-tiddler-info-actions()
+<!-- NOT ACTIVE ATM because tiddlerInfoState is not visible in the sidebar -->>
+<!-- states to show Info Area and set to Bundler Tab -->>
+<$action-log xx=<<tiddlerInfoState>> />
+<$action-setfield $tiddler="$:/state/tab--1105052506" $value="$:/plugins/wikilabs/ui/TiddlerInfo/BundleTab"/>
+<$action-setfield $tiddler=<<tiddlerInfoState>> $value="yes"/>
+\end
+
+\define test-list(text:"Open this list in ~AdvancedSearch")
+\whitespace trim
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-list>> class="tc-btn-boxed" tooltip="Test the filter" style="cursor:help">
+	<<__text__>>
+</$button>
+\end
+
+\define open-info(text:"")
+\whitespace trim
+<$button to=<<currentTiddler>> actions=<<open-tiddler-info-actions>> class="tc-btn-boxed" tooltip="Open Tiddler Info Bundler" style="cursor:help">
+	<<__text__>>
 </$button>
 \end
 
