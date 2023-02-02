@@ -17,6 +17,6 @@ New Bundle List
 <$list filter="[tag[$:/tags/Bundle]]">
 
 <$link to=<<currentTiddler>> tooltip=<<get-tooltip>> >
-<<dragBundleIcon>> {{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}} <<get-info>> <<currentTiddler>>
+<<dragBundleIcon>> {{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}} <$macrocall $name="test-list" text=<<get-info>>/> <<currentTiddler>>
 </$link>
 </$list>
