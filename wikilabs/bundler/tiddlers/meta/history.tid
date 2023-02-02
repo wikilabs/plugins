@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/bundler/history
 
+
+V 0.5.0 - 2023-02-02
+
+* Add dragable icons / buttons to right sidebar
+* Add dragable icons / buttons to tiddler info area
+* improve icon and link tooltips and aria labels
+
 V 0.4.4 - 2023-01-18
 
 * Fix ViewTemplate for tiddlers tagged $:/tags/Filter to show text-field

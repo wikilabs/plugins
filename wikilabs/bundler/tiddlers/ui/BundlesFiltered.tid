@@ -5,7 +5,7 @@ type: text/vnd.tiddlywiki
 \define filter-list() [subfilter{$(currentTiddler)$}!prefix[--- ]]
 \define get-info() <$count filter=<<filter-exist>> />/<$count filter=<<filter-list>> />
 \define get-tooltip() <$count filter=<<filter-exist>> />, out of <$count filter=<<filter-list>> /> tiddlers will be exported. Check for typos!
-\define count-filter() <$count filter={{$(currentTiddler)$!!filter}} /> 
+\define count-filter() <$count filter={{$(currentTiddler)$!!filter}} />
 \define get-filter-tooltip() <<count-filter>> tiddlers will be exported
 
 \define go-advanced-search-filter()
@@ -15,11 +15,13 @@ type: text/vnd.tiddlywiki
 <$action-setfield $tiddler="$:/temp/advancedsearch" $value={{$(currentTiddler)$!!filter}}/>
 <$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{$(currentTiddler)$!!filter}}/>
 \end
+
 \define test-filter()
 <$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-invisible" tooltip="Test the filter" style="cursor:help">
  <<count-filter>> 
 </$button>
 \end
+
 \define test-filter-text()
 <$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-boxed" tooltip="Test the filter">
 Open this filtered list in ~AdvancedSearch
@@ -52,5 +54,5 @@ Filter Bundle
 filter="[tag[$:/tags/Filter]]">
 <$link to=<<currentTiddler>> tooltip=<<get-filter-tooltip>> >
 
-{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}} <<test-filter>> <<currentTiddler>>
+<<dragFilteredIcon>> {{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}} <<test-filter>> <<currentTiddler>>
 </$link> </$list>

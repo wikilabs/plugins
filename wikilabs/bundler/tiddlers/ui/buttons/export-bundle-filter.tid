@@ -6,4 +6,4 @@ tags:
 title: $:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter
 type: text/vnd.tiddlywiki
 
-<$macrocall $name="exportButton" exportFilter={{!!filter}} lingoBase="$:/language/Buttons/ExportTiddlers/" baseFilename=<<currentTiddler>>/>
+<span class="tc-tiny-gap-right"><$macrocall $name="exportButton" exportFilter={{!!filter}} lingoBase="$:/language/Buttons/ExportTiddlers/" baseFilename=<<currentTiddler>>/><span>

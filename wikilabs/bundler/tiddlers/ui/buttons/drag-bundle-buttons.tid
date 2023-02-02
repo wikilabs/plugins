@@ -1,0 +1,39 @@
+title: $:/plugins/wikilabs/ui/TiddlerInfo/DraggableButtons
+tags: $:/tags/Macro
+type: text/vnd.tiddlywiki
+
+\define dragBundleFilter() [subfilter{!!text}has[title]] [<currentTiddler>]
+\define dragFilteredFilter() [subfilter{!!filter}has[title]] [<currentTiddler>]
+
+\define dragTooltip() Drag Bundle and Tiddlers!
+\define aria-label() draggable
+
+\define dragBundleButton()
+\whitespace trim
+<$button dragFilter=<<dragBundleFilter>> class="tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
+	<span class="tc-tiny-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
+	<<currentTiddler>>
+</$button>
+\end
+
+\define dragBundleIcon()
+\whitespace trim
+<$button dragFilter=<<dragBundleFilter>> class="tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
+	<span class="tc-tiny-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
+</$button>
+\end
+
+\define dragFilteredButton()
+\whitespace trim
+<$button dragFilter=<<dragFilteredFilter>> class="tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
+	<span class="tc-tiny-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
+	<<currentTiddler>>
+</$button>
+\end
+
+\define dragFilteredIcon()
+\whitespace trim
+<$button dragFilter=<<dragFilteredFilter>> class="tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
+	<span class="tc-tiny-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
+</$button>
+\end

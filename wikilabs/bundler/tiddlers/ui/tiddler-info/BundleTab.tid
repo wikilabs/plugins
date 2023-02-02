@@ -1,12 +1,22 @@
 caption: Bundle
 created: 20210125174531652
-modified: 20210127214644988
+modified: 20230202122808788
 tags: $:/tags/TiddlerInfo
 title: $:/plugins/wikilabs/ui/TiddlerInfo/BundleTab
 type: text/vnd.tiddlywiki
 
 \import [[$:/plugins/wikilabs/bundler/ui/BundlesFiltered]]
+
 Be careful - Make backups!
+
+<hr class="wltc-muted-forground">
+
+<$list filter="[all[current]contains:tags[$:/tags/Bundle]]">
+<<dragBundleButton>>
+</$list>
+<$list filter="[all[current]contains:tags[$:/tags/Filter]]" >
+<<dragFilteredButton>>
+</$list> ... Drag this link to a different wiki to import the bundle + all defined tiddlers
 
 <hr class="wltc-muted-forground">
 

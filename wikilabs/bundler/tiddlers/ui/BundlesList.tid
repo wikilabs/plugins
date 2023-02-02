@@ -1,5 +1,3 @@
-created: 20170604154146106
-modified: 20170609084521841
 title: $:/plugins/wikilabs/bundler/ui/BundlesList
 type: text/vnd.tiddlywiki
 
@@ -19,6 +17,6 @@ New Bundle List
 <$list filter="[tag[$:/tags/Bundle]]">
 
 <$link to=<<currentTiddler>> tooltip=<<get-tooltip>> >
-{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}} <<get-info>> <<currentTiddler>>
+<<dragBundleIcon>> {{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}} <<get-info>> <<currentTiddler>>
 </$link>
 </$list>
