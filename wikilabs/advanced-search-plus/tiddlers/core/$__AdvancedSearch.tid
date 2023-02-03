@@ -1,7 +1,18 @@
 title: $:/AdvancedSearch
 
 \whitespace trim
+
+<!--$set name="explicitTabList" filter="[all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]prefix[$:/plugins/wikilabs/ui/AdvancedSearchPlus/]!has[draft.of]]"-->
+
+<$set name="explicitTabList" filter="[all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]!has[draft.of]]">
+
 <div class="tc-advanced-search">
-    <<tabs tabsList:"[all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]!has[draft.of]]" default:"$:/core/ui/AdvancedSearch/System" 
-        buttonTemplate:"$:/plugins/wikilabs/advanced-search-plus/TabButtonTemplate" explicitState:"$:/state/tab--1498284803">>
+    <<tabs
+        tabsList:"[all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]!has[draft.of]]"
+        default:"$:/plugins/wikilabs/ui/AdvancedSearchPlus/System" 
+        buttonTemplate:"$:/plugins/wikilabs/advanced-search-plus/TabButtonTemplate"
+        explicitState:"$:/state/tab--1498284803"
+    >>
 </div>
+
+</$set>

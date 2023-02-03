@@ -1,2 +1,2 @@
 title: $:/tags/AdvancedSearchPlus
-list: $:/core/ui/AdvancedSearch/Standard $:/core/ui/AdvancedSearch/System $:/core/ui/AdvancedSearch/Shadows $:/core/ui/AdvancedSearch/Filter $:/plugins/wikilabs/ui/AdvancedSearch/Devider
+list: $:/plugins/wikilabs/ui/AdvancedSearchPlus/Standard $:/plugins/wikilabs/ui/AdvancedSearchPlus/System $:/plugins/wikilabs/ui/AdvancedSearchPlus/Shadows $:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter $:/plugins/wikilabs/ui/AdvancedSearchPlus/Devider

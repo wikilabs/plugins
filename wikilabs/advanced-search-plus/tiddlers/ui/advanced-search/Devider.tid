@@ -1,0 +1,18 @@
+title: $:/plugins/wikilabs/ui/AdvancedSearchPlus/Devider
+caption: ...
+tags: $:/tags/AdvancedSearchPlus
+
+TODO - see: [[timeline-subfilter-days]]
+
+* I want to have a dropdown with some useful timeline macros.
+* useful TOC macro settings ... 
+
+<<explicitTabList>>
+
+<$keyboard key="((input-tab-right))" actions=<<set-next-input-tab>>>
+<$keyboard key="((input-tab-left))" actions=<<set-next-input-tab "before">>>
+
+<$edit-text tiddler="$:/temp/asp/devider" tag=input focus=yes/>
+
+</$keyboard>
+</$keyboard>

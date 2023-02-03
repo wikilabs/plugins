@@ -1,0 +1,27 @@
+title: $:/plugins/wikilabs/advanced-search-plus/change-input-tab
+tags: $:/tags/Macro
+
+\whitespace trim
+
+\define change-input-tab(stateTitle,tag,beforeafter,defaultState,actions)
+\whitespace trim
+<$set name="tabsList" filter="[enlist<explicitTabList>] ~[all[shadows+tiddlers]tag<__tag__>!has[draft.of]]">
+	<$let
+		currentState={{{ [<__stateTitle__>!is[missing]get[text]] ~[<__defaultState__>] }}}
+		firstTab={{{ [enlist<tabsList>nth[1]] }}}
+		lastTab={{{ [enlist<tabsList>last[]] }}}
+		nextTab={{{ [enlist<tabsList>$beforeafter$<currentState>] ~[[$beforeafter$]removeprefix[after]suffix[]addprefix<firstTab>] ~[[$beforeafter$]removeprefix[before]suffix[]addprefix<lastTab>] }}}
+	>
+		<$action-setfield $tiddler=<<__stateTitle__>> text=<<nextTab>>/>
+		$actions$
+	</$let>
+</$set>
+\end
+
+\define set-next-input-tab(beforeafter:"after")
+<$macrocall $name="change-input-tab"
+	stateTitle="$:/state/tab--1498284803"
+	beforeafter="$beforeafter$"
+	defaultState="$:/plugins/wikilabs/ui/AdvancedSearchPlus/System"
+	actions="<$action-setfield $tiddler='$:/state/advancedsearch/currentTab' text=<<nextTab>>/>"/>
+\end

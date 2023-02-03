@@ -1,0 +1,9 @@
+title: $:/plugins/wikilabs/ui/AdvancedSearchPlus/Shadows
+caption:
+info: {{$:/language/Search/Shadows/Caption}}
+hint: {{$:/language/Search/Shadows/Hint}}
+icon: $:/plugins/wikilabs/advanced-search-plus/shadow-search.svg
+tags: $:/tags/AdvancedSearchPlus
+
+<$transclude tiddler="$:/plugins/wikilabs/advanced-search-plus/shadow-search-plus-new"/>
+<$transclude tiddler="$:/core/ui/AdvancedSearch/Shadows"/>

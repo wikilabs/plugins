@@ -1,0 +1,4 @@
+title: $:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter/FilterButtons/export
+tags: XX$:/tags/AdvancedSearchPlus/FilterButton
+
+{{$:/core/ui/AdvancedSearch/Filter/FilterButtons/export}}

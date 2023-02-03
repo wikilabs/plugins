@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/ui/AdvancedSearchPlus/Standard
+caption:
+icon: $:/plugins/wikilabs/advanced-search-plus/standard-search.svg
+info: {{$:/language/Search/Standard/Caption}}
+hint: {{$:/language/Search/Standard/Hint}}
+tags: $:/tags/AdvancedSearchPlus
+type: text/vnd.tiddlywiki
+
+<$transclude tiddler="$:/plugins/wikilabs/advanced-search-plus/standard-search-plus-new"/>
+<$transclude tiddler="$:/core/ui/AdvancedSearch/Standard"/>

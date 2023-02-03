@@ -5,6 +5,8 @@ V 0.5.0 - 2023-01-30
 * add language-hint to tab icon and caption
 * clear the caption temp tiddler when enter is cliced
 * fix close `<<expandMe>>` state, when enter is clicked
+* use most core advanced search tiddlers instead of overwriting them
+* add keyboard ctrl-alt left/right
 
 V 0.4.0 - 2023-01-01
 

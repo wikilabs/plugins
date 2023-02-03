@@ -6,12 +6,17 @@ title: $:/plugins/wikilabs/advanced-search-plus/SystemSearchTemplate
 <$button tooltip={{$:/language/Buttons/Delete/Caption}} >
   <$action-deletetiddler $tiddler={{!!input-tiddler}}/>
   <$action-deletetiddler $tiddler={{!!input-title}}/>
+  <$action-deletetiddler $tiddler="$:/state/tab--1498284803"/>
   <$transclude tiddler="$:/core/images/delete-button" />
 </$button>
 <<lingo System/Hint>>
 
 <div class="tc-search">
-<$edit-text tiddler={{!!input-tiddler}} type="search" tag="input" placeholder="..." default=""/>
+<$keyboard key="((input-tab-right))" actions=<<set-next-input-tab>>>
+<$keyboard key="((input-tab-left))" actions=<<set-next-input-tab "before">>>
+<$edit-text tiddler={{!!input-tiddler}} type="search" tag="input" placeholder="..." default="" focus="yes"/>
+</$keyboard>
+</$keyboard>
 <$reveal state={{!!input-tiddler}} type="nomatch" text="">
 <$button class="tc-btn-invisible">
 <$action-setfield $tiddler={{!!input-tiddler}} $field="text" $value=""/>
