@@ -3,7 +3,7 @@ caption:
 info: {{$:/language/Search/System/Caption}}
 hint: {{$:/language/Search/System/Hint}}
 icon: $:/plugins/wikilabs/advanced-search-plus/system-search.svg
-tags: $:/tags/AdvancedSearch
+tags: $:/tags/AdvancedSearchPlus
 
 \define lingo-base() $:/language/Search/
 

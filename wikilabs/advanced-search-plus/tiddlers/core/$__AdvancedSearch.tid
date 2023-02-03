@@ -2,6 +2,6 @@ title: $:/AdvancedSearch
 
 \whitespace trim
 <div class="tc-advanced-search">
-    <<tabs tabsList:"[all[shadows+tiddlers]tag[$:/tags/AdvancedSearch]!has[draft.of]]" default:"$:/core/ui/AdvancedSearch/System" 
+    <<tabs tabsList:"[all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]!has[draft.of]]" default:"$:/core/ui/AdvancedSearch/System" 
         buttonTemplate:"$:/plugins/wikilabs/advanced-search-plus/TabButtonTemplate" explicitState:"$:/state/tab--1498284803">>
 </div>
