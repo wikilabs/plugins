@@ -10,10 +10,12 @@ type: text/vnd.tiddlywiki
 
 \define go-advanced-search-filter()
 <!-- states for default TW and Advanced Search Plus Plugin -->>
-<$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
-<$action-setfield $tiddler="$:/state/tab-1610021602" $value="$:/core/ui/AdvancedSearch/Filter"/>
+<$let filter={{{ [all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]limit[1]then[$:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter]else[$:/core/ui/AdvancedSearch/Filter]] }}}>
+<$action-setfield $tiddler="$:/state/tab--1498284803" $value=<<filter>>/>
+<$action-setfield $tiddler="$:/state/tab-1610021602" $value=<<filter>>/>
 <$action-setfield $tiddler="$:/temp/advancedsearch" $value={{$(currentTiddler)$!!filter}}/>
 <$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{$(currentTiddler)$!!filter}}/>
+</$let>
 \end
 
 \define test-filter()
@@ -30,10 +32,12 @@ Open this filtered list in ~AdvancedSearch
 
 \define go-advanced-search-list()
 <!-- states for default TW and Advanced Search Plus Plugin -->>
-<$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/core/ui/AdvancedSearch/Filter"/>
-<$action-setfield $tiddler="$:/state/tab-1610021602" $value="$:/core/ui/AdvancedSearch/Filter"/>
+<$let filter={{{ [all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]limit[1]then[$:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter]else[$:/core/ui/AdvancedSearch/Filter]] }}}>
+<$action-setfield $tiddler="$:/state/tab--1498284803" $value=<<filter>>/>
+<$action-setfield $tiddler="$:/state/tab-1610021602" $value=<<filter>>/>
 <$action-setfield $tiddler="$:/temp/advancedsearch" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
 <$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
+</$let>
 \end
 
 \define open-tiddler-info-actions()

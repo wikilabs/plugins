@@ -1,12 +1,16 @@
 title: $:/plugins/wikilabs/bundler/history
 
 
+V 0.5.1 - 2023-02-08
+
+* Fix $:/AdvancedSearch preview if ~AdvancedSearchPlus plugin is installed
+
 V 0.5.0 - 2023-02-02
 
 * Add dragable icons / buttons to right sidebar
 * Add dragable icons / buttons to tiddler info area
 * improve icon and link tooltips and aria labels
-* Allow the standard bundles to preview the list in AdvancedSearch
+* Allow the standard bundles to preview the list in $:/AdvancedSearch
 
 V 0.4.4 - 2023-01-18
 
