@@ -46,6 +46,31 @@ The "Filter Bundle" button creates compatible configurations. So user created fi
 
 <<<
 
+!! Rename on Import from Clipboard
+
+<<<
+
+<$checkbox tiddler="$:/config/wikilabs/enableImportRename" field="text" checked="yes" unchecked="no" default="no"> [[Enable Automatic Import Renaming from Clipboard|$:/config/wikilabs/enableImportRename]]</$checkbox>
+
+This feature was created to allow users to quickly import images from the clipbaord. It can also be used with text content, that is imported from the ''clipboard'', where the browser always uses the same title. Those names depend on the browser language settings. So they can be different in your browser. English: `image.png` for images and `untitled` for text content.
+
+;[[Browser Defined Image Title|$:/config/wikilabs/import/image/default-title]] (eg: image.png)
+:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/image/default-title" default="image.png" tag="input"/>
+
+;[[Import Image Title Template|$:/config/wikilabs/import/image/title-template]]
+:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/image/title-template" default="image YYYY-0MM-0DD, 0hh:0mm:0XXX.png" tag="input"/>
+
+---
+
+;[[Default Title Prefix|$:/config/wikilabs/import/untitled/default-title]] (eg. prefixed: Untitled)
+:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/untitled/default-title" default="Untitled" tag="input"/>
+
+;[[Import Text Title Template|$:/config/wikilabs/import/untitled/title-template]]
+:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/untitled/title-template" default="Clipboard  YYYY-0MM-0DD, 0hh:0mm:0XXX" tag="input"/>
+
+<<<
+
+
 !! New Title for Existing Titles
 
 <<<
@@ -54,21 +79,6 @@ The "Filter Bundle" button creates compatible configurations. So user created fi
 
 By default, the TW import mechanism overwrites existing tiddlers. This option allows you, to activate a mechanism, that automatically creates a new tiddler title. Eg: `HelloThere` will be renamed to `HelloThere 1`. Initially this option is disabled.
 
-<<<
-
-!! Rename Title on Import
-
-<<<
-
-<$checkbox tiddler="$:/config/wikilabs/enableImportRename" field="text" checked="yes" unchecked="no" default="no"> [[Enable Automatic Import Renaming|$:/config/wikilabs/enableImportRename]]</$checkbox>
-
-This feature was created to allow users to quickly import images from the clipbaord. It can also be used with text content, that is imported with the ''clipboard'', where the browser always uses the same title. Those names depend on the browser language settings. So they can be different in your browser. English: `image.png` for images and `untitled` for text content.
-
-;[[Browser Defined Title|$:/config/wikilabs/import/image/default-title]] (eg: image.png or untitled)
-:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/image/default-title" default="image.png" tag="input"/>
-
-;[[Import Title Template|$:/config/wikilabs/import/image/title-template]]
-:<$edit-text class="wltc-full-width" tiddler="$:/config/wikilabs/import/image/title-template" default="image YYYY-0MM-0DD, 0hh:0mm:0XXX.png" tag="input"/>
 <<<
 
 !! {{$:/core/ui/ControlPanel/Settings/MissingLinks!!caption}}

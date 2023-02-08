@@ -29,10 +29,13 @@ exports.upgrade = function(wiki,titles,tiddlers) {
 
 	$tw.utils.each(titles,function(title) {
 		var tiddler = {};
+		var regexp = /(^untitled)(.*)/i; // check for prefix "untitled" non case sensitive
+		var match = regexp.exec(title);
+
 		// If the tiddler has been removed, there will be no fields.
-		if (title === defaultTitle) {
+		if (match && (match[0] === defaultTitle + match[2])) {
 			messages[title] = "auto-renamed";
-			var newTitle = $tw.utils.formatDateString(new Date(),targetTitle);
+			var newTitle = $tw.utils.formatDateString(new Date(),targetTitle + match[2]);
 			tiddler = new $tw.Tiddler(tiddlers[title], {"title": newTitle });
 			tiddlers[tiddler.fields.title] = tiddler.fields;
 			// remove the original tiddler
