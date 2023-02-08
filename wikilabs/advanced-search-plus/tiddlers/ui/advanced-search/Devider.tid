@@ -7,7 +7,7 @@ TODO - see: [[timeline-subfilter-days]]
 * I want to have a dropdown with some useful timeline macros.
 * useful TOC macro settings ... 
 
-<<explicitTabList>>
+<!--<explicitTabList>-->
 
 <$keyboard key="((input-tab-right))" actions=<<set-next-input-tab>>>
 <$keyboard key="((input-tab-left))" actions=<<set-next-input-tab "before">>>
