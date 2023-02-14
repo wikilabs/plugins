@@ -5,6 +5,7 @@ V 0.5.1 - 2023-02-08
 
 * Fix $:/AdvancedSearch preview if ~AdvancedSearchPlus plugin is installed
 * Add extra template setting for pasted import from the clipboard
+* Check for "untitled" prefix from clipboard text import to make it compatible with next TW version
 
 V 0.5.0 - 2023-02-02
 
