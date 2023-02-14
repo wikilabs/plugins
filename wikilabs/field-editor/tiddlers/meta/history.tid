@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/field-editor/history
 
+V 0.2.1 2023.03.14
+
+* enable tiddler (i)nfo button in edit-mode again. I has been disabled by accident.
+* Add more info to readme .. See Important section!
 
 V 0.2.0 2022.12.29
 

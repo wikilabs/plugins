@@ -1,4 +1,5 @@
 title: $:/plugins/wikilabs/ui/EditTemplate/body
+info: will be included via EditBody Cascade
 
 \define config-visibility-title()
 $:/config/EditorToolbarButtons/Visibility/$(currentTiddler)$

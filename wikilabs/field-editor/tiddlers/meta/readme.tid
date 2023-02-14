@@ -47,4 +47,6 @@ This plugin changes the following core tiddlers:
 
 <ul><$list filter="[[$:/plugins/wikilabs/field-editor]plugintiddlers[]prefix[$:/core/]] [[$:/config/ui/EditTemplate]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
 
+''Important:'' More information about `$:/config/ui/EditTemplate` and the edit cascades can be found at [[TiddlyWiki Docs|https://tiddlywiki.com/#Story%20Tiddler%20Template%20Cascade:%5B%5BStory%20Tiddler%20Template%20Cascade%5D%5D%20%24%3A%2Fcore%2Fui%2FControlPanel%2FStoryTiddler%20%5B%5BHidden%20Setting%3A%20ViewTemplate%20and%20EditTemplate%5D%5D%20Cascades%20%5B%5BEdit%20Template%20Body%20Cascade%5D%5D]]
+
 The full list of tiddlers in the plugin can be found at: [[$:/plugins/wikilabs/field-editor]] '': contents'' tab.
