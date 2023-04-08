@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/uni-link/wiki-ext.js
+title: $:/plugins/wikilabs/uni-link/wiki-methodes.js
 type: application/javascript
 module-type: wikimethod
 
@@ -149,14 +149,16 @@ exports.getAllAliases = function() {
 	excludeTag: tag to exclude
 	includeSystem: whether to include system tiddlers (defaults to false)
 	*/
-	self.forEachTiddler({includeSystem:true}, function(title,tiddler) {
-		if (tiddler.fields["aliases"]) {
-//			$tw.utils.pushTop(aliases, this.getCacheForTiddler(title,"alias",aliasInit.bind(this, title)));
-			aliases = aliases + ` ${tiddler.fields.aliases}`;
-		} // if tiddler aliases
+	aliases = this.getGlobalCache("wl-aliases",function() {
+		self.forEachTiddler({includeSystem:true}, function(title,tiddler) {
+			if (tiddler.fields["aliases"]) {
+				aliases = aliases + " " + tiddler.fields.aliases;
+			} // if tiddler aliases
+		});
+		aliases = aliases.toLowerCase();
+		return $tw.utils.parseStringArray(aliases);
 	});
-	aliases = aliases.toLowerCase();
-	return $tw.utils.parseStringArray(aliases);
+	return aliases;
 };
 
 

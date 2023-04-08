@@ -7,8 +7,8 @@ code-body: yes
 \whitespace trim
 <$list filter="[<__target__>is[alias]]" variable="ali"
 	emptyMessage="""<$link tooltip="Alias not defined!" to="?"><span class="uni-alias-missing"><<__target__>></span></$link>""">
-	<$list filter="[has[aliases]!has[draft.of]]">
-		<$vars find={{{ [<__target__>] +[escaperegexp[]addprefix[^]addsuffix[$(?i)]] }}} >
+	<$vars find={{{ [<__target__>] +[escaperegexp[]addprefix[^]addsuffix[$(?i)]] }}} >
+		<$list filter="[has[aliases]!has[draft.of]]">
 			<$list filter="[enlist{!!aliases}regexp<find>]" variable="dummy">
 				<$link tooltip=<<tooltip>> >
 					<span class="uni-alias">
@@ -18,8 +18,8 @@ code-body: yes
 					</span>
 				</$link>
 			</$list>
-		</$vars>
-	</$list>
+		</$list>
+	</$vars> <!-- 1,67s / 1,37 -->
 </$list>
 \end
 
