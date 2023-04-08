@@ -37,7 +37,7 @@ exports.init = function(parser) {
 	// match[1] ... all symbols 1-4 ´ or » or ° or , or _
 	// match[2] ... htmlTag ... default DIV
 	// match[3] ... classString
-	this.matchRegExp = /((?=『[^『])『|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.10.0
+	this.matchRegExp = /((?=❮[^❮])❮|(?=⠒[^⠒])⠒|(?=\/°[^\/°])\/°)((?:[^\.:\r\n\s]+))?(\.(?:[^:\r\n\s]+))?((:".*?")*)/mg; // V0.10.0
 	this.p = this.parser;
 	this.p.configTickText = this.p.configTickText || {};
 
@@ -95,9 +95,9 @@ exports.parse = function() {
 		_endString : "", _use: "", _useGlobal: "", _debug: false, _debugString: "", _srcName:"src", _params : (_params !== "") ? _params.split(':"') : [] };
 
 	switch (this.match[1][0]) {
-		case "『":
+		case "❮":
 			id = "corner";
-			options._endString = "』"
+			options._endString = "❯"
 		break;
 		case "⠒":
 			id = "braille"

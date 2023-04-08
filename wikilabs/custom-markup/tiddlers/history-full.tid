@@ -56,7 +56,7 @@ V 0.10.1 - 2021-02-22
 V 0.10.0 - 2021-02-18
 
 * fix RSOD accessing cache without a check
-* Added the `corner 『 』` glyphs for inline markers
+* Added the `corner ❮ ❯` glyphs for inline markers
 ** "little was removed"
 * Added `CTRL-0` as shortcut for "toggle inline selection"
 * Added dynamic icon for inline selection

@@ -2,7 +2,7 @@ title: $:/plugins/wikilabs/custom-markup/icons/inline/corner
 type: application/json
 
 {
-"prefix": "『",
-"suffix": "』",
+"prefix": "❮",
+"suffix": "❯",
 "element": "<path d='m58.5 29.4v96.5h-27v-123h49.6v27zm-19.4-20.5v111h11.9v-96.5h22.6v-14z' style='stroke-width:4.36'/>"
 }

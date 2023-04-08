@@ -31,7 +31,7 @@ type: text/vnd.tiddlywiki
 <$tiddler tiddler="$:/config/edit/inlinePrefix/xx">
 	<$wl-radio field="id" value="/°" actions=<<selectID>> name="slash"> `/°..°/` </$wl-radio>|
 	<$wl-radio field="id" value="⠒" actions=<<selectID>> name="braille"> `⠒..⠶` </$wl-radio>|
-	<$wl-radio field="id" value="『" actions=<<selectID>> name="corner"> `『..』` </$wl-radio>|
+	<$wl-radio field="id" value="❮" actions=<<selectID>> name="corner"> `❮..❯` </$wl-radio>|
 </$tiddler>
 \end
 
