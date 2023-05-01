@@ -1,0 +1,18 @@
+code-body: yesx
+created: 20230501090727318
+modified: 20230501091354729
+tags: [[Wikitext Cheatsheet]]
+title: $:/Cheatsheet Custom Widget
+type: text/vnd.tiddlywiki
+
+\widget $$my-widget(attribute:"Default value")
+This is the widget, and the attribute is: ''<<attribute>>''
+\end
+
+<<.from-version "5.3.0">> Custom widget is a <<.def "custom widget">> is a special kind of [[procedure|Procedures]] that can be called using the same syntax as widgets.
+
+Custom widgets can also be used to override built-in ~JavaScript widgets to customise their behaviour. 
+
+Custom widgets are usually defined with the pragma: `\widget`:
+
+<$$my-widget attribute="xxxx"/>

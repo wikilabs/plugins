@@ -1,0 +1,19 @@
+caption: Cheatsheet
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+condition-disabled: [[$:/temp/cheatsheet/disabled]get[state-disabled]else[no]]
+created: 20230501105610496
+description: Show WikiText Cheatsheet
+icon: $:/core/images/tip
+list-before: $:/core/ui/EditorToolbar/bold
+modified: 20230501132436406
+shortcuts: ((show-cheatsheet))
+tags: $:/tags/EditorToolbar
+title: $:/plugins/wikilabs/cheatsheet/toolbar/show
+type: text/vnd.tiddlywiki
+
+<$action-sendmessage
+	$message="tm-modal"
+	$param="Wikitext Cheatsheet"
+	prefix="''"
+	suffix="''"
+/>

@@ -1,0 +1,19 @@
+created: 20230501091658586
+modified: 20230501100847525
+tags: [[Wikitext Cheatsheet]]
+title: $:/Cheatsheet Pragmas
+type: text/vnd.tiddlywiki
+
+A <<.def pragma>> is a special component of WikiText that provides control over the way the remaining text is parsed.
+
+Pragmas occupy lines that start with `\`. 
+The following pragmas are available:
+
+* Pragma: `\define`
+* Pragma: `\function`
+* Pragma: `\import`
+* Pragma: `\parameters`
+* Pragma: `\procedure`
+* Pragma: `\rules`
+* Pragma: `\whitespace`
+* Pragma: `\widget`

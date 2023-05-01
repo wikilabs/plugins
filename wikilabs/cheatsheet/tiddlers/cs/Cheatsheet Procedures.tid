@@ -1,0 +1,18 @@
+created: 20230501093211568
+modified: 20230501094258932
+tags: [[Wikitext Cheatsheet]]
+title: $:/Cheatsheet Procedures
+type: text/vnd.tiddlywiki
+
+\procedure my-procedure(parameter:"Default value")
+This is the procedure, and the parameter is: ''<<parameter>>''.
+\end
+
+<<.from-version "5.3.0">> A procedure is a named snippet of text. They are typically defined with the `\procedure` pragma:
+
+The name wrapped in double angled [[brackets|Brackets]] is used a shorthand way of [[transcluding|Transclusion]] the snippet. Each of these <<.def "procedure calls">> can supply a different set of parameters:
+
+--------
+
+<<my-procedure>>
+<<my-procedure "The parameter">>

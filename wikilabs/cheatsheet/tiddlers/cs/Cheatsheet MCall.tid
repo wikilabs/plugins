@@ -1,0 +1,13 @@
+code-body: yes
+created: 20220822124925667
+modified: 20230115190043040
+tags: [[Wikitext Cheatsheet]]
+title: $:/Cheatsheet MCall
+type: text/vnd.tiddlywiki
+
+<!-- Macros can be imported, using the \import pragma -->
+\import [[$:/Cheatsheet MDefinition]]
+
+<<sayhi>>
+
+<<sayhi Mario>>

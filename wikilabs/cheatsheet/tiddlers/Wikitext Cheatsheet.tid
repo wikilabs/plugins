@@ -1,0 +1,146 @@
+created: 20220821184022101
+modified: 20230501135238087
+tags: WikiText
+title: Wikitext Cheatsheet
+type: text/vnd.tiddlywiki
+
+<!-- This URL is used to create external links if the tiddler is missing in the wiki -->
+\define baseURL() https://tiddlywiki.com/#
+
+<!-- exportMeButton() saves this tiddler and all it's dependencies into a JSON export file -->
+\define exportMeButton(btnText:"Export Me & Tagged")
+\whitespace trim
+<$let me=<<currentTiddler>> >
+	<$set name=exportFilter filter="[tag<me>] [<me>]">
+		<$tiddler tiddler="$:/core/templates/exporters/JsonFile">
+			<$button class="tc-btn-download" >
+				<$action-sendmessage $message="tm-download-file" $param=<<currentTiddler>> exportFilter=<<exportFilter>> filename={{{ [<me>addsuffix{!!extension}] }}}/>
+				<$text text=<<__btnText__>>/>
+			</$button>
+		</$tiddler>
+	</$set>
+</$let>
+\end
+
+<!-- extLink() and link() create the external and internal links for the .xL macro -->
+\define link(text tid) <$link to={{{ [<__tid__>] }}} ><<__text__>></$link>
+\define extLink(text tid) <a class="tc-tiddlylink-external" href={{{ [<baseURL>] [<__tid__>] +[join[]] }}} rel="noopener noreferrer" target="_blank"><<__text__>></a>
+
+<!-- .xL ... creates an internal link, if tiddler exists otherwise it creates a link to tiddlywiki.com -->
+\define .xL(text tid)
+\whitespace trim
+<$let macro={{{ [<__tid__>is[tiddler]then[link]else[extLink]] }}}>
+	<$macrocall $name=<<macro>> text=<<__text__>> tid=<<__tid__>> />
+</$let>
+\end
+
+<!-- .t, .cb are macros that that transclude and show code blocks from example tiddlers -->
+\define .t(tid) <$transclude tiddler=<<__tid__>> mode=block/>
+\define .cb(title)
+<$macrocall $name="copy-to-clipboard-above-right" src={{{ [<__title__>get[text]] }}}/>
+<$codeblock code={{{ [<__title__>get[text]] }}}/>
+\end
+
+| Rendered Result                | Example Markup                 |h
+| how the example markup renders | what to enter as tiddler text  |
+|>| ! <<.xL "Basic Text Formatting" "Formatting in WikiText">>    |
+|''bold''                        |`''bold''` (two single hyphens) |
+|//italics//                     |`//italics//`          |
+|''//bold italics//''            |`''//bold italics//''` |
+|__underscore__                  |`__underscore__`    |
+|~~strikethrough~~               |`~~strikethrough~~` |
+|super^^script^^                 |`super^^script^^`   |
+|sub,,script,,                   |`sub,,script,,` |
+|@@highlight@@                   |`@@highlight@@` |
+|n--dash                         |`n--dash`       |
+|m---dash                        |`m---dash`      |
+|>|                 ! <<.xL "Headings" "Headings in WikiText">> |
+|<h1>Heading 1</h1>              |`! Heading 1` |
+|<h2>Heading 2</h2>              |`! Heading 2` |
+|<h3>Heading 3</h3>              |`! Heading 3` |
+|<h4>Heading 4</h4>              |`! Heading 4` |
+|<h5>Heading 5</h5>              |`! Heading 5` |
+|<h6>Heading 6</h6>              |`! Heading 6` |
+|>| ! <<.xL "Lists" "Lists in WikiText">>                  |
+|>|   <<.xL "Ordered Lists" "Lists in WikiText">>          |
+|<<.t "$:/Cheatsheet OL">>         |<<.cb "$:/Cheatsheet OL">> |
+|>|   <<.xL "Unordered Lists" "Lists in WikiText">>        |
+|<<.t "$:/Cheatsheet UL">>         |<<.cb "$:/Cheatsheet UL">> |
+|>|   <<.xL "Definition Lists" "Definitions in WikiText">> |
+|<<.t "$:/Cheatsheet DL">>         |<<.cb "$:/Cheatsheet DL">> |
+|>|   <<.xL "Mixed Lists" "Lists in WikiText">>            |
+|<<.t "$:/Cheatsheet ML">>         |<<.cb "$:/Cheatsheet ML">> |
+|>| ! <<.xL "Blockquotes" "Block Quotes in WikiText">>     |
+|>|   <<.xL "Nested Blockquotes" "Block Quotes in WikiText">>    |
+|<<.t "$:/Cheatsheet Quotes">>     |<<.cb "$:/Cheatsheet Quotes">>   |
+|>|   <<.xL "Muli-line Blockquotes" "Block Quotes in WikiText">> |
+|<<.t "$:/Cheatsheet QuotesML">>   |<<.cb "$:/Cheatsheet QuotesML">> |
+|>|   <<.xL "Mixed Blockquotes" "Block Quotes in WikiText">>     |
+|<<.t "$:/Cheatsheet QuotesMIX">>  |<<.cb "$:/Cheatsheet QuotesMIX">>|
+|>| ! <<.xL "Code / Monospaced Text" "Code Blocks in WikiText">> |
+|>|   <<.xL "Inline Code" "Code Blocks in WikiText">>            |
+|`monospaced text`               |<$codeblock code="`monospaced text`" />      |
+|`` `show backticks` ``          |<$codeblock code="`` `show backticks` ``" /> |
+|>|   <<.xL "Code Block" "Code Blocks in WikiText">>            |
+|<<.t "$:/Cheatsheet CodeML">>     |<<.cb "$:/Cheatsheet CodeML">>  |
+|>| ! <<.xL "Links" "Linking in WikiText">>                     |
+|>|   <<.xL "Internal Links" "Linking in WikiText">>            |
+|<<.xL "CamelCase" "CamelCase">> |`CamelCase`                   |
+|[[Tiddler Title]]               |`[[Tiddler Title]]`           |
+|[[Pretty Link|Tiddler Title]] |`[[Pretty Link|Tiddler Title]]` |
+|>|   <<.xL "Avoid Wikification" "Linking in WikiText">>        |
+|~WikiText                       |`~WikiText` -- a leading tilde ~ prevents automatic links |
+|>|   <<.xL "External Links" "Linking in WikiText">>          |
+|>| A valid URL is automatically rendered as an external link |
+|https://tiddlywiki.com                                |`https://tiddlywiki.com` |
+|[[Pretty External Link|https://tiddlywiki.com]]       |`[[Pretty External Link|https://tiddlywiki.com]]` |
+|[[Talk TiddlyWiki Forum|https://talk.tiddlywiki.org]] |`[[Talk TiddlyWiki Forum|https://talk.tiddlywiki.org]]` |
+|>|   <<.xL "Filesystem Links" "Linking in WikiText">> |
+|>| You can, of course, use file system links both as plain or pretty links |
+|''Windows Network Path''      |`[[file://///server/share]]` |
+|''Windows Local''             |`[[file:///c:/folder/file]]` |
+|''Linux/Unix Local''          |`[[file:///folder/file]]`    |
+|''Relative Path (Subfolder)'' |`[[folder/file]]` |
+|>| ! <<.xL "Images" "Images in WikiText">>       |
+|>| In general, image files should be external to a ~TiddlyWiki. |
+|[img[https://tiddlywiki.com/favicon.ico]] |`[img[https://tiddlywiki.com/favicon.ico]]` |
+|[img[An explanatory tooltip|https://tiddlywiki.com/favicon.ico]] |`[img[An explanatory tooltip|https://tiddlywiki.com/favicon.ico]]` |
+|>| ! <<.xL "Tables" "Tables in WikiText">> |
+|<<.t "$:/Cheatsheet Table">>        |<<.cb "$:/Cheatsheet Table">>|
+|>| ! <<.xL "Custom Styles" "Styles and Classes in WikiText">> |
+|<<.t "$:/Cheatsheet CS">>           |<<.cb "$:/Cheatsheet CS">>   |
+|>| ! <<.xL "Hard Linebreaks" "Hard Linebreaks in WikiText">>  |
+|<<.t "$:/Cheatsheet HL">>           |<<.cb "$:/Cheatsheet HL">>   |
+|>| ! <<.xL "Horizontal Rule" "Horizontal Rules in WikiText">> |
+|<<.t "$:/Cheatsheet HR">>           |<<.cb "$:/Cheatsheet HR">>   |
+|>| ! <<.xL "Comments" "HTML in WikiText">> |
+|<<.t "$:/Cheatsheet Comment">>      |<<.cb "$:/Cheatsheet Comment">>|
+|>| ! <<.xL "Typed Blocks" "Typed Blocks in WikiText">>        |
+|<<.t "$:/Cheatsheet TB">>           |<<.cb "$:/Cheatsheet TB">>   |
+|>| ! <<.xL "Embedded HTML" "HTML in WikiText">>               |
+|<<.t "$:/Cheatsheet HTML">>         |<<.cb "$:/Cheatsheet HTML">> |
+|>| ! <<.xL "HTML Entities" "HTML Entities">> |
+|&trade; &pound; or &euro;         |`&trade; &pound; or &euro;`  |
+|>| ! <<.xL "Procedures" "Procedures">>                                        |
+|<<.t "$:/Cheatsheet Procedures">>         |<<.cb "$:/Cheatsheet Procedures">> |
+|>| ! <<.xL "Functions" "Functions">>                                          |
+|<<.t "$:/Cheatsheet Functions">>          |<<.cb "$:/Cheatsheet Functions">>  |
+|>| ! <<.xL "Macros" "Macros in WikiText">>                                    |
+|>|   <<.xL "Macro Definition" "Macro Definitions in WikiText">>               |
+|<<.t "$:/Cheatsheet MDefinition">>  |<<.cb "$:/Cheatsheet MDefinition">>      |
+|>|   <<.xL "Macro Calls" "Macro Calls in WikiText">>                          |
+|<<.t "$:/Cheatsheet MCall">>        |<<.cb "$:/Cheatsheet MCall">>            |
+|>| ! <<.xL "Transclusions" "Transclusion in WikiText">>        |
+|<<.t "$:/Cheatsheet Transclusion">> |The [[$:/Cheatsheet Transclusion]] tiddler on the left side is transcluded into the table using the <<.xL "transclusion-widget" "TranscludeWidget">><br><br>`<<.t "$:/Cheatsheet Transclusion">>` |
+|>| ! <<.xL "Widgets" "Widgets in WikiText">>                      |
+|>|   <<.xL "Basic Widgets" "Widgets in WikiText">>                      |
+|<<.t "$:/Cheatsheet Widget">>       |<<.cb "$:/Cheatsheet Widget">>   |
+|>|   <<.xL "Custom Widgets" "Custom Widgets">>                      |
+|<<.t "$:/Cheatsheet Custom Widget">>       |<<.cb "$:/Cheatsheet Custom Widget">>   |
+|>| ! <<.xL "Variables" "Variables">>                  |
+|<<.t "$:/Cheatsheet Variable">>     |<<.cb "$:/Cheatsheet Variable">> |
+|>| ! <<.xL "Parser Modes" "WikiText Parser Modes">>               |
+|>|<<.t "$:/Cheatsheet PM">> |
+|>| ! <<.xL "Pragmas" "Pragmas">> |
+|>|<<.t "$:/Cheatsheet Pragmas">> |
+

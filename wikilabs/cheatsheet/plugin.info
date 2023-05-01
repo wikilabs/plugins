@@ -1,0 +1,9 @@
+{
+	"title": "$:/plugins/wikilabs/cheatsheet",
+	"name": "TW Cheatsheet",
+	"description": "A compact wikitext syntax overview",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.2.0",
+	"version": "0.1.0",
+	"list": "readme license history"
+}
