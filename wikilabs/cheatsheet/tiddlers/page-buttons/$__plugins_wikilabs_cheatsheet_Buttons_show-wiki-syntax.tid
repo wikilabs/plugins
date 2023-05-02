@@ -1,0 +1,19 @@
+caption: {{$:/core/images/tip}} TW Syntax
+created: 20230502110625798
+description: Show Wikitext Cheetsheet
+modified: 20230502111233925
+tags: $:/tags/PageControls
+title: $:/plugins/wikilabs/cheatsheet/Buttons/show-wiki-syntax
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$button message="tm-modal" param="Wikitext Cheatsheet" tooltip="Show Wikitext Cheetsheet" aria-label="Show Wikitext Cheetsheet" class=<<tv-config-toolbar-class>>>
+<$list filter="[<tv-config-toolbar-icons>match[yes]]">
+{{$:/core/images/tip}}
+</$list>
+<$list filter="[<tv-config-toolbar-text>match[yes]]">
+<span class="tc-btn-text">
+<$text text="cheatsheet"/>
+</span>
+</$list>
+</$button>

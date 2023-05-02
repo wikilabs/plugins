@@ -2,7 +2,9 @@ title: $:/plugins/wikilabs/cheatsheet/readme
 
 This plugin adds the [[Wikitext Cheatsheet]] overview to your wiki.
 
-! Cheatsheet Settings
+''Cheatsheet Settings''
 
-TODO
+This plugin adds 2 new "Show Wikitext Cheatsheet" buttons and an editor-shortcut to your wiki
 
+* A "Cheatsheet" button is added as a "page button"
+* A "Cheatsheet" button is added to the edit toolbars .. Shortcut <kbd>F1</kbd>
