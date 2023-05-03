@@ -4,6 +4,8 @@ tags:
 title: $:/plugins/wikilabs/bundler/doc/table-all-filters
 type: text/vnd.tiddlywiki
 
+\import [[$:/plugins/wikilabs/bundler/ui/BundlesFiltered]]
+
 !! Filters This Wiki
 
 <table>
@@ -13,7 +15,7 @@ type: text/vnd.tiddlywiki
   <tr>
     <td>{{!!description}}</td>
     <td><$view field=filter/></td>
-    <td>{{||$:/plugins/wikilabs/bundler/ui/Buttons/test-filter}}</td>
+    <td><<test-filter>></td>
   </tr>
 </$list>
 </tbody>
@@ -28,7 +30,7 @@ type: text/vnd.tiddlywiki
   <tr>
     <td>{{!!description}}</td>
     <td><$view field=filter/></td>
-    <td>{{||$:/plugins/wikilabs/bundler/ui/Buttons/test-filter}}</td>
+    <td><<test-filter>></td>
   </tr>
 </$list>
 </tbody>

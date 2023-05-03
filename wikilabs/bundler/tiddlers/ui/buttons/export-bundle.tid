@@ -9,4 +9,4 @@ type: text/vnd.tiddlywiki
 [enlist{$(currentTiddler)$}]
 \end
 
-<span class="tc-tiny-gap-right"><$macrocall $name="exportButton" exportFilter=<<makeExportFilter>> lingoBase="$:/language/Buttons/ExportTiddler/" baseFilename=<<currentTiddler>>/></span>
+<span class="tc-small-gap-right"><$macrocall $name="exportButton" exportFilter=<<makeExportFilter>> lingoBase="$:/language/Buttons/ExportTiddler/" baseFilename=<<currentTiddler>>/></span>

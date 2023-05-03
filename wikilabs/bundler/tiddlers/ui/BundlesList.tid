@@ -3,20 +3,30 @@ type: text/vnd.tiddlywiki
 
 \import [[$:/plugins/wikilabs/bundler/ui/BundlesFiltered]]
 
+\whitespace trim
+
 <$vars nl={{{[charcode[10]]}}}>
 <$vars text={{{ [enlist{$:/StoryList!!list}format:titlelist[]join<nl>] }}}>
-<$button>
-<$action-sendmessage $message="tm-new-tiddler" 
-title="new.bundle" 
-tags="$:/tags/Bundle" 
-type="text/plain" 
-text=<<text>>/>
-New Bundle List
-</$button>
+	<$button>
+		<$action-sendmessage $message="tm-new-tiddler" 
+			title="new.bundle" 
+			tags="$:/tags/Bundle" 
+			type="text/plain" 
+			text=<<text>>
+		/>
+		New Bundle List
+	</$button>
 </$vars></$vars>
-<$list filter="[tag[$:/tags/Bundle]]">
 
-<$link to=<<currentTiddler>> tooltip=<<get-tooltip>> >
-<<dragBundleIcon>> {{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}} <$macrocall $name="test-list" text=<<get-info>>/> <<currentTiddler>>
-</$link>
+<div class="wltc-small-gap-top">
+<$list filter="[tag[$:/tags/Bundle]]">
+	<div>
+		<<dragBundleIcon>>
+		{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}}
+		<$macrocall $name="test-list" text=<<get-info>>/>
+		<$link to=<<currentTiddler>> tooltip=<<get-tooltip>> >
+			<<currentTiddler>>
+		</$link>
+	</div>
 </$list>
+</div>

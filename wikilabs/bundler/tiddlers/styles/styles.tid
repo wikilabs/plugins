@@ -19,3 +19,11 @@ tags: $:/tags/Stylesheet
 .wltc-full-width {
 	width: 100%;
 }
+
+.wltc-small-gap-top {
+	margin-top: .3em;
+}
+
+.wltc-cursor-grab {
+	cursor: grab;
+}

@@ -1,6 +1,8 @@
 title: $:/plugins/wikilabs/bundler/ui/BundlesFiltered
 type: text/vnd.tiddlywiki
 
+\whitespace trim
+
 \define filter-exist() [subfilter{$(currentTiddler)$}] +[has[title]]
 \define filter-list() [subfilter{$(currentTiddler)$}!prefix[--- ]]
 \define get-info() <$count filter=<<filter-exist>> />/<$count filter=<<filter-list>> />
@@ -19,8 +21,8 @@ type: text/vnd.tiddlywiki
 \end
 
 \define test-filter()
-<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-boxed" tooltip="Test the filter" style="cursor:help">
- <<count-filter>> 
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-boxed tc-small-gap-right" tooltip="Test the filter" style="cursor:help">
+	<<count-filter>>
 </$button>
 \end
 
@@ -50,7 +52,7 @@ Open this filtered list in ~AdvancedSearch
 
 \define test-list(text:"Open this list in ~AdvancedSearch")
 \whitespace trim
-<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-list>> class="tc-btn-boxed" tooltip="Test the filter" style="cursor:help">
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-list>> class="tc-btn-boxed tc-small-gap-right" tooltip="Test the filter" style="cursor:help">
 	<<__text__>>
 </$button>
 \end
@@ -63,16 +65,20 @@ Open this filtered list in ~AdvancedSearch
 \end
 
 <$button>
-<$action-sendmessage $message="tm-new-tiddler" 
-title="new-filtered.bundle" 
-tags="$:/tags/Filter" 
-description="provide a meaningful description to display in AdvancedSearch: Filter!"
-filter="adjust this filter: [list[$:/StoryList]]" 
-text="<pre>{{!!filter}}</pre>"/>
-Filter Bundle
-</$button><$list
-filter="[tag[$:/tags/Filter]]">
-<$link to=<<currentTiddler>> tooltip=<<get-filter-tooltip>> >
+<$action-sendmessage $message="tm-new-tiddler"
+	title="new-filtered.bundle"
+	tags="$:/tags/Filter"
+	description="provide a meaningful description to display in AdvancedSearch: Filter!"
+	filter="adjust this filter: [list[$:/StoryList]]"
+	text="<pre>{{!!filter}}</pre>"
+/>
+	Filter Bundle
+</$button>
 
-<<dragFilteredIcon>> {{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}} <<test-filter>> <<currentTiddler>>
-</$link> </$list>
+<$list
+	filter="[tag[$:/tags/Filter]]">
+	<$link to=<<currentTiddler>> tooltip=<<get-filter-tooltip>> >
+
+		<<dragFilteredIcon>> {{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}} <<test-filter>> <<currentTiddler>>
+	</$link>
+</$list>
