@@ -4,5 +4,5 @@
 	"description": "Adds a possibilty to style text content with wikitext syntax",
 	"list": "readme license history",
 	"dependents": ["$:/plugins/wikilabs/pragma-comment"],
-	"version": "0.21.3"
+	"version": "0.22.0"
 }
