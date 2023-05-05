@@ -40,6 +40,6 @@ title: $:/plugins/wikilabs/bundler/readme
 
 ---
 
-''Important:'' This plugin modifies a core module and templates
+''Important:'' This plugin modifies the following core module and / or templates
 
-<ul><$list filter="[[$:/plugins/wikilabs/bundler]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
+<ul><$list filter="[[$:/plugins/wikilabs/bundler]plugintiddlers[]prefix[$:/core/]] ~[[-- none --]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>

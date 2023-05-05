@@ -1,5 +1,8 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 0.5.2 - 2023-02-08
+
+* update core overwrite warning, since they have been removed with V 0.5.0
 
 V 0.5.1 - 2023-02-08
 
