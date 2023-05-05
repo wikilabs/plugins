@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/field-visibility/history
 
+V 0.2.0 - 2023-05-05
+
+* fix intro button state tiddlers to TW v5.2.27
+
 V 0.1.0 - 2022-03-27
 
 * plugin now creates a new tab in the tiddler info area instead of modifying the core tab
