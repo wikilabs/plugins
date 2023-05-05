@@ -1,0 +1,8 @@
+title: $:/plugins/wikilabs/trim-whitespace/icons/trim-whitespace
+
+<svg width="22pt" height="22pt" class="tc-image-list-bullet tc-image-button" viewBox="0 0 128 128">
+ <path d="m86.2 3.5h16l-37.9 121h-15.9z" style="stroke-width:4.36"/>
+ <path d="m90.5 62.1h15.4v10.8h-15.4z" style="stroke-width:4.36"/>
+ <path d="m1.71 62.1h52.5v10.8h-52.5z" style="stroke-width:4.36"/>
+ <path d="m112 62.1h15.4v10.8h-15.4z" style="stroke-width:4.36"/>
+</svg>

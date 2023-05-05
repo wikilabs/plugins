@@ -1,9 +1,0 @@
-title: $:/plugins/wikilabs/trim-whitespace/readme
-
-This plugin adds a little link icon to every tab.
-
-''Important:'' This plugin changes the core tabs macro.
-
-! Link-to-Tabs Settings
-
-{{$:/core/ui/ControlPanel/Settings/trim-whitespace}}

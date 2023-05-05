@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/trim-whitespace/readme
+
+This plugin "Trim Whitespace" adds a new button to the edit toolbar
+
+!! Trim Whitespace Settings
+
+{{$:/plugins/wikilabs/trim-whitespace/settings}}

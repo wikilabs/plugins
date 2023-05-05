@@ -1,0 +1,27 @@
+title: $:/plugins/wikilabs/trim-whitespace/settings
+
+$:/config/trim-whitespace/mode defaults to: `white-line` if the mode tiddler is empty or does not exist.
+
+Select the mode: <$select tiddler="$:/config/trim-whitespace/mode" tooltip="Choose the whitespace trim mode" default="white-line">
+<option>leading</option>
+<option>trailing</option>
+<option>full</option>
+<option>white-line</option>
+</$select>
+
+The following code can be copy pasted to a New Tiddler, to test the new toolbar button.
+
+```
+  leading spaces
+trailing spaces  
+  leading and trailing spaces  
+  
+  
+
+Above are some lines with whitespace.<br>
+Use CTRL-A to see them.
+
+Then click the new "whitespace trim" button in the editor toolbar: <kbd>{{$:/plugins/wikilabs/trim-whitespace/icons/trim-whitespace}}</kbd>
+
+{{$:/plugins/wikilabs/trim-whitespace/settings}}
+```

@@ -1,0 +1,14 @@
+caption: trim-whitespace
+condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
+description: Trim whitesace from the selected line(s)
+icon: $:/plugins/wikilabs/trim-whitespace/icons/trim-whitespace
+shortcuts: ((trim-whitespace))
+title: $:/plugins/wikilabs/trim-whitespace/EditorToolbar/trim-whitespace
+tags: $:/tags/EditorToolbar
+
+<!-- modes: leading, trailing, full, white-line -->
+<$action-sendmessage
+	$message="tm-edit-text-operation"
+	$param="trim-whitespace"
+	mode={{{ [{$:/config/trim-whitespace/mode}trim[]!is[blank]] ~[[white-line]] }}}
+/>
