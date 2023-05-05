@@ -6,6 +6,7 @@ title: $:/plugins/wikilabs/custom-markup/history
 V 0.22.0 - 2023-05-03
 
 * Use `❮ ❯` corner instead of `『 』`, becuase they had "strange white-spacing" as can be seen here
+* update license dates
 
 ------
 
