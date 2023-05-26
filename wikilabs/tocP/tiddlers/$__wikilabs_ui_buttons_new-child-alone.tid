@@ -1,7 +1,7 @@
 caption: {{$:/wikilabs/images/new-child-alone}} NewChildHere
 created: 20170127140235853
 description: NewChildHere & add parent field
-modified: 20170202134649899
+modified: 20201222091526119
 tags: $:/tags/ViewToolbar
 title: $:/wikilabs/ui/buttons/new-child-alone
 type: text/vnd.tiddlywiki
@@ -12,7 +12,7 @@ $(currentTiddler)$
 
 \define newChildButton(field:"parent")
 <$button tooltip="""New Child -> "$field$: $(currentTiddler)$" """ aria-label="new child here" class=<<tv-config-toolbar-class>>>
-<$action-sendmessage $message="tm-new-tiddler" $field$=<<newHereValue>>/>
+<$action-sendmessage $message="tm-new-tiddler" $field$=<<newHereValue>> title={{{[<newHereValue>addsuffix[/CHANGEME]]}}} caption="CHANGEME"/>
 <$list filter="[<tv-config-toolbar-icons>prefix[yes]]">
 {{$:/wikilabs/images/new-child-alone}}
 </$list>

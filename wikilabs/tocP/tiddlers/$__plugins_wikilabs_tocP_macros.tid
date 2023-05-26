@@ -1,7 +1,8 @@
 created: 20170127103951869
-modified: 20170202134116229
+modified: 20201222092859057
 tags: $:/tags/Macro
 title: $:/plugins/wikilabs/tocP/macros
+tocp.external-plugin.parent.ref: #:/wiki/plugins/external-exploded/pmario/tocP
 type: text/vnd.tiddlywiki
 
 \define tocP-caption()
@@ -12,9 +13,11 @@ type: text/vnd.tiddlywiki
 </$set>
 \end
 
+\define tocP-tree-linker-field-name() tocp.treelinker.fields
+
 \define tocP-body(tag,sort:"",itemClassFilter,exclude,path,field:"parent")
 <ol class="tc-toc">
-  <$list filter="""[has[$field$]$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
+  <$list filter="""[has[$field$]contains:$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
     <$vars item=<<currentTiddler>> path="""$path$/$tag$""" excluded="""$exclude$ -[[$tag$]]""" field="""$field$""">
       <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
         <li class=<<toc-item-class>>>
@@ -23,6 +26,13 @@ type: text/vnd.tiddlywiki
           </$list>
           <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
           <$macrocall $name="tocP-body" tag=<<item>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> field=<<field>>/>
+          <$list filter="""[is[current]get<tocP-tree-linker-field-name>]""" variable="newFields">
+          <$list filter="""[enlist<newFields>]""" variable="newField">
+          <$list filter="""[get<newField>match[root]first[]]""" variable="ignore">
+          <$macrocall $name="tocP-body" tag="root" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$ -[[$tag$]]""" path="""$path$/external-root""" field=<<newField>>/>
+          </$list>
+          </$list>
+          </$list>
         </li>
       </$set>
     </$vars>
@@ -94,7 +104,7 @@ type: text/vnd.tiddlywiki
 \define tocP-expandable(tag,sort:"",itemClassFilter:" ",exclude,path,field:"parent")
 <$vars tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" excluded="""$exclude$ -[[$tag$]]""" path="""$path$/$tag$"""  field="""$field$""">
   <ol class="tc-toc toc-expandable">
-    <$list filter="""[has[$field$]$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
+    <$list filter="""[has[$field$]contains:$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
       <$list filter="[all[current]toc-link[no]]" emptyMessage=<<tocP-expandable-empty-message>> >
         <$macrocall $name="tocP-unlinked-expandable-body" tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> field=<<field>> />
       </$list>
@@ -108,7 +118,7 @@ type: text/vnd.tiddlywiki
   <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
     <li class=<<toc-item-class>>>
       <$link>
-          <$list filter="""[has[$field$]$field$<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button>">
+          <$list filter="""[has[$field$]contains:$field$<currentTiddler>][is[current]get<tocP-tree-linker-field-name>]+[limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button>">
           <$reveal type="nomatch" state=<<toc-state>> text="open">
             <$button set=<<toc-state>> setTo="open" class="tc-btn-invisible">
               {{$:/core/images/right-arrow}}
@@ -124,7 +134,16 @@ type: text/vnd.tiddlywiki
       </$link>
       <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
-        <$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""  field="""$field$"""/>
+        <$list filter="""[has[$field$]contains:$field$<currentTiddler>limit[1]]""" variable="ignore">
+          <$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""  field="""$field$"""/>
+        </$list>
+        <$list filter="""[is[current]get<tocP-tree-linker-field-name>]""" variable="newFields">
+        <$list filter="""[enlist<newFields>]""" variable="newField">
+         <$list filter="""[get<newField>match[root]first[]]""" variable="ignore">
+          <$macrocall $name="tocP-selective-expandable" tag="root" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$/external-root""" field=<<newField>>/>
+        </$list>
+        </$list>
+        </$list>
       </$reveal>
     </li>
   </$set>
@@ -135,7 +154,7 @@ type: text/vnd.tiddlywiki
 <$set name="toc-state" value=<<qualify """$:/state/toc$path$-$(currentTiddler)$""">>>
   <$set name="toc-item-class" filter="""$itemClassFilter$""" emptyValue="toc-item" value="toc-item-selected">
     <li class=<<toc-item-class>>>
-      <$list filter="""[has[$field$]$field$<currentTiddler>limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button> <$view field='caption'><$view field='title'/></$view>">
+      <$list filter="""[has[$field$]contains:$field$<currentTiddler>][is[current]get<tocP-tree-linker-field-name>]+[limit[1]]""" variable="ignore" emptyMessage="<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button> <$view field='caption'><$view field='title'/></$view>">
         <$reveal type="nomatch" state=<<toc-state>> text="open">
           <$button set=<<toc-state>> setTo="open" class="tc-btn-invisible" tooltip={{!!tooltip}}>
             {{$:/core/images/right-arrow}}
@@ -151,7 +170,16 @@ type: text/vnd.tiddlywiki
       </$list>
       <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
       <$reveal type="match" state=<<toc-state>> text="open">
-        <$macrocall $name="""tocP-selective-expandable""" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""  field="""$field$"""/>
+        <$list filter="""[has[$field$]contains:$field$<currentTiddler>limit[1]]""" variable="ignore">
+          <$macrocall $name="""tocP-selective-expandable""" tag=<<currentTiddler>> sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$"""  field="""$field$"""/>
+        </$list>
+        <$list filter="""[is[current]get<tocP-tree-linker-field-name>]""" variable="newFields">
+        <$list filter="""[enlist<newFields>]""" variable="newField">
+         <$list filter="""[get<newField>match[root]first[]]""" variable="ignore">
+          <$macrocall $name="tocP-selective-expandable" tag="root" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude="""$exclude$""" path="""$path$/external-root""" field=<<newField>>/>
+        </$list>
+        </$list>
+        </$list>
       </$reveal>
     </li>
   </$set>
@@ -165,7 +193,7 @@ type: text/vnd.tiddlywiki
 \define tocP-selective-expandable(tag,sort:"",itemClassFilter,exclude,path,field:"parent")
 <$vars tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" excluded="""$exclude$ -[[$tag$]]""" path="""$path$/$tag$""" field="""$field$""">
   <ol class="tc-toc toc-selective-expandable">
-    <$list filter="""[has[$field$]$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
+    <$list filter="""[has[$field$]contains:$field$[$tag$]!has[draft.of]$sort$] $exclude$""">
       <$list filter="[all[current]toc-link[no]]" variable="ignore" emptyMessage=<<tocP-selective-expandable-empty-message>> >
         <$macrocall $name=tocP-unlinked-selective-expandable-body tag="""$tag$""" sort="""$sort$""" itemClassFilter="""$itemClassFilter$""" exclude=<<excluded>> path=<<path>> field=<<field>> >
       </$list>
