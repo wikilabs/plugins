@@ -1,0 +1,9 @@
+{
+	"title": "$:/plugins/wikilabs/markdown-it/markdown-it-toc",
+	"name": "markdown-it-toc",
+	"description": "Markdown-It TOC",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.2.0",
+	"version": "0.0.1",
+	"list": "readme history license"
+}
