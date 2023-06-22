@@ -1,5 +1,16 @@
 title: $:/plugins/wikilabs/tocP/history
 
+V 0.2.0 - 2023.06.22
+
+* Custom icons can be used
+
+* ''sort'' parameter is a subfilter now
+** ''Important:'' The ''sort'' parameter is ''not'' backwards compatible
+
+* ''exclude'' parameter is a subfilter now
+* Update code based on core TOC macros from TW v5.3.0
+* Plugin is compatible with TW >=v5.2.1
+
 V 0.1.3 - 2020.12.25
 
 * update to TW v5.2.2
@@ -14,5 +25,12 @@ V 0.1.1 - 2020.01.19
 
 V 0.1.0 - 2017
 
-* initial release
-** name: tocP
+* improved / fixed tool button tooltips
+* fixed plugin license typo
+* new [[StyleSheet|$:/plugins/wikilabs/tocP/Stylesheet]] setting for `.tocp` class. It sets the default link color to green, which should set it apart from the standard toc
+** This is probably a temporary solution, because it doesn't work for tabbed tocPs
+
+* The "New Child" buttons now show a more detailed tooltip
+** The actual "field-name: value" pair which will be used to create the new child
+
+* tocP now shows the tooltip field, if available in tiddlers. see [[examples|GettingStarted]] or open [[level-1]] in edit mode
