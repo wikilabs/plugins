@@ -34,6 +34,14 @@ These macros are intended to be "drop in replacement" of the core macros. ... Th
 <<tocP-tabbed-external-nav root>>
 </div>
 
+<div class="tc-table-of-contents">
+<<tocP-selective-expandable root field:"asdf">>
+</div>
+
+<div class="tocp tc-table-of-contents">
+<<tocP root sort:"[sortBy[stream-list]]" viewField:"text">>
+</div>
+
 ```
 
 ''Simple Configuration''
