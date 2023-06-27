@@ -158,7 +158,7 @@ type: text/vnd.tiddlywiki
     <li class=<<toc-item-class>>>
       <$list filter="[has<__field__>] :filter[get<__field__>match<..currentTiddler>] +[limit[1]]"
         variable="ignore"
-        emptyMessage="""<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button><$view field='caption'><$view field='title'/></$view>"""
+        emptyMessage="""<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button><$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>"""
       >
         <$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
           <$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep">
