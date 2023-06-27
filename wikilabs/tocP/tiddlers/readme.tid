@@ -38,13 +38,26 @@ These macros are intended to be "drop in replacement" of the core macros. ... Th
 <<tocP-selective-expandable root field:"asdf">>
 </div>
 
-For Streams .. WIP
+```
 
+''For Streams .. WIP''
+
+```
 <div class="tocp tc-table-of-contents">
 <$set name="tv-wikilinks" value="no">
 <<tocP "Streams 0.2 improvements" viewField:"text" sort:"[sortBy{..currentTiddler!!stream-list}]">>
 </div>
+```
 
+''streamTextTemplate'': is just a `<$transclude mode=block/>`
+''viewField'': usually needs to be `text` if a template is used
+
+```
+<div class="tocp tc-table-of-contents">
+<$set name="tv-wikilinks" value="no">
+<<tocP "Streams 0.2 improvements" viewField:"text" sort:"[sortBy{..currentTiddler!!stream-list}]" viewFieldTemplate:"streamTextTemplate">>
+</$set>
+</div>
 ```
 
 ''Simple Configuration''

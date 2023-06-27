@@ -2,9 +2,18 @@ title: $:/plugins/wikilabs/tocP/history
 
 V 0.3.0 - 2023.06.27
 
-* Add a viewField parameter, that will allow to change the link text
+''Important'': These macros use a new parameter order
+
+* Add a `viewField` parameter, that will allow us to change the link text
 ** defaults to: `caption`
-* This will make it possible to work with Stream-lists in the future
+
+* Add a `viewFieldTemplate` parameter, which works in combination with the `viewField` parameter
+* This will make it possible to work with stream-lists
+
+* Add examples to show, how tocP can work with the "streams-plugin" fields
+** tocP can read the streams structure
+** The other way around ''is not possible'' atm, 
+*** tocP uses does not use the `stream-list` field. It's not needed
 
 V 0.2.0 - 2023.06.22
 
