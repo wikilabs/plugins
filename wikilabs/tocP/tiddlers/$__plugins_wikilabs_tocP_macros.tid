@@ -11,92 +11,92 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 <span class="tc-toc-caption" title={{!!tooltip}}>
 <$set name="tv-wikilinks" value="no">
-  <$transclude field=<<__viewField__>> >
-    <$view field="title"/>
-  </$transclude>
+	<$transclude tiddler={{{ [<__viewFieldTemplate__>!is[blank]then<__viewFieldTemplate__>else<currentTiddler>] }}} field=<<__viewField__>> >
+		<$view field="title"/>
+	</$transclude>
 </$set>
 </span>
 \end
 
-\define tocP-body(tag,sort:"[sort[]]",itemClassFilter:"",exclude,path,field:"parent",viewField)
+\define tocP-body(tag,exclude,path,field:"parent",viewField,itemClassFilter:"",sort:"[sort[]]")
 \whitespace trim
 <ol class="tc-tocP">
-  <$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
-    <$let item=<<currentTiddler>> path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
-      <$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
-        <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
-          <li class=<<toc-item-class>>>
-            <$list variable="ignore" filter="[all[current]!toc-link[no]]" emptyMessage="""<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>""">
-              <$link to={{{ [<item>get[target]else<item>] }}}>
-                <$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
-              </$link>
-            </$list>
-            <$transclude tiddler='$:/config/wikilabs/tocP/newChild'/>
-            <$macrocall $name="tocP-body" tag=<<item>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<excluded>> path=<<path>> field=<<__field__>> viewField=<<__viewField__>>/>
-          </li>
-        </$set>
-      </$set>
-    </$let>
-  </$list>
+	<$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
+		<$let item=<<currentTiddler>> path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
+			<$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
+				<$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
+					<li class=<<toc-item-class>>>
+						<$list variable="ignore" filter="[all[current]!toc-link[no]]" emptyMessage="""<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>""">
+							<$link to={{{ [<item>get[target]else<item>] }}}>
+								<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
+							</$link>
+						</$list>
+						<$transclude tiddler="$:/config/wikilabs/tocP/newChild"/>
+						<$macrocall $name="tocP-body" tag=<<item>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<excluded>> path=<<path>> field=<<__field__>> viewField=<<__viewField__>>/>
+					</li>
+				</$set>
+			</$set>
+		</$let>
+	</$list>
 </ol>
 \end
 
-\define tocP(tag,sort:"[sort[]]",itemClassFilter,exclude,field,viewField)
+\define tocP(tag,exclude,path,field,viewField,viewFieldTemplate,itemClassFilter,sort:"[sort[]]")
 <$macrocall $name="tocP-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> field=<<__field__>> viewField=<<__viewField__>>/>
 \end
 
-\define tocP-linked-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent",viewField)
+\define tocP-linked-expandable-body(tag,exclude,path,field:"parent",viewField,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
 <!-- helper function -->
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
-  <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
-    <li class=<<toc-item-class>>>
-    <$link to={{{ [<currentTiddler>get[target]else<currentTiddler>] }}}>
-      <$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
-        <$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
-          <$transclude tiddler=<<tocP-closed-icon>> />
-        </$button>
-      </$reveal>
-      <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-        <$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
-          <$transclude tiddler=<<tocP-open-icon>> />
-        </$button>
-      </$reveal>
-      <$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
-    </$link>
-    <$transclude tiddler='$:/config/wikilabs/tocP/newChild'/>
-    <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-      <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> viewField=<<__viewField__>> path=<<__path__>> field=<<__field__>>/>
-    </$reveal>
-    </li>
-  </$set>
+	<$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
+		<li class=<<toc-item-class>>>
+		<$link to={{{ [<currentTiddler>get[target]else<currentTiddler>] }}}>
+			<$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
+				<$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
+					<$transclude tiddler=<<tocP-closed-icon>> />
+				</$button>
+			</$reveal>
+			<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+				<$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
+					<$transclude tiddler=<<tocP-open-icon>> />
+				</$button>
+			</$reveal>
+			<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
+		</$link>
+		<$transclude tiddler="$:/config/wikilabs/tocP/newChild"/>
+		<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+			<$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> viewField=<<__viewField__>> path=<<__path__>> field=<<__field__>>/>
+		</$reveal>
+		</li>
+	</$set>
 </$qualify>
 \end
 
-\define tocP-unlinked-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent",viewField)
+\define tocP-unlinked-expandable-body(tag,exclude,path,field:"parent",viewField,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
 <!-- helper function -->
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
-  <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
-    <li class=<<toc-item-class>>>
-      <$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
-        <$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep">
-          <$transclude tiddler=<<tocP-closed-icon>>/>
-          <$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
-        </$button>
-      </$reveal>
-      <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-        <$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
-          <$transclude tiddler=<<tocP-open-icon>> />
-          <$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
-        </$button>
-      </$reveal>
-      <$transclude tiddler='$:/config/wikilabs/tocP/newChild'/>
-      <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-        <$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> path=<<__path__>> field=<<__field__>> viewField=<<__viewField__>>/>
-      </$reveal>
-    </li>
-  </$set>
+	<$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
+		<li class=<<toc-item-class>>>
+			<$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
+				<$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep">
+					<$transclude tiddler=<<tocP-closed-icon>>/>
+					<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
+				</$button>
+			</$reveal>
+			<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+				<$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
+					<$transclude tiddler=<<tocP-open-icon>> />
+					<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
+				</$button>
+			</$reveal>
+			<$transclude tiddler="$:/config/wikilabs/tocP/newChild"/>
+			<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+				<$macrocall $name="tocP-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> path=<<__path__>> field=<<__field__>> viewField=<<__viewField__>>/>
+			</$reveal>
+		</li>
+	</$set>
 </$qualify>
 \end
 
@@ -104,81 +104,81 @@ type: text/vnd.tiddlywiki
 <$macrocall $name="tocP-linked-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> field=<<__field__>> viewField=<<__viewField__>> path=<<path>> exclude=<<excluded>>/>
 \end
 
-\define tocP-expandable(tag,sort:"[sort[]]",itemClassFilter:"",exclude,path,field:"parent",viewField)
+\define tocP-expandable(tag,exclude,path,field:"parent",viewField,viewFieldTemplate,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
 <$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
-  <$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
-    <ol class="tc-toc toc-expandable">
-      <$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
-        <$list filter="[all[current]toc-link[no]]" emptyMessage="""<$macrocall $name="tocP-expandable-empty-message" viewField=<<__viewField__>>/>""" >
-          <$macrocall $name="tocP-unlinked-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> viewField=<<__viewField__>> field=<<__field__>> exclude=<<excluded>> path=<<path>>/>
-        </$list>
-      </$list>
-    </ol>
-  </$set>
+	<$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
+		<ol class="tc-toc toc-expandable">
+			<$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
+				<$list filter="[all[current]toc-link[no]]" emptyMessage="""<$macrocall $name="tocP-expandable-empty-message" viewField=<<__viewField__>>/>""" >
+					<$macrocall $name="tocP-unlinked-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> viewField=<<__viewField__>> field=<<__field__>> exclude=<<excluded>> path=<<path>>/>
+				</$list>
+			</$list>
+		</ol>
+	</$set>
 </$let>
 \end
 
-\define tocP-linked-selective-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent",viewField)
+\define tocP-linked-selective-expandable-body(tag,exclude,path,field:"parent",viewField,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
-  <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item" >
-    <li class=<<toc-item-class>>>
-      <$link to={{{ [<currentTiddler>get[target]else<currentTiddler>] }}}>
-          <$list filter="[has<__field__>] :filter[get<__field__>match<..currentTiddler>] +[limit[1]]"
-            variable="ignore"
-            emptyMessage="""<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button>"""
-          >
-          <$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
-            <$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
-            <$transclude tiddler=<<tocP-closed-icon>> />
-            </$button>
-          </$reveal>
-          <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-            <$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
-              <$transclude tiddler=<<tocP-open-icon>> />
-            </$button>
-          </$reveal>
-        </$list>
-        <$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
-      </$link>
-      <$transclude tiddler='$:/config/wikilabs/tocP/newChild'/>
-      <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-        <$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> path=<<__path__>> field=<<__field__>> viewField=<<__viewField__>>/>
-      </$reveal>
-    </li>
-  </$set>
+	<$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item" >
+		<li class=<<toc-item-class>>>
+			<$link to={{{ [<currentTiddler>get[target]else<currentTiddler>] }}}>
+					<$list filter="[has<__field__>] :filter[get<__field__>match<..currentTiddler>] +[limit[1]]"
+						variable="ignore"
+						emptyMessage="""<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button>"""
+					>
+					<$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
+						<$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
+						<$transclude tiddler=<<tocP-closed-icon>> />
+						</$button>
+					</$reveal>
+					<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+						<$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep tc-tiny-gap-right">
+							<$transclude tiddler=<<tocP-open-icon>> />
+						</$button>
+					</$reveal>
+				</$list>
+				<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
+			</$link>
+			<$transclude tiddler="$:/config/wikilabs/tocP/newChild"/>
+			<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+				<$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> path=<<__path__>> field=<<__field__>> viewField=<<__viewField__>>/>
+			</$reveal>
+		</li>
+	</$set>
 </$qualify>
 \end
 
-\define tocP-unlinked-selective-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent",viewField)
+\define tocP-unlinked-selective-expandable-body(tag,exclude,path,field:"parent",viewField,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
-  <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
-    <li class=<<toc-item-class>>>
-      <$list filter="[has<__field__>] :filter[get<__field__>match<..currentTiddler>] +[limit[1]]"
-        variable="ignore"
-        emptyMessage="""<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button><$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>"""
-      >
-        <$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
-          <$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep">
-            <$transclude tiddler=<<tocP-closed-icon>>/>
-            <$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
-          </$button>
-        </$reveal>
-        <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-          <$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep">
-            <$transclude tiddler=<<tocP-open-icon>> />
-            <$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
-          </$button>
-        </$reveal>
-      </$list>
-      <$transclude tiddler='$:/config/wikilabs/tocP/newChild'/>
-      <$reveal type="match" stateTitle=<<tocP-state>> text="open">
-        <$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> path=<<__path__>> field=<<__field__>> viewField=<<__viewField__>>/>
-      </$reveal>
-    </li>
-  </$set>
+	<$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
+		<li class=<<toc-item-class>>>
+			<$list filter="[has<__field__>] :filter[get<__field__>match<..currentTiddler>] +[limit[1]]"
+				variable="ignore"
+				emptyMessage="""<$button class='tc-btn-invisible'>{{$:/core/images/blank}}</$button><$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>"""
+			>
+				<$reveal type="nomatch" stateTitle=<<tocP-state>> text="open">
+					<$button setTitle=<<tocP-state>> setTo="open" class="tc-btn-invisible tc-popup-keep">
+						<$transclude tiddler=<<tocP-closed-icon>>/>
+						<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
+					</$button>
+				</$reveal>
+				<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+					<$button setTitle=<<tocP-state>> setTo="close" class="tc-btn-invisible tc-popup-keep">
+						<$transclude tiddler=<<tocP-open-icon>> />
+						<$macrocall $name="tocP-viewfield" viewField=<<__viewField__>>/>
+					</$button>
+				</$reveal>
+			</$list>
+			<$transclude tiddler="$:/config/wikilabs/tocP/newChild"/>
+			<$reveal type="match" stateTitle=<<tocP-state>> text="open">
+				<$macrocall $name="tocP-selective-expandable" tag=<<currentTiddler>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> path=<<__path__>> field=<<__field__>> viewField=<<__viewField__>>/>
+			</$reveal>
+		</li>
+	</$set>
 </$qualify>
 \end
 
@@ -186,51 +186,56 @@ type: text/vnd.tiddlywiki
 <$macrocall $name="tocP-linked-selective-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> field=<<__field__>>  viewField=<<__viewField__>> exclude=<<excluded>> path=<<path>>/>
 \end
 
-\define tocP-selective-expandable(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent",viewField)
+\define tocP-selective-expandable(tag,exclude,path,field:"parent",viewField,viewFieldTemplate,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
 <$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
-  <$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
-    <ol class="tc-toc toc-selective-expandable">
-      <$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
-        <$list filter="[all[current]toc-link[no]]"
-          variable="ignore"
-          emptyMessage="""<$macrocall $name="tocP-selective-expandable-empty-message" viewField=<<__viewField__>>/>"""
-        >
-          <$macrocall $name="tocP-unlinked-selective-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> field=<<__field__>> viewField=<<__viewField__>> exclude=<<excluded>> path=<<path>>/>
-        </$list>
-      </$list>
-    </ol>
-  </$set>
+	<$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
+		<ol class="tc-toc toc-selective-expandable">
+			<$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
+				<$list filter="[all[current]toc-link[no]]"
+					variable="ignore"
+					emptyMessage="""<$macrocall $name="tocP-selective-expandable-empty-message" viewField=<<__viewField__>>/>"""
+				>
+					<$macrocall $name="tocP-unlinked-selective-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> field=<<__field__>> viewField=<<__viewField__>> exclude=<<excluded>> path=<<path>>/>
+				</$list>
+			</$list>
+		</ol>
+	</$set>
 </$let>
 \end
 
-\define tocP-tabbed-external-nav(tag,sort:"[sort[]]",selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",exclude,field:"parent",viewField)
+<!-- path is ignored only there for consistency reasons -->
+\define tocP-tabbed-external-nav(tag,exclude,path,selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",field:"parent",viewField,sort:"[sort[]]")
 \whitespace trim
 <$tiddler tiddler={{{ [<__selectedTiddler__>get[text]] }}}>
-  <div class="tc-tabbed-table-of-contents">
-    <$linkcatcher to=<<__selectedTiddler__>>>
-      <div class="tc-table-of-contents">
-        <$macrocall $name="tocP-selective-expandable" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter="[all[current]] -[<__selectedTiddler__>get[text]]" exclude=<<__exclude__>> field=<<__field__>> viewField=<<__viewField__>>/>
-      </div>
-    </$linkcatcher>
-    <div class="tc-tabbed-table-of-contents-content">
-      <$reveal stateTitle=<<__selectedTiddler__>> type="nomatch" text="">
-        <$transclude mode="block" tiddler=<<__template__>>>
-          <h1><<tocP-viewfield>></h1>
-          <$transclude mode="block">$missingText$</$transclude>
-        </$transclude>
-      </$reveal>
-      <$reveal stateTitle=<<__selectedTiddler__>> type="match" text="">
-        $unselectedText$
-      </$reveal>
-    </div>
-  </div>
+	<div class="tc-tabbed-table-of-contents">
+		<$linkcatcher to=<<__selectedTiddler__>>>
+			<div class="tc-table-of-contents">
+				<$macrocall $name="tocP-selective-expandable" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter="[all[current]] -[<__selectedTiddler__>get[text]]" exclude=<<__exclude__>> field=<<__field__>> viewField=<<__viewField__>>/>
+			</div>
+		</$linkcatcher>
+		<div class="tc-tabbed-table-of-contents-content">
+			<$reveal stateTitle=<<__selectedTiddler__>> type="nomatch" text="">
+				<$transclude mode="block" tiddler=<<__template__>>>
+					<h1><<tocP-viewfield>></h1>
+					<$transclude mode="block">
+						<!-- should never happen with tocP since tiddlers have to exist to be shown -->
+						<<__missingText__>>
+					</$transclude>
+				</$transclude>
+			</$reveal>
+			<$reveal stateTitle=<<__selectedTiddler__>> type="match" text="">
+				<<__unselectedText__>>
+			</$reveal>
+		</div>
+	</div>
 </$tiddler>
 \end
 
-\define tocP-tabbed-internal-nav(tag,sort:"[sort[]]",selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",exclude,field:"parent",viewField)
+<!-- path is ignored only there for consistency reasons -->
+\define tocP-tabbed-internal-nav(tag,exclude,path,selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",field:"parent",viewField,sort:"[sort[]]")
 \whitespace trim
 <$linkcatcher to=<<__selectedTiddler__>>>
-  <$macrocall $name="tocP-tabbed-external-nav" tag=<<__tag__>> sort=<<__sort__>> selectedTiddler=<<__selectedTiddler__>> unselectedText=<<__unselectedText__>> missingText=<<__missingText__>> template=<<__template__>> exclude=<<__exclude__>> field=<<__field__>> viewField=<<__viewField__>>/>
+	<$macrocall $name="tocP-tabbed-external-nav" tag=<<__tag__>> sort=<<__sort__>> selectedTiddler=<<__selectedTiddler__>> unselectedText=<<__unselectedText__>> missingText=<<__missingText__>> template=<<__template__>> exclude=<<__exclude__>> field=<<__field__>> viewField=<<__viewField__>>/>
 </$linkcatcher>
 \end
