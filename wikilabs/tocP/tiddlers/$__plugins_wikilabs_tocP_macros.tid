@@ -18,7 +18,7 @@ type: text/vnd.tiddlywiki
 </span>
 \end
 
-\define tocP-body(tag,sort:"[enlist-input[]]",itemClassFilter:"",exclude,path,field:"parent")
+\define tocP-body(tag,sort:"[sort[]]",itemClassFilter:"",exclude,path,field:"parent")
 \whitespace trim
 <ol class="tc-tocP">
   <$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
@@ -26,8 +26,8 @@ type: text/vnd.tiddlywiki
       <$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
         <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
           <li class=<<toc-item-class>>>
-            <$list filter="[all[current]!toc-link[no]]" emptyMessage="<<tocP-caption>>">
-              <$link to={{{ [<currentTiddler>get[target]else<currentTiddler>] }}}><<tocP-caption>></$link>
+            <$list variable="ignore" filter="[all[current]!toc-link[no]]" emptyMessage="<<tocP-caption>>">
+              <$link to={{{ [<item>get[target]else<item>] }}}><<tocP-caption>></$link>
             </$list>
             <$transclude tiddler='$:/config/wikilabs/tocP/newChild'></$transclude>
             <$macrocall $name="tocP-body" tag=<<item>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<excluded>> path=<<path>> field=<<__field__>>/>
@@ -39,11 +39,11 @@ type: text/vnd.tiddlywiki
 </ol>
 \end
 
-\define tocP(tag,sort:"[enlist-input[]]",itemClassFilter,exclude,field)
+\define tocP(tag,sort:"[sort[]]",itemClassFilter,exclude,field)
 <$macrocall $name="tocP-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> exclude=<<__exclude__>> field=<<__field__>>/>
 \end
 
-\define tocP-linked-expandable-body(tag,sort,itemClassFilter,exclude,path,field:"parent")
+\define tocP-linked-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent")
 \whitespace trim
 <!-- helper function -->
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
@@ -71,7 +71,7 @@ type: text/vnd.tiddlywiki
 </$qualify>
 \end
 
-\define tocP-unlinked-expandable-body(tag,sort:"[enlist-input[]]",itemClassFilter,exclude,path,field:"parent")
+\define tocP-unlinked-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent")
 \whitespace trim
 <!-- helper function -->
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
@@ -102,7 +102,7 @@ type: text/vnd.tiddlywiki
 <$macrocall $name="tocP-linked-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> field=<<__field__>> path=<<path>> exclude=<<excluded>>/>
 \end
 
-\define tocP-expandable(tag,sort:"[enlist-input[]]",itemClassFilter:"",exclude,path,field:"parent")
+\define tocP-expandable(tag,sort:"[sort[]]",itemClassFilter:"",exclude,path,field:"parent")
 \whitespace trim
 <$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
   <$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
@@ -117,7 +117,7 @@ type: text/vnd.tiddlywiki
 </$let>
 \end
 
-\define tocP-linked-selective-expandable-body(tag,sort:"[enlist-input[]]",itemClassFilter,exclude,path,field:"parent")
+\define tocP-linked-selective-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent")
 \whitespace trim
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
   <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item" >
@@ -146,7 +146,7 @@ type: text/vnd.tiddlywiki
 </$qualify>
 \end
 
-\define tocP-unlinked-selective-expandable-body(tag,sort:"[enlist-input[]]",itemClassFilter,exclude,path,field:"parent")
+\define tocP-unlinked-selective-expandable-body(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent")
 \whitespace trim
 <$qualify name="tocP-state" title={{{ [[$:/state/tocP]addsuffix<__path__>addsuffix[-]addsuffix<currentTiddler>] }}}>
   <$set name="toc-item-class" filter=<<__itemClassFilter__>> emptyValue="toc-item-selected" value="toc-item">
@@ -178,7 +178,7 @@ type: text/vnd.tiddlywiki
 <$macrocall $name="tocP-linked-selective-expandable-body" tag=<<__tag__>> sort=<<__sort__>> itemClassFilter=<<__itemClassFilter__>> field=<<__field__>> exclude=<<excluded>> path=<<path>>/>
 \end
 
-\define tocP-selective-expandable(tag,sort:"[enlist-input[]]",itemClassFilter,exclude,path,field:"parent")
+\define tocP-selective-expandable(tag,sort:"[sort[]]",itemClassFilter,exclude,path,field:"parent")
 \whitespace trim
 <$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
   <$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
@@ -193,7 +193,7 @@ type: text/vnd.tiddlywiki
 </$let>
 \end
 
-\define tocP-tabbed-external-nav(tag,sort:"[enlist-input[]]",selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",exclude,field:"parent")
+\define tocP-tabbed-external-nav(tag,sort:"[sort[]]",selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",exclude,field:"parent")
 \whitespace trim
 <$tiddler tiddler={{{ [<__selectedTiddler__>get[text]] }}}>
   <div class="tc-tabbed-table-of-contents">
@@ -217,7 +217,7 @@ type: text/vnd.tiddlywiki
 </$tiddler>
 \end
 
-\define tocP-tabbed-internal-nav(tag,sort:"[enlist-input[]]",selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",exclude,field:"parent")
+\define tocP-tabbed-internal-nav(tag,sort:"[sort[]]",selectedTiddler:"$:/temp/tocP/selectedTiddler",unselectedText,missingText,template:"",exclude,field:"parent")
 \whitespace trim
 <$linkcatcher to=<<__selectedTiddler__>>>
   <$macrocall $name="tocP-tabbed-external-nav" tag=<<__tag__>> sort=<<__sort__>> selectedTiddler=<<__selectedTiddler__>> unselectedText=<<__unselectedText__>> missingText=<<__missingText__>> template=<<__template__>> exclude=<<__exclude__>> field=<<__field__>>/>
