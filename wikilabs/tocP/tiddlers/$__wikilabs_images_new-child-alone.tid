@@ -5,9 +5,14 @@ title: $:/wikilabs/images/new-child-alone
 type: text/vnd.tiddlywiki
 
 <svg class="tc-image-edit-button tc-image-button" viewBox="0 0 128 128" width="22pt" height="22pt">
-	<path d="m6.9,28a6.7,7,0,1,0,0,14h41a6.7,7,0,1,0,0,-14h-41z"/>
-	<path d="m27,4.6a6.7,7,0,0,0,-6.6,7v47a6.7,7,0,1,0,13,0v-47a6.7,7,0,0,0,-6,-7.4z"/>
-	<path d="m78,39c-12,0-22,10-22,22s10,22,22,22,22-10,22-22-10-22-22-22zm0,12c5.9,0,11,4.7,11,11,0,5.9-4.7,11-11,11-5.9,0-11-4.7-11-11,0-5.9,4.7-11,11-11z"/>
-	<path d="m78,79c-6.7,0-13,1.5-18,4.4s-9.2,7.9-9.2,14v24a6.6,6.6,0,1,0,13,0v-24c0-0.36,0.3-1.5,2.7-2.9s6.5-2.6,11-2.6c4.6,0,8.7,1.2,11,2.6,2.4,1.4,2.7,2.5,2.7,2.9v24a6.6,6.6,0,1,0,13,0v-24c0-6.3-4.3-11-9.2-14-5-2.9-11-4.4-18-4.4z"/>
+	<path d="M6.9 27.9a6.72 6.96 0 1 0 0 13.9h41a6.72 6.96 0 1 0 0-13.9z"
+		style="text-decoration-line:none;text-indent:0;text-transform:none"
+		transform="translate(13.6 62.5)" />
+	<path d="M27.3 4.57a6.72 6.96 0 0 0-6.64 7.05v46.5a6.72 6.96 0 1 0 13.4 0v-46.5a6.72 6.96 0 0 0-6.81-7.05z"
+		style="text-decoration-line:none;text-indent:0;text-transform:none"
+		transform="translate(13.6 62.5)" />
+	<path
+		d="M60.5 58.1c-3.75-.055-6.82 3.08-6.82 6.96s3.07 7.01 6.82 6.96h46.1c3.75.055 6.82-3.08 6.82-6.96s-3.07-7.01-6.82-6.96zM20.5 28.4c-3.75-.055-6.82 3.08-6.82 6.96s3.07 7.01 6.82 6.96h86.1c3.75.055 6.82-3.08 6.82-6.96s-3.07-7.01-6.82-6.96z"
+		style="text-decoration-line:none;text-indent:0;text-transform:none" />
 </svg>
 

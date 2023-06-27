@@ -2,7 +2,10 @@ title: $:/plugins/wikilabs/tocP/history
 
 V 0.2.0 - 2023.06.22
 
-* Custom icons can be used
+* Custom icons can be used for open and closed state
+
+* New "New Child" icon. Only 1 toolbar icon is left
+** The second toolbar icon caused confusion anyway
 
 * ''sort'' parameter is a subfilter now
 ** ''Important:'' The ''sort'' parameter is ''not'' backwards compatible
