@@ -38,8 +38,11 @@ These macros are intended to be "drop in replacement" of the core macros. ... Th
 <<tocP-selective-expandable root field:"asdf">>
 </div>
 
+For Streams .. WIP
+
 <div class="tocp tc-table-of-contents">
-<<tocP root sort:"[sortBy[stream-list]]" viewField:"text">>
+<$set name="tv-wikilinks" value="no">
+<<tocP "Streams 0.2 improvements" viewField:"text" sort:"[sortBy{..currentTiddler!!stream-list}]">>
 </div>
 
 ```

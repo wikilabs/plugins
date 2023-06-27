@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tocP/history
 
+V 0.3.0 - 2023.06.27
+
+* Add a viewField parameter, that will allow to change the link text
+** defaults to: `caption`
+* This will make it possible to work with Stream-lists in the future
+
 V 0.2.0 - 2023.06.22
 
 * Custom icons can be used for open and closed state
