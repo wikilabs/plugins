@@ -1,0 +1,18 @@
+title: $:/core/ui/ControlPanel/Basics
+tags: $:/tags/ControlPanel/Info
+caption: {{$:/language/ControlPanel/Basics/Caption}}
+
+\whitespace trim
+\procedure openAdvancedSearch()
+<$list filter="[<navigateTo>match[$:/AdvancedSearch]]">
+    <$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter"/>
+    <$action-navigate $to="$:/AdvancedSearch"/>
+</$list>
+<$list filter="[<navigateTo>!match[$:/AdvancedSearch]]">
+    <$action-navigate $to=<<navigatTo>>/>
+</$list>
+\end
+
+<$linkcatcher  actions=<<openAdvancedSearch>> >
+    <$transclude $tiddler="$:/core" $subtiddler="$:/core/ui/ControlPanel/Basics" $mode=block/>
+</$linkcatcher>

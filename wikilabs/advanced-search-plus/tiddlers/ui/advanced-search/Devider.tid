@@ -9,6 +9,8 @@ TODO - see: [[timeline-subfilter-days]]
 
 <!--<explicitTabList>-->
 
+The following input is only there, so eg: CTRL-ALT-left keyboard navigation works
+
 <$keyboard key="((input-tab-right))" actions=<<set-next-input-tab>>>
 <$keyboard key="((input-tab-left))" actions=<<set-next-input-tab "before">>>
 
