@@ -3,7 +3,7 @@ tags: $:/tags/ControlPanel/Info
 caption: {{$:/language/ControlPanel/Basics/Caption}}
 
 \whitespace trim
-\procedure openAdvancedSearch()
+\define openAdvancedSearch()
 <$list filter="[<navigateTo>match[$:/AdvancedSearch]]">
     <$action-setfield $tiddler="$:/state/tab--1498284803" $value="$:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter"/>
     <$action-navigate $to="$:/AdvancedSearch"/>
@@ -14,5 +14,5 @@ caption: {{$:/language/ControlPanel/Basics/Caption}}
 \end
 
 <$linkcatcher  actions=<<openAdvancedSearch>> >
-    <$transclude $tiddler="$:/core" $subtiddler="$:/core/ui/ControlPanel/Basics" $mode=block/>
+    <$transclude tiddler="$:/core" subtiddler="$:/core/ui/ControlPanel/Basics" mode=block/>
 </$linkcatcher>
