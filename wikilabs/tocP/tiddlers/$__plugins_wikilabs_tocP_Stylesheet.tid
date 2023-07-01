@@ -11,3 +11,14 @@ type: text/css
 .tocp .tc-tiddlylink {
   color: green;
 }
+
+/* needed if streams headings are shown */
+
+.tc-toc-caption h1,
+.tc-toc-caption h2,
+.tc-toc-caption h3,
+.tc-toc-caption h4,
+.tc-toc-caption h5,
+.tc-toc-caption h6 {
+  display: inline-block;
+}

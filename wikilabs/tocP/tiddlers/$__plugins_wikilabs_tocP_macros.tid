@@ -20,6 +20,7 @@ type: text/vnd.tiddlywiki
 
 \define tocP-body(tag,exclude,path,field:"parent",viewField,itemClassFilter:"",sort:"[sort[]]")
 \whitespace trim
+<$let currentTiddler=<<__tag__>> >
 <ol class="tc-tocP">
 	<$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
 		<$let item=<<currentTiddler>> path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
@@ -39,6 +40,7 @@ type: text/vnd.tiddlywiki
 		</$let>
 	</$list>
 </ol>
+</$let>
 \end
 
 \define tocP(tag,exclude,path,field,viewField,viewFieldTemplate,itemClassFilter,sort:"[sort[]]")
@@ -106,7 +108,7 @@ type: text/vnd.tiddlywiki
 
 \define tocP-expandable(tag,exclude,path,field:"parent",viewField,viewFieldTemplate,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
-<$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
+<$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}} currentTiddler=<<__tag__>> >
 	<$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
 		<ol class="tc-toc toc-expandable">
 			<$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">
@@ -188,7 +190,7 @@ type: text/vnd.tiddlywiki
 
 \define tocP-selective-expandable(tag,exclude,path,field:"parent",viewField,viewFieldTemplate,itemClassFilter,sort:"[sort[]]")
 \whitespace trim
-<$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}}>
+<$let path={{{ [<__path__>addsuffix[/]addsuffix<__tag__>] }}} currentTiddler=<<__tag__>> >
 	<$set name="excluded" filter="[subfilter<__exclude__>] [<__tag__>]">
 		<ol class="tc-toc toc-selective-expandable">
 			<$list filter="""[has<__field__>!has[draft.of]] -[<__tag__>] -[subfilter<__exclude__>] :filter[get<__field__>match<__tag__>] +[subfilter<__sort__>]""">

@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tocP/history
 
+V 0.3.2 - 2023.07.01
+
+* Improve "cooperation" with streams-plugin
+
 V 0.3.0 - 2023.06.27
 
 ''Important'': These macros use a new parameter order
