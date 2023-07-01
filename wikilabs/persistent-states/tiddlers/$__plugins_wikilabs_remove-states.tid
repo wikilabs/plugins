@@ -13,5 +13,5 @@ Delete all: ''~$:/state/'' tiddlers
 <$button>
 <$action-deletetiddler $tiddler=<<currentTiddler>>/>
 x
-</$button> - <$text text=<<currentTiddler>> /><br>
+</$button> - <$link /><br>
 </$list>

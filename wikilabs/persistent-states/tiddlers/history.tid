@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/persistent-states/history
 
+V 1.0.3 - 2023-07-01
+
+* Show states as link in readme
+* tested with TW v5.3.0
+
 V 1.0.2 - 2021-10-06
 
 * update readme
