@@ -1,5 +1,13 @@
 title: $:/plugins/wikilabs/remove-states/history
 
+V 0.1.5 - 2003-07-01
+
+* supress auto wikilinking for button text
+
+V 0.1.4 - 2022-03-27
+
+* update to TW v5.2.2
+
 V 0.1.4 - 2022-03-27
 
 * update to TW v5.2.2

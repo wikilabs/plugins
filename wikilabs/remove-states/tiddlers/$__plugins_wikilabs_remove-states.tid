@@ -6,7 +6,9 @@ title: $:/plugins/wikilabs/ui/remove-states
 
 <$button>
 <$action-deletetiddler $filter=<<theFilter>> />
+<$set name="tv-wikilinks" value="no">
 Delete all: <<theFilter>> tiddlers
+</$set>
 </$button>
 
 <$list filter=<<theFilter>> >

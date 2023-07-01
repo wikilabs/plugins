@@ -4,7 +4,6 @@
 	"description": "Remove all state tiddlers. Simple UI",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.6",
-	"version": "0.1.4",
-	"deprecated": "0.1.1",
+	"version": "0.1.5",
 	"list": "readme license"
 }
