@@ -6,6 +6,7 @@ V 0.6.0 - 2023-01-01
 * Catch navigateTo link from $:/core/ui/ControlPanel/Basics
 * set tiddler: $:/state/tab--1498284803 to "$:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter
 ** This allows the eg: "Number of overridden shadow tiddlers" to change the AdvancedSearch Tab in the right way
+* compatible with v5.2.7
 
 V 0.5.0 - 2023-01-30
 
