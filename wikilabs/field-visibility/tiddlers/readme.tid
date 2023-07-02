@@ -1,11 +1,10 @@
 title: $:/plugins/wikilabs/field-visibility/readme
 
 \define showInfo()
-<!-- next 2 for v5.2.7 and below 
+<!-- next 2 for v5.2.7 and below -->
 <$action-setfield $tiddler="$:/state/tab--1476347526" text="$:/plugins/wikilabs/field-visibility/TiddlerInfo/Fields" />
 <$action-setfield $tiddler="$:/state/popup/tiddler-info-1571760702" text="yes" />
--->
-<!-- next 2 for v5.3.0 -->
+<!-- next 2 for v5.3.x -->
 <$action-setfield $tiddler="$:/state/tab-774285414" text="$:/plugins/wikilabs/field-visibility/TiddlerInfo/Fields" />
 <$action-setfield $tiddler="$:/state/popup/tiddler-info-1317117474" text="yes" />
 \end
