@@ -1,0 +1,10 @@
+{
+	"title": "$:/plugins/wikilabs/trail",
+	"name": "trail",
+	"description": "Internal links are added to tabs if selected",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.2.0",
+	"version": "0.9.0",
+	"icon": "$:/plugins/wikilabs/trail/icon",
+	"list": "readme license history"
+}

@@ -1,0 +1,88 @@
+created: 20230403125904563
+modified: 20230405155836540
+tags: $:/tags/Stylesheet
+title: $:/plugins/wikilabs/trail/trail-css
+type: text/vnd.tiddlywiki
+
+\import [[$:/themes/tiddlywiki/vanilla/base]]
+
+<$let trHeight={{{ [[$:/config/wl/trail/height]get[text]trim[]] :else[[22]] }}}
+	trPaddingTop={{{ [[$:/config/wl/trail/paddingTop]get[text]trim[]] :else[[3]] }}}
+	trPaddingBottom={{{ [[$:/config/wl/trail/paddingBottom]get[text]trim[]] :else[[3]] }}}
+	trShowArrows={{{ [[$:/config/wl/trail/showArrows]get[text]trim[]] :else[[yes]] }}}
+>
+
+.wltc-trail .wltc-crumb-first::after,
+.wltc-trail .wltc-crumb::after {
+	content: "❯";		<!-- needed for FireFox and screen-readers -->
+	content: "❯" / "";	<!-- needed for Chrome-like and screen-readers -->
+	position: absolute;
+	padding-left: .2em;
+	color: <<colour foreground>>;
+}
+
+.wltc-trail .wltc-crumb::before {
+	content: "";
+	position: absolute;
+}
+
+.wltc-trail .wltc-crumb-first,
+.wltc-trail .wltc-crumb {
+	position: relative;
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.wltc-trail .wltc-crumb {
+	padding-left: 0;
+}
+
+.wltc-trail .wltc-crumb-first {
+	padding-left: initial;
+	margin-left: 0;
+}
+
+.wltc-trail [aria-current="location"]::after {
+	content: "";
+}
+
+<!-- Get trail visibility settings. Defaults to yes -->
+<$list filter="[<trShowArrows>match[yes]]" value="ignore">
+	@media (min-width: <<sidebarbreakpoint>>) {
+		.wltc-trail .wltc-crumb-first,
+		.wltc-trail .wltc-crumb {
+			padding: <<trPaddingTop>>px .5em <<trPaddingBottom>>px 1em;
+			margin-right: {{{ [<trHeight>divide[2]] }}}px;
+			line-height: <<trHeight>>px;
+			position: relative;
+			background: <<colour message-background>>;
+			border-right: 1px solid <<colour message-background>>;
+		}
+
+		.wltc-trail .wltc-crumb-first {
+			padding-left: .5em;
+		}
+
+		.wltc-trail .wltc-crumb::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			border-left: {{{ [<trHeight>divide[2]] }}}px solid <<colour background>>;
+			border-top: {{{ [<trHeight>add<trPaddingTop>add<trPaddingBottom>] +[divide[2]] }}}px solid transparent;
+			border-bottom: {{{ [<trHeight>add<trPaddingTop>add<trPaddingBottom>] +[divide[2]] }}}px solid transparent;
+		}
+
+		.wltc-trail .wltc-crumb-first::after,
+		.wltc-trail .wltc-crumb::after {
+			content: "";
+			position: absolute;
+			right: {{{ [<trHeight>add<trPaddingTop>add<trPaddingBottom>] +[divide[2]multiply[-1]] }}}px;
+			bottom: 0;
+			border-left: {{{ [<trHeight>divide[2]] }}}px solid <<colour message-background>>;
+			border-top: {{{ [<trHeight>add<trPaddingTop>add<trPaddingBottom>] +[divide[2]] }}}px solid transparent;
+			border-bottom: {{{ [<trHeight>add<trPaddingTop>add<trPaddingBottom>] +[divide[2]] }}}px solid transparent;
+		}
+	}
+</$list>
+</$let>
