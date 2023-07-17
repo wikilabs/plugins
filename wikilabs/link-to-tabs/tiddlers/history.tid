@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 2.3.0 - 2023-07-17
+
+* Updateto TW v5.3.0
+* Tabs in ControlPanel -> Plugins -> Plugin Info area work now.
+** Except the "contents" tab, since it's a "virtual" one.
+
 V 2.2.0 - 2022-03-27
 
 * update to TW v5.2.2

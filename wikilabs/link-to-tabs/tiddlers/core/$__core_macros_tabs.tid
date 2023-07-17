@@ -18,9 +18,14 @@ tags: $:/tags/Macro
 \end
 
 \define tabs-tab-indicator()
+<$let
+	pluginTab=`$(save-currentTiddler)$/$(currentTiddler)$`
+	currentTiddler=`${[<plugin-info>!is[blank]then<pluginTab>else<currentTiddler>]}$`
+>
 <span class="wltc-link-to-tab">
 	<$link overrideClass="" to=<<currentTiddler>> >{{$:/core/images/link}}</$link>
 </span>
+</$let>
 \end
 
 \define tabs-tab()
