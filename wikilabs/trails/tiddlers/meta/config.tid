@@ -1,0 +1,44 @@
+trail: aa bb cc dd ee ff
+title: $:/plugins/wikilabs/trails/config
+
+\procedure reset(fragment)
+<$let configTiddler=`$:/config/wl/trails/$(fragment)$`>
+<$button 
+	tooltip="Reset"
+	class="tc-btn-invisible"
+	message="tm-delete-tiddler"
+	param=<<configTiddler>>
+	disabled={{{ [<configTiddler>is[tiddler]then[no]else[yes]] }}}
+>
+	{{$:/core/images/delete-button}}
+</$button>
+\end
+
+<$tiddler tiddler="$:/plugins/wikilabs/trails/config">
+
+<<tag test>>
+
+<$macrocall $name="trail" mode="field" field="trail" />
+
+```
+<$macrocall $name="trail" mode="field" field="trail" />
+```
+
+|[[Arrow Height|$:/config/wl/trails/height]] |<$edit-text tiddler="$:/config/wl/trails/height" tag=input /> |px| <<reset "height">> |
+|theme default tiddler body fontSize: |{{$:/themes/tiddlywiki/vanilla/metrics/bodyfontsize}}|||
+|[[Font Size|$:/config/wl/trails/fontSize]] |<$edit-text tiddler="$:/config/wl/trails/fontSize" tag=input /> |px| <<reset "fontSize">> |
+|[[Padding Top|$:/config/wl/trails/paddingTop]] |<$edit-text tiddler="$:/config/wl/trails/paddingTop" tag=input /> |px| <<reset "paddingTop">> |
+|[[Padding Bottom|$:/config/wl/trails/paddingBottom]] |<$edit-text tiddler="$:/config/wl/trails/paddingBottom" tag=input /> |px| <<reset "paddingBottom">> |
+|<$checkbox tiddler="$:/config/wl/trails/showArrows" field="text" checked="yes" unchecked="no" default="yes"> Show</$checkbox> [[Arrows|$:/config/wl/trails/showArrows]] |{{$:/config/wl/trails/showArrows}} ||<<reset "showArrows">>|
+
+---
+
+```
+<$macrocall $name="trail" mode="field" field="trail" label="test: "/>
+```
+
+Some text in front of the trails nav.
+
+<$macrocall $name="trail" mode="field" field="trail" label="test: "/>
+
+</$tiddler>

@@ -2,14 +2,16 @@ code-body: yes
 created: 20230324160845531
 modified: 20230625202117880
 tags: $:/tags/Macro
-title: $:/plugins/wikilabs/trail/trails-navigation
+title: $:/plugins/wikilabs/trails/trails-macros
 type: text/vnd.tiddlywiki
 
 \define tr-link(title, class)
 \whitespace trim
-<$link to=<<__title__>> class=<<__class__>> >
+<li class=<<__class__>> >
+<$link to=<<__title__>> >
 	<$macrocall $name="tr-caption" title=<<__title__>> />
 </$link>
+</li>
 \end
 
 \define tr-caption(title)
@@ -87,11 +89,13 @@ type: text/vnd.tiddlywiki
 <$let __start__={{{ [<__start__>match[]then<currentTiddler>else<__start__>] }}} selfTiddler=<<currentTiddler>> >
 	<$set name="excluded" filter="[subfilter<__exclude__>] :or[<__start__>]">
 		<nav class="wltc-trail" aria-label=<<__start__>> >
-			<<__label__>>
-			<$macrocall $name="trRecursionStory" current=<<__start__>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> sort=<<__sort__>>/>
-			<span tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}} >
-				<$macrocall $name="tr-caption" title=<<__start__>> />
-			</span>
+			<div class="wltc-label"><<__label__>></div>
+			<ol>
+				<$macrocall $name="trRecursionStory" current=<<__start__>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> sort=<<__sort__>>/>
+				<li tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}} >
+					<$macrocall $name="tr-caption" title=<<__start__>> />
+				</li>
+			</ol>
 		</nav>
 	</$set>
 </$let>
@@ -125,15 +129,17 @@ type: text/vnd.tiddlywiki
 	first={{{ [<__start__>get<__field__>enlist-input[]] }}}
 >
 	<$set name="excluded" filter="[subfilter<__exclude__>]">
-		<nav class="wltc-trail">
-			<<__label__>>
-			<$macrocall $name="openFieldInStory" target=<<first>> class="wltc-crumb-first"/>
-			<$list filter="[<__start__>get<__field__>enlist-input[]] -[enlist<excluded>] -[<first>]">
-				<$macrocall $name="openFieldInStory" target=<<currentTiddler>> class="tc-small-gap-right wltc-crumb"/>
-			</$list>
-			<span tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}}>
-				<$macrocall $name="tr-caption" title=<<__start__>> />
-			</span>
+		<nav aria-label=<<__start__>> class="wltc-trail">
+			<div class="wltc-label"><<__label__>></div>
+			<ol>
+				<$macrocall $name="openFieldInStory" target=<<first>> class="wltc-crumb-first"/>
+				<$list filter="[<__start__>get<__field__>enlist-input[]] -[enlist<excluded>] -[<first>]">
+					<$macrocall $name="openFieldInStory" target=<<currentTiddler>> class="tc-small-gap-right wltc-crumb"/>
+				</$list>
+				<li tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}}>
+					<$macrocall $name="tr-caption" title=<<__start__>> />
+				</li>
+			</ol>
 		</nav>
 	</$set>
 </$let>
@@ -167,11 +173,13 @@ type: text/vnd.tiddlywiki
 <$let __start__={{{ [<__start__>match[]then<currentTiddler>else<__start__>] }}} >
 	<$set name="excluded" filter="[subfilter<__exclude__>] :or[<__start__>]">
 	<nav class="wltc-trail">
-		<<__label__>>
-		<$macrocall $name="trRecursion" current=<<__start__>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> sort=<<__sort__>>/>
-		<span tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}}>
-			<$macrocall $name="tr-caption" title=<<__start__>> />
-		</span>
+		<div class="wltc-label"><<__label__>></div>
+		<ol>
+			<$macrocall $name="trRecursion" current=<<__start__>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> sort=<<__sort__>>/>
+			<li tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}}>
+				<$macrocall $name="tr-caption" title=<<__start__>> />
+			</li>
+		</ol>
 	</nav>
 	</$set>
 </$let>

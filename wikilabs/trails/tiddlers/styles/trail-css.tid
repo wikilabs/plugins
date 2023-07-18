@@ -1,16 +1,32 @@
 created: 20230403125904563
 modified: 20230405155836540
 tags: $:/tags/Stylesheet
-title: $:/plugins/wikilabs/trail/trail-css
+title: $:/plugins/wikilabs/trails/trail-css
 type: text/vnd.tiddlywiki
 
 \import [[$:/themes/tiddlywiki/vanilla/base]]
 
-<$let trHeight={{{ [[$:/config/wl/trail/height]get[text]trim[]] :else[[22]] }}}
-	trPaddingTop={{{ [[$:/config/wl/trail/paddingTop]get[text]trim[]] :else[[3]] }}}
-	trPaddingBottom={{{ [[$:/config/wl/trail/paddingBottom]get[text]trim[]] :else[[3]] }}}
-	trShowArrows={{{ [[$:/config/wl/trail/showArrows]get[text]trim[]] :else[[yes]] }}}
+<$let
+	HEIGHT=22
+	trHeight={{{ [[$:/config/wl/trails/height]get[text]trim[]] :else[<HEIGHT>] }}}
+
+	themeFontSize={{{ [{$:/themes/tiddlywiki/vanilla/metrics/bodyfontsize}trim[]removesuffix[px]] }}}
+	trFontSize={{{ [[$:/config/wl/trails/fontSize]get[text]trim[]] :else[<themeFontSize>] }}}
+
+	lineHeight={{{ [<trFontSize>subtract<themeFontSize>divide[4]negate[]add<trHeight>] :else[<trHeight>] }}}
+
+	trPaddingLeft={{{ [<trHeight>subtract<HEIGHT>divide[2]add[18]] }}}
+
+	trPaddingTop={{{    [[$:/config/wl/trails/paddingTop]get[text]trim[]] :else[[3]] }}}
+	trPaddingBottom={{{ [[$:/config/wl/trails/paddingBottom]get[text]trim[]] :else[[3]] }}}
+
+	trShowArrows={{{ [[$:/config/wl/trails/showArrows]get[text]trim[]] :else[[yes]] }}}
 >
+
+.wltc-trail ol {
+	padding-left: 0;
+	list-style-type: none;
+}
 
 .wltc-trail .wltc-crumb-first::after,
 .wltc-trail .wltc-crumb::after {
@@ -18,7 +34,7 @@ type: text/vnd.tiddlywiki
 	content: "❯" / "";	<!-- needed for Chrome-like and screen-readers -->
 	position: absolute;
 	padding-left: .2em;
-	color: <<colour foreground>>;
+	color: <<colour muted-foreground>>;
 }
 
 .wltc-trail .wltc-crumb::before {
@@ -31,10 +47,11 @@ type: text/vnd.tiddlywiki
 	position: relative;
 	display: inline-block;
 	margin-right: 1em;
+	font-size: <<trFontSize>>px;
 }
 
 .wltc-trail .wltc-crumb {
-	padding-left: 0;
+	<!-- padding-left: 0; -->
 }
 
 .wltc-trail .wltc-crumb-first {
@@ -51,9 +68,9 @@ type: text/vnd.tiddlywiki
 	@media (min-width: <<sidebarbreakpoint>>) {
 		.wltc-trail .wltc-crumb-first,
 		.wltc-trail .wltc-crumb {
-			padding: <<trPaddingTop>>px .5em <<trPaddingBottom>>px 1em;
+			padding: <<trPaddingTop>>px 8px <<trPaddingBottom>>px <<trPaddingLeft>>px;
 			margin-right: {{{ [<trHeight>divide[2]] }}}px;
-			line-height: <<trHeight>>px;
+			line-height: <<lineHeight>>px;
 			position: relative;
 			background: <<colour message-background>>;
 			border-right: 1px solid <<colour message-background>>;

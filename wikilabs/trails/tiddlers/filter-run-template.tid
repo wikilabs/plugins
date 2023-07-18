@@ -3,7 +3,7 @@ created: 20230316112235083
 list-before: $:/core/ui/ViewTemplate/body
 modified: 20230326145802667
 tags: $:/tags/ViewTemplate
-title: $:/plugins/wikilabs/trail/filter-run-template
+title: $:/plugins/wikilabs/trails/filter-run-template
 type: text/vnd.tiddlywiki
 
 \define .op-place()
@@ -23,7 +23,7 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 
 <$list filter="[all[current]tag[Named Filter Run Prefix]]">
-	<$macrocall $name="trail" stop="Filters" mode={{$:/config/wl/trail/filterMode}}/>
+	<$macrocall $name="trail" stop="Filters" mode={{$:/config/wl/trails/filterMode}}/>
 	<$let op-head="" op-body="" op-name="">
 		<table class="doc-table">
 			<!-- purpose -->

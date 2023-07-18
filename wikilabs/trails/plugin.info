@@ -1,0 +1,10 @@
+{
+	"title": "$:/plugins/wikilabs/trails",
+	"name": "Trails",
+	"description": "Show a breadcrumbs trail to visualize the context",
+	"author": "Mario Pietsch",
+	"core-version": ">=5.2.0",
+	"version": "0.9.0",
+	"icon": "$:/plugins/wikilabs/trails/icon",
+	"list": "readme config license history"
+}
