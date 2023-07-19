@@ -11,7 +11,9 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 <span class="tc-toc-caption" title={{!!tooltip}}>
 <$set name="tv-wikilinks" value="no">
-	<$transclude tiddler={{{ [<__viewFieldTemplate__>!is[blank]then<__viewFieldTemplate__>else<currentTiddler>] }}} field=<<__viewField__>> >
+	<$transclude tiddler={{{ [<__viewFieldTemplate__>!is[blank]then<__viewFieldTemplate__>else<currentTiddler>] }}}
+		field=<<__viewField__>>
+	>
 		<$view field="title"/>
 	</$transclude>
 </$set>

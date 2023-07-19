@@ -2,7 +2,7 @@ code-body: yes
 created: 20230324160845531
 modified: 20230625202117880
 tags: $:/tags/Macro
-title: $:/plugins/wikilabs/trails/trails-macros
+title: $:/plugins/wikilabs/trails/trail-macros
 type: text/vnd.tiddlywiki
 
 \define tr-link(title, class)
@@ -62,7 +62,9 @@ type: text/vnd.tiddlywiki
 \end
 
 \define trFirstCrumb()
+<$let tv-wikilinks={{{ [<currentTiddler>match<__stop__>then[no]else[yes]] }}}>
 <$macrocall $name="openInStory" target=<<next>> source=<<__current__>> class="tc-small-gap-right wltc-crumb-first"/>
+</$let>
 \end
 
 \define trRecursionStory(current, stop, exclude, field:"tags", sort:"yes")
@@ -92,9 +94,13 @@ type: text/vnd.tiddlywiki
 			<div class="wltc-label"><<__label__>></div>
 			<ol>
 				<$macrocall $name="trRecursionStory" current=<<__start__>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> sort=<<__sort__>>/>
-				<li tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}} >
-					<$macrocall $name="tr-caption" title=<<__start__>> />
-				</li>
+				<$list filter="[<currentTiddler>!match<__stop__>]" variable="ignore" >
+					<li tabindex="0" aria-current="location" class="wltc-crumb"
+						aria-label={{{ [<__start__>get[caption]else<__start__>]}}}
+					>
+						<$macrocall $name="tr-caption" title=<<__start__>> />
+					</li>
+				</$list>
 			</ol>
 		</nav>
 	</$set>

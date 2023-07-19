@@ -1,0 +1,10 @@
+tags: $:/tags/Macro
+title: $:/plugins/wikilabs/trails/breadcrumbs-macro
+code-body: yes
+
+\define breadcrumbs(start, stop, exclude, label, field:"parent" mode:"story")
+<$macrocall
+	$name="trail" start=<<__start__>> stop=<<__stop__>>
+	exclude=<<__exclude__>> label=<<__label__>> field=<<__field__>> mode=<<__mode__>>
+/>
+\end
