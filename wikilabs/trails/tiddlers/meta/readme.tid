@@ -2,7 +2,7 @@ title: $:/plugins/wikilabs/trails/readme
 
 This plugin allows you to use 3 different responsive trail configurations
 
-! trail CSS Options
+!! trail CSS Options
 
 If the user changes the global font-size and / or line-height in the theme to higher values, it will be needed to adjust the breadcrumb settings accordingly. The following parameters can be used to dynamically calculate the "arrow shape". For small screens the graphical arrow shape is replaced by plain text.
 
@@ -12,18 +12,23 @@ If the user changes the global font-size and / or line-height in the theme to hi
 * $:/config/wl/trails/paddingTop ... Can be used to change the top padding of the arrows. Defaults to: 3
 * $:/config/wl/trails/showArrows ... If set to "yes" the trail "arrows" are shown. Any other value shows the "plain text" version, independent of the screen width. Defaults to: yes
 
-Global Mode Setting
+!! Global Mode Setting
 
     $:/config/wl/trails/filterMode ... defines the default "mode" the trail macro uses for the "filter syntax" related documentation 
 
-Usage
+!! Usage
 
 ```
 <$macrocall $name="trail" stop="Filters" mode={{$:/config/wl/trails/filterMode}}/>
 ```
 
-{{$:/core/ui/ControlPanel/Settings/trail}}
+!! Settings
 
-''Important:'' This plugin modifies a core module and templates
+{{$:/plugins/wikilabs/trails/config}}
+
+
+!! Important
+
+''This plugin modifies a core module and templates''
 
 <ul><$list filter="[[$:/plugins/wikilabs/trail]plugintiddlers[]prefix[$:/core/]]" emptyMessage="none"><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>

@@ -5,6 +5,12 @@ tags: $:/tags/Macro
 title: $:/plugins/wikilabs/trails/trail-macros
 type: text/vnd.tiddlywiki
 
+\define ERROR-STOPTIDDLER()
+<span style={{{ [{$:/palette}getindex[dirty-indicator]addprefix[color:]addsuffix[;]] }}}>
+ trail ERROR! -- stop-tiddler: "<<__stop__>>" does not exist
+</span>
+\end
+
 \define tr-link(title, class)
 \whitespace trim
 <li class=<<__class__>> >
@@ -61,7 +67,7 @@ type: text/vnd.tiddlywiki
 </$linkcatcher>
 \end
 
-\define trFirstCrumb()
+\define trFirstCrumbStory()
 <$let tv-wikilinks={{{ [<currentTiddler>match<__stop__>then[no]else[yes]] }}}>
 <$macrocall $name="openInStory" target=<<next>> source=<<__current__>> class="tc-small-gap-right wltc-crumb-first"/>
 </$let>
@@ -69,7 +75,7 @@ type: text/vnd.tiddlywiki
 
 \define trRecursionStory(current, stop, exclude, field:"tags", sort:"yes")
 \whitespace trim
-<$list filter="[<__stop__>is[tiddler]]" emptyMessage="""<span style={{{ [{$:/palette}getindex[dirty-indicator]addprefix[color:]addsuffix[;]] }}}> trail ERROR! -- stop-tiddler: "<<__stop__>>" does not exist</span>""" variable="ignore">
+<$list filter="[<__stop__>is[tiddler]]" emptyMessage=<<ERROR-STOPTIDDLER>> variable="ignore">
 	<$let
 		limit="[limit[1]]"
 		sort="[sort[]limit[1]]"
@@ -77,8 +83,8 @@ type: text/vnd.tiddlywiki
 		next={{{ [<__current__>get<__field__>enlist-input[]] -[enlist<__exclude__>] +[subfilter<sub>] :else[<__stop__>] }}}
 	>
 		<$set name="excluded" filter="[subfilter<__exclude__>] :or[<next>]">
-			<$list filter="[<next>!match<__stop__>]" emptyMessage=<<trFirstCrumb>> >
-				<$macrocall $name="trRecursionStory" current=<<currentTiddler>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> filter=<<__filter__>>/>
+			<$list filter="[<next>!match<__stop__>]" emptyMessage=<<trFirstCrumbStory>> >
+				<$macrocall $name="trRecursionStory" current=<<currentTiddler>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> filter=<<__filter__>> />
 				<$macrocall $name="openInStory" target=<<currentTiddler>> source=<<__current__>> class="tc-small-gap-right wltc-crumb"/>
 			</$list>
 		</$set>
@@ -95,9 +101,7 @@ type: text/vnd.tiddlywiki
 			<ol>
 				<$macrocall $name="trRecursionStory" current=<<__start__>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> sort=<<__sort__>>/>
 				<$list filter="[<currentTiddler>!match<__stop__>]" variable="ignore" >
-					<li tabindex="0" aria-current="location" class="wltc-crumb"
-						aria-label={{{ [<__start__>get[caption]else<__start__>]}}}
-					>
+					<li tabindex="0" aria-current="location" class="wltc-crumb" aria-label={{{ [<__start__>get[caption]else<__start__>]}}} >
 						<$macrocall $name="tr-caption" title=<<__start__>> />
 					</li>
 				</$list>
@@ -157,7 +161,10 @@ type: text/vnd.tiddlywiki
 
 \define trRecursion(current, stop, exclude, field:"tags", sort:"yes")
 \whitespace trim
-<$list filter="[<__stop__>is[tiddler]]" emptyMessage="""<span style={{{ [{$:/palette}getindex[dirty-indicator]addprefix[color:]addsuffix[;]] }}}> trail ERROR! -- stop-tiddler: "<<__stop__>>" does not exist</span>""" variable="ignore">
+<$list filter="[<__stop__>is[tiddler]]"
+	emptyMessage=<<ERROR-STOPTIDDLER>>
+	variable="ignore"
+>
 	<$let
 		limit="[limit[1]]"
 		sort="[sort[]limit[1]]"
@@ -165,8 +172,12 @@ type: text/vnd.tiddlywiki
 		next={{{ [<__current__>get<__field__>enlist-input[]] -[enlist<__exclude__>] +[subfilter<sub>] :else[<__stop__>] }}}
 	>
 		<$set name="excluded" filter="[subfilter<__exclude__>] :or[<next>]">
-			<$list filter="[<next>!match<__stop__>]" emptyMessage="""<$macrocall $name="tr-link" title=<<next>> class="tc-small-gap-right wltc-crumb-first"/>""">
-				<$macrocall $name="trRecursion" current=<<currentTiddler>> stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> filter=<<__filter__>>/>
+			<$list filter="[<next>!match<__stop__>]"
+				emptyMessage="""<$macrocall $name="tr-link" title=<<next>> class="tc-small-gap-right wltc-crumb-first"/>"""
+			>
+				<$macrocall $name="trRecursion" current=<<currentTiddler>>
+					stop=<<__stop__>> exclude=<<excluded>> field=<<__field__>> filter=<<__filter__>>
+				/>
 				<$macrocall $name="tr-link" title=<<currentTiddler>> class="tc-small-gap-right wltc-crumb"/>
 			</$list>
 		</$set>

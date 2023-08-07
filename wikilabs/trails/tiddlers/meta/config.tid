@@ -25,7 +25,7 @@ title: $:/plugins/wikilabs/trails/config
 ```
 
 |[[Arrow Height|$:/config/wl/trails/height]] |<$edit-text tiddler="$:/config/wl/trails/height" tag=input /> |px| <<reset "height">> |
-|theme default tiddler body fontSize: |{{$:/themes/tiddlywiki/vanilla/metrics/bodyfontsize}}|||
+|theme default tiddler body fontSize in ''px'': |{{$:/themes/tiddlywiki/vanilla/metrics/bodyfontsize}}|||
 |[[Font Size|$:/config/wl/trails/fontSize]] |<$edit-text tiddler="$:/config/wl/trails/fontSize" tag=input /> |px| <<reset "fontSize">> |
 |[[Padding Top|$:/config/wl/trails/paddingTop]] |<$edit-text tiddler="$:/config/wl/trails/paddingTop" tag=input /> |px| <<reset "paddingTop">> |
 |[[Padding Bottom|$:/config/wl/trails/paddingBottom]] |<$edit-text tiddler="$:/config/wl/trails/paddingBottom" tag=input /> |px| <<reset "paddingBottom">> |
