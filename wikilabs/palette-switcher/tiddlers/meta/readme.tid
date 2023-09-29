@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/palette-switcher/readme
+
+This plugin "Palette Switcher" adds a new ''APalette'' to the ''ControlPanel -> Appearence'' tab
+
+!! Palette Switcher Settings
+
+{{$:/plugins/wikilabs/palette-switcher/settings}}
