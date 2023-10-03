@@ -14,3 +14,9 @@ For example:
 <$set name="targetTiddler" value="$:/Cheatsheet Variable">
   <$button message="tm-navigate" to=<<targetTiddler>> >Open tiddler: <<targetTiddler>></$button>
 </$set>
+
+To avoid the automatic wiki-link conversion for `$:/Cheatsheet` you can set `tv-wikilinks="no"`:
+
+<$let targetTiddler="$:/Cheatsheet Variable" tv-wikilinks="no">
+  <$button message="tm-navigate" to=<<targetTiddler>> >Open tiddler: <<targetTiddler>></$button>
+</$let>

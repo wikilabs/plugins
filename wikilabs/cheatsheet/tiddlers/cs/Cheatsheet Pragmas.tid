@@ -4,16 +4,16 @@ tags: [[Wikitext Cheatsheet]]
 title: $:/Cheatsheet Pragmas
 type: text/vnd.tiddlywiki
 
-A <<.def pragma>> is a special component of WikiText that provides control over the way the remaining text is parsed.
+A pragma is a special component of WikiText that provides control over the way the remaining text is parsed.
 
-Pragmas occupy lines that start with `\`. 
+Pragmas occupy lines that start with `\`.
 The following pragmas are available:
 
-* Pragma: `\define`
-* Pragma: `\function`
-* Pragma: `\import`
-* Pragma: `\parameters`
-* Pragma: `\procedure`
-* Pragma: `\rules`
-* Pragma: `\whitespace`
-* Pragma: `\widget`
+* Pragma: `\procedure` -- is used to define <<.xL procedures "Procedure Definitions">>
+* Pragma: `\function` -- is used to define <<.xL functions "Functions">>
+* Pragma: `\widget` -- is used to define <<.xL "custom widgets" "Custom Widgets">>
+* Pragma: `\parameters` -- is used within procedure and widget definitions to declare the parameters that are expected, and their default values
+* Pragma: `\whitespace` -- determines how spaces and newlines are treated within wikitext
+* Pragma: `\import` -- is used to import definitions from other tiddlers that are identified with a filter
+* Pragma: `\rules` -- adjusts the set of parser rules used to parse the remaining text
+* Pragma: `\define` -- is used to define macros. It is a shortcut syntax for the SetVariableWidget

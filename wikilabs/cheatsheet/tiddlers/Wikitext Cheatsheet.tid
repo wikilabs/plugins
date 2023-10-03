@@ -41,6 +41,8 @@ type: text/vnd.tiddlywiki
 <$codeblock code={{{ [<__title__>get[text]] }}}/>
 \end
 
+''Important: Links'' in the Cheatsheet will open <<.xL "WikiText documentation" "WikiText">> tiddlers at tiddlywiki.com
+
 | Rendered Result                | Example Markup                 |h
 | how the example markup renders | what to enter as tiddler text  |
 |>| ! <<.xL "Basic Text Formatting" "Formatting in WikiText">>    |
@@ -105,7 +107,7 @@ type: text/vnd.tiddlywiki
 |>| In general, image files should be external to a ~TiddlyWiki. |
 |[img[https://tiddlywiki.com/favicon.ico]] |`[img[https://tiddlywiki.com/favicon.ico]]` |
 |[img[An explanatory tooltip|https://tiddlywiki.com/favicon.ico]] |`[img[An explanatory tooltip|https://tiddlywiki.com/favicon.ico]]` |
-|>| ! <<.xL "Tables" "Tables in WikiText">> |
+|>| ! <<.xL "Tables" "Tables in WikiText">> and <<.xL "Utility Classes" "Tables in WikiText CSS Utility Classes">> |
 |<<.t "$:/Cheatsheet Table">>        |<<.cb "$:/Cheatsheet Table">>|
 |>| ! <<.xL "Custom Styles" "Styles and Classes in WikiText">> |
 |<<.t "$:/Cheatsheet CS">>           |<<.cb "$:/Cheatsheet CS">>   |
@@ -125,10 +127,10 @@ type: text/vnd.tiddlywiki
 |<<.t "$:/Cheatsheet Procedures">>         |<<.cb "$:/Cheatsheet Procedures">> |
 |>| ! <<.xL "Functions" "Functions">>                                          |
 |<<.t "$:/Cheatsheet Functions">>          |<<.cb "$:/Cheatsheet Functions">>  |
-|>| ! <<.xL "Macros" "Macros in WikiText">>                                    |
-|>|   <<.xL "Macro Definition" "Macro Definitions in WikiText">>               |
+|>| ! <<.xL "Macros" "Macros">>                                    |
+|>|   <<.xL "Macro Definition" "Macro Definitions">>               |
 |<<.t "$:/Cheatsheet MDefinition">>  |<<.cb "$:/Cheatsheet MDefinition">>      |
-|>|   <<.xL "Macro Calls" "Macro Calls in WikiText">>                          |
+|>|   <<.xL "Macro Calls" "Macro Calls">>                          |
 |<<.t "$:/Cheatsheet MCall">>        |<<.cb "$:/Cheatsheet MCall">>            |
 |>| ! <<.xL "Transclusions" "Transclusion in WikiText">>        |
 |<<.t "$:/Cheatsheet Transclusion">> |The [[$:/Cheatsheet Transclusion]] tiddler on the left side is transcluded into the table using the <<.xL "transclusion-widget" "TranscludeWidget">><br><br>`<<.t "$:/Cheatsheet Transclusion">>` |

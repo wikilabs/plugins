@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/cheatsheet/history
 
+V 1.0.0 2023.10.03
+
+* fix custom widget syntax
+* improve links to tiddlywiki.com documentation
+
 V 0.1.1 2023.05.05
 
 * fix type in bold formatting docs

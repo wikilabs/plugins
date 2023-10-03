@@ -8,9 +8,9 @@ type: text/vnd.tiddlywiki
 This is the procedure, and the parameter is: ''<<parameter>>''.
 \end
 
-<<.from-version "5.3.0">> A procedure is a named snippet of text. They are typically defined with the `\procedure` pragma:
+A procedure is a named snippet of text. They are typically defined with the `\procedure` pragma.
 
-The name wrapped in double angled [[brackets|Brackets]] is used a shorthand way of [[transcluding|Transclusion]] the snippet. Each of these <<.def "procedure calls">> can supply a different set of parameters:
+The name wrapped in double angled <<.xL brackets Brackets>> is used a shorthand way of <<.xL transcluding Transclusion>> the snippet. Each of these "procedure calls" can supply a different set of parameters:
 
 --------
 
