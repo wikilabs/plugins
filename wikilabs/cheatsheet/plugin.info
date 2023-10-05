@@ -1,6 +1,6 @@
 {
 	"title": "$:/plugins/wikilabs/cheatsheet",
-	"name": "TW Cheatsheet",
+	"name": "Cheatsheet TW WikiText",
 	"description": "A compact wikitext syntax overview",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.2.0",
