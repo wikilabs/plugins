@@ -41,7 +41,7 @@ type: text/vnd.tiddlywiki
 <$codeblock code={{{ [<__title__>get[text]] }}}/>
 \end
 
-''Important: Links'' in the Cheatsheet will open <<.xL "WikiText documentation" "WikiText">> tiddlers at tiddlywiki.com
+''V{{$:/plugins/wikilabs/cheatsheet!!version}} -- Links'' in the Cheatsheet will open <<.xL "WikiText documentation" "WikiText">> tiddlers at tiddlywiki.com
 
 | Rendered Result                | Example Markup                 |h
 | how the example markup renders | what to enter as tiddler text  |
