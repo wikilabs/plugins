@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/cheatsheet/styles
+tags: $:/tags/Stylesheet
+type: text/css
+
+.wl-cheatsheet th {
+	border-top: 3px solid;
+}

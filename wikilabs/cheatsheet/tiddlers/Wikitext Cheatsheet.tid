@@ -41,8 +41,9 @@ type: text/vnd.tiddlywiki
 <$codeblock code={{{ [<__title__>get[text]] }}}/>
 \end
 
-''V{{$:/plugins/wikilabs/cheatsheet!!version}} -- Links'' in the Cheatsheet will open <<.xL "WikiText documentation" "WikiText">> tiddlers at tiddlywiki.com
+''V{{$:/plugins/wikilabs/cheatsheet!!version}} -- Links'' in the Cheatsheet will open <<.xL "WikiText documentation" "WikiText">> tiddlers at tiddlywiki.com.<br>Open the [[Wikitext Cheatsheet]] in the story river.
 
+|tc-max-width wl-cheatsheet |k
 | Rendered Result                | Example Markup                 |h
 | how the example markup renders | what to enter as tiddler text  |
 |>| ! <<.xL "Basic Text Formatting" "Formatting in WikiText">>    |
@@ -56,7 +57,7 @@ type: text/vnd.tiddlywiki
 |@@highlight@@                   |`@@highlight@@` |
 |n--dash                         |`n--dash`       |
 |m---dash                        |`m---dash`      |
-|>|                 ! <<.xL "Headings" "Headings in WikiText">> |
+|>| ! <<.xL "Headings" "Headings in WikiText">> |
 |<h1>Heading 1</h1>              |`! Heading 1` |
 |<h2>Heading 2</h2>              |`! Heading 2` |
 |<h3>Heading 3</h3>              |`! Heading 3` |
@@ -105,11 +106,11 @@ type: text/vnd.tiddlywiki
 |''Relative Path (Subfolder)'' |`[[folder/file]]` |
 |>| ! <<.xL "Images" "Images in WikiText">>       |
 |>| In general, image files should be external to a ~TiddlyWiki. |
-|[img[https://tiddlywiki.com/favicon.ico]] |`[img[https://tiddlywiki.com/favicon.ico]]` |
-|[img[An explanatory tooltip|https://tiddlywiki.com/favicon.ico]] |`[img[An explanatory tooltip|https://tiddlywiki.com/favicon.ico]]` |
+|[img height=24 [https://tiddlywiki.com/favicon.ico]] |`[img height=24 [https://tiddlywiki.com/favicon.ico]]` |
+|[img height=24 [An explanatory tooltip|https://tiddlywiki.com/favicon.ico]] |`[img height=24 [An explanatory tooltip|https://tiddlywiki.com/favicon.ico]]` |
 |>| ! <<.xL "Tables" "Tables in WikiText">> and <<.xL "Utility Classes" "Tables in WikiText CSS Utility Classes">> |
 |<<.t "$:/Cheatsheet Table">>        |<<.cb "$:/Cheatsheet Table">>|
-|>| ! <<.xL "Custom Styles" "Styles and Classes in WikiText">> |
+|>| ! <<.xL "Custom Styles and Classes" "Styles and Classes in WikiText">> |
 |<<.t "$:/Cheatsheet CS">>           |<<.cb "$:/Cheatsheet CS">>   |
 |>| ! <<.xL "Hard Linebreaks" "Hard Linebreaks in WikiText">>  |
 |<<.t "$:/Cheatsheet HL">>           |<<.cb "$:/Cheatsheet HL">>   |
@@ -145,4 +146,30 @@ type: text/vnd.tiddlywiki
 |>|<<.t "$:/Cheatsheet PM">> |
 |>| ! <<.xL "Pragmas" "Pragmas">> |
 |>|<<.t "$:/Cheatsheet Pragmas">> |
+
+|tc-max-width wl-cheatsheet |k
+|>|>| ! <<.xL "Bracket Names" "Brackets">> |
+|''Appearance'' |''Name'' |''Short name'' |
+|`()` |Round brackets |Parenthesis |
+|`[]` |Square brackets |Brackets |
+|`{}` |Curly brackets |Braces |
+|`<>` |Angle brackets |Chevrons |
+
+|tc-max-width wl-cheatsheet |k
+|>|>|>|>| ! <<.xL "Wikitext Symbols" "Formatting in WikiText">> |
+|''Appearance''|>|>|>| ''Usage'' |
+|`[[  ]]`|<<.xL TiddlerLinks TiddlerLinks >> |<<.xL "Filter Run" "Filter Run">> |||
+|`{{  }}`|<<.xL "Transclusion in WikiText" "Transclusion in WikiText" >> ||||
+|`<<  >>`|<<.xL Procedures Procedures >> |<<.xL "Functions" "Functions">> |<<.xL "Variables" "Variables">> |<<.xL "Macros" "Macros">> |
+|`@@  @@`|<<.xL "Formatting in WikiText" "" >> |<<.xL "Styles and Classes in WikiText" "Styles and Classes in WikiText">> |||
+|`$(  )$` and `${  }$`|<<.xL "Substituted Attribute Values" "Substituted Attribute Values" >>||||
+|`(( keyboard ))`|<<.xL "Keyboard Shortcut Tiddler" "Keyboard Shortcut Tiddler" >> |<<.xL "Keyboard Shortcut Descriptor" "Keyboard Shortcut Descriptor">> |<<.xL "Keyboard Driven Input" "keyboard-driven-input Macro">>||
+|`$$$  $$$`|<<.xL "Typed Blocks in WikiText" "Typed Blocks in WikiText" >>||||
+|`"""  """`|<<.xL "Hard Linebreaks in WikiText" "Hard Linebreaks in WikiText" >>||||
+|`---`|<<.xL "Horizontal Rules in WikiText" "Horizontal Rules in WikiText" >> |use more than 3 `------------`<br>to emphasise in editor |||
+|`` `backticks` ``|<<.xL "Formatting in WikiText" "Formatting in WikiText">> |<<.xL "Code Blocks in WikiText" "Code Blocks in WikiText" >> |<<.xL "Substituted Attribute Values" "Substituted Attribute Values">>||
+|`{{{ filter }}}`|<<.xL "Filtered Transclusions" "Transclusion in WikiText" >> |<<.xL "Transclusion and Substitution" "Transclusion and Substitution" >> |<<.xL "Filtered Attribute Values" "Filtered Attribute Values">>||
+|>|>|>|>| ''Deprecated'' |
+|`$x$` |macro text substitution |<<.xL "Macros" "Macros">> |||
+|`<<__x__>>` |local macro variable |<<.xL "Macros" "Macros">> |||
 
