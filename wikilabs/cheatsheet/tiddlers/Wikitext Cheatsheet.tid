@@ -159,7 +159,7 @@ type: text/vnd.tiddlywiki
 |>|>|>|>| ! <<.xL "Wikitext Symbols" "Formatting in WikiText">> |
 |''Appearance''|>|>|>| ''Usage'' |
 |`[[  ]]`|<<.xL TiddlerLinks TiddlerLinks >> |<<.xL "Filter Run" "Filter Run">> |||
-|`{{  }}`|<<.xL "Transclusion in WikiText" "Transclusion in WikiText" >> ||||
+|`{{  }}`|<<.xL "Transclusion in WikiText" "Transclusion in WikiText" >> |<<.xL "TranscludeWidget" "TranscludeWidget" >> |||
 |`<<  >>`|<<.xL Procedures Procedures >> |<<.xL "Functions" "Functions">> |<<.xL "Variables" "Variables">> |<<.xL "Macros" "Macros">> |
 |`@@  @@`|<<.xL "Formatting in WikiText" "" >> |<<.xL "Styles and Classes in WikiText" "Styles and Classes in WikiText">> |||
 |`$(  )$` and `${  }$`|<<.xL "Substituted Attribute Values" "Substituted Attribute Values" >>||||

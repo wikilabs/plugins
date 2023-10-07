@@ -4,6 +4,6 @@
 	"description": "A compact wikitext syntax overview",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.2.0",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"list": "readme license history"
 }
