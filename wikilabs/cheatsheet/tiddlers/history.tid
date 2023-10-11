@@ -2,7 +2,11 @@ title: $:/plugins/wikilabs/cheatsheet/history
 
 V 1.1.1 2023.10.07
 
+* Add basic documentation
 * Add TranscludeWidget link to Symobl table
+* Removed the `{{$:/Cheatsheet PlainText}}` from list and quote examples
+* Improved rendered text positioning
+* More top/bottom space for table Headings
 
 V 1.1.0 2023.10.06
 

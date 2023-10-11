@@ -10,7 +10,7 @@ This is the procedure, and the parameter is: ''<<parameter>>''.
 
 A procedure is a named snippet of text. They are typically defined with the `\procedure` pragma.
 
-The name wrapped in double angled <<.xL brackets Brackets>> is used a shorthand way of <<.xL transcluding Transclusion>> the snippet. Each of these "procedure calls" can supply a different set of parameters:
+The name wrapped in double angled <<.xL brackets Brackets>> is used as a shorthand way of <<.xL transcluding Transclusion>> the snippet. Each of these "procedure calls" can supply a different set of parameters:
 
 --------
 

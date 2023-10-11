@@ -13,4 +13,5 @@ type: text/vnd.tiddlywiki
 Hi, I'm <$text text=<<__name__>>/> 
 \end
 
-macro definitions are invisible
+Macro definitions are invisible.
+They are used in the examples below.
