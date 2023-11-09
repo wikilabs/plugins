@@ -1,0 +1,9 @@
+title: $:/plugins/wikilabs/stories/readme
+
+* TODO
+
+! Example
+
+```
+<$button message="stories" param="Story/NewX" >open story</$button>
+```

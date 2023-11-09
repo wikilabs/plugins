@@ -1,0 +1,95 @@
+title: $:/plugins/wikilabs/stories/ui/Stories
+tags: $:/tags/SideBar
+caption: Stories
+
+\whitespace trim
+
+\whitespace trim
+
+\define filter-exist() [subfilter{$(currentTiddler)$}] +[has[title]]
+\define filter-list() [subfilter{$(currentTiddler)$}!prefix[--- ]]
+\define get-info() <$count filter=<<filter-exist>> />/<$count filter=<<filter-list>> />
+\define get-tooltip() <$count filter=<<filter-exist>> />, out of <$count filter=<<filter-list>> /> tiddlers will be exported. Check for typos!
+\define count-filter() <$count filter={{$(currentTiddler)$!!filter}} />
+\define get-filter-tooltip() <<count-filter>> tiddlers will be exported
+
+\define go-advanced-search-filter()
+<!-- states for default TW and Advanced Search Plus Plugin -->>
+<$let filter={{{ [all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]limit[1]then[$:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter]else[$:/core/ui/AdvancedSearch/Filter]] }}}>
+<$action-setfield $tiddler="$:/state/tab--1498284803" $value=<<filter>>/>
+<$action-setfield $tiddler="$:/state/tab-1610021602" $value=<<filter>>/>
+<$action-setfield $tiddler="$:/temp/advancedsearch" $value={{$(currentTiddler)$!!filter}}/>
+<$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{$(currentTiddler)$!!filter}}/>
+</$let>
+\end
+
+\define test-filter()
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-boxed tc-small-gap-right" tooltip="Test the filter" style="cursor:help">
+	<<count-filter>>
+</$button>
+\end
+
+\define test-filter-text()
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-filter>> class="tc-btn-boxed" tooltip="Test the filter">
+Open this filtered list in ~AdvancedSearch
+</$button>
+\end
+
+\define go-advanced-search-list()
+<!-- states for default TW and Advanced Search Plus Plugin -->>
+<$let filter={{{ [all[shadows+tiddlers]tag[$:/tags/AdvancedSearchPlus]limit[1]then[$:/plugins/wikilabs/ui/AdvancedSearchPlus/Filter]else[$:/core/ui/AdvancedSearch/Filter]] }}}>
+<$action-setfield $tiddler="$:/state/tab--1498284803" $value=<<filter>>/>
+<$action-setfield $tiddler="$:/state/tab-1610021602" $value=<<filter>>/>
+<$action-setfield $tiddler="$:/temp/advancedsearch" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
+<$action-setfield $tiddler="$:/temp/advancedsearch/input" $value={{{[all[current]get[text]search-replace:g:regexp[(.*)],[$1 ]]}}}/>
+</$let>
+\end
+
+\define open-tiddler-info-actions()
+<!-- NOT ACTIVE ATM because tiddlerInfoState is not visible in the sidebar -->>
+<!-- states to show Info Area and set to Bundler Tab -->>
+<$action-log xx=<<tiddlerInfoState>> />
+<$action-setfield $tiddler="$:/state/tab--1105052506" $value="$:/plugins/wikilabs/ui/TiddlerInfo/BundleTab"/>
+<$action-setfield $tiddler=<<tiddlerInfoState>> $value="yes"/>
+\end
+
+\define test-list(text:"Open this list in ~AdvancedSearch")
+\whitespace trim
+<$button to="$:/AdvancedSearch" actions=<<go-advanced-search-list>> class="tc-btn-boxed tc-small-gap-right" tooltip="Test the filter" style="cursor:help">
+	<<__text__>>
+</$button>
+\end
+
+\define open-info(text:"")
+\whitespace trim
+<$button to=<<currentTiddler>> actions=<<open-tiddler-info-actions>> class="tc-btn-boxed" tooltip="Open Tiddler Info Bundler" style="cursor:help">
+	<<__text__>>
+</$button>
+\end
+
+
+<$vars nl={{{[charcode[10]]}}}>
+<$vars text={{{ [enlist{$:/StoryList!!list}format:titlelist[]join<nl>] }}}>
+	<$button>
+		<$action-sendmessage $message="tm-new-tiddler"
+			title="new.story"
+			tags="Story"
+			code-body="yes"
+			text=<<text>>
+		/>
+		New Story
+	</$button>
+</$vars></$vars>
+
+<div class="wltc-small-gap-top">
+<$list filter="[tag[Story]]">
+	<div>
+		<<storyIcon>>
+		{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}}
+		<$macrocall $name="test-list" text=<<get-info>>/>
+		<$link to=<<currentTiddler>> tooltip=<<get-tooltip>> >
+			<<currentTiddler>>
+		</$link>
+	</div>
+</$list>
+</div>

@@ -1,0 +1,28 @@
+created: 20200115140642592
+modified: 20200119114755985
+tags: $:/tags/ViewTemplate
+title: $:/plugins/wikilabs/stories/ui/ViewTemplate/story
+type: text/vnd.tiddlywiki
+
+\define showStory()
+<$action-setfield $tiddler="$:/state/tab--1498284803" text="$:/core/ui/AdvancedSearch/Story"/>
+<$action-setfield $tiddler="$:/state/tab--542523394" text="$:/core/ui/AdvancedSearch/Story"/>
+<$action-navigate $to="$:/AdvancedSearch"/>
+<$action-createtiddler $basetitle="$:/temp/story" $overwrite="yes" $template=<<navigateTo>> s-title=<<navigateTo>> text={{{ [<navigateTo>get[text]] }}} code-body="yes" tags=""/>
+\end
+
+<$list filter="[all[current]tag[Story]]">
+
+----
+!!! Description
+
+{{!!description}}
+
+<table class="tc-view-field-table">
+<tbody>
+<$list filter="[enlist{$:/config/wl/stories/field-list}]" template="$:/core/ui/TiddlerFieldTemplate" variable="listItem"/>
+</tbody>
+</table>
+
+<$linkcatcher actions=<<showStory>>><$link $to={{!!title}}>Modify</$link></$linkcatcher> | [[Configure Fields|$:/config/wl/stories/field-list]]
+</$list>
