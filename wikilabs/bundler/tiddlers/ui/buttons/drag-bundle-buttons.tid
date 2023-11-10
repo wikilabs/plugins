@@ -2,6 +2,8 @@ title: $:/plugins/wikilabs/ui/TiddlerInfo/DraggableButtons
 tags: $:/tags/Macro
 type: text/vnd.tiddlywiki
 
+\whitespace trim
+
 \define dragBundleFilter() [subfilter{!!text}has[title]] [<currentTiddler>]
 \define dragFilteredFilter() [subfilter{!!filter}has[title]] [<currentTiddler>]
 
@@ -16,11 +18,12 @@ type: text/vnd.tiddlywiki
 </$button>
 \end
 
-\define dragBundleIcon()
-\whitespace trim
-<$button dragFilter=<<dragBundleFilter>> class="wltc-cursor-grab tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
-	<span class="tc-small-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
-</$button>
+\procedure dragBundleIcon(visible:"yes")
+<$list filter="[<visible>match[yes]]" variable="ignore">
+	<$button dragFilter=<<dragBundleFilter>> class="wltc-cursor-grab tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
+		<span class="tc-small-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
+	</$button>
+</$list>
 \end
 
 \define dragFilteredButton()
@@ -31,9 +34,10 @@ type: text/vnd.tiddlywiki
 </$button>
 \end
 
-\define dragFilteredIcon()
-\whitespace trim
-<$button dragFilter=<<dragFilteredFilter>> class="wltc-cursor-grab tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
-	<span class="tc-small-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
-</$button>
+\procedure dragFilteredIcon(visible:"yes")
+<$list filter="[<visible>match[yes]]" variable="ignore">
+	<$button dragFilter=<<dragFilteredFilter>> class="wltc-cursor-grab tc-btn-invisible tc-tiddlylink" tooltip=<<dragTooltip>> aria-label=<<aria-label>> >
+		<span class="tc-small-gap-right">{{$:/plugins/wikilabs/bundler/icon}}</span>
+	</$button>
+</$list>
 \end

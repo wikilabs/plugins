@@ -21,9 +21,11 @@ type: text/vnd.tiddlywiki
 <div class="wltc-small-gap-top">
 <$list filter="[tag[$:/tags/Bundle]]">
 	<div>
-		<<dragBundleIcon>>
-		{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}}
-		<$macrocall $name="test-list" text=<<get-info>>/>
+		<$macrocall $name="dragBundleIcon" visible={{{ [[$:/config/wikilabs/enableDragListButton]get[text]trim[]else[yes]] }}} />
+		<$list filter={{{ [{$:/config/wikilabs/enableExportListButton}trim[]match[no]then[]else[yes]] }}} variable="ignore">
+			{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}}
+		</$list>
+		<$macrocall $name="test-list" btnText=<<get-info>>/>
 		<$link to=<<currentTiddler>> tooltip=<<get-tooltip>> >
 			<<currentTiddler>>
 		</$link>

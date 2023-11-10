@@ -6,7 +6,7 @@ title: $:/plugins/wikilabs/bundler/ui/Bundles
 type: text/vnd.tiddlywiki
 
 <$link to="$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config" class="wltc-options-button" >{{$:/core/images/options-button}}</$link>
-{{$:/plugins/wikilabs/bundler/ui/BundlesList}} 
+{{$:/plugins/wikilabs/bundler/ui/BundlesList}}
 
 ---
 

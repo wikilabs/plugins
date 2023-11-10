@@ -9,7 +9,7 @@ type: text/vnd.tiddlywiki
 <$action-deletetiddler $tiddler="$:/config/TiddlerInfo/Default"/>
 \end
 
-!! Enable Tiddler Info Button
+!! Tiddler Info Button
 
 <$vars tv-config-toolbar-icons="yes" tv-config-toolbar-text="yes">
 
@@ -23,7 +23,7 @@ type: text/vnd.tiddlywiki
 {{$:/core/ui/ControlPanel/Settings/InfoPanelMode}}
 <<<
 
-!! Enable Import Bundle
+!! Import Bundle
 
 <<<
 <$checkbox tiddler="$:/config/wikilabs/enableImportBundle" field="text" checked="yes" unchecked="no" default="no"> Enable Import Bundle</$checkbox>
@@ -34,7 +34,25 @@ You can rename or delete the tiddler, to store the setting or get rid of it.
 
 <<<
 
-!! Enable Filtered Bundles
+!! List Bundles
+
+<<<
+
+!!! {{$:/plugins/wikilabs/bundler/icon|1em}} Enable Drag Button
+
+><$checkbox tiddler="$:/config/wikilabs/enableDragListButton" field="text" checked="yes" unchecked="no" default="yes"> Enable Drag List Button</$checkbox>
+
+>This sidebar button {{$:/plugins/wikilabs/bundler/icon|1em}} allows you to drag the bundle + all tiddlers into a different wiki, to be imported
+
+!!! {{$:/core/images/export-button|1em}} Enable Export Filter Button
+
+><$checkbox tiddler="$:/config/wikilabs/enableExportListButton" field="text" checked="yes" unchecked="no" default="yes"> Enable Export List Button</$checkbox>
+
+>This sidebar button {{$:/core/images/export-button|1em}} allows you to export the bundle + all filtered tiddlers into a JSON file
+
+<<<
+
+!! Filtered Bundles
 
 <<<
 
@@ -43,6 +61,18 @@ You can rename or delete the tiddler, to store the setting or get rid of it.
 Bundle filters are already used by the "More" dropdown in the $:/AdvancedSearch - Filter tab. The filtered bundle settings provide a slightly different UI to export sets of tiddlers, configured by the user. 
 
 The "Filter Bundle" button creates compatible configurations. So user created filtered bundles show up in the advanced search panel too! Existing filters can be seen here: $:/plugins/wikilabs/bundler/doc/table-all-filters
+
+!!! {{$:/plugins/wikilabs/bundler/icon|1em}} Enable Drag Filter Button
+
+><$checkbox tiddler="$:/config/wikilabs/enableDragFilterButton" field="text" checked="yes" unchecked="no" default="yes"> Enable Drag Filter Button</$checkbox>
+
+>This sidebar button {{$:/plugins/wikilabs/bundler/icon|1em}} allows you to drag the bundle + all tiddlers into a different wiki, to be imported
+
+!!! {{$:/core/images/export-button|1em}} Enable Export Filter Button
+
+><$checkbox tiddler="$:/config/wikilabs/enableExportFilterButton" field="text" checked="yes" unchecked="no" default="yes"> Enable Export Filter Button</$checkbox>
+
+>This sidebar button {{$:/core/images/export-button|1em}} allows you to export the bundle + all filtered tiddlers into a JSON file
 
 <<<
 

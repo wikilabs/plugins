@@ -21,12 +21,12 @@ Be careful - Make backups!
 <hr class="wltc-muted-forground">
 
 <$list filter="[all[current]contains:tags[$:/tags/Bundle]]">
-{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}} <<get-info>> tiddlers! <<test-list>>
+{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle}} <<get-info>> tiddlers! -- <<test-list>> -- <<open-list>> -- <<open-list-below>>
 <hr class="wltc-muted-forground">
 {{||$:/plugins/wikilabs/ui/TiddlerInfo/listTemplate}}
 </$list>
 <$list filter="[all[current]contains:tags[$:/tags/Filter]]" >
-{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}} <<count-filter>> tiddlers! <<test-filter-text>>
+{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}} <<count-filter>> tiddlers! <<test-filter-text>> -- <<open-filter-list>> -- <<open-filter-below>>
 <hr class="wltc-muted-forground">
 {{||$:/plugins/wikilabs/ui/TiddlerInfo/listFilteredTemplate}}
 </$list>
