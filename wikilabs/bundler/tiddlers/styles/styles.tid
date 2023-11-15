@@ -24,6 +24,10 @@ tags: $:/tags/Stylesheet
 	margin-top: .3em;
 }
 
+.wltc-small-gap-bottom {
+	margin-bottom: .3em;
+}
+
 .wltc-cursor-grab {
 	cursor: grab;
 }

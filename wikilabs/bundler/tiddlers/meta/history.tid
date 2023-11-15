@@ -3,11 +3,12 @@ title: $:/plugins/wikilabs/bundler/history
 V 1.0.0 - 2023-11-09
 
 * Mark as stable release
-* Introduce basic stroy related Functions
+* Introduce basic stroy related functions
 * Filtered bundles ViewTemplate gets a DETAILS element
 * CTRL-clic on sidebar OpenAdvancedSearch will open tiddlers in the story instead
 * CTRL-SHIFT opens the list ''plus'' the config tiddler in the story river
 * Make Sidebar Tabs icons configurable
+* Add a "filter search" text input in the Bundles sidebar
 
 V 0.5.2 - 2023-02-08
 

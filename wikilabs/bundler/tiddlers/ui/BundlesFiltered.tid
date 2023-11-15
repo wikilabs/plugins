@@ -116,20 +116,26 @@ type: text/vnd.tiddlywiki
 </$button>
 \end
 
-<$button>
-<$action-sendmessage $message="tm-new-tiddler"
-	title="new-filtered.bundle"
-	tags="$:/tags/Filter"
-	description="provide a meaningful description to display in AdvancedSearch: Filter!"
-	filter="adjust this filter: [list[$:/StoryList]]"
-	text="<pre>{{!!filter}}</pre>"
-/>
-	Filter Bundle
-</$button>
-
+<div class="wltc-small-gap-bottom">
+	<$button tooltip="Create a New Filtered Bundle Tiddler">
+	<$action-sendmessage $message="tm-new-tiddler"
+		title="new-filtered.bundle"
+		tags="$:/tags/Filter"
+		description="provide a meaningful description to display in AdvancedSearch: Filter!"
+		filter="adjust this filter: [list[$:/StoryList]]"
+		text="<pre>{{!!filter}}</pre>"
+	/>
+		Filter Bundle
+	</$button>
+	<$edit tag=input placeholder="Filter List" tiddler="$:/temp/bundle/filteredFilter" class="tc-tiny-gap-left"/>
+	<$button class="tc-small-gap-left  tc-btn-invisible tc-btn-icon">
+		{{$:/core/images/close-button}}
+		<$action-deletetiddler $tiddler="$:/temp/bundle/filteredFilter" />
+	</$button>
+</div>
 <$list
-	filter="[tag[$:/tags/Filter]]">
-	<$link to=<<currentTiddler>> tooltip=<<get-filter-tooltip>> >
+	filter="[tag[$:/tags/Filter]] :filter[search:title{$:/temp/bundle/filteredFilter}]">
+		<$link to=<<currentTiddler>> tooltip=<<get-filter-tooltip>> >
 
 		<$macrocall $name="dragFilteredIcon" visible={{{ [[$:/config/wikilabs/enableDragFilterButton]get[text]trim[]else[yes]] }}} />
 		<$list filter={{{ [{$:/config/wikilabs/enableExportFilterButton}trim[]match[no]then[]else[yes]] }}} variable="ignore">
