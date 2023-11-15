@@ -6,9 +6,26 @@ type: text/vnd.tiddlywiki
 \define filter-exist() [subfilter{$(currentTiddler)$}] +[has[title]]
 \define filter-list() [subfilter{$(currentTiddler)$}!prefix[--- ]]
 \define get-info() <$count filter=<<filter-exist>> />/<$count filter=<<filter-list>> />
-\define get-tooltip() <$count filter=<<filter-exist>> />, out of <$count filter=<<filter-list>> /> tiddlers will be exported. Check for typos!
 \define count-filter() <$count filter={{$(currentTiddler)$!!filter}} />
-\define get-filter-tooltip() <<count-filter>> tiddlers will be exported
+
+\procedure caption-or-title()
+<$set name="tv-wikilinks" value="no">
+	<$transclude field="caption">
+		<$view field="title"/>
+	</$transclude>
+</$set>
+\end
+
+\procedure get-filter-tooltip()
+<$list filter="[all[current]has[caption]]">Title: <<currentTiddler>>
+</$list><<count-filter>> tiddlers will be exported
+\end
+
+\procedure get-tooltip()
+<$list filter="[all[current]has[caption]]">Title: <<currentTiddler>>
+</$list><$count filter=<<filter-exist>> />, out of <$count filter=<<filter-list>> /> tiddlers will be exported.
+Check for typos!
+\end
 
 \procedure act-go-advanced-search-filter()
 
@@ -142,6 +159,6 @@ type: text/vnd.tiddlywiki
 			{{||$:/plugins/wikilabs/bundler/ui/Buttons/export-bundle-filter}}
 		</$list>
 		<<test-filter>>
-		<<currentTiddler>>
+		<<caption-or-title>>
 	</$link>
 </$list>

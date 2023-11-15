@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 1.1.0 - 2023-11-09
+
+* Add "caption" field handling to - Right Sidebar: Bundles Tab
+* Tooltips
+** Add title for caption-links. So users know the link-traget
+** Improve readability
+
 V 1.0.0 - 2023-11-09
 
 * Mark as stable release
