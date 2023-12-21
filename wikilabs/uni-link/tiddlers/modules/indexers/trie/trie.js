@@ -20,27 +20,41 @@ function Trie()  {
 
 /**
  * @param {string} key
- * @param {string} value
+ * @param {Tiddler} tiddler
  * @return {Trie}
  */
-Trie.prototype.addWord = function(key, value) {
+Trie.prototype.addWord = function(key, tiddler) {
 	var characters = Array.from(key);
 	var currentNode = this.head;
 
 	for (var charIndex = 0; charIndex < characters.length; charIndex += 1) {
 		var isComplete = charIndex === characters.length - 1;
-		currentNode = currentNode.addChild(characters[charIndex], isComplete, value);
+		currentNode = currentNode.addChild(characters[charIndex], isComplete, tiddler);
 	}
-
 	return this;
 }
 
 /**
  * @param {string} key
- * @param {string} value		// eg tiddler title
+ * @param {Tiddler} tiddler
  * @return {Trie}
  */
-Trie.prototype.deleteWord = function(key, value) {
+Trie.prototype.addBacklink = function(key, tiddler) {
+	var currentNode = this.getLastCharacterNode(key);
+
+	if (currentNode) {
+		currentNode = currentNode.addBacklink(key, tiddler);
+	}
+	return this;	// TODO check if boolean return value makes more sense
+}
+
+
+/**
+ * @param {string} key
+ * @param {Tiddler} tiddler		// eg tiddler
+ * @return {Trie}
+ */
+Trie.prototype.deleteWord = function(key, tiddler) {
 	var depthFirstDelete = function(currentNode) {
 		var charIndex = 0;
 		if (charIndex >= key.length) {
@@ -89,6 +103,28 @@ Trie.prototype.suggestNextCharacters = function(key) {
 
 	return lastCharacter.suggestChildren();
 }
+
+/**
+ * @param {string} key
+ * @return {string[]}
+ */
+Trie.prototype.suggestPossibleWords = function(key) {
+	var strings = [],
+		nodes= [];
+
+	function dfs(node, str, strings) {
+		if (node.isCompleteWord) {
+			strings.push(str);
+			nodes.push(node);
+		}
+		for (let key in node.children.keys) {
+			dfs(node.children.keys[key], str + key, strings);
+		}
+	}
+	dfs(this.getLastCharacterNode(key), key, strings);
+	return { "strings": strings, "nodes": nodes };
+}
+
 
 /**
  * Check if complete key exists in Trie.

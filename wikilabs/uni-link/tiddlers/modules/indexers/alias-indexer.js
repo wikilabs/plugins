@@ -29,7 +29,15 @@ AliasIndexer.prototype.init = function() {
 }
 
 AliasIndexer.prototype.rebuild = function() {
-	this.trie = new Trie();
+	var self = this;
+	this.wiki.eachShadowPlusTiddlers(function(tiddler,title) {
+		if (tiddler.fields.aliases) {
+			var aliases = self._getAliases(tiddler)
+			$tw.utils.each(aliases, function(alias) {
+				self.trie.addWord(alias.toLowerCase(), tiddler);
+			});
+		}
+	});
 }
 
 AliasIndexer.prototype._getAliases = function(tiddler) {
@@ -56,45 +64,38 @@ AliasIndexer.prototype.update = function(updateDescriptor) {
 
 		if (newAliases.length > 0) {
 			$tw.utils.each(newAliases, function(alias){
-				self.trie.addWord(alias, updateDescriptor.new.tiddler.getFieldString("title"));
+				self.trie.addWord(alias, updateDescriptor.new.tiddler);
 			})
 		}
 	}
-/*
-	$tw.utils.each(oldAliases,function(link) {
-		if(self.index[link]) {
-			delete self.index[link][updateDescriptor.old.tiddler.fields.title];
-		}
-	});
-	$tw.utils.each(newAliases,function(link) {
-		if(!self.index[link]) {
-			self.index[link] = Object.create(null);
-		}
-		self.index[link][updateDescriptor.new.tiddler.fields.title] = true;
-	});
-	*/
-	var x = 1;
 }
 
 AliasIndexer.prototype.lookup = function(title) {
-	if(!this.index) {
-		this.index = Object.create(null);
-		var self = this;
-		this.wiki.forEachTiddler(function(title,tiddler) {
-			var aliases = self._getAliases(tiddler);
-			$tw.utils.each(aliases, function(link) {
-				if(!self.index[link]) {
-					self.index[link] = Object.create(null);
-				}
-				self.index[link][title] = true;
-			});
-		});
-	}
-	if(this.index[title]) {
-		return Object.keys(this.index[title]);
+	// if(!this.index) {
+	// 	this.index = Object.create(null);
+	// 	var self = this;
+	// 	this.wiki.forEachTiddler(function(title,tiddler) {
+	// 		var aliases = self._getAliases(tiddler);
+	// 		$tw.utils.each(aliases, function(link) {
+	// 			if(!self.index[link]) {
+	// 				self.index[link] = Object.create(null);
+	// 			}
+	// 			self.index[link][title] = true;
+	// 		});
+	// 	});
+	// }
+	// if(this.index[title]) {
+	// 	return Object.keys(this.index[title]);
+	// } else {
+	// 	return [];
+	// }
+
+	if (this.trie.doesWordExist(title)) {
+		// TODO return node. 
 	} else {
 		return [];
 	}
+
 }
 
 exports.AliasIndexer = AliasIndexer;

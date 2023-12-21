@@ -15,11 +15,13 @@ var HashTable = require("$:/plugins/wikilabs/uni-link/indexers/hashtable.js").Ha
 /**
  * @param {string} character
  * @param {boolean} isCompleteWord
+ * @param {Tiddler} tiddler
  */
-function TrieNode(character, isCompleteWord, value) {
+function TrieNode(character, isCompleteWord, tiddler) {
 	this.character = character || "";
 	this.isCompleteWord = isCompleteWord || false;
-	this.values=value || [];
+	this.tiddlers = (tiddler) ? {tiddler} : {};	// hashmap of source tiddlers
+	this.backlinks = {};						// hashmap of backlink tiddlers
 	this.children = new HashTable();
 }
 
@@ -34,10 +36,10 @@ TrieNode.prototype.getChild = function(character) {
 /**
  * @param {string} character
  * @param {boolean} isCompleteWord
- * @param {string} value
+ * @param {Tiddler} tiddler
  * @return {TrieNode}
  */
-TrieNode.prototype.addChild = function(character, isCompleteWord, value) {
+TrieNode.prototype.addChild = function(character, isCompleteWord, tiddler) {
 	isCompleteWord = isCompleteWord || false;
 	if (!this.children.has(character)) {
 		this.children.set(character, new TrieNode(character, isCompleteWord));
@@ -45,14 +47,27 @@ TrieNode.prototype.addChild = function(character, isCompleteWord, value) {
 
 	var childNode = this.children.get(character);
 
+	if (isCompleteWord) {
+		// $tw.utils.pushTop(childNode.tiddlers, tiddler);
+		childNode.tiddlers[tiddler.fields.title] = tiddler;
+	}
+
 	// In cases similar to adding "car" after "carpet" we need to mark "r" character as complete.
 	childNode.isCompleteWord = childNode.isCompleteWord || isCompleteWord;
 
-	if (childNode.isCompleteWord) {
-		$tw.utils.pushTop(childNode.values, value);
-	}
-
 	return childNode;
+}
+
+/**
+ * @param {TrieNode} node
+ * @param {Tiddler} tiddler
+ * @return {TrieNode}
+ */
+TrieNode.prototype.addBacklink = function(node, tiddler) {
+	if (node.isCompleteWord) {
+		node.backlinks[tiddler.fields.title] = tiddler;
+	}
+	return node;
 }
 
 /**

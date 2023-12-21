@@ -3,7 +3,7 @@ title: $:/plugins/wikilabs/uni-link/filters/aliasbacklinks.js
 type: application/javascript
 module-type: filteroperator
 
-Filter operator for returning all the backlinks from a tiddler
+Filter operator for returning all the backlinks from an alias
 
 \*/
 (function(){
@@ -18,7 +18,7 @@ Export our filter function
 exports.aliasbacklinks = function(source,operator,options) {
 	var results = [];
 	source(function(tiddler,title) {
-		$tw.utils.pushTop(results,options.wiki.getTiddlerAliasBacklinks(title));
+		$tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
 	});
 	return results;
 };

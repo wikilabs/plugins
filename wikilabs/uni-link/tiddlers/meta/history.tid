@@ -1,8 +1,17 @@
 title: $:/plugins/wikilabs/uni-link/history
 
-V 2.3.1 - 2023-11-10
+
+V 2.5.0 - 2023-11-??
+
+* add new trie based indexers to uni-link plugin
+
+V 2.4.1 - 2023-11-10
 
 * fix unilink stylesheet name
+
+V 2.4.0 - 2023-04-08
+
+* improve alias backlink handling
 
 V 2.3.0 - 2022-11-24
 

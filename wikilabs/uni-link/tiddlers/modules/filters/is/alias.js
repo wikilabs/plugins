@@ -17,17 +17,17 @@ Export our filter function
 */
 exports.alias = function(source,prefix,options) {
 	var results = [],
-		aliases = options.wiki.getAllAliases();
+		index = $tw.wiki.getIndexer("AliasIndexer");
 
 	if(prefix === "!") {
 		source(function(tiddler,title) {
 			title = title.toLowerCase();
-			if (aliases.indexOf(title) === -1) results.push(title);
+			index.trie.doesWordExist(title) ? "" : results.push(title);
 		});
 	} else {
 		source(function(tiddler,title) {
 			title = title.toLowerCase();
-			if (aliases.indexOf(title) !== -1) results.push(title);
+			index.trie.doesWordExist(title) ? results.push(title) : "";
 		});
 	}
 	return results;
