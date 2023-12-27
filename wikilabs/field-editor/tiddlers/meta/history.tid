@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/field-editor/history
 
+V 1.0.0 2023.12.27
+
+* Adjust editor preview for TW v5.3.3
+* Set plugin verion to 1.0.0
+
 V 0.2.1 2023.03.14
 
 * enable tiddler (i)nfo button in edit-mode again. I has been disabled by accident.
