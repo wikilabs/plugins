@@ -3,7 +3,15 @@ tags: $:/tags/Macro
 
 \define tabs-button()
 \whitespace trim
-<$button set=<<tabsState>> setTo=<<currentTab>> default=<<__default__>> selectedClass="tc-tab-selected" tooltip={{!!tooltip}}>
+<$button
+	set=<<tabsState>>
+	setTo=<<currentTab>>
+	default=<<__default__>>
+	selectedClass="tc-tab-selected"
+	tooltip={{!!tooltip}}
+	role="switch"
+	data-tab-title=<<currentTab>>
+>
 	<$tiddler tiddler=<<save-currentTiddler>>>
 		<$set name="tv-wikilinks" value="no">
 			<$transclude tiddler=<<__buttonTemplate__>> mode="inline">
@@ -18,13 +26,13 @@ tags: $:/tags/Macro
 \end
 
 \define tabs-tab-indicator()
-<$let
-	pluginTab=`$(save-currentTiddler)$/$(currentTiddler)$`
+\whitespace trim
+<$let pluginTab=`$(save-currentTiddler)$/$(currentTiddler)$`
 	currentTiddler=`${[<plugin-info>!is[blank]then<pluginTab>else<currentTiddler>]}$`
 >
-<span class="wltc-link-to-tab">
-	<$link overrideClass="" to=<<currentTiddler>> >{{$:/core/images/link}}</$link>
-</span>
+	<span class="wltc-link-to-tab">
+		<$link overrideClass="" to=<<currentTiddler>> >{{$:/core/images/link}}</$link>
+	</span>
 </$let>
 \end
 
@@ -42,7 +50,10 @@ tags: $:/tags/Macro
 \whitespace trim
 <$list filter=<<__tabsList__>> variable="currentTab" storyview="pop">
 	<$set name=getCondition filter="[<currentTab>get[condition]]">
-		<$list filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]" variable="ignore">
+		<$list
+			filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]"
+			variable="ignore"
+		>
 			<<tabs-tab>>
 		</$list>
 	</$set>
@@ -53,7 +64,10 @@ tags: $:/tags/Macro
 \whitespace trim
 <$list filter=<<__tabsList__>> variable="currentTab">
 	<$set name=getCondition filter="[<currentTab>get[condition]]">
-		<$list filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]" variable="ignore"> 
+		<$list
+			filter="[<currentTab>has[condition]subfilter<getCondition>limit[1]] ~[<currentTab>!has[condition]then[true]]"
+			variable="ignore"
+		>
 			<$reveal type="match" state=<<tabsState>> text=<<currentTab>> default=<<__default__>> retain=<<__retain__>> tag="div">
 				<$transclude tiddler=<<__template__>> mode="block">
 					<$transclude tiddler=<<currentTab>> mode="block"/>
@@ -67,7 +81,7 @@ tags: $:/tags/Macro
 \define tabs(tabsList,default,state:"$:/state/tab",class,template,buttonTemplate,retain,actions,explicitState)
 \whitespace trim
 <$qualify title=<<__state__>> name="qualifiedState">
-	<$set name="tabsState" filter="[<__explicitState__>minlength[1]] ~[<qualifiedState>]">
+	<$let tabsState={{{ [<__explicitState__>minlength[1]] ~[<qualifiedState>] }}}>
 		<div class={{{ [[tc-tab-set]addsuffix[ ]addsuffix<__class__>] }}}>
 			<div class={{{ [[tc-tab-buttons]addsuffix[ ]addsuffix<__class__>] }}}>
 				<<tabs-tab-list>>
@@ -77,7 +91,6 @@ tags: $:/tags/Macro
 				<<tabs-tab-body>>
 			</div>
 		</div>
-	</$set>
+	</$let>
 </$qualify>
 \end
-

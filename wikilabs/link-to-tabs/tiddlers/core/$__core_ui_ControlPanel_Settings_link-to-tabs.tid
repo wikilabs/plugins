@@ -9,7 +9,7 @@ type: text/vnd.tiddlywiki
 
 <$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="show-single-link" checked="inline-block" unchecked="none" default="inline-block"> Show internal tab link for ''selected tabs''</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="initial-opacity" checked="0" unchecked="0.7" default="0.7"> Tab links are initially hidden and need mouse hover to become visible.</$checkbox> The transition time in seconds is: <$edit-text tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="transition" default="0.3"/>
+<$checkbox tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="initial-opacity" checked="0" unchecked="0.7" default="0.7"> Tab links are initially hidden and need mouse hover to become visible.</$checkbox><br>The transition time in seconds is: <$edit-text tiddler="$:/plugins/wikilabs/link-to-tabs/config" field="transition" default="0.3"/>
 
 <$button message="tm-delete-tiddler" param="$:/plugins/wikilabs/link-to-tabs/config">
 Reset to Default!
