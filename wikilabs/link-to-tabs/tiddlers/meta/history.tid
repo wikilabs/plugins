@@ -1,5 +1,16 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+
+V 3.0.0 - 2023-12-28
+
+* The ''edit-tabs'' plugin will be ''deprecated'' and be replaced by link-to-tabs
+* There are 2 new settings now
+** Clicking a tab-link opens ''non-system'' tiddlers in edit mode
+** Clicking a tab-link opens ''every existing'' tiddler in edit mode
+
+* New "settings" tab in the plugin
+* New "settings" tab in the ''$:/ControlPanel -> Settings -> WikiLabs'' tab
+
 V 2.4.0 - 2023-12-28
 
 * Update tabs-macro to TW v5.3.3

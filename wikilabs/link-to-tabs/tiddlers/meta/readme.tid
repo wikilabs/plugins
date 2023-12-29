@@ -2,9 +2,10 @@ title: $:/plugins/wikilabs/link-to-tabs/readme
 
 This plugin adds a little link icon to every tab.
 
-! Link-to-Tabs Settings
+!! Settings
 
-{{$:/core/ui/ControlPanel/Settings/link-to-tabs}}
+* Have a closer look at the "settings-tab" here or
+* Open the ''$:/ControlPanel -> Settings -> WikiLabs'' tab
 
 ''Important:'' This plugin modifies a core module and templates
 

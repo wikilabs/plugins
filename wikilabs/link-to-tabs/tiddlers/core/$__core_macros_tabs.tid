@@ -25,13 +25,28 @@ tags: $:/tags/Macro
 </$button>
 \end
 
+\define link-action(message:"tm-navigate" icon:"$:/core/images/link")
+\whitespace trim
+<$linkcatcher message=<<__message__>> >
+	<$link overrideClass="" to=<<currentTiddler>> >
+		<$transclude $tiddler=<<__icon__>>/>
+	</$link>
+</$linkcatcher>
+\end
+
 \define tabs-tab-indicator()
 \whitespace trim
 <$let pluginTab=`$(save-currentTiddler)$/$(currentTiddler)$`
 	currentTiddler=`${[<plugin-info>!is[blank]then<pluginTab>else<currentTiddler>]}$`
 >
 	<span class="wltc-link-to-tab">
-		<$link overrideClass="" to=<<currentTiddler>> >{{$:/core/images/link}}</$link>
+		<% if [all[current]!is[shadow]] :filter[[$:/plugins/wikilabs/link-to-tabs/config]get[link-action]match[tm-edit-tiddler]] %>
+			<<link-action message:"tm-edit-tiddler" icon:"$:/core/images/edit-button">>
+		<% elseif [all[current]is[tiddler]] :filter[[$:/plugins/wikilabs/link-to-tabs/config]get[shadow-action]match[tm-edit-tiddler]] %>
+			<<link-action message:"tm-edit-tiddler" icon:"$:/core/images/edit-button">>
+		<% else %>
+			<<link-action>>
+		<% endif %>
 	</span>
 </$let>
 \end
