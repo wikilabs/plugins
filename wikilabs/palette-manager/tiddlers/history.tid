@@ -1,5 +1,19 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 0.9.0 - 2024.01.12
+
+* Big jump in the version number, because the functionality was stable for a long time now
+
+* The plugin uses $:/plugins/wikilabs/palette-manager/styles now
+** This style tiddler also contains some TODOs to improve vanilla/base
+** base/vanilla theme tiddler has been removed from the plugin. So it's not overwritten anymore
+** $:/_tw5.com-styles has been removed from the plugin. So it's not overwritten anymore
+*** Problems previewing the "Big Green Download" button has been fixed upstream
+
+* improve serch help text
+* Improve vertical separation in preview editor
+* Improve help text in 17 preview tiddlers
+
 V 0.2.0 - 2022.11.16
 
 * Docs refactoring and improvements
@@ -11,6 +25,7 @@ V 0.1.0 - 2022.11.02
 
 * New EditColourWidget
 ** New docs and examples for EditColourWidget
+
 * New "colour-picker-resolved Macro"
 ** New docs and examples for "colour-picker-resolved Macro"
 ** The macro and the widget belong together
