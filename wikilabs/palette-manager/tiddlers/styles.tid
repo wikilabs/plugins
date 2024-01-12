@@ -1,0 +1,112 @@
+title: $:/plugins/wikilabs/palette-manager/styles
+tags: $:/tags/Stylesheet
+list-after: 
+
+/* TODO create a PR - It's prettier than the existing separator */
+.tc-untagged-separator {
+	width: 10em;
+	left: 0;
+	margin-left: 0;
+}
+
+/* TODO create a PR:  A different color for the ControlPanel -> Plugins listing */
+.tc-plugin-info-chunk.tc-plugin-info-description h2 {
+	color: <<colour download-background>>;
+}
+
+/* used for "activate" button if palette-tiddler is viewed */
+.tc-title-button {
+	font-size: initial;
+}
+
+/* Hack: to show $:/PaletteManager as a single tiddler */
+
+[data-tiddler-title="$:/PaletteManager"] table {
+	width: 100%;
+}
+
+/*
+** Palette swatches
+*/
+
+/* Don't show those buttons in color-picker dropdown */
+.tc-drop-down .tc-handle-palette-button {
+	display: none;
+}
+
+.tc-palette-preview-empty-row,
+.tc-palette-preview-empty-row td {
+	border-left: 1px solid <<colour "tiddler-background">>;
+	border-right: 1px solid <<colour "tiddler-background">>;
+	border-bottom: 6px double <<colour "primary">>;
+}
+
+.tc-palette-editor-scrollable {
+	height: 80vh;
+	position: relative;
+	border: 1px solid <<colour "tiddler-editor-border">>;
+	padding: 0 1em;
+}
+
+.tc-palette-editor .tc-swatch {
+	width: 1.2em;
+	height: 1.2em;
+}
+
+input[type=text].tc-palette-manager-text-input {
+	width: 75%;
+}
+
+input[type=color].tc-palette-manager-colour-input {
+	width: 75%;
+	padding: 0;
+}
+
+/* Increases the input element accessibility quite a bit
+* Important for FireFox:
+* - It also adds an outline to "editor toolbar buttons" selected with the TAB key
+*/
+/* TODO create PR for vanilla base near "textarea" definitions */
+:focus-visible {
+	outline: 2px solid <<colour primary>>;
+	outline-offset: -2px;    /* same as in reset.css [type='search'] but for more elements */
+}
+/*
+** Definition for text input elements so they look consistent for all browsers
+*/
+textarea, input, select {
+	border: 2px solid <<colour tiddler-editor-border>>;
+	background-color: <<colour tiddler-editor-background>>;
+}
+
+/*
+* duplicated from $:/_tw5.com-styles "Wikitext Rules"
+*/
+
+.multi-columns {
+	display: block;
+	column-count: 4;
+	column-gap: 1em;
+	-moz-column-count: 4;
+	-moz-column-gap: 1em;
+	-webkit-column-count: 4;
+	-webkit-column-gap: 1em;
+}
+
+@media (max-width: {{$:/themes/tiddlywiki/vanilla/metrics/sidebarbreakpoint}}) {
+	.multi-columns {
+		column-count: 2;
+	}
+}
+
+/* this should work in all tabs not only in open */
+/* TODO create PR. vanilla/base only works for the open-sidebar. Search for tc-btn-mini to find the definition */
+.tc-sidebar-lists .tc-btn-invisible.tc-btn-mini svg {
+	font-size: 0.7em;
+	fill: <<colour sidebar-muted-foreground>>;
+}
+
+.tc-sidebar-tab-open .tc-btn-invisible.tc-btn-mini:hover svg {
+	fill: <<colour sidebar-muted-foreground-hover>>;
+}
+
