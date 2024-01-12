@@ -7,6 +7,9 @@ title: $:/palettes/preview/dirty-indicator
 type: text/vnd.tiddlywiki
 
 \whitespace trim
+
+You need to change anything here or create a New Tiddler to see the "dirty-indicator".
+
 <$button tooltip={{$:/language/Buttons/SaveWiki/Hint}} aria-label={{$:/language/Buttons/SaveWiki/Caption}} class=<<tv-config-toolbar-class>>>
 <span class="tc-dirty-indicator">
 {{$:/core/images/save-button}}

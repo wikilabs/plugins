@@ -6,11 +6,15 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/sidebar-muted-foreground-hover
 type: text/vnd.tiddlywiki
 
-Info: hover the "{{$:/language/CloseAll/Button}}" below to see the related hover color
+''Hover'' the ''{{$:/language/CloseAll/Button}}'' button below to see the related hover color
+
+''Open Sidebar''
 
 <div class="tc-sidebar-lists">
 {{$:/core/ui/SideBar/Open}}
 <div>
+
+''Standard Link'' eg: `[[test]]` are ''not'' effected
 
 [[$:/PaletteManager]]<br>
 [[:/palettes/components]]

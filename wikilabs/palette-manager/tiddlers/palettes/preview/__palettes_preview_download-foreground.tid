@@ -6,7 +6,12 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/download-foreground
 type: text/vnd.tiddlywiki
 
-<$button class="tc-btn-download">
+This preview uses `tc-btn-big-green`
+
+* The class in [[vanilla/base|$:/themes/tiddlywiki/vanilla/base]] theme is `tc-btn-big-green`, which is a bit strange, if defined differently
+* The class `tc-btn-download` at tiddlywiki.com is defined in [[$:/_tw5.com-styles|https://tiddlywiki.com/#%24%3A%2F_tw5.com-styles]], which makes more sense
+
+<$button class="tc-btn-big-green">
 Dummy Download {{$:/core/images/save-button}}
 </$button>
 

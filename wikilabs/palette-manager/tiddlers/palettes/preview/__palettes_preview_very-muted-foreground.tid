@@ -6,7 +6,11 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/very-muted-foreground
 type: text/vnd.tiddlywiki
 
-ToDo very-muted
+
+This setting can be tested when you import something into the wiki and the import is blocked, or the tiddler already exists.
+''But'' it's used as a ''background'' setting there :/
+
+TODO- check for `tc-tiddler-help`
 
 ```
 .tc-tiddler-help a.tc-tiddlylink {

@@ -10,6 +10,8 @@ type: text/vnd.tiddlywiki
 $:/config/PageControlButtons/Visibility/$(listItem)$
 \end
 
+''Important:'' By default TW shows the browser "native" button settings. This setting can be different, depending on the browser and OS you use. 
+
 <$let tv-config-toolbar-icons="yes" tv-config-toolbar-text="yes" tv-config-toolbar-class="" preview-button="$:/core/ui/Buttons/palette">
 
 <div style="position:relative;" class={{{ [<listItem>encodeuricomponent[]addprefix[tc-btn-]] }}}>

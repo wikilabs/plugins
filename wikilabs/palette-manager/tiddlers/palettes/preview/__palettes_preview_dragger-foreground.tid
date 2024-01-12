@@ -6,7 +6,7 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/dragger-foreground
 type: text/vnd.tiddlywiki
 
-ToDo -- don't know how to see that atm
+It seems the following classes are defined in vanilla/base but are ''never used''
 
 ```
 .tc-tiddler-dragger-inner {

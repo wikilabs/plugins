@@ -6,4 +6,10 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/dropzone-background
 type: text/vnd.tiddlywiki
 
-TODO -- don't know atm
+To test this setting you need to ''drag and drop'' elements in the ''Right Sidebar -> Open tab''
+
+''Open Sidebar''
+
+<div class="tc-sidebar-lists">
+{{$:/core/ui/SideBar/Open}}
+<div>

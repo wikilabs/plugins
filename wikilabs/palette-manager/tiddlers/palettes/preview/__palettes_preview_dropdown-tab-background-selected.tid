@@ -6,8 +6,9 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/dropdown-tab-background-selected
 type: text/vnd.tiddlywiki
 
-TODO not in use at the moment. Some problems with CSS
-
+* Some "tab hovering" problems with CSS
+* Probably usecase is in the search dropdown using [[Custom search results|https://tiddlywiki.com/#Customising%20search%20results]]
+** It seems these settings are ''not in use'' at the moment. At least I could not find it
 
 ''Dummy Tabs ''
 

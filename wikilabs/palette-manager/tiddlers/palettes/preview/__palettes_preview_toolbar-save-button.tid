@@ -6,8 +6,24 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/toolbar-save-button
 type: text/vnd.tiddlywiki
 
-''Page Controls''
+\import [[$:/PaletteManager]]
+
+\define xx(colourName)
+<$let colourName=<<__colourName__>> >
+<$tiddler tiddler={{$:/palette}} >
+<<palette-manager-colour-row-segment>>
+</$tiddler>
+</$let>
+\end
+
+''Page Controls: ''With the current TW v5.3.3 vanilla/base theme, this parameter ''cannot'' be overwritten. Use the "sidebar-controls" instead.
 
 <span class="tc-page-controls " style="float:initial;">
 <$button class="tc-btn-invisible">{{$:/core/images/save-button}}</$button>
 </span>
+
+<<<
+
+|''Be aware:'' As soon as the wiki is "dirty" the "{{$:/language/Docs/PaletteColours/dirty-indicator}}" is used |<<xx "dirty-indicator">> |
+
+<<<

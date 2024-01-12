@@ -16,9 +16,11 @@ type: text/vnd.tiddlywiki
 </$let>
 \end
 
-general tiddler text -- ''general tiddler text in bold''
+General tiddler text -- ''General tiddler text in bold''
 
----
+<<<
 
 |Usually goes with "{{$:/language/Docs/PaletteColours/background}}" |<<xx>> |
+
+<<<
 

@@ -6,4 +6,6 @@ title: $:/palettes/preview/external-link-foreground-visited
 type: text/vnd.tiddlywiki
 search-term: external link background hover visited foreground
 
+Most of the settings use native browser defaults atm. So links can depend on browser and OS native settings
+
 https://tiddlywiki.com --- hover is possible

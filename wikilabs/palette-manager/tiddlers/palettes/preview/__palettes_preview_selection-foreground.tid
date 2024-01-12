@@ -6,6 +6,8 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/selection-foreground
 type: text/vnd.tiddlywiki
 
-''Select some text'' in the text-area. 
+By default this element inherits the native browser settings
+
+''Select some text'' in the text-area.
 
 <$edit-text class="tc-edit-max-width" tiddler="$:/temp/palette/test" />

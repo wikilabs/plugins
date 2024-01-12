@@ -9,5 +9,5 @@ type: text/vnd.tiddlywiki
 Select an input element. The outline uses the `primary` colour
 
 <$edit-text class="tc-edit-max-width" tiddler="$:/temp/palette/test" tag=input/>
-
+<br>
 <$edit-text class="tc-edit-max-width" tiddler="$:/temp/palette/test" />

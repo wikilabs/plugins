@@ -5,4 +5,9 @@ tags:
 title: $:/palettes/preview/wikilist-url
 type: text/vnd.tiddlywiki
 
-''TODO -- Don't know them''
+It seems they are used for TiddlyDesktop
+
+TODO:
+
+* Check if it's possible to dynamically add to the palette tiddlers?!
+* Test with TD and add a screenshot

@@ -18,5 +18,8 @@ type: text/vnd.tiddlywiki
 
 {{$:/language/Docs/PaletteColours/background}}
 
+<<<
 
 |Usually goes with "{{$:/language/Docs/PaletteColours/foreground}}" |<<xx>> |
+
+<<<
