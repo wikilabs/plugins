@@ -146,7 +146,7 @@ edit $(colourName)$
 
 \define open-tiddler-in-window()
 <$button actions=<<activateTiddlerWindow>> class="tc-btn-invisible tc-tiddlylink">
-Open the Palette Manager in a new Window
+Open the Palette Manager in a ''new Window''
 </$button>
 \end
 
@@ -201,7 +201,7 @@ Origin:
 
 <<open-tiddler-in-window>>
 
-Search: <$edit-text tiddler="$:/temp/search-term" tag="input" placeholder="colour name" default="" class="tc-palette-manager-text-input tc-small-gap"/> -- <<countResults>>--<$button actions=<<clearSearch>> class="tc-btn-invisible tc-small-gap-left">{{$:/core/images/close-button}}</$button>
+Search: <$edit-text tiddler="$:/temp/search-term" tag="input" placeholder="colour name eg: alert" default="" class="tc-palette-manager-text-input tc-small-gap"/> -- <<countResults>>--<$button actions=<<clearSearch>> class="tc-btn-invisible tc-small-gap-left">{{$:/core/images/close-button}}</$button>
 
 <$scrollable class="tc-palette-editor-scrollable">
 <<palette-manager-table>>
