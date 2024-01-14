@@ -34,16 +34,11 @@ list-after:
 	display: none;
 }
 
-/* add padding to the empty-row*/
-.tc-palette-editor-scrollable .tc-palette-preview-row td:last-of-type {
-	padding-bottom: 1em;
+.tc-palette-preview-empty-row,
+.tc-palette-preview-empty-row td {
+	border-left: 1px solid <<colour "tiddler-background">>;
+	border-right: 1px solid <<colour "tiddler-background">>;
 	border-bottom: 6px double <<colour "primary">>;
-}
-
-/* remove padding if the table is inside the preview */
-.tc-palette-editor-scrollable .tc-palette-preview-row table td:last-of-type {
-	padding: initial;
-	border-bottom: 1px solid <<colour "tiddler-editor-border">>;
 }
 
 .tc-palette-editor-scrollable {
@@ -51,23 +46,6 @@ list-after:
 	position: relative;
 	border: 1px solid <<colour "tiddler-editor-border">>;
 	padding: 0 1em;
-}
-
-.tc-palette-editor-scrollable table {
-	border: none;
-}
-
-.tc-palette-editor-scrollable td,
-.tc-palette-editor-scrollable th {
-	padding: 3px 7px 3px 7px;
-	border-left: none;
-	border-top: none;
-	border-bottom: 1px solid <<colour "tiddler-editor-border">>;
-}
-
-.tc-palette-preview-empty-row,
-.tc-palette-preview-empty-row td {
-	border: none;
 }
 
 .tc-palette-editor .tc-swatch {
