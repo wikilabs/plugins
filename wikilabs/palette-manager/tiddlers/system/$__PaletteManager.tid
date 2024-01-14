@@ -146,7 +146,7 @@ edit $(colourName)$
 
 \define open-tiddler-in-window()
 <$button actions=<<activateTiddlerWindow>> class="tc-btn-invisible tc-tiddlylink">
-Open the Palette Manager in a ''new Window''
+Open the Palette Manager in a ''new window''
 </$button>
 \end
 

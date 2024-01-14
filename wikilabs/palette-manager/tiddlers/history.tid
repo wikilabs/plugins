@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 0.9.1 - 2024.01.13
+
+* Improve vertical readability in preview editor
+
 V 0.9.0 - 2024.01.12
 
 * Big jump in the version number, because the functionality was stable for a long time now

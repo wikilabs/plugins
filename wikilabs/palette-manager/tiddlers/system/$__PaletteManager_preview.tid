@@ -16,6 +16,7 @@ type: text/vnd.tiddlywiki
 \define search() [all[shadows+tiddlers]prefix<tokenPrefix>search:search-term{$:/temp/search-term}]
 
 \define palette-preview-row-segment()
+\whitespace trim
 <$vars previewName={{{ [<colourName>addprefix[$:/palettes/preview/]] }}} 
 		token={{{ [<colourName>split[-]nth[1]] }}} 
 		tokenPrefix={{{ [<colourName>split[-]nth[1]addprefix[$:/palettes/preview/]] }}} >
@@ -34,6 +35,7 @@ type: text/vnd.tiddlywiki
 \end
 
 \define focus-button()
+\whitespace trim
 <span style="float:right;">
 	<$button actions=<<set-focus>> tooltip="Set focus to this preview" aria-label="Set focus to this preview" class="tc-btn-invisible">
 		{{$:/core/images/close-others-button}}
