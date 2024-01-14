@@ -24,6 +24,7 @@ type: text/vnd.tiddlywiki
 
 <<<
 
+|tc-pm-example |k
 |''Be aware:'' As soon as the wiki is "dirty" the "{{$:/language/Docs/PaletteColours/dirty-indicator}}" is used |<<xx "dirty-indicator">> |
 
 <<<

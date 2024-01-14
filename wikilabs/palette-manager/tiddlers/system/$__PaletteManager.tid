@@ -85,7 +85,7 @@ edit $(colourName)$
 \define palette-manager-colour-row()
 \whitespace trim
 <tr>
-<td>
+<td class="tc-pm-key-cell">
 	<span style="float:right;">
 		<$button tooltip={{$:/language/ControlPanel/Palette/Editor/Delete/Hint}} aria-label={{$:/language/ControlPanel/Palette/Editor/Delete/Hint}} class="tc-btn-invisible" actions=<<delete-colour-index-actions>>>
 			{{$:/core/images/delete-button}}
@@ -94,7 +94,7 @@ edit $(colourName)$
 	''<$macrocall $name="describePaletteColour" colour=<<colourName>>/>''<br/>
 	<$macrocall $name="colourName" $output="text/plain"/>
 </td>
-<td>
+<td class="tc-pm-colour-cell">
 	<<palette-manager-colour-row-segment>>
 </td>
 </tr>
@@ -112,7 +112,7 @@ edit $(colourName)$
 
 \define palette-manager-table()
 \whitespace trim
-<table>
+<table class="tc-pm-table">
 <tbody>
 <$let colorList={{{ [{$:/state/palettemanager/showexternal}] :cascade[<activateLongList>append<activateShortList>] }}}>
 		<$list filter="[subfilter<colorList>]" variable="colourName">
