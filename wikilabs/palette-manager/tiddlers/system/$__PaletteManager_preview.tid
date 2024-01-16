@@ -8,12 +8,12 @@ type: text/vnd.tiddlywiki
 <!-- developers can use this element to replace it with their own handling preview -->
 <!-- if you create a tiddler named: $:/palettes/preview/_custom with empty text, you can replace all previews -->
 <!-- if you create a tiddler named: $:/palettes/preview/<colourName>/_custom with empty text, you can hide a single preview -->
-<!-- if $:/temp/search-term is << the colours come pre-filtered -->
+<!-- if the "find" variable is "<<" the colours come pre-filtered -->
 
 \define blank() [is[blank]then<previewName>]
 \define search-is-token() [match<token>then<previewName>]
 \define colour-is-preview() [<previewName>has[search-term]then<previewName>]
-\define search() [all[shadows+tiddlers]prefix<tokenPrefix>search:search-term{$:/temp/search-term}]
+\define search() [all[shadows+tiddlers]prefix<tokenPrefix>search:search-term{$(find)$}]
 
 \define palette-preview-row-segment()
 \whitespace trim
@@ -21,7 +21,7 @@ type: text/vnd.tiddlywiki
 		token={{{ [<colourName>split[-]nth[1]] }}} 
 		tokenPrefix={{{ [<colourName>split[-]nth[1]addprefix[$:/palettes/preview/]] }}} >
 	<$transclude tiddler={{{ [<previewName>addsuffix[/_custom]] }}} mode="block">
-	<$set name=previewName filter="[{$:/temp/search-term}trim[]] :cascade[<blank>append<search-is-token>append<colour-is-preview>append<search>]" >
+	<$set name=previewName filter="[{$(find)$}] :cascade[<blank>append<search-is-token>append<colour-is-preview>append<search>]" >
 		<$list filter="[<previewName>has[text]]" variable="preview">
 			<<palette-manager-preview-row>>
 		</$list>
@@ -30,8 +30,8 @@ type: text/vnd.tiddlywiki
 </$vars>
 \end
 
-\define set-focus() 
-<$action-setfield $tiddler="$:/temp/search-term" text={{{ [<preview>get[search-term]enlist-input[]nth[1]] }}}/>
+\define set-focus()
+<$action-setfield $tiddler=<<find>> text={{{ [<preview>get[search-term]enlist-input[]nth[1]] }}}/>
 \end
 
 \define focus-button()
@@ -57,5 +57,9 @@ type: text/vnd.tiddlywiki
 	</td>
 </tr>
 \end
+
+<!-- To avoid compatibility problems with TiddlyTools PaletteManager the import has to be placed here -->
+<!-- TODO: Find out why ?!?! -->
+\import $:/PaletteManager/globals
 
 <<palette-preview-row-segment>>

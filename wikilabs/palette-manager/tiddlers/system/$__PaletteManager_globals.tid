@@ -1,0 +1,9 @@
+code-body: yes
+created: 20220901134315261
+modified: 20220903171744665
+title: $:/PaletteManager/globals
+
+<!-- TiddlyTools Palette Manager compatibility settings https://tiddlytools.com/#TiddlyTools%2FPalettes%2FManager -->
+<!-- Important -- The next 2 elements have to be the same as for TiddlyTools Palette Manager -->
+\define popup() $:/state/popup/TiddlyTools/PaletteManager
+\define find()  $(popup)$/find

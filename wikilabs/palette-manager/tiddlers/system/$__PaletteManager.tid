@@ -4,13 +4,15 @@ title: $:/PaletteManager
 type: text/vnd.tiddlywiki
 
 \define lingo-base() $:/language/ControlPanel/Palette/
+
 \define describePaletteColour(colour)
 <$transclude tiddler="$:/language/Docs/PaletteColours/$colour$"><$text text="$colour$"/></$transclude>
 \end
+
 \define edit-colour-placeholder()
 edit $(colourName)$
 \end
-\define colour-tooltip(showhide) $showhide$ editor for $(newColourName)$ 
+\define colour-tooltip(showhide) $showhide$ editor for $(newColourName)$
 
 \define resolve-colour(macrocall)
 \import $:/core/macros/utils
@@ -103,12 +105,12 @@ edit $(colourName)$
 
 <!-- first list filter .. decide if colours with macro values are returned -->
 
-\define activateShortList() [{$:/temp/search-term}prefix[<<]then<useValue>else<getColour>]
-\define getColour() [{$:/palette}indexes[]search:title{$:/temp/search-term}]
-\define useValue() [{$:/palette}indexes[]] :filter[{$:/palette}getindex<currentTiddler>prefix{$:/temp/search-term}]
+\define activateShortList() [{$(find)$}prefix[<<]then<useValue>else<getColour>]
+\define getColour() [{$:/palette}indexes[]search:title{$(find)$}]
+\define useValue() [{$:/palette}indexes[]] :filter[{$:/palette}getindex<currentTiddler>prefix{$(find)$}]
 
 \define activateLongList() [match[yes]then<longList>]
-\define longList() [all[shadows+tiddlers]tag[$:/tags/Palette]indexes[]search{$:/temp/search-term}]
+\define longList() [all[shadows+tiddlers]tag[$:/tags/Palette]indexes[]search{$(find)$}]
 
 \define palette-manager-table()
 \whitespace trim
@@ -141,7 +143,7 @@ edit $(colourName)$
 \end
 
 \define clearSearch()
-<$action-deletetiddler $tiddler="$:/temp/search-term"/>
+<$action-deletetiddler $tiddler=<<find>>/>
 \end
 
 \define open-tiddler-in-window()
@@ -155,6 +157,10 @@ Open the Palette Manager in a ''new window''
 	$param="$:/PaletteManager" windowTitle="Palette Editor -- Side by Side View"
 	width="800" height="600" />
 \end
+
+<!-- To avoid compatibility problems with TiddlyTools PaletteManager the import has to be placed here -->
+<!-- TODO: Find out why ?!?! -->
+\import $:/PaletteManager/globals
 
 \whitespace trim
 
@@ -201,7 +207,7 @@ Origin:
 
 <<open-tiddler-in-window>>
 
-Search: <$edit-text tiddler="$:/temp/search-term" tag="input" placeholder="colour name eg: alert" default="" class="tc-palette-manager-text-input tc-small-gap"/> -- <<countResults>>--<$button actions=<<clearSearch>> class="tc-btn-invisible tc-small-gap-left">{{$:/core/images/close-button}}</$button>
+Search: <$edit-text tiddler=<<find>> tag="input" placeholder="colour name eg: alert" default="" class="tc-palette-manager-text-input tc-small-gap"/> -- <<countResults>>--<$button actions=<<clearSearch>> class="tc-btn-invisible tc-small-gap-left">{{$:/core/images/close-button}}</$button>
 
 <$scrollable class="tc-palette-editor-scrollable">
 <<palette-manager-table>>
