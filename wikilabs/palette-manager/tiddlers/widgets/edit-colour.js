@@ -1,7 +1,9 @@
 /*\
 title: $:/core/modules/widgets/edit-colour.js
-type: application/javascript
-module-type: widget
+type: application/javascriptXX
+module-type: widgetXX
+
+DEPRECATED - NOT active at the moment. So the plugin does not need a restart!
 
 Set a field or index at a given tiddler to a colour
 
