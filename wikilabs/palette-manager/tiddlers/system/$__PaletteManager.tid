@@ -243,7 +243,12 @@ Origin:
 	''<<lingo "Editor/Clone/Prompt">>''
 </$list>
 
-|<$checkbox tiddler="$:/state/palettemanager/showexternal" field="text" checked="yes" unchecked="no"><span class="tc-small-gap-left"><<lingo "Editor/Names/External/Show">></span></$checkbox> |<$checkbox tiddler=<<previews>> field="text" default="yes" checked="yes" unchecked="no" checkactions="<$action-deletetiddler $tiddler=<<previews>>/>"><span class="tc-small-gap-left">Show previews</span></$checkbox> |
+<$checkbox tiddler="$:/state/palettemanager/showexternal" field="text" checked="yes" unchecked="no">
+	<span class="tc-small-gap-left"><<lingo "Editor/Names/External/Show">></span>
+</$checkbox><br>
+<$checkbox tiddler=<<previews>> field="text" default="yes" checked="yes" unchecked="no" checkactions="<$action-deletetiddler $tiddler=<<previews>>/>">
+	<span class="tc-small-gap-left">Show previews</span>
+</$checkbox> 
 
 <<open-tiddler-in-window>>
 
