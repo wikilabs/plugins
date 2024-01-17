@@ -2,18 +2,6 @@ title: $:/plugins/wikilabs/palette-manager/styles
 tags: $:/tags/Stylesheet
 list-after: 
 
-/* TODO create a PR - It's prettier than the existing separator */
-.tc-untagged-separator {
-	width: 10em;
-	left: 0;
-	margin-left: 0;
-}
-
-/* TODO create a PR:  A different color for the ControlPanel -> Plugins listing */
-.tc-plugin-info-chunk.tc-plugin-info-description h2 {
-	color: <<colour download-background>>;
-}
-
 /* used for "activate" button if palette-tiddler is viewed */
 .tc-title-button {
 	font-size: initial;
