@@ -9,6 +9,7 @@ type: text/vnd.tiddlywiki
 <!-- Important -- The following elements have to be the same as set in TiddlyTools Palette Manager -->
 \define popup() $:/state/popup/TiddlyTools/PaletteManager
 \define find()  $(popup)$/find
+<!-- END TT compatibility -->
 
 <!-- developers can use this element to replace it with their own handling preview -->
 <!-- if you create a tiddler named: $:/palettes/preview/_custom with empty text, you can replace all previews -->

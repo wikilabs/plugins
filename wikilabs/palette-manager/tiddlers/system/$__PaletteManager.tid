@@ -11,6 +11,7 @@ type: text/vnd.tiddlywiki
 <!-- custom resolved colour picker -->
 \define pick()  $(popup)$/pick
 \define X11Colors() TiddlyTools/Settings/Colors/X11
+<!-- END TT compatibility -->
 
 <!-- Show / Hide Previews -->
 \define previews() $:/temp/pm/showpreviews
@@ -97,14 +98,15 @@ edit $(colourName)$
 </div>
 \end
 
-<!-- The following macro is borrowed from TiddlyTools PalettesManager with consent from Eric Shulman -->
+<!-- The following macro is borrowed from TiddlyTools PalettesManager from Eric Shulman with his permission -->
 <!-- So "praise and glory" goes to him ;) -->
 <!-- TT-PM: https://tiddlytools.com/#TiddlyTools%2FPalettes%2FManager:TiddlyTools%2FPalettes%2FManager version from 19. Feb. 2023 -->
 <!-- TT-X11 Configurations: https://tiddlytools.com/#TiddlyTools%2FSettings%2FColors%2FX11 -->
+<!-- Using this macro allows us to import PM without a browser reload -->
 \define palette-manager-colour-row-pick()
 \define hex()  ^#[A-Fa-f0-9]{3}$
 \define hexa() ^#[A-Fa-f0-9]{8}$
-<$eventcatcher $focusin="<<palette-manager-colour-row-save-undo>>"> <!-- WL-PM It seems I do not need this undo macro -->
+<$eventcatcher $focusin="<<palette-manager-colour-row-save-undo>>"> <!-- WL-PM does not need this "session" undo macro -->
 <!-- GET PALETTE COLOR -->
 <$let colourValue={{{ [<currentTiddler>getindex<colourName>] }}}>
 <!-- RESOLVE MACRO OR WIDGET -->
