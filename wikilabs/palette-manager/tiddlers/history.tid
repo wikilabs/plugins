@@ -1,5 +1,19 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 0.10.0 - 2024.01.16
+
+* The PaletteManager does ''not'' need a browser restart anymore
+** "Cudos" go to Eric Shulman / TiddlyTools
+
+* Previews can be hidden now (default is visible)
+
+* Make the "search field" compatible with TiddlyTools PaletteManager
+** Both palette managers can be used at the same time
+
+* It can now properly preview settings eg: rgba(0,200,0,0.7)
+* TT-PM can use the previews
+* WL-PM can use the X11 Colour settings and the custom colour picker
+
 V 0.9.2 - 2024.01.14
 
 * Improve vertical readability in preview editor
