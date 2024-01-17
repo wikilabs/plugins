@@ -4,6 +4,13 @@ modified: 20220903171744665
 title: $:/PaletteManager/globals
 
 <!-- TiddlyTools Palette Manager compatibility settings https://tiddlytools.com/#TiddlyTools%2FPalettes%2FManager -->
-<!-- Important -- The next 2 elements have to be the same as for TiddlyTools Palette Manager -->
+<!-- Important -- The following elements have to be the same as set in TiddlyTools Palette Manager -->
 \define popup() $:/state/popup/TiddlyTools/PaletteManager
 \define find()  $(popup)$/find
+
+<!-- custom resolved colour picker -->
+\define pick()  $(popup)$/pick
+\define X11Colors() TiddlyTools/Settings/Colors/X11
+
+<!-- Show / Hide Previews -->
+\define previews() $(popup)$/showpreviews

@@ -61,7 +61,8 @@ edit $(colourName)$
 <$edit-text index=<<colourName>> tag="input" type="text" placeholder=<<edit-colour-placeholder>> default="" class="tc-palette-manager-text-input"/>
 <br x>
 
-<$macrocall $name="colour-picker-resolved" palette=<<currentTiddler>> colourName=<<colourName>> class="tc-palette-manager-colour-input" />
+<!-- <$macrocall $name="colour-picker-resolved" palette=<<currentTiddler>> colourName=<<colourName>> class="tc-palette-manager-colour-input" /> -->
+<<palette-manager-colour-row-pick>>
 
 <span style="float:right;">
 <$let originColour={{{ [{!!origin}getindex<colourName>] }}} currentColour={{{ [all[current]getindex<colourName>] }}} resetDisabled={{{ [all[current]!has[origin]then[yes]] :else[<originColour>match<currentColour>then[yes]else[no]] }}} >
@@ -84,6 +85,37 @@ edit $(colourName)$
 </div>
 \end
 
+<!-- The following macro is borrowed from TiddlyTools PalettesManager with consent from Eric Shulman -->
+<!-- So "praise and glory" goes to him ;) -->
+<!-- TT-PM: https://tiddlytools.com/#TiddlyTools%2FPalettes%2FManager:TiddlyTools%2FPalettes%2FManager version from 19. Feb. 2023 -->
+<!-- TT-X11 Configurations: https://tiddlytools.com/#TiddlyTools%2FSettings%2FColors%2FX11 -->
+\define palette-manager-colour-row-pick()
+\define hex()  ^#[A-Fa-f0-9]{3}$
+\define hexa() ^#[A-Fa-f0-9]{8}$
+<$eventcatcher $focusin="<<palette-manager-colour-row-save-undo>>"> <!-- WL-PM It seems I do not need this undo macro -->
+<!-- GET PALETTE COLOR -->
+<$let colourValue={{{ [<currentTiddler>getindex<colourName>] }}}>
+<!-- RESOLVE MACRO OR WIDGET -->
+<$wikify name=resolvedValue text=<<colourValue>>> <$let colourValue={{{ [<colourValue>prefix[#]then<colourValue>else<resolvedValue>] }}}>
+<!-- MATCH X11 NAMES (CASE INSENSITIVE) -->
+<$let lower={{{ [<colourValue>lowercase[]] }}} colourValue={{{ [<X11Colors>indexes[]] :filter[lowercase[]match<lower>] :map[<X11Colors>getindex<currentTiddler>] +[!match[]else<colourValue>] }}}>
+<!-- EXPAND #RGB to #RRGGBB -->
+<$let colourValue={{{ [<colourValue>regexp<hex>split[]!match[#]] :map[<currentTiddler>addsuffix<currentTiddler>] +[join[]!match[]addprefix[#]else<colourValue>] }}}>
+<!-- TRUNCATE #RRGGBBAA (IGNORE ALPHA CHANNEL) -->
+<$let colourValue={{{ [<colourValue>regexp<hexa>split[]first[7]join[]] ~[<colourValue>] }}}>
+<!-- CONVERT RGB(r,g,b) OR RGBA(r,g,b,a) TO #RRGGBB (IGNORE ALPHA CHANNEL) -->
+<$let dec={{{ [<colourValue>lowercase[]prefix[rgb]split[(]nth[2]trim[)]split[,]first[3]join[ ]] }}}
+	   hi={{{ [enlist:raw<dec>divide[16]]    :map[[0123456789ABCDEF]split[]zth<currentTiddler>] +[join[ ]] }}}
+       lo={{{ [enlist:raw<dec>remainder[16]] :map[[0123456789ABCDEF]split[]zth<currentTiddler>] +[join[ ]] }}}
+		r={{{ [enlist:raw<hi>nth[1]] =[enlist:raw<lo>nth[1]] +[join[]] }}}
+        g={{{ [enlist:raw<hi>nth[2]] =[enlist:raw<lo>nth[2]] +[join[]] }}}
+        b={{{ [enlist:raw<hi>nth[3]] =[enlist:raw<lo>nth[3]] +[join[]] }}}
+	colourValue={{{ [<r>] =[<g>] =[<b>] +[join[]!match[]addprefix[#]else<colourValue>] }}}>
+<span title='pick color for "$(colourName)$"'>
+<$eventcatcher $change="<$action-setfield $tiddler=<<currentTiddler>> $index=<<colourName>> $value={{{ [<pick>getindex<colourName>] }}}/><$action-deletetiddler $tiddler=<<pick>>/>">
+<$edit-text tiddler=<<pick>> index=<<colourName>> tag=input class="tc-palette-manager-colour-input $(colourName)$" type="color" default=<<colourValue>>/>
+\end
+
 \define palette-manager-colour-row()
 \whitespace trim
 <tr>
@@ -100,7 +132,7 @@ edit $(colourName)$
 	<<palette-manager-colour-row-segment>>
 </td>
 </tr>
-{{||$:/PaletteManager/preview}}
+<$list filter="[<previews>!has[text]then[yes]]" variable="show_previews">{{||$:/PaletteManager/preview}}</$list>
 \end
 
 <!-- first list filter .. decide if colours with macro values are returned -->
@@ -201,9 +233,7 @@ Origin:
 	''<<lingo "Editor/Clone/Prompt">>''
 </$list>
 
-<$checkbox tiddler="$:/state/palettemanager/showexternal" field="text" checked="yes" unchecked="no">
-	<span class="tc-small-gap-left"><<lingo "Editor/Names/External/Show">></span>
-</$checkbox>
+|<$checkbox tiddler="$:/state/palettemanager/showexternal" field="text" checked="yes" unchecked="no"><span class="tc-small-gap-left"><<lingo "Editor/Names/External/Show">></span></$checkbox> |<$checkbox tiddler=<<previews>> field="text" default="yes" checked="yes" unchecked="no" checkactions="<$action-deletetiddler $tiddler=<<previews>>/>"><span class="tc-small-gap-left">Show previews</span></$checkbox> |
 
 <<open-tiddler-in-window>>
 
