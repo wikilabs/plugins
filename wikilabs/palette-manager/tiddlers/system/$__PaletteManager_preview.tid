@@ -5,6 +5,11 @@ tags:
 title: $:/PaletteManager/preview
 type: text/vnd.tiddlywiki
 
+<!-- TiddlyTools Palette Manager compatibility settings https://tiddlytools.com/#TiddlyTools%2FPalettes%2FManager -->
+<!-- Important -- The following elements have to be the same as set in TiddlyTools Palette Manager -->
+\define popup() $:/state/popup/TiddlyTools/PaletteManager
+\define find()  $(popup)$/find
+
 <!-- developers can use this element to replace it with their own handling preview -->
 <!-- if you create a tiddler named: $:/palettes/preview/_custom with empty text, you can replace all previews -->
 <!-- if you create a tiddler named: $:/palettes/preview/<colourName>/_custom with empty text, you can hide a single preview -->
@@ -57,9 +62,5 @@ type: text/vnd.tiddlywiki
 	</td>
 </tr>
 \end
-
-<!-- To avoid compatibility problems with TiddlyTools PaletteManager the import has to be placed here -->
-<!-- TODO: Find out why ?!?! -->
-\import $:/PaletteManager/globals
 
 <<palette-preview-row-segment>>
