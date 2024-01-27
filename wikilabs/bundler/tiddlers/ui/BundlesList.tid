@@ -19,7 +19,7 @@ type: text/vnd.tiddlywiki
 			New Bundle
 		</$button>
 	</$let>
-	<$edit tag=input placeholder="Filter List" tiddler="$:/temp/bundle/listFilter" class="tc-tiny-gap-left"/>
+	<$edit-text tag=input placeholder="Filter List" tiddler="$:/temp/bundle/listFilter" class="tc-tiny-gap-left"/>
 	<$button class="tc-small-gap-left tc-btn-invisible tc-btn-icon">
 		{{$:/core/images/close-button}}
 		<$action-deletetiddler $tiddler="$:/temp/bundle/listFilter" />

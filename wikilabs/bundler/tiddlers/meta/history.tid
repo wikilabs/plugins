@@ -2,6 +2,10 @@ title: $:/plugins/wikilabs/bundler/history
 
 V 1.1.0 - 2023-11-09
 
+* Fix problem with bundler edit-text input formatting as text-area instead of normal input, if codemirror is installed
+
+V 1.1.0 - 2023-11-09
+
 * Add "caption" field handling to - Right Sidebar: Bundles Tab
 * Tooltips
 ** Add title for caption-links. So users know the link-traget
