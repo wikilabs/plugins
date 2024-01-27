@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 0.11.1 - 2024.01.27
+
+* add tabbed-toc-expandable preview to $:/palettes/preview/tab-foreground-selected tiddler
+* improve doc text in several other preview tiddlers
+
 V 0.11.0 - 2024.01.17
 
 * Change the license: $:/plugins/wikilabs/palette-manager/license

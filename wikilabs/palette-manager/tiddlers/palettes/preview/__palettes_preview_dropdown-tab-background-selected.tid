@@ -6,7 +6,11 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/dropdown-tab-background-selected
 type: text/vnd.tiddlywiki
 
-* Some "tab hovering" problems with CSS
+* Some "tab hovering" problems (TODO)
+** It uses: `.tc-drop-down button:hover`
+*** `color: <<colour tiddler-link-background>>;`
+*** `background-color: <<colour tiddler-link-foreground>>;`
+
 * Probably usecase is in the search dropdown using [[Custom search results|https://tiddlywiki.com/#Customising%20search%20results]]
 ** It seems these settings are ''not in use'' at the moment. At least I could not find it
 

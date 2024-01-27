@@ -6,11 +6,11 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/sidebar-tiddler-link-foreground-hover
 type: text/vnd.tiddlywiki
 
-Only the last two elements `sidebar-tiddler-link-foreground` and `sidebar-tiddler-link-foreground-hover` should be changed here. 
+''Be aware:'' 
 
-''Tab''-related elements should be defined using the `tab-` filter. (Scroll down a bit).
+The last 2 elements `sidebar-tiddler-link-foreground` and `sidebar-tiddler-link-foreground-hover` are listed here, because they are prefixed `sidebar-`. At the moment there is no other way to show them. (TODO)
 
-The test-area below is also scrollable.
+The test-area below is scrollable.
 
 <style>
 .xx-sidebar-tabs .tc-tab-buttons button:nth-of-type(4),

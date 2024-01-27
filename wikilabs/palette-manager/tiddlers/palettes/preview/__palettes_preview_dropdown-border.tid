@@ -6,6 +6,8 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/dropdown-border
 type: text/vnd.tiddlywiki
 
+Test the ''mouse hover function!''
+
 <$linkcatcher> <!-- we don't want any actions -->
 <div class="tc-drop-down" style="min-width:initial;white-space:normal;">
 [[ see -- color: <<colour tiddler-link-background>>;]]

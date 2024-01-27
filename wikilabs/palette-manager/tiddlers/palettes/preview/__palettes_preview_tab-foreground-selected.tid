@@ -13,3 +13,18 @@ The area below is a scrollable
 <<tabs "SampleTabOne SampleTabTwo SampleTabThree SampleTabFour" "SampleTabOne" "$:/state/tab1">>
 </div>
 </$linkcatcher>
+
+The following example shows a tabbed-TOC example.
+
+* Use it, to test the ''mouse hover function''
+* The selected toc-tab uses `<<colour background>>` so it cannot be defined here
+
+<$linkcatcher>
+<$macrocall
+	$name="toc-tabbed-internal-nav"
+	tag="previewTabbedToc"
+	selectedTiddler="$:/temp/toc/selectedTiddler"
+	unselectedText="<p>Select a topic in the table of contents. Click the arrow to expand a topic.</p>"
+	missingText="<p>Missing tiddler.</p>"
+/>
+</$linkcatcher>

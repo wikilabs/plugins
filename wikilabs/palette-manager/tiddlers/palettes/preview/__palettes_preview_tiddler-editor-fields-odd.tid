@@ -6,7 +6,7 @@ tags: $:/tags/palette/preview
 title: $:/palettes/preview/tiddler-editor-fields-odd
 type: text/vnd.tiddlywiki
 
-tc-tiddler-edit-frame
+This preview shows a `tc-tiddler-edit-frame`
 
 <div class="tc-tiddler-frame tc-tiddler-edit-frame" style="width:initial;">
 
