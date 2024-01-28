@@ -17,7 +17,9 @@ The area below is a scrollable
 The following example shows a tabbed-TOC example.
 
 * Use it, to test the ''mouse hover function''
-* The selected toc-tab uses `<<colour background>>` so it cannot be defined here
+** The selected toc-tab uses `<<colour background>>` so it cannot be defined here
+** The :hover class uses `background: <<colour tab-border>>;`
+*** So background and `tab-background` and `tab-border` need to be slightly different to get a hover effect
 
 <$linkcatcher>
 <$macrocall
