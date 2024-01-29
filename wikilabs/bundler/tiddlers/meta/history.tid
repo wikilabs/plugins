@@ -1,6 +1,6 @@
 title: $:/plugins/wikilabs/bundler/history
 
-V 1.1.0 - 2023-11-09
+V 1.1.1 - 2024-011-27
 
 * Fix problem with bundler edit-text input formatting as text-area instead of normal input, if codemirror is installed
 
