@@ -1,0 +1,9 @@
+{
+	"title": "$:/plugins/wikilabs/saver-timestamps",
+	"name": "Saver Timestamps",
+	"description": "This plugin adds saving timestamp tiddlers to the store",
+	"author": "pmario",
+	"core-version": ">=5.3.0",
+	"version": "0.0.1",
+	"list": "readme license history"
+}
