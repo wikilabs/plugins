@@ -15,14 +15,14 @@ var HashTable = require("$:/plugins/wikilabs/uni-link/indexers/hashtable.js").Ha
 /**
  * @param {string} character
  * @param {boolean} isCompleteWord
- * @param {Tiddler} tiddler
+ * @param {string} title
  */
-function TrieNode(character, isCompleteWord, tiddler) {
+function TrieNode(character, isCompleteWord, title) {
 	this.character = character || "";
 	this.isCompleteWord = isCompleteWord || false;
-	this.tiddlers = (tiddler) ? {tiddler} : {};	// hashmap of source tiddlers
-	this.backlinks = {};						// hashmap of backlink tiddlers
-	this.children = new HashTable();
+	this.tiddlers = new HashTable();		// hashmap of source tiddlers
+	this.backlinks = new HashTable();		// hashmap of backlink tiddlers
+	this.children = new HashTable();		// more trie-nodes
 }
 
 /**
@@ -36,10 +36,10 @@ TrieNode.prototype.getChild = function(character) {
 /**
  * @param {string} character
  * @param {boolean} isCompleteWord
- * @param {Tiddler} tiddler
+ * @param {string} title
  * @return {TrieNode}
  */
-TrieNode.prototype.addChild = function(character, isCompleteWord, tiddler) {
+TrieNode.prototype.addChild = function(character, isCompleteWord, title) {
 	isCompleteWord = isCompleteWord || false;
 	if (!this.children.has(character)) {
 		this.children.set(character, new TrieNode(character, isCompleteWord));
@@ -47,27 +47,10 @@ TrieNode.prototype.addChild = function(character, isCompleteWord, tiddler) {
 
 	var childNode = this.children.get(character);
 
-	if (isCompleteWord) {
-		// $tw.utils.pushTop(childNode.tiddlers, tiddler);
-		childNode.tiddlers[tiddler.fields.title] = tiddler;
-	}
-
 	// In cases similar to adding "car" after "carpet" we need to mark "r" character as complete.
 	childNode.isCompleteWord = childNode.isCompleteWord || isCompleteWord;
 
 	return childNode;
-}
-
-/**
- * @param {TrieNode} node
- * @param {Tiddler} tiddler
- * @return {TrieNode}
- */
-TrieNode.prototype.addBacklink = function(node, tiddler) {
-	if (node.isCompleteWord) {
-		node.backlinks[tiddler.fields.title] = tiddler;
-	}
-	return node;
 }
 
 /**
@@ -83,7 +66,6 @@ TrieNode.prototype.removeChild = function(character) {
 	if ( childNode && !childNode.isCompleteWord && !childNode.hasChildren()	) {
 		this.children.delete(character);
 	}
-
 	return this;	// TODO check for self
 }
 

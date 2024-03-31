@@ -11,7 +11,7 @@ Wrapper to get "get, set..."
 "use strict";
 
 function HashTable()  {
-	this.keys = {};
+	this.keys = {} //Object.create(null);
 }
 
 /**

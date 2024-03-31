@@ -16,6 +16,8 @@ Filter operator for returning all the backlinks from an alias
 Export our filter function
 */
 exports.aliasbacklinks = function(source,operator,options) {
+	var index = $tw.wiki.getIndexer("AliasIndexer");
+
 	var results = [];
 	source(function(tiddler,title) {
 		$tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));

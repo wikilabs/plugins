@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/indexers/backlinks-indexer.js
 type: application/javascript
-module-type: indexer
+module-type: indexerXXXX
 
 Indexes the tiddlers' backlinks
 

@@ -6,8 +6,6 @@ module-type: isfilteroperator
 Filter function for [is[alias]]
 
 \*/
-(function(){
-
 /*jslint node: true, browser: true */
 /*global $tw: false */
 "use strict";
@@ -32,5 +30,3 @@ exports.alias = function(source,prefix,options) {
 	}
 	return results;
 };
-
-})();
