@@ -22,7 +22,7 @@ exports.aliassource = function(source,operator,options) {
 		var aliasMap = index.trie.getAliasMap(title);
 		if (aliasMap) {
 			$tw.utils.each(aliasMap, function(alias) {
-				$tw.utils.each(alias.tiddlers, function(title) {
+				$tw.utils.each(alias.tiddlers.getKeys(), function(title) {
 					results.push(title)
 				});
 			});
