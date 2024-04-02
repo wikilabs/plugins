@@ -18,11 +18,10 @@ exports.aliasbacklinks = function(source,operator,options) {
 	var backlinks = $tw.wiki.getIndexer("AliasBacklinkIndexer");
 
 	source(function(tiddler,title) {
-		var a = backlinks.lookup(title);
-		var b = backlinks.trie.getLastCharacterNode(title);
-		// $tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
-		if (b) {
-			$tw.utils.pushTop(results, b.details.getValues());
+		var x = backlinks.lookup(title);
+		// old: $tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
+		if (x) {
+			$tw.utils.pushTop(results, a.details.getValues());
 		}
 	});
 	return results;
