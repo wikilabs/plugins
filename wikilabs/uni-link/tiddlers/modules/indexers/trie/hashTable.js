@@ -59,11 +59,17 @@ HashTable.prototype.getKeys = function() {
  * @return {*[]}
  */
 HashTable.prototype.getValues = function() {
-	return "";
+	var results = [];
+	this.getKeys().map( (key) =>  {
+		this.get(key).map((val) => {
+			results.push(val);
+		});
+	});
+	return results;
+};
 // return this.buckets.reduce((values, bucket) => {
 // 	const bucketValues = bucket.toArray()
 // 	.map((linkedListNode) => linkedListNode.value.value);
 // 	return values.concat(bucketValues);
-}
 
 exports.HashTable = HashTable;

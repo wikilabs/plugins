@@ -6,8 +6,6 @@ module-type: filteroperator
 Filter operator for returning all the backlinks from an alias
 
 \*/
-(function(){
-
 /*jslint node: true, browser: true */
 /*global $tw: false */
 "use strict";
@@ -16,14 +14,16 @@ Filter operator for returning all the backlinks from an alias
 Export our filter function
 */
 exports.aliasbacklinks = function(source,operator,options) {
-	var index = $tw.wiki.getIndexer("AliasIndexer");
-
 	var results = [];
+	var backlinks = $tw.wiki.getIndexer("AliasBacklinkIndexer");
+
 	source(function(tiddler,title) {
-		var a = 1;
-		$tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
+		var a = backlinks.lookup(title);
+		var b = backlinks.trie.getLastCharacterNode(title);
+		// $tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
+		if (b) {
+			$tw.utils.pushTop(results, b.details.getValues());
+		}
 	});
 	return results;
 };
-
-})();

@@ -1,7 +1,7 @@
 /*\
-title: $:/plugins/wikilabs/uni-link/wiki-methodes.js
-type: application/javascript
-module-type: wikimethod
+title: $:/plugins/wikilabs/uni-link/wiki-methodesXX.js
+type: application/javascriptXX
+module-type: wikimethodXX
 
 Extension methods for the $tw.Wiki object
 
