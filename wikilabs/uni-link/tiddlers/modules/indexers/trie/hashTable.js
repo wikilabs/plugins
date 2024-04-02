@@ -7,11 +7,10 @@ Using a JS object as hashtable
 Wrapper to get "get, set..."
 
 \*/
-(function(){
 "use strict";
 
 function HashTable()  {
-	this.keys = {} //Object.create(null);
+	this.keys = Object.create(null);
 }
 
 /**
@@ -54,7 +53,6 @@ HashTable.prototype.getKeys = function() {
 	return Object.keys(this.keys);
 }
 
-
 /**
  * Gets the list of all the stored values in the hash table.
  *
@@ -69,5 +67,3 @@ HashTable.prototype.getValues = function() {
 }
 
 exports.HashTable = HashTable;
-
-})();

@@ -19,11 +19,11 @@ exports.aliassource = function(source,operator,options) {
 		index = $tw.wiki.getIndexer("AliasIndexer");
 
 	source(function(tiddler,title) {
-		var aliasMap = index.trie.getAliasMap(title);
+		var aliasMap = index.trie.getNodeMap(title.toLowerCase());
 		if (aliasMap) {
 			$tw.utils.each(aliasMap, function(alias) {
-				$tw.utils.each(alias.tiddlers.getKeys(), function(title) {
-					results.push(title)
+				$tw.utils.each(alias.details.getKeys(), function(key) {
+					results.push(key)
 				});
 			});
 		}

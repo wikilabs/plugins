@@ -6,57 +6,39 @@ module-type: library
 trie base class
 
 \*/
-(function(){
+
 "use strict";
 
 var TrieNode = require("$:/plugins/wikilabs/uni-link/indexers/trie-node.js").TrieNode;
 
 // Character that we will use for trie tree root.
-var HEAD_CHARACTER = '*';
+// var HEAD_CHARACTER = '*';
 
-function Trie()  {
+function Trie(HEAD_CHARACTER)  {
+	HEAD_CHARACTER = HEAD_CHARACTER || "*";
 	this.head = new TrieNode(HEAD_CHARACTER);
 }
 
 /**
  * @param {string} key
- * @param {string} title
  * @return {Trie}
  */
-Trie.prototype.addWord = function(key, title) {
+Trie.prototype.addWord = function(key) {
 	var characters = Array.from(key);
 	var currentNode = this.head;
 
 	for (var charIndex = 0; charIndex < characters.length; charIndex += 1) {
 		var isComplete = charIndex === characters.length - 1;
 		currentNode = currentNode.addChild(characters[charIndex], isComplete);
-		if (isComplete) {
-			currentNode.tiddlers.set(title, title);
-		}
 	}
 	return currentNode;
 }
 
 /**
  * @param {string} key
- * @param {string} title
- * @return {HashTable} backlinks
- */
-Trie.prototype.addBacklink = function(key, title) {
-	var currentNode = this.getLastCharacterNode(key);
-	if (currentNode) {
-		currentNode.backlinks.set(key, title);
-	}
-	return currentNode.backlinks;
-}
-
-
-/**
- * @param {string} key
- * @param {string} title		// eg title
  * @return {Trie}
  */
-Trie.prototype.deleteWord = function(key, title) {
+Trie.prototype.deleteWord = function(key) {
 	var charIndex = 0;
 	var depthFirstDelete = function(currentNode, charIndex) {
 		if (charIndex >= key.length) {
@@ -111,12 +93,11 @@ Trie.prototype.suggestNextCharacters = function(key) {
 Trie.prototype.suggestPossibleWords = function(key) {
 	var strings = [],
 		nodes = [];	// Cannot be related to strings !!!
-
 	function dfs(node, str, strings) {
 		if (node) {
 			if (node.isCompleteWord) {
 				strings.push(str);
-				node.alias = str;
+				node.word = str;
 				nodes.push(node);
 			}
 			for (let key in node.children.keys) {
@@ -130,23 +111,22 @@ Trie.prototype.suggestPossibleWords = function(key) {
 
 /**
  * @param {string} key
- * @return {aliasMap} alias : TrieNode
+ * @return {nodeMap{}} hashMap : TrieNode
  */
-Trie.prototype.getAliasMap = function(key) {
-	var aliasMap = {};
-
-	function dfs(node, str, aliasMap) {
+Trie.prototype.getNodeMap = function(key) {
+	var nodeMap = {};
+	function dfs(node, str, nodeMap) {
 		if (node) {
 			if (node.isCompleteWord && (key === str)) {
-				aliasMap[str] = node;
+				nodeMap[str] = node;
 			}
 			for (let key in node.children.keys) {
-				dfs(node.children.keys[key], str + key, aliasMap);
+				dfs(node.children.keys[key], str + key, nodeMap);
 			}
 		} 
 	}
-	dfs(this.getLastCharacterNode(key), key, aliasMap);
-	return aliasMap;
+	dfs(this.getLastCharacterNode(key), key, nodeMap);
+	return nodeMap;
 }
 
 
@@ -158,7 +138,6 @@ Trie.prototype.getAliasMap = function(key) {
  */
 Trie.prototype.doesWordExist = function(key) {
 	var lastCharacter = this.getLastCharacterNode(key);
-
 	return !!lastCharacter && lastCharacter.isCompleteWord;
 }
 
@@ -169,18 +148,13 @@ Trie.prototype.doesWordExist = function(key) {
 Trie.prototype.getLastCharacterNode = function(key) {
 	var characters = Array.from(key);
 	var currentNode = this.head;
-
 	for (var charIndex = 0; charIndex < characters.length; charIndex += 1) {
 		if (!currentNode.hasChild(characters[charIndex])) {
 			return null;
 		}
-
 		currentNode = currentNode.getChild(characters[charIndex]);
 	}
-
 	return currentNode;
 }
 
 exports.Trie = Trie;
-
-})();

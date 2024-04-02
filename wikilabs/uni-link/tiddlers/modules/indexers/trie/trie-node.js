@@ -7,7 +7,6 @@ trie-node class
 
 \*/
 
-(function(){
 "use strict";
 
 var HashTable = require("$:/plugins/wikilabs/uni-link/indexers/hashtable.js").HashTable;
@@ -20,8 +19,7 @@ var HashTable = require("$:/plugins/wikilabs/uni-link/indexers/hashtable.js").Ha
 function TrieNode(character, isCompleteWord, title) {
 	this.character = character || "";
 	this.isCompleteWord = isCompleteWord || false;
-	this.tiddlers = new HashTable();		// hashmap of source tiddlers
-	this.backlinks = new HashTable();		// hashmap of backlink tiddlers
+	this.details = new HashTable();		// hashmap of details
 	this.children = new HashTable();		// more trie-nodes
 }
 
@@ -104,5 +102,3 @@ TrieNode.prototype.toString = function() {
 }
 
 exports.TrieNode = TrieNode;
-
-})();

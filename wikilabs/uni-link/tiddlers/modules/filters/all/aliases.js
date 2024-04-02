@@ -8,6 +8,7 @@ Filter function for [all[aliases]]
 \*/
 /*jslint node: true, browser: true */
 /*global $tw: false */
+
 "use strict";
 
 /*

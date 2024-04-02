@@ -2,45 +2,43 @@ tags: $:/tags/Macro
 title: $:/plugins/wikilabs/uni-link/aka-macros
 code-body: yes
 
-\define tooltip() Tiddler -> <<currentTiddler>>
-\define aka(target, field:X)
-\whitespace trim
-<$list filter="[<__target__>is[alias]]" variable="ali"
-	emptyMessage="""<$link tooltip="Alias not defined!" to="?"><span class="uni-alias-missing"><<__target__>></span></$link>""">
-	<$vars find={{{ [<__target__>] +[escaperegexp[]addprefix[^]addsuffix[$(?i)]] }}} >
-		<$list filter="[has[aliases]!has[draft.of]]">
-			<$list filter="[enlist{!!aliases}regexp<find>]" variable="dummy">
-				<$link tooltip=<<tooltip>> >
-					<span class="uni-alias">
-						<$set name="tv-wikilinks" value="no">
-							<$view field=<<__field__>> mode=text><<__target__>></$view>
-						</$set>
-					</span>
-				</$link>
-			</$list>
-		</$list>
-	</$vars> <!-- 1,67s / 1,37 -->
-</$list>
-\end
 
-\define aka-no-links(target)
 \whitespace trim
-<$list filter="[<__target__>is[alias]]" variable="ali"
-	emptyMessage="""<$link tooltip="Alias not defined!" to="?"><<__target__>></$link>""">
-	<$list filter="[has[aliases]!has[draft.of]]">
-		<$vars find={{{ [<__target__>] +[escaperegexp[]addprefix[^]addsuffix[$(?i)]] }}} >
-			<$list filter="[enlist{!!aliases}regexp<find>]" variable="dummy">
-				<span><<currentTiddler>></span>
-			</$list>
-		</$vars>
+
+\procedure tooltip() Tiddler -> <<currentTiddler>>
+
+\procedure aka(target, field:"X")
+<% if [<target>is[alias]] %>
+	<$list filter="[<target>aliassource[]]" join=",&nbsp;">
+		<$link tooltip=<<tooltip>> >
+			<span class="uni-alias">
+				<$set name="tv-wikilinks" value="no">
+					<$view field=<<field>> mode=text><<target>></$view>
+				</$set>
+			</span>
+		</$link>
 	</$list>
+<% else %>
+	<$link tooltip="Alias not defined!" to="?"><span class="uni-alias-missing"><<target>></span></$link>
+<% endif %>
+\end
+
+\procedure aka-no-links(target)
+<% if [<target>is[alias]] %>
+	<$list filter="[<target>aliassource[]]" join=",&nbsp;">
+		<span><$text text=<<currentTiddler>>/></span>
+	</$list>
+<% else %>
+	<$link tooltip="Alias not defined!" to="?"><<target>></$link>
+<% endif %>
+\end
+
+\function showAliases() [list[!!aliases]] +[join[, ]]
+
+\procedure listAliases()
+<$list filter="[has[aliases]]">
+	<div>
+		<$link to=<<currentTiddler>> ><<currentTiddler>></$link>&nbsp;-&nbsp;<<showAliases>>
+	</div>
 </$list>
-\end
-
-\define showAliases(delim:",&nbsp;")
-<$list filter="[list[!!aliases]butlast[]]"><$view field=title/><<__delim__>></$list><$list filter="[list[!!aliases]last[]]"><$view field=title/></$list>
-\end
-
-\define listAliases()
-<$list filter="[has[aliases]]"><$link to=<<currentTiddler>> ><<currentTiddler>></$link> - <<showAliases>><br/></$list>
 \end

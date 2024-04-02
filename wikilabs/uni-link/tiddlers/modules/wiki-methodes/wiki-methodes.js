@@ -102,59 +102,6 @@ function aliasInit(title) {
 	return backlinks;
 }
 
-/*
-Alias Trie based backlink handling
-*/
-function aliasInitBacklinksTrie(title) {
-	// Parse the tiddler
-	var parser = this.parseTiddler(title);
-	// Count up the links
-	var links = [],
-		checkParseTree = function(parseTree) {
-			for(var t=0; t<parseTree.length; t++) {
-				var parseTreeNode = parseTree[t];
-				if(parseTreeNode.type === "macrocall" && parseTreeNode.name === "aka") {
-					var value = parseTreeNode.params[0].value;
-					if(links.indexOf(value) === -1) {
-						links.push(value);
-					}
-				}
-				if(parseTreeNode.children) {
-					checkParseTree(parseTreeNode.children);
-				}
-			}
-		};
-	if(parser) {
-		checkParseTree(parser.tree);
-	}
-	/*
-	For every tiddler invoke a callback(title,tiddler) with `this` set to the wiki object. Options include:
-	sortField: field to sort by
-	excludeTag: tag to exclude
-	includeSystem: whether to include system tiddlers (defaults to true)
-	*/
-	var backlinks = []
-	this.forEachTiddler({includeSystem:true}, function(ttl,tiddler) {
-		if (tiddler.fields["aliases"]) {
-			// var fields = tiddler.fields["aliases"];
-			var fields = $tw.utils.parseStringArray(tiddler.fields["aliases"]);
-			fields = fields.map(function (el){
-				return el.toLowerCase();
-			});
-			links.map( function (el) {
-				if (fields.indexOf(el.toLowerCase()) != -1) backlinks.push(ttl);
-			})
-		} // if tiddler aliases
-	});
-
-	if ((backlinks.length === 0) && (links.length > 0)) {
-		backlinks[0] = "?";
-	}
-
-	return backlinks;
-}
-
-
 exports.getAllAliases = function() {
 	var self = this,
 		aliases = "";
@@ -190,12 +137,12 @@ exports.getAliasLinks = function(title) {
 /*
 Return an array of tiddler titles that link to the specified alias 
 */
-exports.getAliasBacklinks = function(alias) {
+exports.getAliasBacklinks = function(backlinkTarget) {
 	var self = this,
 		backlinks = [];
 	this.forEachTiddler(function(title,tiddler) {
 		var links = self.getAliasLinks(title);
-		if(links.indexOf(alias) !== -1) {
+		if(links.indexOf(backlinkTarget) !== -1) {
 			backlinks.push(title);
 		}
 	});

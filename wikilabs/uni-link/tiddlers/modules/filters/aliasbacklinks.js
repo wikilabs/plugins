@@ -20,6 +20,7 @@ exports.aliasbacklinks = function(source,operator,options) {
 
 	var results = [];
 	source(function(tiddler,title) {
+		var a = 1;
 		$tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
 	});
 	return results;
