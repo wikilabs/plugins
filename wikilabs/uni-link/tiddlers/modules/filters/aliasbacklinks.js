@@ -21,7 +21,7 @@ exports.aliasbacklinks = function(source,operator,options) {
 		var x = backlinks.lookup(title);
 		// old: $tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
 		if (x) {
-			$tw.utils.pushTop(results, a.details.getValues());
+			$tw.utils.pushTop(results, x.details.getValues());
 		}
 	});
 	return results;
