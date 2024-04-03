@@ -102,7 +102,7 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 		oldAliases = this._getAliasBacklinks(updateDescriptor.old.tiddler, updateDescriptor.old.tiddler.fields.text);
 		if (oldAliases && oldAliases.length > 0) {
 			$tw.utils.each(oldAliases, function(alias){
-				var aliasSources = self.aliases.lookup(alias).details.getKeys();
+				var aliasSources = self.aliases.lookup(alias)?.details?.getKeys();
 				$tw.utils.each(aliasSources, function(aSource){
 					// get trie node, so we can manipulate it
 					var node = self.trie.getLastCharacterNode(aSource);
@@ -127,16 +127,19 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 		newAliases = this._getAliasBacklinks(updateDescriptor.new.tiddler, updateDescriptor.new.tiddler.fields.text);
 		if (newAliases && newAliases.length > 0) {
 			$tw.utils.each(newAliases, function(alias){
-				var aliasSources = self.aliases.lookup(alias).details.getKeys();
-				$tw.utils.each(aliasSources, function(aSource){
-					// get trie node, so we can manipulate it
-					var node = self.trie.getLastCharacterNode(aSource);
-					var backlinks = node.details.get(alias);
-					$tw.utils.pushTop(backlinks, updateDescriptor.new.tiddler.fields.title);
-					node.details.set(alias, backlinks);
-				})
-				// var node = self.trie.addWord(alias);
-				// node.details.set(alias, updateDescriptor.new.tiddler.fields.title)
+				var aliasSources = self.aliases.lookup(alias)?.details?.getKeys();
+				if (aliasSources) {
+					$tw.utils.each(aliasSources, function(aSource){
+						// get trie node, so we can manipulate it
+						var node = self.trie.getLastCharacterNode(aSource);
+						var backlinks = node?.details?.get(alias) || [];
+						$tw.utils.pushTop(backlinks, updateDescriptor.new.tiddler.fields.title);
+						node.details.set(alias, backlinks);
+					})
+				} else {
+					var node = self.trie.addWord(updateDescriptor.new.tiddler.fields.title);
+					node.details.set(alias, [updateDescriptor.new.tiddler.fields.title])
+				}
 			})
 		}
 	}
