@@ -34,10 +34,9 @@ TrieNode.prototype.getChild = function(character) {
 /**
  * @param {string} character
  * @param {boolean} isCompleteWord
- * @param {string} title
  * @return {TrieNode}
  */
-TrieNode.prototype.addChild = function(character, isCompleteWord, title) {
+TrieNode.prototype.addChild = function(character, isCompleteWord) {
 	isCompleteWord = isCompleteWord || false;
 	if (!this.children.has(character)) {
 		this.children.set(character, new TrieNode(character, isCompleteWord));
