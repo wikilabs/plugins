@@ -20,7 +20,7 @@ exports.aliasbacklinks = function(source,operator,options) {
 	source(function(tiddler,title) {
 		var x = backlinks.lookup(title);
 		// old: $tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
-		if (x) {
+		if (x.details) {
 			$tw.utils.pushTop(results, x.details.getValues());
 		}
 	});

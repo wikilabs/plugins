@@ -131,14 +131,24 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 				if (aliasSources) {
 					$tw.utils.each(aliasSources, function(aSource){
 						// get trie node, so we can manipulate it
-						var node = self.trie.getLastCharacterNode(aSource);
+						var node = self.trie.getLastCharacterNode(aSource) || self.trie.addWord(aSource);
 						var backlinks = node?.details?.get(alias) || [];
 						$tw.utils.pushTop(backlinks, updateDescriptor.new.tiddler.fields.title);
 						node.details.set(alias, backlinks);
 					})
 				} else {
-					var node = self.trie.addWord(updateDescriptor.new.tiddler.fields.title);
-					node.details.set(alias, [updateDescriptor.new.tiddler.fields.title])
+					var aSource = self.aliases.lookup(alias.toLowerCase());
+					if (aSource.length > 0) {
+						// var node = self.trie.addWord(updateDescriptor.new.tiddler.fields.title);
+						// node.details.set(alias, [updateDescriptor.new.tiddler.fields.title])
+
+						$tw.utils.each(aSource.details.getKeys(), function(key) {
+							var node = self.trie.addWord(key);
+							var titles = node.details.get(aSource) || [];
+							$tw.utils.pushTop(titles, title);
+							node.details.set(aSource, titles);
+						})
+					}
 				}
 			})
 		}
@@ -146,7 +156,7 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 }
 
 AliasBacklinkIndexer.prototype.lookup = function(title) {
-	return this.trie.getNodeMap(title)[title] || [];
+	return this.trie.getNodeMap(title)[title] || {};
 }
 
 exports.AliasBacklinkIndexer = AliasBacklinkIndexer;
