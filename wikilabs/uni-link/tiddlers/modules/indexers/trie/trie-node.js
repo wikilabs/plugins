@@ -63,7 +63,7 @@ TrieNode.prototype.removeChild = function(character) {
 	if ( childNode && !childNode.isCompleteWord && !childNode.hasChildren()	) {
 		this.children.delete(character);
 	}
-	return this;	// TODO check for self
+	return this;
 }
 
 /**

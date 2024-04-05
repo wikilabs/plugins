@@ -65,7 +65,7 @@ Trie.prototype.deleteWord = function(key) {
 		// childNode is deleted only if:
 		// - childNode has NO children
 		// - childNode.isCompleteWord === false
-		currentNode.removeChild(character);				//TODO: It's possible that 2 aliases 
+		currentNode.removeChild(character);
 	};
 
 	// Start depth-first deletion from the head node.
@@ -88,7 +88,7 @@ Trie.prototype.suggestNextCharacters = function(key) {
 
 /**
  * @param {string} key
- * @return {string[]}
+ * @return {string[], Trie[]} augmented Trie node
  */
 Trie.prototype.suggestPossibleWords = function(key) {
 	var strings = [],
@@ -123,7 +123,7 @@ Trie.prototype.getNodeMap = function(key) {
 			for (let key in node.children.keys) {
 				dfs(node.children.keys[key], str + key, nodeMap);
 			}
-		} 
+		}
 	}
 	dfs(this.getLastCharacterNode(key), key, nodeMap);
 	return nodeMap;
