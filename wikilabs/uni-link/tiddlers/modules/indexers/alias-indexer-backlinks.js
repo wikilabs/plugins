@@ -40,6 +40,12 @@ AliasBacklinkIndexer.prototype.rebuild = function() {
 						$tw.utils.pushTop(titles, title);
 						node.details.set(backlink, titles);
 					})
+				} else {
+					// It's an undefined alias
+					var node = self.trie.addWord("?");
+					var backlinks = [];
+					$tw.utils.pushTop(backlinks, tiddler.fields.title);
+					node.details.set(backlink, backlinks);
 				}
 			})
 		}
@@ -116,7 +122,6 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 						});
 						node.details.set(alias, backlinks);
 					}
-
 					if (backlinks.length === 0) {
 						// .deleteWord only if there is no .details anymore
 						self.trie.deleteWord(aSource);
@@ -127,12 +132,12 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 	}
 	if(updateDescriptor.new.exists) {
 		newAliases = this._getAliasBacklinks(updateDescriptor.new.tiddler, updateDescriptor.new.tiddler.fields.text);
-		if (newAliases && newAliases.length > 0) {
+		if (newAliases?.length > 0) {
 			$tw.utils.each(newAliases, function(alias){
 				var aliasSources = self.aliases.lookup(alias)?.details?.getKeys();
 				if (aliasSources) {
 					$tw.utils.each(aliasSources, function(aSource){
-						// get trie node, so we can manipulate it
+						// get trie node, so we can manipulate it. If it does not exist, create it
 						var node = self.trie.getLastCharacterNode(aSource) || self.trie.addWord(aSource);
 						var backlinks = node?.details?.get(alias) || [];
 						$tw.utils.pushTop(backlinks, updateDescriptor.new.tiddler.fields.title);
@@ -147,6 +152,12 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 							$tw.utils.pushTop(titles, title);
 							node.details.set(aSource, titles);
 						})
+					} else {
+						// It's an undefined alias
+						var node = self.trie.addWord("?");
+						var backlinks = [];
+						$tw.utils.pushTop(backlinks, updateDescriptor.new.tiddler.fields.title);
+						node.details.set(alias, backlinks);
 					}
 				}
 			})
