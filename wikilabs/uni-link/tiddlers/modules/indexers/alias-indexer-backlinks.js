@@ -108,12 +108,14 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 					var node = self.trie.getLastCharacterNode(aSource);
 					var backlinks = [];
 					// get existing backlinks and remove currentTiddler if it is there
-					$tw.utils.each(node.details.get(alias), function(backlink){
-						if (backlink !== updateDescriptor.old.tiddler.fields.title) {
-							backlinks.push(backlink);
-						}
-					});
-					node.details.set(alias, backlinks);
+					if (node) {
+						$tw.utils.each(node.details.get(alias), function(backlink){
+							if (backlink !== updateDescriptor.old.tiddler.fields.title) {
+								backlinks.push(backlink);
+							}
+						});
+						node.details.set(alias, backlinks);
+					}
 
 					if (backlinks.length === 0) {
 						// .deleteWord only if there is no .details anymore

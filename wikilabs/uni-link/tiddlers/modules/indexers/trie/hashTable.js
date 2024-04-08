@@ -67,6 +67,8 @@ HashTable.prototype.getValues = function() {
 	});
 	return results;
 };
+
+
 // return this.buckets.reduce((values, bucket) => {
 // 	const bucketValues = bucket.toArray()
 // 	.map((linkedListNode) => linkedListNode.value.value);
