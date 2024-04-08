@@ -1,9 +1,15 @@
 title: $:/plugins/wikilabs/uni-link/history
 
 
-V 2.5.0 - 2023-11-??
+V 3.0.0 - 2024-04-08
 
-* add new trie based indexers to uni-link plugin
+* ''This version needs TW v5.3.0 or higher''
+* Add new trie based indexers to uni-link plugin
+* Alias double definition output is more readable now
+
+* Add filter operator: `[[aliasname]aliassource[]]`
+** Input is the alias name
+** Output is the tiddler title, that defines the alias
 
 V 2.4.1 - 2023-11-10
 

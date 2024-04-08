@@ -3,19 +3,15 @@ title: $:/plugins/wikilabs/uni-link/wiki-methodes.js
 type: application/javascript
 module-type: wikimethod
 
-Extension methods for the $tw.Wiki object
+OVERWRITES core methods for the $tw.Wiki object:
 
-Adds the following properties to the wiki object:
-
-exports.getAliasLinks = function(title) {
-exports.getAliasBacklinks = function(targetTitle) {
+exports.extractLinks = function(parseTreeRoot) {
+exports.getTiddlerLinks = function(title) {
 
 \*/
 /*jslint node: true, browser: true */
 /*global $tw: false */
 "use strict";
-
-//var widget = require("$:/core/modules/widgets/widget.js");
 
 
 /*
