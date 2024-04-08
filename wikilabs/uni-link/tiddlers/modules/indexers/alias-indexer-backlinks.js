@@ -27,14 +27,14 @@ AliasBacklinkIndexer.prototype.init = function() {
 
 AliasBacklinkIndexer.prototype.rebuild = function() {
 	var self = this;
-	// this.wiki.eachShadowPlusTiddlers(function(tiddler,title) {
-	this.wiki.forEachTiddler(function(title,tiddler) {
+	this.wiki.eachShadowPlusTiddlers(function(tiddler,title) {
+	// this.wiki.forEachTiddler(function(title,tiddler) {
 		var aliasBacklinks = self._getAliasBacklinks(tiddler);
 		if (aliasBacklinks.length > 0) {
 			$tw.utils.each(aliasBacklinks, function(backlink) {
-				var x = self.aliases.lookup(backlink.toLowerCase());
-				if (x.details) {
-					$tw.utils.each(x.details.getKeys(), function(key) {
+				var node = self.aliases.lookup(backlink.toLowerCase());
+				if (node.details) {
+					$tw.utils.each(node.details.getKeys(), function(key) {
 						var node = self.trie.addWord(key);
 						var titles = node.details.get(backlink) || [];
 						$tw.utils.pushTop(titles, title);
