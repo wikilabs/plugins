@@ -33,12 +33,14 @@ code-body: yes
 <% endif %>
 \end
 
-\function showAliases() [list[!!aliases]] +[join[, ]]
+\procedure showAliases(delim:", ") <$text text={{{ [list[!!aliases]] +[join<delim>] }}}/>
+
+\function wlf.showAliases(delim:", ") [list[!!aliases]] +[join<delim>]
 
 \procedure listAliases()
 <$list filter="[has[aliases]]">
 	<div>
-		<$link to=<<currentTiddler>> ><<currentTiddler>></$link>&nbsp;-&nbsp;<<showAliases>>
+		<$link to=<<currentTiddler>> ><<currentTiddler>></$link>&nbsp;-&nbsp;<<wlf.showAliases>>
 	</div>
 </$list>
 \end
