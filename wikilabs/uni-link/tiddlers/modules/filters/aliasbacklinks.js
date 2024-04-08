@@ -18,10 +18,42 @@ exports.aliasbacklinks = function(source,operator,options) {
 	var backlinks = $tw.wiki.getIndexer("AliasBacklinkIndexer");
 
 	source(function(tiddler,title) {
-		var x = backlinks.lookup(title);
+		var node = backlinks.lookup(title);
 		// old: $tw.utils.pushTop(results,options.wiki.getAliasBacklinks(title));
-		if (x.details) {
-			$tw.utils.pushTop(results, x.details.getValues());
+		if (node.details) {
+			if (operator?.suffixes?.length > 0) {
+				$tw.utils.each(operator.suffixes, function(suffix) {
+					switch (suffix[0]) {
+						case "keys":
+							if (operator.operand) {
+								$tw.utils.pushTop(results, node.details.has(operator.operand) ? [operator.operand] : []);
+							} else {
+								$tw.utils.each(node.details.getKeys(), function(key) {
+									$tw.utils.pushTop(results, key);
+								});
+							}
+						break;
+						case "augmented":
+							if (operator.operand) {
+								$tw.utils.each(node.details.get(operator.operand), function(val) {
+									$tw.utils.pushTop(results, val + " || " + [operator.operand]);
+								})
+							} else {
+								$tw.utils.each(node.details.getKeys(), function(key) {
+									$tw.utils.each(node.details.get(key), function(val) {
+										$tw.utils.pushTop(results, val + " || " + key);
+									});
+								});
+							}
+						break;
+					}
+				});
+			}
+			else if (operator.operand) {
+				$tw.utils.pushTop(results, node.details.get(operator.operand) || []);
+			} else {
+				$tw.utils.pushTop(results, node.details.getValues());
+			}
 		}
 	});
 	return results;
