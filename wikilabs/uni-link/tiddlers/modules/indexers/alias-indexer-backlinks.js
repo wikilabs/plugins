@@ -139,9 +139,6 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 				} else {
 					var aSource = self.aliases.lookup(alias.toLowerCase());
 					if (aSource.length > 0) {
-						// var node = self.trie.addWord(updateDescriptor.new.tiddler.fields.title);
-						// node.details.set(alias, [updateDescriptor.new.tiddler.fields.title])
-
 						$tw.utils.each(aSource.details.getKeys(), function(key) {
 							var node = self.trie.addWord(key);
 							var titles = node.details.get(aSource) || [];
