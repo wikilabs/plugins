@@ -28,31 +28,31 @@ AliasBacklinkIndexer.prototype.init = function() {
 AliasBacklinkIndexer.prototype.rebuild = function() {
 	var self = this;
 	this.wiki.eachShadowPlusTiddlers(function(tiddler,title) {
-	// this.wiki.forEachTiddler(function(title,tiddler) {
-		var aliasBacklinks = self._getAliasBacklinks(tiddler);
-		if (aliasBacklinks.length > 0) {
-			$tw.utils.each(aliasBacklinks, function(backlink) {
-				var node = self.aliases.lookup(backlink.toLowerCase());
-				if (node.details) {
-					$tw.utils.each(node.details.getKeys(), function(key) {
+		var aliasLinks = self._getAliasLinks(tiddler);
+		if (aliasLinks.length > 0) {
+			// check for alias sources
+			$tw.utils.each(aliasLinks, function(alias) {
+				var aliasSources = self.aliases.lookup(alias.toLowerCase());
+				if (aliasSources.details) {
+					$tw.utils.each(aliasSources.details.getKeys(), function(key) {
 						var node = self.trie.addWord(key);
-						var titles = node.details.get(backlink) || [];
+						var titles = node.details.get(alias) || [];
 						$tw.utils.pushTop(titles, title);
-						node.details.set(backlink, titles);
+						node.details.set(alias, titles);
 					})
 				} else {
 					// It's an undefined alias
 					var node = self.trie.addWord("?");
 					var backlinks = [];
 					$tw.utils.pushTop(backlinks, tiddler.fields.title);
-					node.details.set(backlink, backlinks);
+					node.details.set(alias, backlinks);
 				}
 			})
 		}
 	});
 }
 
-AliasBacklinkIndexer.prototype._getAliasBacklinks = function(tiddler, text) {
+AliasBacklinkIndexer.prototype._getAliasLinks = function(tiddler, text) {
 	var self = this;
 	var links = [];
 
@@ -77,7 +77,7 @@ AliasBacklinkIndexer.prototype._getAliasBacklinks = function(tiddler, text) {
 		if (title) {
 			parser = self.wiki.parseTiddler(title);
 		} else if (text) {
-			parser = self.wiki.parseText(null,text);
+			parser = self.wiki.parseText("text/vnd.tiddlywiki",text);
 		}
 		if(parser) {
 			checkParseTree(parser.tree);
@@ -105,33 +105,43 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 		oldAliases = [],
 		self = this;
 	if(updateDescriptor.old.exists) {
-		oldAliases = this._getAliasBacklinks(updateDescriptor.old.tiddler, updateDescriptor.old.tiddler.fields.text);
+		oldAliases = this._getAliasLinks(updateDescriptor.old.tiddler, updateDescriptor.old.tiddler.fields.text);
 		if (oldAliases && oldAliases.length > 0) {
 			$tw.utils.each(oldAliases, function(alias){
 				var aliasSources = self.aliases.lookup(alias)?.details?.getKeys();
-				$tw.utils.each(aliasSources, function(aSource){
-					// get trie node, so we can manipulate it
-					var node = self.trie.getLastCharacterNode(aSource);
-					var backlinks = [];
-					// get existing backlinks and remove currentTiddler if it is there
+				if (aliasSources) {
+					$tw.utils.each(aliasSources, function(aSource){
+						// get trie node, so we can manipulate it
+						var node = self.trie.getLastCharacterNode(aSource);
+						var backlinks = [];
+						// get existing backlinks and remove currentTiddler if it is there
+						if (node) {
+							$tw.utils.each(node.details.get(alias), function(backlink){
+								if (backlink !== updateDescriptor.old.tiddler.fields.title) {
+									backlinks.push(backlink);
+								}
+							});
+							node.details.set(alias, backlinks);
+						}
+						if (backlinks.length === 0) {
+							// .deleteWord only if there is no .details anymore
+							// TODO remove backlinks if needed
+							node.details.delete(alias);
+							self.trie.deleteWord(aSource);
+						}
+					})
+				} else {
+					// There is an undefined backlink
+					var node = self.trie.getLastCharacterNode("?");
 					if (node) {
-						$tw.utils.each(node.details.get(alias), function(backlink){
-							if (backlink !== updateDescriptor.old.tiddler.fields.title) {
-								backlinks.push(backlink);
-							}
-						});
-						node.details.set(alias, backlinks);
+						node.details.delete(alias);
 					}
-					if (backlinks.length === 0) {
-						// .deleteWord only if there is no .details anymore
-						self.trie.deleteWord(aSource);
-					}
-				})
+				}
 			})
 		}
 	}
 	if(updateDescriptor.new.exists) {
-		newAliases = this._getAliasBacklinks(updateDescriptor.new.tiddler, updateDescriptor.new.tiddler.fields.text);
+		newAliases = this._getAliasLinks(updateDescriptor.new.tiddler, updateDescriptor.new.tiddler.fields.text);
 		if (newAliases?.length > 0) {
 			$tw.utils.each(newAliases, function(alias){
 				var aliasSources = self.aliases.lookup(alias)?.details?.getKeys();
@@ -149,7 +159,6 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 						$tw.utils.each(aSource.details.getKeys(), function(key) {
 							var node = self.trie.addWord(key);
 							var titles = node.details.get(aSource) || [];
-							$tw.utils.pushTop(titles, title);
 							node.details.set(aSource, titles);
 						})
 					} else {
