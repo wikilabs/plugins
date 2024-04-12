@@ -126,7 +126,6 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 						if (backlinks.length === 0) {
 							// .deleteWord only if there is no .details anymore
 							// TODO remove backlinks if needed
-							node.details.delete(alias);
 							self.trie.deleteWord(aSource);
 						}
 					})
