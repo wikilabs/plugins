@@ -2,7 +2,6 @@ tags: $:/tags/Macro
 title: $:/plugins/wikilabs/uni-link/aka-macros
 code-body: yes
 
-
 \whitespace trim
 
 \procedure tooltip() Tiddler -> <<currentTiddler>>
@@ -20,6 +19,22 @@ code-body: yes
 	</$list>
 <% else %>
 	<$link tooltip="Alias not defined!" to="?"><span class="uni-alias-missing"><<target>></span></$link>
+<% endif %>
+\end
+
+<!-- TODO future improvement for long lists handled by eventcatcher -->
+<!-- It does work as is, but it _always_ modifies the browser URI -->
+\procedure aka-catch(target, field:"X")
+<% if [<target>is[alias]] %>
+	<$list filter="[<target>aliassource[]]" join=",&nbsp;">
+		<a href=`#$(currentTiddler)$` title=`Tiddler -> $(currentTiddler)$` class="uni-alias">
+			<$set name="tv-wikilinks" value="no">
+				<$view field=<<field>> mode=text><<target>></$view>
+			</$set>
+		</a>
+	</$list>
+<% else %>
+	<a title="Alias not defined!" href="#?" class="uni-alias-missing"><<target>></a>
 <% endif %>
 \end
 
