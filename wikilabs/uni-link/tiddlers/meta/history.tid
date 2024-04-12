@@ -6,6 +6,7 @@ V 3.0.0 - 2024-04-08
 * ''This version needs TW v5.3.0 or higher''
 * Add new trie based indexers to uni-link plugin
 * Alias double definition output is more readable now
+* Aliases and alias-backlinks search in shadows now too
 
 * Add filter operator: `[[aliasname]aliassource[]]`
 ** Input is the alias name
