@@ -7,8 +7,8 @@ subtitle: "uni-link" readme
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle"  subtitle="Tiddler With Subtitle Only Defined"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-subtitle-and-caption"  subtitle="Tiddler With Subtitle And Caption - using subtitle" caption="capt.ion"/>
 <$action-sendmessage $message="tm-new-tiddler"  title="tiddler-with-alias"  aliases="alias" caption="alias-caption" subtitle="alias-subtitle" my-field="alias my-field"/>
-<$action-sendmessage $message="tm-new-tiddler"  title="test-links" text={{$:/plugins/wikilabs/uni-link/backlinks-template!!text}}/>
 <$action-sendmessage $message="tm-new-tiddler"  title="This is a Test" text="This tiddler is used as an example for [[uni-link-search]]"/>
+<$action-sendmessage $message="tm-new-tiddler"  title="test-links" text={{$:/plugins/wikilabs/uni-link/backlinks-template!!text}}/>
 Create "uni-link" example tiddlers!
 </$button>
 \end
@@ -78,6 +78,8 @@ If you need to use it with TW <= V5.1.21 you'll need to use an older version, wh
 ** `is[alias]` ... extends the core `is` operator see: [[https://tiddlywiki.com/#is Operator]]
 ** `all[aliases]` ... extends the core `all` operator see: [ext[https://tiddlywiki.com/#all Operator]]
 ** `[aliasbacklinks[]]` ... shows a list of all tiddlers that contain alias links
+** `[aliasbacklinks:keys[]]` ... shows a list of all used alias links used to back-link to a tiddler
+** `[aliasbacklinks:augmented[]]` ... shows a list of all used alias backlinks and the "targeted" tiddler using `||` as a separator
 ** `[[?]aliasbacklinks[]sort[title]]` ... shows a list of tiddlers that contain undefined alias links
 
 * Right-Sidebar: More tab: [[Aliases|$:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases]]

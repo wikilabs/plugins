@@ -22,7 +22,7 @@ Unilink.prototype = prettylink;
 module.exports = new Unilink();
 module.exports.name = "unilink";
 
-module.exports.relink = function(text_or_tiddler) {
+module.exports.relink = function(text_or_tiddler, fromTitle, toTitle, options) {
     // Check that this version of Relink supports [object] return.
     if (typeof text_or_tiddler === "string") {
         if (this.match[3] == "?") {
@@ -30,7 +30,7 @@ module.exports.relink = function(text_or_tiddler) {
             // Ignore this unilink. The link portion has a "?", so it's an alias.
             return undefined;
         }
-        if (this.match[2] == "|" && !this.match[3] && !this.match[4]) {
+        if (this.match[1] === fromTitle && this.match[2] === "|" && !this.match[3] && !this.match[4]) {
             this.parser.pos = this.matchRegExp.lastIndex;
             return { name: "unilink", impossible: true};
         }

@@ -6,30 +6,35 @@ module-type: indexer
 Indexes the aliases field values and manages the tiddler titles that have the alias
 Implemented as a trie: https://en.wikipedia.org/wiki/Trie
 
-TODO: remove this info: was backlinkindexer .. This contains placeholder code atm
-
-
 [[title with spaces]] ... will be stored as key: [[title with spaces]]
 
 \*/
-(function(){
-
 /*jslint node: true, browser: true */
 /*global modules: false */
 "use strict";
 
 var Trie = require("$:/plugins/wikilabs/uni-link/indexers/trie.js").Trie;
+var ALIAS_HEAD = 'a';	// "a" .. for alias
 
 function AliasIndexer(wiki) {
 	this.wiki = wiki;
 }
 
 AliasIndexer.prototype.init = function() {
-	this.trie = new Trie();
+	this.trie = new Trie(ALIAS_HEAD);
 }
 
 AliasIndexer.prototype.rebuild = function() {
-	this.trie = new Trie();
+	var self = this;
+	this.wiki.eachShadowPlusTiddlers(function(tiddler,title) {
+		if (tiddler.fields.aliases) {
+			var aliases = self._getAliases(tiddler);
+			$tw.utils.each(aliases, function(alias) {
+				var node = self.trie.addWord(alias.toLowerCase());
+				node.details.set(title, alias/*.toLowerCase()*/)
+			});
+		}
+	});
 }
 
 AliasIndexer.prototype._getAliases = function(tiddler) {
@@ -43,60 +48,33 @@ AliasIndexer.prototype._getAliases = function(tiddler) {
 AliasIndexer.prototype.update = function(updateDescriptor) {
 	var self = this;
 	if(!this.trie) {
-		return;
+		// This should never happen
+		throw new Error("Alias trie not initialized!");
 	}
 	var newAliases = [],
 		oldAliases = [],
 		self = this;
 	if(updateDescriptor.old.exists) {
 		oldAliases = this._getAliases(updateDescriptor.old.tiddler);
-	}
-	if(updateDescriptor.new.exists) {
-		newAliases = this._getAliases(updateDescriptor.new.tiddler);
-
-		if (newAliases.length > 0) {
-			$tw.utils.each(newAliases, function(alias){
-				self.trie.addWord(alias, updateDescriptor.new.tiddler.getFieldString("title"));
+		if (oldAliases.length > 0) {
+			$tw.utils.each(oldAliases, function(alias){
+				self.trie.deleteWord(alias.toLowerCase(), updateDescriptor.old.tiddler.fields.title);
 			})
 		}
 	}
-/*
-	$tw.utils.each(oldAliases,function(link) {
-		if(self.index[link]) {
-			delete self.index[link][updateDescriptor.old.tiddler.fields.title];
+	if(updateDescriptor.new.exists) {
+		newAliases = this._getAliases(updateDescriptor.new.tiddler);
+		if (newAliases.length > 0) {
+			$tw.utils.each(newAliases, function(alias){
+				var node = self.trie.addWord(alias.toLowerCase());
+				node.details.set(updateDescriptor.new.tiddler.fields.title, alias);
+			})
 		}
-	});
-	$tw.utils.each(newAliases,function(link) {
-		if(!self.index[link]) {
-			self.index[link] = Object.create(null);
-		}
-		self.index[link][updateDescriptor.new.tiddler.fields.title] = true;
-	});
-	*/
-	var x = 1;
+	}
 }
 
 AliasIndexer.prototype.lookup = function(title) {
-	if(!this.index) {
-		this.index = Object.create(null);
-		var self = this;
-		this.wiki.forEachTiddler(function(title,tiddler) {
-			var aliases = self._getAliases(tiddler);
-			$tw.utils.each(aliases, function(link) {
-				if(!self.index[link]) {
-					self.index[link] = Object.create(null);
-				}
-				self.index[link][title] = true;
-			});
-		});
-	}
-	if(this.index[title]) {
-		return Object.keys(this.index[title]);
-	} else {
-		return [];
-	}
+	return this.trie.getNodeMap(title)[title] || [];
 }
 
 exports.AliasIndexer = AliasIndexer;
-
-})();

@@ -7,7 +7,6 @@ trie-node class
 
 \*/
 
-(function(){
 "use strict";
 
 var HashTable = require("$:/plugins/wikilabs/uni-link/indexers/hashtable.js").HashTable;
@@ -15,12 +14,13 @@ var HashTable = require("$:/plugins/wikilabs/uni-link/indexers/hashtable.js").Ha
 /**
  * @param {string} character
  * @param {boolean} isCompleteWord
+ * @param {string} title
  */
-function TrieNode(character, isCompleteWord, value) {
+function TrieNode(character, isCompleteWord, title) {
 	this.character = character || "";
 	this.isCompleteWord = isCompleteWord || false;
-	this.values=value || [];
-	this.children = new HashTable();
+	this.details = new HashTable();		// hashmap of details
+	this.children = new HashTable();		// more trie-nodes
 }
 
 /**
@@ -34,10 +34,9 @@ TrieNode.prototype.getChild = function(character) {
 /**
  * @param {string} character
  * @param {boolean} isCompleteWord
- * @param {string} value
  * @return {TrieNode}
  */
-TrieNode.prototype.addChild = function(character, isCompleteWord, value) {
+TrieNode.prototype.addChild = function(character, isCompleteWord) {
 	isCompleteWord = isCompleteWord || false;
 	if (!this.children.has(character)) {
 		this.children.set(character, new TrieNode(character, isCompleteWord));
@@ -47,10 +46,6 @@ TrieNode.prototype.addChild = function(character, isCompleteWord, value) {
 
 	// In cases similar to adding "car" after "carpet" we need to mark "r" character as complete.
 	childNode.isCompleteWord = childNode.isCompleteWord || isCompleteWord;
-
-	if (childNode.isCompleteWord) {
-		$tw.utils.pushTop(childNode.values, value);
-	}
 
 	return childNode;
 }
@@ -68,8 +63,7 @@ TrieNode.prototype.removeChild = function(character) {
 	if ( childNode && !childNode.isCompleteWord && !childNode.hasChildren()	) {
 		this.children.delete(character);
 	}
-
-	return this;	// TODO check for self
+	return this;
 }
 
 /**
@@ -107,5 +101,3 @@ TrieNode.prototype.toString = function() {
 }
 
 exports.TrieNode = TrieNode;
-
-})();

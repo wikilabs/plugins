@@ -3,10 +3,15 @@ tags: $:/tags/TiddlerInfo
 title: $:/core/ui/TiddlerInfo/References
 type: text/vnd.tiddlywiki
 
+\function f.tid() [<currentTiddler>split[||]trim[]first[]]
+\function f.alias() [<currentTiddler>split[||]last[]]
+
 \define lingo-base() $:/language/TiddlerInfo/
 <$list filter="[all[current]backlinks[]sort[title]]" emptyMessage=<<lingo References/Empty>> template="$:/core/ui/ListItemTemplate"></$list>
 <hr>
 
 ''Alias backlinks from tiddlers:''
 
-<$list filter="[all[current]aliasbacklinks[]sort[title]]" emptyMessage="No alias links to this one" template="$:/core/ui/ListItemTemplate"></$list>
+<$list filter="[all[current]aliasbacklinks:augmented[]sort[]]"><$link to=<<f.tid>>/> - <<f.alias>><br></$list>
+
+<!-- <$list filter="[all[current]aliasbacklinks[]sort[title]]" emptyMessage="No alias links to this one" template="$:/core/ui/ListItemTemplate"></$list> -->

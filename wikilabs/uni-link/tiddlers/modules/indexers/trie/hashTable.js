@@ -7,11 +7,10 @@ Using a JS object as hashtable
 Wrapper to get "get, set..."
 
 \*/
-(function(){
 "use strict";
 
 function HashTable()  {
-	this.keys = {};
+	this.keys = Object.create(null);
 }
 
 /**
@@ -54,20 +53,25 @@ HashTable.prototype.getKeys = function() {
 	return Object.keys(this.keys);
 }
 
-
 /**
  * Gets the list of all the stored values in the hash table.
  *
  * @return {*[]}
  */
 HashTable.prototype.getValues = function() {
-	return "";
+	var results = [];
+	this.getKeys().map( (key) =>  {
+		this.get(key).map((val) => {
+			results.push(val);
+		});
+	});
+	return results;
+};
+
+
 // return this.buckets.reduce((values, bucket) => {
 // 	const bucketValues = bucket.toArray()
 // 	.map((linkedListNode) => linkedListNode.value.value);
 // 	return values.concat(bucketValues);
-}
 
 exports.HashTable = HashTable;
-
-})();

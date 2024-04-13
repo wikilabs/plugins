@@ -6,17 +6,15 @@ module-type: allfilteroperator
 Filter function for [all[aliases]]
 
 \*/
-(function(){
-
 /*jslint node: true, browser: true */
 /*global $tw: false */
+
 "use strict";
 
 /*
 Export our filter function
 */
 exports.aliases = function(source,prefix,options) {
-	return options.wiki.getAllAliases();
+	var index = $tw.wiki.getIndexer("AliasIndexer");
+	return index.trie.suggestPossibleWords("").strings;
 };
-
-})();

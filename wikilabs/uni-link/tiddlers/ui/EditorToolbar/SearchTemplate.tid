@@ -5,15 +5,20 @@ tags: $:/tags/AliasResults
 title: $:/plugins/wikilabs/uni-link/ui/EditorToolbar/SearchTemplate
 type: text/vnd.tiddlywiki
 
-\define getRealName()
-Tiddler -> <<aka-no-links target:"""$(alias)$""">>
+\procedure getRealName()
+Tiddler ->  <$text text={{{ [<alias>aliassource[]] +[join[, ]] }}}/> 
 \end
-\define searchResultList()
+
 \whitespace trim
-<$list filter="[all[aliases]search:{$(searchTiddler)$}sort[title]]" variable=alias>
+
+\function f.getSearchText() [<searchTiddler>get[text]]
+
+\procedure searchResultList()
+<$list filter="[all[aliases]] +[search<f.getSearchText>] +[sort[title]]" variable=alias>
     <div class="tc-menu-list-item">
         <$link to=<<alias>> tooltip=<<getRealName>> ><<alias>></$link>
     </div>
 </$list>
 \end
+
 <<searchResultList>>

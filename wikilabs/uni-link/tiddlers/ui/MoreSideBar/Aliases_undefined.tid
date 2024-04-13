@@ -6,7 +6,9 @@ tags: $:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases
 title: $:/plugins/wikilabs/uni-link/ui/MoreSideBar/Aliases/undefined
 type: text/vnd.tiddlywiki
 
-<$list filter="[[?]aliasbacklinks[]sort[title]]" template="$:/core/ui/ListItemTemplate" emptyMessage="No undefined Aliases"/>
+\import [[$:/core/ui/TiddlerInfo/References]]
+
+<$list filter="[[?]aliasbacklinks:augmented[]sort[]]"><$link to=<<f.tid>>/> - <<f.alias>><br></$list>
 
 ---
 

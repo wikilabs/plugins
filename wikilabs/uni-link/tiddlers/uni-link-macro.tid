@@ -1,5 +1,6 @@
 title: $:/plugins/wikilabs/uni-link/uni-link-macro
 tags: $:/tags/Macro
+code-body: yes
 
 \define getClass()
 <$uni-fields template="uni-$name$" include=$(field-name)$ sort="no"/> uni-link
@@ -24,5 +25,3 @@ tags: $:/tags/Macro
   </$vars>
 </$tiddler>
 \end
-
-<pre><$view field="text"/></pre>
