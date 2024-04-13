@@ -145,6 +145,7 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 			$tw.utils.each(newAliases, function(alias){
 				var aliasSources = self.aliases.lookup(alias)?.details?.getKeys();
 				if (aliasSources) {
+					// alias does not registered yet
 					$tw.utils.each(aliasSources, function(aSource){
 						// get trie node, so we can manipulate it. If it does not exist, create it
 						var node = self.trie.getLastCharacterNode(aSource) || self.trie.addWord(aSource);
@@ -153,6 +154,7 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 						node.details.set(alias, backlinks);
 					})
 				} else {
+					// register new alias backlink
 					var aSource = self.aliases.lookup(alias.toLowerCase());
 					if (aSource.length > 0) {
 						$tw.utils.each(aSource.details.getKeys(), function(key) {
@@ -169,6 +171,18 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 					}
 				}
 			})
+		}
+		// tiddler may contain a new alias, so remove it from "undefined" backlinks
+		newAliases = this.aliases._getAliases(updateDescriptor.new.tiddler, updateDescriptor.new.tiddler.fields.text);
+		if (newAliases) {
+			$tw.utils.each(newAliases, function(alias){
+				var x = self.lookup("?");
+				$tw.utils.each (x?.details?.getKeys(), function(key){
+					if (key.toLowerCase() === alias.toLowerCase()) {
+						x.details.delete(key);
+					}
+				});
+			});
 		}
 	}
 }

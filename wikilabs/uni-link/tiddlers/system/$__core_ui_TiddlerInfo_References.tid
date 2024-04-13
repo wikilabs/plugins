@@ -12,6 +12,6 @@ type: text/vnd.tiddlywiki
 
 ''Alias backlinks from tiddlers:''
 
-<$list filter="[all[current]aliasbacklinks:augmented[]]"><$link to=<<f.tid>>/> - <<f.alias>><br></$list>
+<$list filter="[all[current]aliasbacklinks:augmented[]sort[]]"><$link to=<<f.tid>>/> - <<f.alias>><br></$list>
 
 <!-- <$list filter="[all[current]aliasbacklinks[]sort[title]]" emptyMessage="No alias links to this one" template="$:/core/ui/ListItemTemplate"></$list> -->

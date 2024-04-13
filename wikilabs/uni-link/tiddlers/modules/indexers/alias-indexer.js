@@ -58,7 +58,7 @@ AliasIndexer.prototype.update = function(updateDescriptor) {
 		oldAliases = this._getAliases(updateDescriptor.old.tiddler);
 		if (oldAliases.length > 0) {
 			$tw.utils.each(oldAliases, function(alias){
-				self.trie.deleteWord(alias, updateDescriptor.old.tiddler.fields.title);
+				self.trie.deleteWord(alias.toLowerCase(), updateDescriptor.old.tiddler.fields.title);
 			})
 		}
 	}
@@ -66,7 +66,7 @@ AliasIndexer.prototype.update = function(updateDescriptor) {
 		newAliases = this._getAliases(updateDescriptor.new.tiddler);
 		if (newAliases.length > 0) {
 			$tw.utils.each(newAliases, function(alias){
-				var node = self.trie.addWord(alias);
+				var node = self.trie.addWord(alias.toLowerCase());
 				node.details.set(updateDescriptor.new.tiddler.fields.title, alias);
 			})
 		}
