@@ -1,0 +1,15 @@
+code-body: yes
+created: 20230316112235083
+list-before: $:/core/ui/ViewTemplate/body
+modified: 20230326145802667
+tags: $:/tags/ViewTemplate template
+title: $:/plugins/wikilabs/trails/tw-com-template
+type: text/vnd.tiddlywiki
+
+<!-- This template will be automatically activated if imported to tiddlywiki.com -->
+
+\whitespace trim
+
+<% if [[TableOfContents]is[tiddler]] :filter[<..currentTiddler>!is[system]] %>
+	<$macrocall $name="trail" stop="TableOfContents" exclude="$:/tags/SideBar" mode={{$:/config/wl/trails/filterMode}}/>
+<% endif %>
