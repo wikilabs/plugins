@@ -183,6 +183,8 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 					}
 				});
 			});
+			// update backlinks, if a new alias is created
+			this.rebuild();
 		}
 	}
 }
