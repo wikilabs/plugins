@@ -174,7 +174,7 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 		}
 		// tiddler may contain a new alias, so remove it from "undefined" backlinks
 		newAliases = this.aliases._getAliases(updateDescriptor.new.tiddler, updateDescriptor.new.tiddler.fields.text);
-		if (newAliases) {
+		if (newAliases?.length > 0) {
 			$tw.utils.each(newAliases, function(alias){
 				var x = self.lookup("?");
 				$tw.utils.each (x?.details?.getKeys(), function(key){
