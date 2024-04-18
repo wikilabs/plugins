@@ -2,7 +2,7 @@
 	"title": "$:/plugins/wikilabs/custom-markup",
 	"name": "Custom Markup",
 	"description": "Adds a possibilty to style text content with wikitext syntax",
-	"list": "readme license history",
 	"dependents": ["$:/plugins/wikilabs/pragma-comment"],
-	"version": "0.22.0"
+	"version": "0.22.0",
+	"list": "readme license history"
 }

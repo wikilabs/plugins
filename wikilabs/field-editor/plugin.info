@@ -4,8 +4,8 @@
 	"description": "Side by side multiline field editor",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.2.0",
-	"version": "1.0.0",
 	"icon": "$:/plugins/wikilabs/field-editor/icon",
+	"version": "1.0.0",
 	"list": "readme license history",
 	"dependents": ["$:/plugins/wikilabs/field-visibility"]
 }
