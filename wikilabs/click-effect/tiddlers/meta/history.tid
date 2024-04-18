@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/click-effect/history
 
+V 0.3.1 - 2024-04-18
+
+* Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab
+
 V 0.3.0 - 2022.03.27
 
 * update edtion to TW v.5.2.2
