@@ -1,6 +1,9 @@
 caption: Edit-Tabs plugin
-tags: $:/tags/ControlPanel/Settings
+tags: $:/tags/ControlPanel/WikiLabs
 title: $:/core/ui/ControlPanel/Settings/edit-tabs
+caption: Edit Tabs
+
+The full documentation can be found at [[edit-tabs plugin|https://wikilabs.github.io/editions/edit-tabs/]] main page.
 
 <$checkbox tiddler="$:/plugins/wikilabs/edit-tabs/config" field="show-all-links" checked="inline" unchecked="none" default="none"> Show internal tab link for ''all tabs''</$checkbox>
 
