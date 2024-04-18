@@ -24,7 +24,7 @@ If the user changes the global font-size and / or line-height in the theme to hi
 
 !! Settings
 
-{{$:/plugins/wikilabs/trails/config}}
+{{$:/plugins/wikilabs/trails/settings}}
 
 
 !! Important

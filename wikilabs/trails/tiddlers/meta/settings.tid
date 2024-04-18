@@ -1,5 +1,7 @@
 trail: aa bb cc dd ee ff
-title: $:/plugins/wikilabs/trails/config
+title: $:/plugins/wikilabs/trails/settings
+tags: $:/tags/ControlPanel/WikiLabs
+caption: Trails
 
 \procedure reset(fragment)
 <$let configTiddler=`$:/config/wl/trails/$(fragment)$`>
@@ -14,7 +16,7 @@ title: $:/plugins/wikilabs/trails/config
 </$button>
 \end
 
-<$tiddler tiddler="$:/plugins/wikilabs/trails/config">
+<$tiddler tiddler="$:/plugins/wikilabs/trails/settings">
 
 <<tag test>>
 
