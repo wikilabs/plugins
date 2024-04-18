@@ -1,4 +1,6 @@
 title: $:/plugins/wikilabs/trim-whitespace/settings
+tags: $:/tags/ControlPanel/WikiLabs
+caption: Trim Whitespace
 
 $:/config/trim-whitespace/mode defaults to: `white-line` if the mode tiddler is empty or does not exist.
 
