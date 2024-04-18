@@ -1,4 +1,6 @@
 title: $:/plugins/wikilabs/field-visibility/readme
+tags: $:/tags/ControlPanel/WikiLabs
+caption: Field Visibility
 
 \define showInfo()
 <!-- next 2 for v5.2.7 and below -->
@@ -8,6 +10,8 @@ title: $:/plugins/wikilabs/field-visibility/readme
 <$action-setfield $tiddler="$:/state/tab-774285414" text="$:/plugins/wikilabs/field-visibility/TiddlerInfo/Fields" />
 <$action-setfield $tiddler="$:/state/popup/tiddler-info-1317117474" text="yes" />
 \end
+
+The full documentation can be found at [[field-visibility plugin|https://wikilabs.github.io/editions/field-visibility/]] main page.
 
 This plugin adds a toggle button to the Fields tab in the tiddler info area, which can be seen in tiddler view mode.
 

@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/field-visibility/history
 
+V 1.0.0 - 2024-04-18
+
+* Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab
+
 V 0.2.0 - 2023-05-05
 
 * fix intro button state tiddlers to TW v5.2.27
