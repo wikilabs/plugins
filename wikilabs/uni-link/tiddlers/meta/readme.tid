@@ -1,5 +1,7 @@
 title: $:/plugins/wikilabs/uni-link/readme
 subtitle: "uni-link" readme
+caption: uni-link
+tags: $:/tags/ControlPanel/WikiLabs
 
 \define createExampleTiddlers()
 <$button>
