@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/persistent-states/history
 
+V 1.0.4 - 2024.04.18
+
+* Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab
+
 V 1.0.3 - 2023-07-01
 
 * Show states as link in readme
