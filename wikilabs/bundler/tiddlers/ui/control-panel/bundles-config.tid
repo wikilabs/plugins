@@ -1,13 +1,15 @@
-caption: Bundles
+caption: Bundler
 created: 20170602132707785
 modified: 20170612095528115
-tags: $:/tags/ControlPanel
+tags: $:/tags/ControlPanel/WikiLabs
 title: $:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config
 type: text/vnd.tiddlywiki
 
 \define deleteTiddlerInfoDefault()
 <$action-deletetiddler $tiddler="$:/config/TiddlerInfo/Default"/>
 \end
+
+The full documentation can be found at [[bundler plugin|https://wikilabs.github.io/editions/bundler/]] main page.
 
 !! Tiddler Info Button
 
