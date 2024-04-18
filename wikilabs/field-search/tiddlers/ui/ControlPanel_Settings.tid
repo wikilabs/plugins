@@ -1,5 +1,5 @@
 caption: Field-Search
-tags: $:/tags/ControlPanel
+tags: $:/tags/ControlPanel/WikiLabs
 title: $:/plugins/wikilabs/field-search/CP/Settings/field-search
 
 \define setDefault()
@@ -10,6 +10,8 @@ title: $:/plugins/wikilabs/field-search/CP/Settings/field-search
 <$action-deletetiddler $tiddler="$:/plugins/wikilabs/field-search/ui/titleWrapper"/>
 <$action-deletetiddler $tiddler="$:/core/ui/DefaultSearchResultList"/>
 \end
+
+The full documentation can be found at [[field-search plugin|https://wikilabs.github.io/editions/field-search/]] main page.
 
 {{$:/plugins/wikilabs/field-search/ui/TabConfigurator}}
 
@@ -22,4 +24,3 @@ The following shaddow tiddlers have been modified:
 <$button actions=<<setDefault>> >
 Return to: Default Settings!
 </$button>
-

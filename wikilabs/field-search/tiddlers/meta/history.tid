@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/field-search/history
 
+V 1.0.0 - 2024-04-18
+
+* Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab
+
 V 0.5.0 - 2022-03-27
 
 * update to TW v5.2.2
