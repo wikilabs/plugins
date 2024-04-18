@@ -15,10 +15,10 @@ Various static DOM-related utility functions.
 "use strict";
 
 /*
-FIX - FIX - FIX - FIX - FIX - FIX - should be part of the core
+TODO - FIX - should be fixed upstream
 Pulse an element for debugging purposes
 */
-exports.pulseElement = function(element) {
+exports.pulseElementFixed = function(element) {
 	var eventName = $tw.utils.convertEventName("animationEnd");
 	// Event handler to remove the class at the end
 	element.addEventListener(eventName,function handler(event) {
@@ -48,7 +48,7 @@ exports.clickAnimation = function(options) {
 	element.style.top = options.event.clientY+"px";
 	element.style.left = options.event.clientX+"px";
 	options.domNode.appendChild(element);
-	// Event handler to remove the element if animation is finished
+		// Event handler to remove the element if animation is finished
 	element.addEventListener(eventName,function() {
 		element.parentElement.removeChild(element);
 		}.bind(this),false);

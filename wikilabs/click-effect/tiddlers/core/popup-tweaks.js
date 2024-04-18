@@ -34,7 +34,7 @@ Popup.prototype.handleEvent = function(event) {
 };
 
 Popup.prototype.pulseElement = function(domNode) {
-	$tw.utils.pulseElement(domNode)
+	$tw.utils.pulseElementFixed(domNode)
 };
 
 /*

@@ -4,13 +4,13 @@ type: text/css
 
 .pulse {
 	background: lightgreen;
-	animation: pulse 0.6s ease-out;
+	animation: pulse 0.8s ease-out;
 	z-index: 99999; 
 }
 
 @keyframes pulse {
-	0% { opacity: 1; }
-	100% { opacity: 0.5; }
+	0% { opacity: .3; }
+	100% { opacity: 1; }
 }
 
 .clickEffect {
