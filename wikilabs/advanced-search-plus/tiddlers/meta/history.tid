@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/advanced-search-plus/history
 
+V 1.0.0 - 2024-04-18
+
+* Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab
+
 V 0.6.0 - 2023-01-01
 
 * This version starts to overwrite $:/core/ui/ControlPanel/Basics

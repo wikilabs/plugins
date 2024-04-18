@@ -1,0 +1,12 @@
+caption: Advanced Search Plus
+created: 20190712133607244
+modified: 20190714104631250
+tags: $:/tags/ControlPanel/WikiLabs
+title: $:/plugins/wikilabs/advanced-search-plus/settings
+type: text/vnd.tiddlywiki
+
+\define lingo-base() $:/language/ThemeTweaks/
+
+The full documentation can be found at [[advanced-search-plus plugin|https://wikilabs.github.io/editions/advanced-search-plus/]] main page.
+
+|<$link to="$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth"><<lingo Metrics/SidebarWidth>></$link><br>//<<lingo Metrics/SidebarWidth/Hint>>// |^<$edit-text tiddler="$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth" default="" tag="input"/> |
