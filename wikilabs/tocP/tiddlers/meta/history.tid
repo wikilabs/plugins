@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/tocP/history
 
+V 1.0.0 - 2024.04.18
+
+* Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab
+* Update version to V 1.0.0 -- functionality is the same as: v0.3.2
+
 V 0.3.2 - 2023.07.01
 
 * Improve "cooperation" with streams-plugin
