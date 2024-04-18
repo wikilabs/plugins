@@ -1,4 +1,6 @@
 title: $:/plugins/wikilabs/ui/remove-states
+tags: $:/tags/ControlPanel/WikiLabs
+caption: Remove States
 
 \define theFilter()
 [prefix[$:/state/]]
