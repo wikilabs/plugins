@@ -1,9 +1,13 @@
 title: $:/plugins/wikilabs/field-editor/readme
+tags: $:/tags/ControlPanel/WikiLabs
+caption: Field Editor
 
 \define createFieldSwitcherElement()
 <$action-createtiddler $basetitle="$:/config/wikilabs/field-editor/<your field name comes here>" $template="$:/config/wikilabs/field-editor/text" tags="$:/tags/wikilabs/fieldswitcher" description="Add a short description text here and replace the icon below" icon="{{$:/core/images/spiral}}" $overwrite="yes" text="yourFieldName"/>
 <$action-sendmessage $message="tm-edit-tiddler" $param="$:/config/wikilabs/field-editor/<your field name comes here>"/>
 \end
+
+The full documentation can be found at [[field-editor plugin|https://wikilabs.github.io/editions/field-editor/]] main page.
 
 !! About
 
