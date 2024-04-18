@@ -5,6 +5,6 @@
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.14",
 	"plugin-type": "plugin",
-	"list": "license readme history"
 	"version":"1.0.0",
+	"list": "license readme history"
 }

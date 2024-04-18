@@ -5,6 +5,6 @@
 	"author": "Mario Pietsch",
 	"core-version": ">=5.2.0",
 	"icon": "$:/plugins/wikilabs/trails/icon",
-	"list": "readme settings license history"
 	"version": "1.0.0",
+	"list": "readme settings license history"
 }
