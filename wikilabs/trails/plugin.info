@@ -3,8 +3,8 @@
 	"name": "Trails",
 	"description": "Show a breadcrumbs trail to visualize the context",
 	"author": "Mario Pietsch",
-	"core-version": ">=5.2.0",
+	"core-version": ">=5.2.1",
 	"icon": "$:/plugins/wikilabs/trails/icon",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"list": "readme settings license history"
 }

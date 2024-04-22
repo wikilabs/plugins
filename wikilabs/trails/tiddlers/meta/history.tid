@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/trails/history
 
+V 1.1.0 - 2024-04-22
+
+* Backport trails down to TW  >= v5.2.1
+
 V 1.0.0 - 2024-04-18
 
 * Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab

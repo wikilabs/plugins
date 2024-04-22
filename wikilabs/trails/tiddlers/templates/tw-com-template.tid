@@ -10,6 +10,6 @@ type: text/vnd.tiddlywiki
 
 \whitespace trim
 
-<% if [[TableOfContents]is[tiddler]] :filter[<..currentTiddler>!is[system]] %>
+<$list filter="[[TableOfContents]is[tiddler]] :filter[<..currentTiddler>!is[system]]" variable="ignore" >
 	<$macrocall $name="trail" stop="TableOfContents" exclude="$:/tags/SideBar" mode={{$:/config/wl/trails/filterMode}}/>
-<% endif %>
+</$list>
