@@ -4,6 +4,7 @@
 	"description": "WebDav PUT saver - takes precedence",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.14",
-	"version": "0.1.3",
-	"list": "readme history license"
+	"version": "0.1.4-beta",
+	"list": "readme history license",
+	"stability": "STABILITY_1_EXPERIMENTAL"
 }

@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/multicol-dropdown/history
 
+V 1.0.3 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 1.0.2 - 2022-03-27
 
 * update to TW v5.2.2

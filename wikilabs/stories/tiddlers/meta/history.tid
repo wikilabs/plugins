@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/stories/history
 
+V 0.3.1-beta - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 0.1.0-beta - 2023.10.24
 
 * initial release

@@ -4,6 +4,7 @@
 	"description": "Parent Based - Table of Contents",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.2.1",
-	"version": "1.0.0",
-	"list": "readme license history"
+	"version": "1.0.1",
+	"list": "readme license history",
+	"stability": "STABILITY_2_STABLE"
 }

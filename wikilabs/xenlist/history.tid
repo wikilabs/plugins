@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/xenlist/history
 
+V 0.0.2 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 0.0.1-experimental - 2021.01.25
 
 * initial release

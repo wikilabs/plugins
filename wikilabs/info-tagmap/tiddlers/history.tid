@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/info-tagmap/history
 
+V 0.2.2 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 0.2.1 - 2022-08-04
 
 * Fix whitespace handling for TW v5.2.3

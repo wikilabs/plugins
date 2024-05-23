@@ -4,6 +4,7 @@
 	"description": "contains flex-box CSS only",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.0",
-	"version": "1.0.2",
-	"list": "readme license history"
+	"version": "1.0.3",
+	"list": "readme license history",
+	"stability": "STABILITY_2_STABLE"
 }

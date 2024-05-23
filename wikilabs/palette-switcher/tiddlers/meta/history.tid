@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/palette-switcher/history
 
+V 0.1.1 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 0.1.0 - 2023-09-29
 
 * initial release

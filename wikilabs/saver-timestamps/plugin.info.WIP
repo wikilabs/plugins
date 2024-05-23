@@ -4,6 +4,7 @@
 	"description": "This plugin adds saving timestamp tiddlers to the store",
 	"author": "pmario",
 	"core-version": ">=5.3.0",
-	"version": "0.0.1",
-	"list": "readme license history"
+	"version": "0.0.2",
+	"list": "readme license history",
+	"stability": "STABILITY_1_EXPERIMENTAL"
 }

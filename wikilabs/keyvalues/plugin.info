@@ -4,6 +4,7 @@
 	"description": "improve data-tiddler handling",
 	"author": "pmario",
 	"core-version": ">=5.1.14",
-	"version": "2.2.0",
-	"list": "readme license history"
+	"version": "2.2.1",
+	"list": "readme license history",
+	"stability": "STABILITY_2_STABLE"
 }

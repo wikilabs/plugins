@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/content-presentation/history
 
+V 0.0.2 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
 
 V 0.0.1
 

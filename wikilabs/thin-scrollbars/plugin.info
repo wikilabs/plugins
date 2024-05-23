@@ -4,6 +4,7 @@
 	"description": "A bit of CSS to modify default scrollbars",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.15",
-	"version": "0.1.1",
-	"list": "readme license history"
+	"version": "0.1.2",
+	"list": "readme license history",
+	"stability": "STABILITY_2_STABLE"
 }

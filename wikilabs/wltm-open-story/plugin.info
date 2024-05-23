@@ -4,7 +4,8 @@
 	"description": "Open several story tiddlers",
 	"author": "pmario",
 	"core-version": ">=5.1.14",
-	"version": "0.3.0-beta",
+	"version": "0.3.1-beta",
 	"dependents": ["$:/plugins/wikilabs/xenlist"],
-	"list": "readme license history"
+	"list": "readme license history",
+	"stability": "STABILITY_1_EXPERIMENTAL"
 }

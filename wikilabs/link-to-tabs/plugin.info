@@ -5,6 +5,7 @@
 	"author": "Mario Pietsch",
 	"core-version": ">=5.3.3",
 	"icon": "$:/plugins/wikilabs/link-to-tabs/icon",
-	"version": "3.0.0",
-	"list": "readme settings license history"
+	"version": "3.0.1",
+	"list": "readme settings license history",
+	"stability": "STABILITY_2_STABLE"
 }

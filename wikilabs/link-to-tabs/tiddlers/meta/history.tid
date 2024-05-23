@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 3.0.1 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
 
 V 3.0.0 - 2023-12-28
 

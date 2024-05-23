@@ -4,7 +4,8 @@
 	"name": "Persistent States",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.0",
-	"version":"1.0.4",
+	"version":"1.0.5",
 	"plugin-type": "plugin",
-	"list": "license readme history"
+	"list": "license readme history",
+	"stability": "STABILITY_1_EXPERIMENTAL"
 }

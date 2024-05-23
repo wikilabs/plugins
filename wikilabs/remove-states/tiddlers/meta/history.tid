@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/remove-states/history
 
+V 1.0.1 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 1.0.0 - 2024.04.18
 
 * Settings are now in $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' tab

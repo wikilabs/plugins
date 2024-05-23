@@ -4,6 +4,7 @@
 	"description": "Markdown-It TOC",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.2.0",
-	"version": "0.0.1",
-	"list": "readme history license"
+	"version": "0.0.2",
+	"list": "readme history license",
+	"stability": "STABILITY_1_EXPERIMENTAL"
 }

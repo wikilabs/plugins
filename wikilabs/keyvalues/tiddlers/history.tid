@@ -1,6 +1,11 @@
 title: $:/plugins/wikilabs/keyvalues/history
 
 
+V 2.2.1 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 2.2.0 - 2022-03-27
 
 * update to TW v5.2.2

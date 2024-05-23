@@ -4,6 +4,7 @@
 	"description": "Advanced Tiddler Info Area at the bottom of a tiddler",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.2.0",
-	"version": "0.0.1",
-	"list": "readme license history"
+	"version": "0.0.2",
+	"list": "readme license history",
+	"stability": "STABILITY_1_EXPERIMENTAL"
 }

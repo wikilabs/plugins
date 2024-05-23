@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/trigger/history
 
+V 0.2.1-beta - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 0.2.0 - 2022-03-27
 
 * update to TW v5.2.2

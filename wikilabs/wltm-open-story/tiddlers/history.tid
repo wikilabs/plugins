@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/tm-open-story/history
 
+V 0.3.1-beta - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 0.3.0-beta - 2022.03.27
 
 * ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/tm-open-story/license]]

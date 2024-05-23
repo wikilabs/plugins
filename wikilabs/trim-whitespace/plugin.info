@@ -4,6 +4,7 @@
 	"description": "New Editor Button to Trim Whitespace from Selections",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.1.15",
-	"version": "1.0.0",
-	"list": "readme history license"
+	"version": "1.0.1",
+	"list": "readme history license",
+	"stability": "STABILITY_2_STABLE"
 }

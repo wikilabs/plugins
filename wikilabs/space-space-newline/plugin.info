@@ -2,6 +2,7 @@
 	"title": "$:/plugins/wikilabs/space-space-newline",
 	"name": "Space Space Newline",
 	"description": "Adds a new rule to create hard linebreaks",
-	"version": "0.2.0",
-	"list": "readme license history"
+	"version": "1.0.0",
+	"list": "readme license history",
+	"stability": "STABILITY_2_STABLE"
 }

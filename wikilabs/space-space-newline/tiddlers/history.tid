@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/space-space-newline/history
 
+V 1.0.0 - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
 V 0.2.0 - 2022-03-27
 
 * ''Important'': Changed license to Attribution-NonCommercial-ShareAlike -- [[CC-BY-NC-SA|$:/plugins/wikilabs/space-space-newline/license]]
