@@ -23,16 +23,18 @@ title: $:/plugins/wikilabs/advanced-search-plus/system-search-plus
 \end
 
 \whitespace trim
+<div class="tc-search tc-advanced-search">
 <$keyboard actions=<<add-tab-actions>> key="ctrl-enter">
-	<$edit-text field="text" tag="input" class="wikilabs-full-width" 
+	<$edit-text field="text" tag="input" class="wikilabs-full-width tc-tiny-gap-right"
 		tiddler=<<new-tiddler-input>>
 		placeholder="caption"
 		focus="yes"/>
 </$keyboard>
-<$button class="tc-tiny-gap-left" tooltip={{$:/language/Buttons/Clear/Caption}} >
+<$button class={{{ [{$:/config/Toolbar/ButtonClass}trim[]] }}} tooltip={{$:/language/Buttons/Clear/Caption}} >
 	<$action-deletetiddler $tiddler=<<new-tiddler-input>>/>
 	<$transclude tiddler="$:/core/images/cancel-button" />
 </$button>
-<$button actions=<<add-tab-actions>> class="tc-tiny-gap-left" tooltip={{$:/language/Buttons/NewTiddler/Caption}} >
+<$button actions=<<add-tab-actions>> class={{{ [{$:/config/Toolbar/ButtonClass}trim[]] }}} tooltip={{$:/language/Buttons/NewTiddler/Caption}} >
 	<$transclude tiddler="$:/core/images/done-button" />
 </$button>
+</div>

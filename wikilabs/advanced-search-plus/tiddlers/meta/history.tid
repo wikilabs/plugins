@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/advanced-search-plus/history
 
+V 1.0.1 - 2024-07-03
+
+* Make OK, Cancel buttons accept: $:/config/Toolbar/ButtonClass
+* adjust spacings
+
 V 1.0.1 - 2024-05-23
 
 * Add stability badges
