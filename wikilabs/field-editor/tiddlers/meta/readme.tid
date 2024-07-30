@@ -31,6 +31,21 @@ By default a label is shown, when the tiddler shows a filed different to the "te
 
 <$checkbox tiddler="$:/config/wikilabs/show-field-label" field=text checked="yes" unchecked="no" default="yes"> Show Field Label</$checkbox>
 
+!! Default Field
+
+Text editor default field: <$select tiddler="$:/config/wikilabs/EditTemplateFields/text/default" default="text">
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]sort[title]]">
+<option value={{{ [<currentTiddler>get[text]] }}}><$view field='text'/></option>
+</$list>
+</$select> - $:/config/wikilabs/EditTemplateFields/text/default
+
+Note editor default field: <$select tiddler="$:/config/wikilabs/EditTemplateFields/note/default" default="text">
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/wikilabs/fieldswitcher]sort[title]]">
+<option value={{{ [<currentTiddler>get[text]] }}}><$view field='text'/></option>
+</$list>
+</$select> - $:/config/wikilabs/EditTemplateFields/note/default
+
+
 !!! ''Imporant''
 
 * If you use an icon it has to be covered in double curly braces eg: `{{$:/core/images/globe}}`.

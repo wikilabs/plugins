@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/field-editor/history
 
+V 1.1.0 - 2024-07-30
+
+* Add text-editor and note-editor default field configurations to the "plugin settings"
+
 V 1.0.1 - 2024-05-23
 
 * Add stability badges
