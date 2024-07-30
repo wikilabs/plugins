@@ -6,7 +6,7 @@ tags: $:/tags/EditPreview
 title: $:/plugins/wikilabs/ui/EditTemplate/body/preview/note
 type: text/vnd.tiddlywiki
 
-<$transclude field=<<wl-field-name-text>> >
+<$transclude field=<<wl.field-name-text>> >
 
 <$transclude tiddler="$:/language/MissingTiddler/Hint"/>
 
