@@ -1,0 +1,23 @@
+caption: Stability
+created: 20240704070132355
+modified: 20240704120126048
+search-term: stability deprecated experimental legacy stable
+tags: 
+title: $:/palettes/preview/stability-stable
+type: text/vnd.tiddlywiki
+
+<style>
+div.tc-plugin-info-chunk:hover {
+	background: <<colour primary>>;
+}
+</style>
+<div class="tc-plugin-info-chunk">
+	<br>
+	<span class="tc-plugin-info-stability tc-plugin-info-stability-deprecated">DEPRECATED</span>
+	<span class="tc-plugin-info-stability tc-plugin-info-stability-experimental">EXPERIMENTAL</span>
+	<span class="tc-plugin-info-stability tc-plugin-info-stability-stable">STABLE</span>
+	<span class="tc-plugin-info-stability tc-plugin-info-stability-legacy">LEGACY</span>
+	<br><br>
+</div>
+
+{{$:/core||$:/core/ui/Components/plugin-info}}

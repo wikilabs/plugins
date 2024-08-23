@@ -1,0 +1,25 @@
+caption: Network Activity
+created: 20240704172315907
+modified: 20240704185827609
+search-term: network activity foreground
+tags: $:/tags/palette/preview
+title: $:/palettes/preview/network-activity-foreground
+type: text/vnd.tiddlywiki
+
+<style>
+.preview svg {
+  fill: <<colour network-activity-foreground>>
+}
+.page-background {
+	background: <<colour page-background>>;
+}
+</style>
+<div class="page-background">
+<br>
+ {{$:/core/images/network-activity}} This icon is shown in the right sidebar, so it needs to have page-background
+<br>
+<span class="preview">
+{{$:/core/images/network-activity}} Active
+</span> 
+<br><br>
+</div>

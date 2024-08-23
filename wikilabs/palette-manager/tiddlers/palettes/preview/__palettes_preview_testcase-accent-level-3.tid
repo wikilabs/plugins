@@ -1,0 +1,19 @@
+caption: Testcase
+created: 20240704174656083
+modified: 20240704181218290
+search-term: testcase accent level-1 level-2 level-3
+tags: 
+title: $:/palettes/preview/testcase-accent-level-3
+type: text/vnd.tiddlywiki
+
+<$testcase>
+	<$data title="Description" text="Inception 1: Example of a nested test case"/>
+	<$data title="Output"
+		text="""<$testcase>
+		<$data title="Description" text="Inception 2: Nested test case"/>
+		<$data title="Output" text="<$testcase>
+		<$data title='Description' text='Inception 3'/>
+		<$data title='Output' text='Confusion'/>
+</$testcase>" >
+</$testcase>"""/>
+</$testcase>

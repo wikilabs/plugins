@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 1.0.2 - 2024-07-04
+
+* Add testcase preview
+
 V 1.0.1 - 2024-05-23
 
 * Add stability badges
