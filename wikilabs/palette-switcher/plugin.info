@@ -4,7 +4,7 @@
 	"description": "Advanced Palette Switcher",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.3.1",
-	"version": "0.1.1",
+	"version": "1.0.0",
 	"list": "readme history license",
-	"stability": "STABILITY_1_EXPERIMENTAL"
+	"stability": "STABILITY_2_STABLE"
 }

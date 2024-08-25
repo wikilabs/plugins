@@ -1,7 +1,19 @@
 title: $:/plugins/wikilabs/palette-switcher/readme
 
-This plugin "Palette Switcher" adds a new ''APalette'' to the ''ControlPanel -> Appearence'' tab
+!! Important
 
-!! Palette Switcher Settings
+This plugin "Palette Switcher" replaces the ''ControlPanel -> Appearence -> Palette'' tab
 
-{{$:/plugins/wikilabs/palette-switcher/settings}}
+There is a new page-control buttion in the ''right sidebar'': {{$:/plugins/wikilabs/palette-switcher/ui/images/moon|2em}}, which allows you to fast switch between 2 predefined palettes.
+
+This plugin modifies a core module and / or templates
+
+<ul><$list filter="[[$:/plugins/wikilabs/palette-switcher]plugintiddlers[]prefix[$:/core/]]"><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
+
+---
+
+{{$:/plugins/wikilabs/palette-switcher/DarkLightStartup}}
+
+---
+
+{{$:/plugins/wikilabs/palette-switcher/DarkLightStartup (Examples)}}

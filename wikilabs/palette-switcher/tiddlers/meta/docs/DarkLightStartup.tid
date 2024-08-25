@@ -1,0 +1,27 @@
+created: 20231101120147664
+modified: 20240303191156570
+tags: Features
+title: $:/plugins/wikilabs/palette-switcher/DarkLightStartup
+type: text/vnd.tiddlywiki
+
+!! ~ControlPanel Palette
+
+Manual dark / light switching can be done in the $:/ControlPanel ''-> Appearence -> Palette'' tab or with the configuration below.
+
+The following settings will be used to switch between light and dark palettes.
+
+* The defaults can be changed using the palette {{$:/core/images/palette|1em}} button
+* Select a palette-preview to activate it
+* Automatic selection can be configured using [[custom actions|$:/plugins/wikilabs/palette-switcher/readme]]
+
+{{$:/plugins/wikilabs/palette-switcher/settings}}
+
+!! Palette Modes Detection
+
+Actions tagged <<tag $:/tags/StartupAction/Browser>> are executed when the wiki is started. More info can be found at StartupActions and examples here.
+
+!!! Examples
+
+Examples, how to handle dark / light events can be found at: [[DarkLightStartup (Examples)|$:/plugins/wikilabs/palette-switcher/DarkLightStartup (Examples)]]
+
+{{$:/plugins/wikilabs/palette-switcher/DarkLightStartup-status}}

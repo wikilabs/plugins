@@ -1,3 +1,48 @@
 title: $:/plugins/wikilabs/palette-switcher/settings
+caption: Palette Switcher
+tags: $:/tags/ControlPanel/WikiLabs
 
-TODO
+\procedure lingo-base() $:/plugins/wikilabs/palette-switcher/language/
+\procedure config-dark-light() $:/config/palette/enable-light-dark-detection
+\procedure config-show-all() $:/config/palette/show-all-palettes
+
+!! Dark/Light Startup Configuraton
+
+<<<
+This setting activates the automatic light / dark mode detection at startup. More details can be found in the [[plugin readme|$:/plugins/wikilabs/palette-switcher/readme]]
+
+<$checkbox tiddler=<<config-dark-light>>
+	field="text"
+	checked="yes"
+	unchecked="no"
+	default="no"
+>
+	<span class="tc-tiny-gap-left tc-small-gap-right">Enable Automatic Dark/Light Mode Detection</span>
+	<$link to=<<config-dark-light>>>
+		{{$:/core/images/link|12}}
+	</$link>
+</$checkbox>
+
+{{$:/plugins/wikilabs/palette-switcher/DarkLightStartup-status}}
+<<<
+
+!! Palette Show All Elements
+
+<<<
+This setting allows you to show all possible palettes in the {{$:/core/images/palette|1em}} palette dropdown. So it's possible to select all themes for both modes if needed.
+
+<$checkbox tiddler=<<config-show-all>>
+	field="text"
+	checked="yes"
+	unchecked="no"
+	default="no"
+>
+	<span class="tc-tiny-gap-left tc-small-gap-right">Show all possible palettes in palette-dropdown</span>
+	<$link to=<<config-show-all>>>
+		{{$:/core/images/link|12}}
+	</$link>
+</$checkbox>
+<<<
+!! Switch Dark / Light Palette
+
+{{$:/plugins/wikilabs/ui/ControlPanel/Palette/DarkLightConfig}}

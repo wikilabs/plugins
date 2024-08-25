@@ -1,0 +1,27 @@
+title: $:/plugins/wikilabs/palette-switcher/ui/sidebar/dark-light-toggle
+caption: {{$:/plugins/wikilabs/palette-switcher/ui/images/moon}} Togggle Dark / Light
+description: Toggle between Dark and Light Mode
+tags: $:/tags/PageControls
+
+\whitespace trim
+\procedure actions()
+	<%if [{$:/palette}get[color-scheme]match[light]] %>
+		<$action-setfield $tiddler="$:/palette" $field="text" $value={{{ [{$:/config/palette/default-dark}] }}}/>
+	<% else %>
+		<$action-setfield $tiddler="$:/palette" $field="text" $value={{{ [{$:/config/palette/default-light}] }}}/>
+	<% endif %>
+\end
+<$button actions=<<actions>> tooltip="Toggle Dark/Light Mode" class=<<tv-config-toolbar-class>> >
+	<%if [<tv-config-toolbar-icons>match[yes]] %>
+		<%if [{$:/palette}get[color-scheme]match[light]] %>
+			{{$:/plugins/wikilabs/palette-switcher/ui/images/moon}}
+		<% else %>
+			{{$:/plugins/wikilabs/palette-switcher/ui/images/sun}}
+		<% endif %>
+	<% endif %>
+	<% if [<tv-config-toolbar-text>match[yes]] %>
+		<span class="tc-btn-text">
+			<$text text="Toggle"/>
+		</span>
+	<% endif %>
+</$button>

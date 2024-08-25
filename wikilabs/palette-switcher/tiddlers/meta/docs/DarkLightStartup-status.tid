@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/palette-switcher/DarkLightStartup-status
+
+Currently the following tiddlers are tagged <<tag "$:/tags/StartupAction/Browser">>:
+
+<<list-links filter:"[tag[$:/tags/StartupAction/Browser]]" emptyMessage:"none">>

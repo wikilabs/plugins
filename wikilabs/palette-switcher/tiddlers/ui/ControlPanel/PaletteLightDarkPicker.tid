@@ -1,0 +1,16 @@
+title: $:/plugins/wikilabs/ui/ControlPanel/Palette/DarkLightConfig
+
+\import [[$:/plugins/wikilabs/palette-switcher/settings]]
+
+\procedure lingo-base() $:/language/ControlPanel/Palette/
+\procedure config-dark-light() $:/config/palette/enable-light-dark-detection
+\define postFilter-dark() :filter[color-scheme[dark]]
+\define postFilter-light() :filter[color-scheme[dark]]
+
+\function wlf.getPostFilter(param) [{$:/config/palette/show-all-palettes}match[yes]then[""]else<param>]
+
+\whitespace trim
+
+|tc-first-col-min-width tc-first-link-nowrap tc-table-palette-selector |k
+|<$link to="$:/config/palette/default-light" >{{$:/plugins/wikilabs/palette-switcher/ui/images/sun}}</$link> |<span class="tc-table-paletteswitcher"><$transclude $tiddler="$:/snippets/paletteswitcher" postFilter="+[{$:/config/palette/default-light}]" /></span> | <$macrocall $name="palette-picker" tiddler="$:/config/palette/default-light" postFilter={{{ [wlf.getPostFilter<postFilter-light>] }}}/> |
+|<$link to="$:/config/palette/default-dark" >{{$:/plugins/wikilabs/palette-switcher/ui/images/moon}}</$link> |<span class="tc-table-paletteswitcher"><$transclude $tiddler="$:/snippets/paletteswitcher" postFilter="+[{$:/config/palette/default-dark}]" /></span> | <$macrocall $name="palette-picker" tiddler="$:/config/palette/default-dark" postFilter={{{ [wlf.getPostFilter<postFilter-dark>] }}}/> |

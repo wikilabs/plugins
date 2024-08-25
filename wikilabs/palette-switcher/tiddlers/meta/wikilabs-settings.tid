@@ -1,0 +1,13 @@
+title: $:/ControlPanel/Settings/WikiLabs
+caption: WikiLabs
+tags: $:/tags/ControlPanel/SettingsTab
+
+Get an overview about all [[WikiLab Pugins|https://wikilabs.github.io]]
+
+<div class="tc-control-panel">
+<$macrocall $name="tabs" 
+    tabsList="[all[shadows+tiddlers]tag[$:/tags/ControlPanel/WikiLabs]!has[draft.of]]"
+    default="$:/plugins/wikilabs/palette-switcher/settings"
+    explicitState="$:/state/tab/settings/wikilabs"
+/>
+</div>

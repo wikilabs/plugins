@@ -1,0 +1,9 @@
+title: $:/plugins/wikilabs/palette-switcher/languages/en-GB/
+
+Palette/Config/DefaultDark/Caption: Dark palette
+Palette/Config/DefaultLight/Caption: Light palette
+Palette/Picker/Prompt: Automatic selection can be configured using [[custom actions|$:/plugins/wikilabs/palette-switcher/DarkLightStartup]]
+Palette/Picker/Enable: Enable Dark/Light Mode Handling
+Palette/Picker/Heading: Dark/Light Mode Configuraton
+Palette/Picker/ShowAllPalettes: Show all palettes
+Palette/Switcher/Heading: Switch Palette

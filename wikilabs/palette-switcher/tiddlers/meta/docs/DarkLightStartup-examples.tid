@@ -1,0 +1,54 @@
+created: 20240303170824709
+modified: 20240303182658789
+tags: 
+title: $:/plugins/wikilabs/palette-switcher/DarkLightStartup (Examples)
+type: text/vnd.tiddlywiki
+
+\procedure startupSwitcherTitle() _/startup/light-dark/detection
+
+\procedure startupLightDarkActionTemplate()
+<$reveal type="match" stateTitle="$:/config/palette/enable-light-dark-detection" text="yes">
+	<$let default={{{ [{$:/info/darkmode}match[yes]then[$:/config/palette/default-dark]else[$:/config/palette/default-light]] }}}>
+		<$action-setfield $tiddler="$:/palette" text={{{ [<default>get[text]] }}}/>
+	</$let>
+</$reveal>
+\end
+
+\procedure createStartupSwitcher()
+<% if [<startupSwitcherTitle>!has[text]] %>
+<$action-createtiddler
+	$basetitle=<<startupSwitcherTitle>>
+	text=<<startupLightDarkActionTemplate>>
+	caption= "Detect browser or OS setting on startup"
+	code-body= "yes"
+	tags= "$:/tags/StartupAction/Browser"
+/>
+<$action-navigate $to=<<startupSwitcherTitle>>/>
+<% else %>
+<$action-navigate $to=<<startupSwitcherTitle>>/>
+<% endif %>
+\end
+
+!! Detect Light / Dark Setting on Startup
+
+For most usecases, it will be enough to detect the browser or OS setting on wiki startup. 
+
+Also see the TW documentation at: [[StartupActions|https://tiddlywiki.com/#StartupActions]] and [[SystemTag: $:/tags/StartupAction/Browser|https://tiddlywiki.com/#SystemTag%3A%20%24%3A%2Ftags%2FStartupAction%2FBrowser]]
+
+''Important:''
+For startup actions, it is important to use the $:/info/darkmode tiddler. Changing the $:/palette tiddler at startup will ''not'' trigger the [[dirty flag|https://tiddlywiki.com/#SavingMechanism]].
+
+Currently the following tiddlers are tagged <<tag "$:/tags/StartupAction/Browser">>:
+
+<<list-links filter:"[tag[$:/tags/StartupAction/Browser]]" emptyMessage:"none">>
+
+<$button actions=<<createStartupSwitcher>> >Create <<startupSwitcherTitle>> example tiddler</$button>
+
+```
+title: _/startup/light-dark/detection
+caption: {{$:/language/ControlPanel/Palette/Config/Detection/Caption}}
+code-body: yes
+tags: $:/tags/StartupAction/Browser
+```
+
+<pre><code><$transclude $variable="startupLightDarkActionTemplate" $mode=block $output="text/plain" $type="text/plain" /></code></pre>

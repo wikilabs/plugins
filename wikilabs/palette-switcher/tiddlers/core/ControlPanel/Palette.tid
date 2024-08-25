@@ -1,0 +1,19 @@
+title: $:/core/ui/ControlPanel/Palette
+tags: $:/tags/ControlPanel/Appearance
+caption: {{$:/language/ControlPanel/Palette/Caption}}
+
+\procedure lingo-base() $:/language/ControlPanel/Palette/
+\whitespace trim
+
+\procedure paletteEditorButton()
+<% if [{$:/state/ShowPaletteEditor}!match[yes]] %>
+	<$button set="$:/state/ShowPaletteEditor" setTo="yes"><<lingo ShowEditor/Caption>></$button>
+<% else %>
+	<$button set="$:/state/ShowPaletteEditor" setTo="no"><<lingo HideEditor/Caption>></$button>
+	{{$:/PaletteManager}}
+<% endif %>
+\end
+
+{{$:/plugins/wikilabs/ui/ControlPanel/Palette/DarkLightConfig}}
+
+<<paletteEditorButton>>

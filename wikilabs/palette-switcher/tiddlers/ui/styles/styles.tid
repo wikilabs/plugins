@@ -1,0 +1,16 @@
+tags: $:/tags/Stylesheet
+title: $:/plugins/wikilabs/palette-switcher/ui/sidebar/styles
+code-body: yes
+
+.tc-table-palette-selector .tc-image-sun-button,
+.tc-table-palette-selector .tc-image-moon-button {
+	min-width: 2em;
+	min-height: 2em;
+}
+
+table.tc-table-palette-selector,
+.tc-table-palette-selector td,
+.tc-table-palette-selector .tc-table-paletteswitcher .tc-chooser{
+	border-left: none;
+	border-right: none;
+}
