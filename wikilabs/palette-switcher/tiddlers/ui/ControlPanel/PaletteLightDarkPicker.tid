@@ -5,7 +5,7 @@ title: $:/plugins/wikilabs/ui/ControlPanel/Palette/DarkLightConfig
 \procedure lingo-base() $:/language/ControlPanel/Palette/
 \procedure config-dark-light() $:/config/palette/enable-light-dark-detection
 \define postFilter-dark() :filter[color-scheme[dark]]
-\define postFilter-light() :filter[color-scheme[dark]]
+\define postFilter-light() :filter[color-scheme[light]]
 
 \function wlf.getPostFilter(param) [{$:/config/palette/show-all-palettes}match[yes]then[""]else<param>]
 
