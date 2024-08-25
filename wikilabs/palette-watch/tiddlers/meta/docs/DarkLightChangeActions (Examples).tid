@@ -1,0 +1,54 @@
+title: $:/plugins/wikilabs/palette-watch/docs/DarkLightChangeActions-examples
+
+\procedure lightDarkwatchTitle() _/dynamic/light-dark/detection
+\procedure startupwatchTitle() _/startup/light-dark/detection
+
+\procedure dynamicLightDarkActionTemplate()
+<$reveal type="match" stateTitle="$:/config/palette/enable-light-dark-detection" text="yes">
+	<$let default={{{ [<dark-mode>match[yes]then[$:/config/palette/default-dark]else[$:/config/palette/default-light]] }}}>
+		<$action-setfield $tiddler="$:/palette" text={{{ [<default>get[text]] }}}/>
+	</$let>
+</$reveal>
+\end
+
+\procedure createLightDarkwatch()
+<% if [<lightDarkwatchTitle>!has[text]] %>
+<$action-createtiddler
+	$basetitle=<<lightDarkwatchTitle>>
+	text=<<dynamicLightDarkActionTemplate>>
+	caption= "Dynamically detect browser or OS setting"
+	code-body= "yes"
+	tags= "$:/tags/DarkLightChangeActions"
+/>
+<$action-navigate $to=<<lightDarkwatchTitle>>/>
+<% else %>
+<$action-navigate $to=<<lightDarkwatchTitle>>/>
+<% endif %>
+\end
+
+!! Dynamically Detect Browser or OS Light / Dark Theme Changes
+
+Also see: [[DarkLightChangeActions|$:/plugins/wikilabs/palette-watch/docs/DarkLightChangeActions]] and [[SystemTag: $:/tags/DarkLightChangeActions|$:/plugins/wikilabs/palette-watch/docs/SystemTag: $:/tags/DarkLightChangeActions]]
+
+''Important:''
+
+It is important to use the variable `dark-mode`, since the system info tiddler $:/info/darkmode will be ''updated after'' the actions have been executed.
+
+Changing the $:/palette tiddler dynamically ''will trigger'' the [[dirty flag|https://tiddlywiki.com/#SavingMechanism]]. If you want to avoid this behaviour, you will need to add `-[[$:/palette]]` to the the  $:/config/SaverFilter as described at [[SavingMechanism|https://tiddlywiki.com/#SavingMechanism]]
+
+The following example dynamically defines the $:/palette tiddler based on the browser or OS dark / light mode setting. Palettes are tagged: <<tag "$:/tags/Palette">> -- The tag-pill dropdown can be used to see all possible palette tiddlers.
+
+Currently the following tiddlers are tagged <<tag "$:/tags/DarkLightChangeActions">>:
+
+<<list-links filter:"[tag[$:/tags/DarkLightChangeActions]]" emptyMessage:"none">>
+
+<$button actions=<<createLightDarkwatch>> >Create <<lightDarkwatchTitle>> example tiddler</$button>
+
+```
+title: _/dynamic/light-dark/detection
+caption: {{$:/language/ControlPanel/Palette/Config/Detection/Caption}}
+code-body: yes
+tags: $:/tags/DarkLightChangeActions
+```
+
+<pre><code><$transclude $variable="dynamicLightDarkActionTemplate" $mode=block $output="text/plain" $type="text/plain" /></code></pre>

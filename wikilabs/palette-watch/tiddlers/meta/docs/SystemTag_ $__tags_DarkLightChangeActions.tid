@@ -1,0 +1,9 @@
+caption: $:/tags/DarkLightChangeActions
+description: marks actions executed on dark / light mode changes
+tags: SystemTags
+title: $:/plugins/wikilabs/palette-watch/docs/SystemTag: $:/tags/DarkLightChangeActions
+
+The [[system tag|SystemTags]] `$:/tags/DarkLightChangeActions` marks actions executed on dark / light mode changes. 
+
+* [[DarkLightChangeActions]]
+* $:/info/darkmode

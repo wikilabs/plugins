@@ -1,0 +1,21 @@
+title: $:/plugins/wikilabs/palette-watch/readme
+caption: Palette Watch
+tags: $:/tags/ControlPanel/WikiLabs
+
+This plugin "Palette Watch" adds the ''ControlPanel -> Settings -> WikiLabs -> Palette Watch'' tab
+
+----
+
+{{$:/plugins/wikilabs/palette-watch/docs/DarkLightChangeActions}}
+
+----
+
+{{$:/plugins/wikilabs/palette-watch/docs/DarkLightChangeActions-examples}}
+
+----
+
+!! Important
+
+This plugin modifies the following core modules and / or templates
+
+<ul><$list filter="[[$:/plugins/wikilabs/palette-watch]plugintiddlers[]prefix[$:/core/]]" emptyMessage="none"><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>

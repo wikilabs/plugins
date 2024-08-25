@@ -1,0 +1,25 @@
+tags: Features
+title: $:/plugins/wikilabs/palette-watch/docs/DarkLightChangeActions
+
+!! Palette Modes Detection
+
+''Important:''
+
+Be aware that the browser setting can be independent from the OS setting.<br>
+If the browser settings are set to "System theme - auto" for ~FireFox or "System default" for Chrome-like browsers, the OS setting will be shown.
+
+* Actions tagged <<tag $:/tags/StartupAction/Browser>> are executed when the wiki is started. More info can be found at StartupActions and examples here.
+* Actions tagged <<tag "$:/tags/DarkLightChangeActions">> are executed whenever the browser or OS dark / light setting is changed.
+
+!!! Variable
+
+The following variable is defined for actions tagged: `$:/tags/DarkLightChangeActions`
+
+| Variables | Description |h
+|`dark-mode` |`yes` or `no` depending on the browser or OS setting |
+
+!!! Examples
+
+Examples, how to handle dark / light events can be found at: [[DarkLightChangeActions (Examples)|$:/plugins/wikilabs/palette-watch/docs/DarkLightChangeActions-examples]]
+
+{{$:/plugins/wikilabs/palette-watch/docs/DarkLightChangeActions-status}}
