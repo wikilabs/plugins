@@ -4,8 +4,8 @@
 	"description": "Advanced Palette Watch",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.3.1",
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"list": "readme history license",
 	"stability": "STABILITY_1_EXPERIMENTAL",
-	"dependants": ["$:/plugins/wikilabs/palette-switcher"]
+	"dependents": ["$:/plugins/wikilabs/palette-switcher"]
 }
