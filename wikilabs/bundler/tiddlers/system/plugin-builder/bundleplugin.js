@@ -15,8 +15,6 @@ Build a plugin, and then delete any non-shadow payload tiddlers.
 options:
 	incrementMinor ... auto increment version minor
 	incrementPatch ... auto increment version patch
-	removePrefix ... plugin tiddler title prefix that should be removed
-	addPrefix ... new title prefix
 */
 exports.bundlePlugin = function(title,additionalTiddlers,excludeTiddlers,removeTiddlers,options) {
 	options = options || {incrementMinor: false, incrementPatch: true};
@@ -34,6 +32,9 @@ exports.bundlePlugin = function(title,additionalTiddlers,excludeTiddlers,removeT
 		throw "Cannot parse plugin tiddler " + title + "\n" + $tw.language.getString("Error/Caption") + ": " + e;
 	}
 	// Get the list of tiddlers
+	// if (!tiddlers) {
+	// 	return "Plugin " + title + " not found";
+	// }
 	var tiddlers = Object.keys(jsonPluginTiddler.tiddlers);
 	// Add the additional tiddlers
 	$tw.utils.pushTop(tiddlers,additionalTiddlers);
@@ -43,23 +44,17 @@ exports.bundlePlugin = function(title,additionalTiddlers,excludeTiddlers,removeT
 			tiddlers.splice(t,1);
 		}
 	}
-	// $tw.utils.each(tiddlers,function(title){
-	// 	if (options.removePrefix && options.addPrefix) {
-	// 		if (title.indexOf(options.removePrefix) === 0) {
-	// 			// 
-	// 			var a = 1;
-	// 		}
-	// 	}
-	// });
 	// Pack up the tiddlers into a block of JSON
 	var plugins = {};
 	$tw.utils.each(tiddlers,function(title) {
 		var tiddler = $tw.wiki.getTiddler(title),
 			fields = {};
-		$tw.utils.each(tiddler.fields,function (value,name) {
-			fields[name] = tiddler.getFieldString(name);
-		});
-		plugins[title] = fields;
+		if (tiddler) {
+			$tw.utils.each(tiddler.fields,function (value,name) {
+				fields[name] = tiddler.getFieldString(name);
+			});
+			plugins[title] = fields;
+		}
 	});
 	// Retrieve and bump the version number
 	var pluginVersion = $tw.utils.parseVersion(pluginTiddler.getFieldString("version") || "0.0.0") || {
