@@ -39,6 +39,7 @@ BundlePluginWidget.prototype.execute = function() {
 	this.actionExclude = this.getAttribute("$exclude");
 	this.actionRemove = this.getAttribute("$remove");
 	this.actionMode = this.getAttribute("$mode","log");
+	this.actionIncrementPatch = this.getAttribute("$incrementPatch","yes");
 };
 
 /*
@@ -67,7 +68,7 @@ BundlePluginWidget.prototype.invokeAction = function(triggeringWidget,event) {
 	// Warning!: This funcionality is able to "destroy" your plugin
 	function write() {
 		if (tiddlers && self.actionPlugin) {
-			$tw.utils.bundlePlugin(self.actionPlugin, tiddlers, excluded, remove, {incrementPatch:false});
+			$tw.utils.bundlePlugin(self.actionPlugin, tiddlers, excluded, remove, {incrementPatch:(self.actionIncrementPatch === "yes")});
 			log("dangerous");
 		}
 	};
@@ -75,7 +76,7 @@ BundlePluginWidget.prototype.invokeAction = function(triggeringWidget,event) {
 	function log(mode) {
 		mode = mode || "log";
 		var txtModified = (mode === "log") ? "should be modified." : (mode === "dangerous") ? "has been modified." : "unknown 'mode'";
-		var logFile = (mode === "dangerous") ? "bundle.plugin.log" : "bundle-plugin-verify";
+		var logFile = (mode === "dangerous") ? "_:/temp/bundle.plugin.log" : "_:/temp/bundle-plugin-verify";
 		var text = $tw.wiki.getTiddler(logFile)?.fields?.text || "";
 
 		text += "--------\n" + $tw.macros.now.run("YYYY-0MM-0DD 0hh:0mm:0ss-0XXX") + "\n\n";
@@ -86,21 +87,25 @@ BundlePluginWidget.prototype.invokeAction = function(triggeringWidget,event) {
 			text += "* No 'include' tiddlers selected\n"
 		} else {
 			$tw.utils.each(tiddlers, function(title) {
-				text += "# add: [[" + title + "]]\n";
+				if (!jsonPluginTiddler.tiddlers[title]) {
+					text += "# add: [[" + title + "]]\n";
+				}
 			})
 		}
 		if (excluded.length > 0) {
 			text += "\n"
 			$tw.utils.each(excluded, function(title) {
 				text += "# excluded: [[" + title + "]]\n";
-			})
+			});
 		}
 
 		if (remove.length > 0) {
 			text += "\n"
 			$tw.utils.each(remove, function(title) {
-				text += "# remove: [[" + title + "]]\n";
-			})
+				if (jsonPluginTiddler.tiddlers[title]) {
+					text += "# remove: [[" + title + "]]\n";
+				}
+			});
 		}
 
 		text += "That's it\n\n";
@@ -109,6 +114,16 @@ BundlePluginWidget.prototype.invokeAction = function(triggeringWidget,event) {
 			type: "tm-navigate",
 			navigateTo: logFile
 		});
+	}
+	// Get the plugin tiddler
+	var pluginTiddler = $tw.wiki.getTiddler(self.actionPlugin);
+	if(!pluginTiddler) {
+		console.log("No such tiddler as " + self.actionPlugin);
+	}
+	// Extract the JSON
+	var jsonPluginTiddler = $tw.utils.parseJSONSafe(pluginTiddler.fields.text,null);
+	if(!jsonPluginTiddler) {
+		console.log("Cannot parse plugin tiddler " + self.actionPlugin);
 	}
 
 	if (this.actionMode === "log") {
