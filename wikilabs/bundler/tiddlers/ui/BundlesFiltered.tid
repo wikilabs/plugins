@@ -140,7 +140,7 @@ Check for typos!
 		tags="$:/tags/Filter"
 		description="provide a meaningful description to display in AdvancedSearch: Filter!"
 		filter="adjust this filter: [list[$:/StoryList]]"
-		text="<pre>{{!!filter}}</pre>"
+		text="""<pre><$view field="filter" mode=inline></pre>"""
 	/>
 		Filter Bundle
 	</$button>
