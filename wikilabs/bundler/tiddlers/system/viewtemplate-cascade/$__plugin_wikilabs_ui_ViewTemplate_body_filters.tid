@@ -10,7 +10,7 @@ type: text/vnd.tiddlywiki
 
 Description: {{!!description}}
 
-Filter: <code>{{!!filter}}</code>
+Filter: <pre><$view field="filter" mode=inline/></pre>
 
 <details> <summary>Filter Results: <$count filter={{!!filter}}/> </summary>
 <div>
