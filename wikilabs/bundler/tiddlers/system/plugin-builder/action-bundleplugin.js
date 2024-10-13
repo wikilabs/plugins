@@ -76,7 +76,7 @@ BundlePluginWidget.prototype.invokeAction = function(triggeringWidget,event) {
 	function log(mode) {
 		mode = mode || "log";
 		var txtModified = (mode === "log") ? "should be modified." : (mode === "dangerous") ? "has been modified." : "unknown 'mode'";
-		var logFile = (mode === "dangerous") ? "_:/temp/bundle.plugin.log" : "_:/temp/bundle-plugin-verify";
+		var logFile = (mode === "dangerous") ? "$:/temp/bundle.plugin.log" : "$:/temp/bundle-plugin-verify";
 		var text = $tw.wiki.getTiddler(logFile)?.fields?.text || "";
 
 		text += "--------\n" + $tw.macros.now.run("YYYY-0MM-0DD 0hh:0mm:0ss-0XXX") + "\n\n";
