@@ -1,0 +1,13 @@
+{
+	"tiddlers": [
+		{
+			"file": "prng.js",
+			"fields": {
+				"type": "application/javascript",
+				"title": "$:/plugins/wikilabs/prng/prng.js",
+				"module-type": "library"
+			},
+			"suffix": "\nexports.prng = prng;\n"
+		}
+	]
+}

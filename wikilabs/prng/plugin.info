@@ -1,10 +1,10 @@
 {
-	"title": "$:/plugins/wikilabs/uheprng",
+	"title": "$:/plugins/wikilabs/prng",
 	"name": "Pseudo Random Number Generator",
 	"description": "Ultra-High Entropy Pseudo-Random Number Generator",
 	"author": "Mario Pietsch",
 	"core-version": ">=5.3.3",
-	"icon": "$:/plugins/wikilabs/uheprng/icon",
+	"icon": "$:/plugins/wikilabs/prng/icon",
 	"version": "0.1.0",
 	"list": "readme settings license history",
 	"stability": ""

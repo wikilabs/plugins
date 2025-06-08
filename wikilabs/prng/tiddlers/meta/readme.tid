@@ -1,4 +1,4 @@
-title: $:/plugins/wikilabs/uheprng/readme
+title: $:/plugins/wikilabs/prng/readme
 
 This plugin adds a little link icon to every tab.
 
@@ -9,4 +9,4 @@ This plugin adds a little link icon to every tab.
 
 ''Important:'' This plugin modifies a core module and templates
 
-<ul><$list filter="[[$:/plugins/wikilabs/uheprng]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
+<ul><$list filter="[[$:/plugins/wikilabs/prng]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>

@@ -31,14 +31,14 @@
 	downloaded and run from the Windows command prompt to generate unique files
 	of any size:
 	The Fermilab "ENT" tests: http://fourmilab.ch/random/
-	The 256-megabyte sample PRN file at GRC: https://www.GRC.com/otg/uheprng.bin
-	The Windows scripting host version: https://www.GRC.com/otg/wsh-uheprng.js
+	The 256-megabyte sample PRN file at GRC: https://www.GRC.com/otg/prng.bin
+	The Windows scripting host version: https://www.GRC.com/otg/wsh-prng.js
 	----------------------------------------------------------------------------
 	Qualifying MWC multipliers are: 187884, 686118, 898134, 1104375, 1250205,
 	1460910 and 1768863. (We use the largest one that's < 2^21)
 	============================================================================ */
 
-function uheprng() {
+function prng() {
 	return (function() {
   		var o = 48;					// set the 'order' number of ENTROPY-holding 32-bit values
 		var c = 1;					// init the 'carry' used by the multiply-with-carry (MWC) algorithm
@@ -46,7 +46,7 @@ function uheprng() {
 		var s = new Array(o);	// declare our intermediate variables array
 		var i,j,k=0;				// general purpose locals
 
-		// when our "uheprng" is initially invoked our PRNG state is initialized from the
+		// when our "prng" is initially invoked our PRNG state is initialized from the
 		// browser's own local PRNG. This is okay since although its generator might not
 		// be wonderful, it's useful for establishing large startup entropy for our usage.		
 		var mash = Mash();		// get a pointer to our high-performance "Mash" hash
@@ -96,7 +96,7 @@ function uheprng() {
 		// this EXPORTED "clean string" function removes leading and trailing spaces and non-printing
 		// control characters, including any embedded carriage-return (CR) and line-feed (LF) characters,
 		// from any string it is handed. this is also used by the 'hashstring' function (below) to help
-		// users always obtain the same EFFECTIVE uheprng seeding key.
+		// users always obtain the same EFFECTIVE prng seeding key.
 		random.cleanString = function( inStr ) {
 			inStr = inStr.replace(/(^\s*)|(\s*$)/gi,""); // remove any/all leading spaces
 			inStr = inStr.replace(/[\x00-\x1F]/gi,"");	// remove any/all control characters
@@ -118,7 +118,7 @@ function uheprng() {
 			}
 		};
 
-		// this handy exported function is used to add entropy to our uheprng at any time
+		// this handy exported function is used to add entropy to our prng at any time
 		random.addEntropy = function( /* accept zero or more arguments */ ) {
 			var args = [];
 			for ( i = 0; i < arguments.length; i++ ) args.push( arguments[i] );
@@ -144,10 +144,10 @@ function uheprng() {
 			mash = null;
 		};
 
-		// when our main outer "uheprng" function is called, after setting up our
+		// when our main outer "prng" function is called, after setting up our
 		// initial variables and entropic state, we return an "instance pointer"
 		// to the internal anonymous function which can then be used to access
-		// the uheprng's various exported functions.  As with the ".done" function
+		// the prng's various exported functions.  As with the ".done" function
 		// above, we should set the returned value to 'null' once we're finished
 		// using any of these functions.
 		return random;
