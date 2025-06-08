@@ -1,0 +1,12 @@
+title: $:/plugins/wikilabs/uheprng/readme
+
+This plugin adds a little link icon to every tab.
+
+!! Settings
+
+* Have a closer look at the "settings-tab" here or
+* Open the ''$:/ControlPanel -> Settings -> WikiLabs'' tab
+
+''Important:'' This plugin modifies a core module and templates
+
+<ul><$list filter="[[$:/plugins/wikilabs/uheprng]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
