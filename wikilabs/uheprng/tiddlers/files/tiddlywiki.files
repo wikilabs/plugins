@@ -1,0 +1,14 @@
+{
+	"tiddlers": [
+		{
+			"file": "uheprng.js",
+			"fields": {
+				"type": "application/javascript",
+				"title": "$:/plugins/wikilabs/uheprng/uheprng.js",
+				"module-type": "library"
+			}
+			"prefix": "(function(){",
+			"suffix": "}).call(exports);"
+		}
+	]
+}
