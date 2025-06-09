@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/palette-manager/history
 
+V 1.0.3 - 2025-06-09
+
+* Remove redundant UI template file (download button)
+
 V 1.0.2 - 2024-07-04
 
 * Add testcase preview
