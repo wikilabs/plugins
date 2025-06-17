@@ -13,7 +13,9 @@ title: $:/plugins/wikilabs/bundler/readme
 \end
 
 \define openControlBundlesTab()
-<$action-setfield $tiddler="$:/state/tab-1749438307" text="$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config"/>
+<$action-setfield $tiddler="$:/state/tab-1749438307" text="$:/core/ui/ControlPanel/Settings"/>
+<$action-setfield $tiddler="$:/state/tab--697582678" text="$:/ControlPanel/Settings/WikiLabs"/>
+<$action-setfield $tiddler="$:/state/tab/settings/wikilabs" text="$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config"/>
 <$action-navigate $to="$:/ControlPanel"/>
 \end
 
@@ -24,7 +26,7 @@ title: $:/plugins/wikilabs/bundler/readme
 ! ~ReadMe
 
 * Documentation and more can be found at: https://wikilabs.github.io/editions/bundler
-* The position of the "Bundles" tab can be selected in the <$button actions=<<openControlBundlesTab>> class="tc-btn-invisible tc-tiddlylink">~$:/ControlPanel : Bundles tab</$button>
+* The position of the "Bundles" tab can be selected in the <$button actions=<<openControlBundlesTab>> class="tc-btn-invisible tc-tiddlylink">~$:/ControlPanel : Bundles tab</$button> at the ''Bundle Tab Settings'' section
 * There are 2 version of bundles
 ** <<.xL "Bundle Lists" "doc-bundle-lists">> ... Enabled by default
 ** <<.xL "Filtered Bundles" "doc-filtered-bundles">> ... Have to be activated by the user

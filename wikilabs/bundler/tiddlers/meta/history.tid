@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 1.2.0 - 2025-06-17
+
+* Export bundle data with a .data extension, so it does not overwrite existing config tiddlers on the filesystem
+* Update readme "jump to settings" link
+
 V 1.1.3 - 2024-05-23
 
 * Add stability badges
