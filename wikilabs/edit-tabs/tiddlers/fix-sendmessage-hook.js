@@ -23,7 +23,6 @@ This hook temporarily fixes the problem.
 
 
 \*/
-(function(){
 
 /*jslint node: true, browser: true */
 /*global $tw: false */
@@ -46,5 +45,3 @@ exports.startup = function() {
 		return event;
 	});
 };
-
-})();
