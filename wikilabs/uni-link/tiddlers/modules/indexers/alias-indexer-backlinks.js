@@ -139,7 +139,7 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 			})
 		}
 	}
-	if(updateDescriptor.new.exists) {
+	if(updateDescriptor.new.exists && !(updateDescriptor.new.tiddler.fields["plugin-type"])) {
 		newAliases = this._getAliasLinks(updateDescriptor.new.tiddler, updateDescriptor.new.tiddler.fields.text);
 		if (newAliases?.length > 0) {
 			$tw.utils.each(newAliases, function(alias){
