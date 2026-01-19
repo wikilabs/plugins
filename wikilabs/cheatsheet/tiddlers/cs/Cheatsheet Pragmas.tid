@@ -1,7 +1,7 @@
 created: 20230501091658586
 modified: 20230501100847525
 tags: [[Wikitext Cheatsheet]]
-title: $:/Cheatsheet Pragmas
+title: $:/Cheatsheet/Pragmas
 type: text/vnd.tiddlywiki
 
 A pragma is a special component of WikiText that provides control over the way the remaining text is parsed.

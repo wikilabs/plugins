@@ -2,7 +2,7 @@ code-body: yesx
 created: 20230501090727318
 modified: 20230501091354729
 tags: [[Wikitext Cheatsheet]]
-title: $:/Cheatsheet Custom Widget
+title: $:/Cheatsheet/Custom Widget
 type: text/vnd.tiddlywiki
 
 \widget $my.widget(attribute:"Default value")

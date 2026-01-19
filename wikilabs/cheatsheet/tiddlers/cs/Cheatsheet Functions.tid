@@ -1,7 +1,7 @@
 created: 20230501093733923
 modified: 20230501094251689
 tags: [[Wikitext Cheatsheet]]
-title: $:/Cheatsheet Functions
+title: $:/Cheatsheet/Functions
 type: text/vnd.tiddlywiki
 
 \function my-function(parameter:"2")

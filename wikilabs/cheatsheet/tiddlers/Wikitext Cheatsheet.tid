@@ -66,26 +66,26 @@ type: text/vnd.tiddlywiki
 |<h6>Heading 6</h6>              |`! Heading 6` |
 |>| ! <<.xL "Lists" "Lists in WikiText">>                  |
 |>|   <<.xL "Ordered Lists" "Lists in WikiText">>          |
-|<<.t "$:/Cheatsheet OL">>         |<<.cb "$:/Cheatsheet OL">> |
+|<<.t "$:/Cheatsheet/OL">>         |<<.cb "$:/Cheatsheet/OL">> |
 |>|   <<.xL "Unordered Lists" "Lists in WikiText">>        |
-|<<.t "$:/Cheatsheet UL">>         |<<.cb "$:/Cheatsheet UL">> |
+|<<.t "$:/Cheatsheet/UL">>         |<<.cb "$:/Cheatsheet/UL">> |
 |>|   <<.xL "Definition Lists" "Definitions in WikiText">> |
-|<<.t "$:/Cheatsheet DL">>         |<<.cb "$:/Cheatsheet DL">> |
+|<<.t "$:/Cheatsheet/DL">>         |<<.cb "$:/Cheatsheet/DL">> |
 |>|   <<.xL "Mixed Lists" "Lists in WikiText">>            |
-|<<.t "$:/Cheatsheet ML">>         |<<.cb "$:/Cheatsheet ML">> |
+|<<.t "$:/Cheatsheet/ML">>         |<<.cb "$:/Cheatsheet/ML">> |
 |>| ! <<.xL "Blockquotes" "Block Quotes in WikiText">>     |
 |>|   <<.xL "Nested Blockquotes" "Block Quotes in WikiText">>    |
-|<<.t "$:/Cheatsheet Quotes">>     |<<.cb "$:/Cheatsheet Quotes">>   |
+|<<.t "$:/Cheatsheet/Quotes">>     |<<.cb "$:/Cheatsheet/Quotes">>   |
 |>|   <<.xL "Muli-line Blockquotes" "Block Quotes in WikiText">> |
-|^<<.t "$:/Cheatsheet QuotesML">>   |<<.cb "$:/Cheatsheet QuotesML">> |
+|^<<.t "$:/Cheatsheet/QuotesML">>   |<<.cb "$:/Cheatsheet/QuotesML">> |
 |>|   <<.xL "Mixed Blockquotes" "Block Quotes in WikiText">>     |
-|^<<.t "$:/Cheatsheet QuotesMIX">>  |<<.cb "$:/Cheatsheet QuotesMIX">>|
+|^<<.t "$:/Cheatsheet/QuotesMIX">>  |<<.cb "$:/Cheatsheet/QuotesMIX">>|
 |>| ! <<.xL "Code / Monospaced Text" "Code Blocks in WikiText">> |
 |>|   <<.xL "Inline Code" "Code Blocks in WikiText">>            |
 |`monospaced text`               |<$codeblock code="`monospaced text`" />      |
 |`` `show backticks` ``          |<$codeblock code="`` `show backticks` ``" /> |
 |>|   <<.xL "Code Block" "Code Blocks in WikiText">>            |
-|<<.t "$:/Cheatsheet CodeML">>     |<<.cb "$:/Cheatsheet CodeML">>  |
+|<<.t "$:/Cheatsheet/CodeML">>     |<<.cb "$:/Cheatsheet/CodeML">>  |
 |>| ! <<.xL "Links" "Linking in WikiText">>                     |
 |>|   <<.xL "Internal Links" "Linking in WikiText">>            |
 |<<.xL "CamelCase" "CamelCase">> |`CamelCase`                   |
@@ -109,43 +109,43 @@ type: text/vnd.tiddlywiki
 |[img height=24 [https://tiddlywiki.com/favicon.ico]] |`[img height=24 [https://tiddlywiki.com/favicon.ico]]` |
 |[img height=24 [An explanatory tooltip|https://tiddlywiki.com/favicon.ico]] |`[img height=24 [An explanatory tooltip|https://tiddlywiki.com/favicon.ico]]` |
 |>| ! <<.xL "Tables" "Tables in WikiText">> and <<.xL "Utility Classes" "Tables in WikiText CSS Utility Classes">> |
-|<<.t "$:/Cheatsheet Table">>        |<<.cb "$:/Cheatsheet Table">>|
+|<<.t "$:/Cheatsheet/Table">>        |<<.cb "$:/Cheatsheet/Table">>|
 |>| ! <<.xL "Custom Styles and Classes" "Styles and Classes in WikiText">> |
-|^<<.t "$:/Cheatsheet CS">>           |<<.cb "$:/Cheatsheet CS">>   |
+|^<<.t "$:/Cheatsheet/CS">>           |<<.cb "$:/Cheatsheet/CS">>   |
 |>| ! <<.xL "Hard Linebreaks" "Hard Linebreaks in WikiText">>  |
-|^<<.t "$:/Cheatsheet HL">>           |<<.cb "$:/Cheatsheet HL">>   |
+|^<<.t "$:/Cheatsheet/HL">>           |<<.cb "$:/Cheatsheet/HL">>   |
 |>| ! <<.xL "Horizontal Rule" "Horizontal Rules in WikiText">> |
-|<<.t "$:/Cheatsheet HR">>           |<<.cb "$:/Cheatsheet HR">>   |
+|<<.t "$:/Cheatsheet/HR">>           |<<.cb "$:/Cheatsheet/HR">>   |
 |>| ! <<.xL "Comments" "HTML in WikiText">> |
-|<<.t "$:/Cheatsheet Comment">>      |<<.cb "$:/Cheatsheet Comment">>|
+|<<.t "$:/Cheatsheet/Comment">>      |<<.cb "$:/Cheatsheet/Comment">>|
 |>| ! <<.xL "Typed Blocks" "Typed Blocks in WikiText">>        |
-|^<<.t "$:/Cheatsheet TB">>           |<<.cb "$:/Cheatsheet TB">>   |
+|^<<.t "$:/Cheatsheet/TB">>           |<<.cb "$:/Cheatsheet/TB">>   |
 |>| ! <<.xL "Embedded HTML" "HTML in WikiText">>               |
-|^<<.t "$:/Cheatsheet HTML">>         |<<.cb "$:/Cheatsheet HTML">> |
+|^<<.t "$:/Cheatsheet/HTML">>         |<<.cb "$:/Cheatsheet/HTML">> |
 |>| ! <<.xL "HTML Entities" "HTML Entities">> |
 |&trade; &pound; or &euro;         |`&trade; &pound; or &euro;`  |
 |>| ! <<.xL "Procedures" "Procedures">>                                        |
-|^<<.t "$:/Cheatsheet Procedures">>         |<<.cb "$:/Cheatsheet Procedures">> |
+|^<<.t "$:/Cheatsheet/Procedures">>         |<<.cb "$:/Cheatsheet/Procedures">> |
 |>| ! <<.xL "Functions" "Functions">>                                          |
-|^<<.t "$:/Cheatsheet Functions">>          |<<.cb "$:/Cheatsheet Functions">>  |
+|^<<.t "$:/Cheatsheet/Functions">>          |<<.cb "$:/Cheatsheet/Functions">>  |
 |>| ! <<.xL "Macros" "Macros">>                                    |
 |>|   <<.xL "Macro Definition" "Macro Definitions">>               |
-|<<.t "$:/Cheatsheet MDefinition">>  |<<.cb "$:/Cheatsheet MDefinition">>      |
+|<<.t "$:/Cheatsheet/MDefinition">>  |<<.cb "$:/Cheatsheet/MDefinition">>      |
 |>|   <<.xL "Macro Calls" "Macro Calls">>                          |
-|^<<.t "$:/Cheatsheet MCall">>        |<<.cb "$:/Cheatsheet MCall">>            |
+|^<<.t "$:/Cheatsheet/MCall">>        |<<.cb "$:/Cheatsheet/MCall">>            |
 |>| ! <<.xL "Transclusions" "Transclusion in WikiText">>        |
-|<<.t "$:/Cheatsheet Transclusion">> |^<p>The [[$:/Cheatsheet Transclusion]] tiddler on the left side is transcluded into the table using the <<.xL "transclusion-widget" "TranscludeWidget">></p><p>`{{$:/Cheatsheet Transclusion}}`</p> |
+|<<.t "$:/Cheatsheet/Transclusion">> |^<p>The [[$:/Cheatsheet/Transclusion]] tiddler on the left side is transcluded into the table using the <<.xL "transclusion-widget" "TranscludeWidget">></p><p>`{{$:/Cheatsheet/Transclusion}}`</p> |
 |>| ! <<.xL "Widgets" "Widgets in WikiText">>                      |
 |>|   <<.xL "Basic Widgets" "Widgets in WikiText">>                      |
-|^<<.t "$:/Cheatsheet Widget">>       |<<.cb "$:/Cheatsheet Widget">>   |
+|^<<.t "$:/Cheatsheet/Widget">>       |<<.cb "$:/Cheatsheet/Widget">>   |
 |>|   <<.xL "Custom Widgets" "Custom Widgets">>                      |
-|^<<.t "$:/Cheatsheet Custom Widget">>       |<<.cb "$:/Cheatsheet Custom Widget">>   |
+|^<<.t "$:/Cheatsheet/Custom Widget">>       |<<.cb "$:/Cheatsheet/Custom Widget">>   |
 |>| ! <<.xL "Variables" "Variables">>                  |
-|^<<.t "$:/Cheatsheet Variable">>     |<<.cb "$:/Cheatsheet Variable">> |
+|^<<.t "$:/Cheatsheet/Variable">>     |<<.cb "$:/Cheatsheet/Variable">> |
 |>| ! <<.xL "Parser Modes" "WikiText Parser Modes">>               |
-|>|<<.t "$:/Cheatsheet PM">> |
+|>|<<.t "$:/Cheatsheet/PM">> |
 |>| ! <<.xL "Pragmas" "Pragmas">> |
-|>|<<.t "$:/Cheatsheet Pragmas">> |
+|>|<<.t "$:/Cheatsheet/Pragmas">> |
 
 |tc-max-width wl-cheatsheet |k
 |>|>| ! <<.xL "Bracket Names" "Brackets">> |
