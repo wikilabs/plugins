@@ -117,8 +117,18 @@ exports.startup = function() {
 		}
 	}
 
+	// Skip log if nothing to report
+	if(count === 0) {
+		return;
+	}
+
 	// Write the log tiddler (timestamps are re-enabled at this point)
-	var newSection = "! Backfill — ''" + mode + "'' — " + new Date().toISOString().slice(0, 10) + "\n\n";
+	var now = new Date();
+	var dateStr = now.toISOString().slice(0, 10)
+		+ " " + String(now.getHours()).padStart(2, "0")
+		+ ":" + String(now.getMinutes()).padStart(2, "0")
+		+ ":" + String(now.getSeconds()).padStart(2, "0");
+	var newSection = "!! Backfill — ''" + mode + "'' — " + dateStr + "\n\n";
 	if(isLive) {
 		newSection += "Tiddlers updated: " + count + "\n\n";
 	} else {
