@@ -142,11 +142,11 @@ exports.startup = function() {
 
 	$tw.wiki.addTiddler(new $tw.Tiddler(
 		$tw.wiki.getCreationFields(),
-		$tw.wiki.getModificationFields(),
 		{
 			title: LOG_TITLE,
 			"backfill-mode": mode,
 			text: text
-		}
+		},
+		$tw.wiki.getModificationFields()
 	));
 };
