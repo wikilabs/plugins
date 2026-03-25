@@ -9,7 +9,7 @@ Assigns every tiddler a globally unique, time-ordered identity using [[RFC 9562|
 
 * Generates a UUID v7 on tiddler creation and stores it in the `c7` field
 * The UUID embeds a millisecond-precision timestamp — tiddlers sort chronologically by default
-* Encodes UUIDs as memorable ''adjective-noun-verb'' phrases (e.g. `metal fox lurks`)
+* Encodes UUIDs as memorable ''adjective-noun-verb'' phrases (e.g. `metal dog soars`)
 * Provides the `uuid7` filter operator to extract timestamps, phrases, and UUID components
 
 !! Why

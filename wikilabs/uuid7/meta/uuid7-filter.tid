@@ -45,13 +45,13 @@ Extracts components from UUID v7 strings.
 
 !! Phrase triplet structure
 
-Each triplet is an ''adjective noun verb'' combination (e.g. `bold fox lurks`) encoding 16 bits:
+Each triplet is an ''adjective noun verb'' combination (e.g. `metal dog soars`) encoding 16 bits:
 
 * Adjective: 5 bits (32 words) — highest bits, most stable
 * Noun: 6 bits (64 words) — middle bits
 * Verb: 5 bits (32 words) — lowest bits, least stable
 
-The bit significance matches the display order left-to-right. In triplet 1, the adjective stays the same for ~278 years, the noun for ~8.7 years, and the verb for ~50 days.
+The bit significance matches the display order left-to-right. In triplet 1, the adjective stays the same for ~278 years, the noun for ~4 years, and the verb for ~50 days.
 
 !! Combining with other operators
 

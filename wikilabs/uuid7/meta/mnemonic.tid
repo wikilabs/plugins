@@ -12,13 +12,38 @@ Each triplet uses 32 adjectives x 64 nouns x 32 verbs = 65536 combinations = '''
 
 Bit layout per triplet: `adj(5) | noun(6) | verb(5)` — bit significance matches the English display order left-to-right, so the most stable bits come first.
 
+!! Bit layout
+
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  1:adj  |  1:noun   |  1:vrb  |  2:adj  |  2:noun   |  2:vrb  |
+|                          unix_ts_ms                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  3:adj  |  3:noun   |  3:vrb  |  4:adj  |  4:noun   |  4:vrb  |
+|          unix_ts_ms           |  ver  |        rand_a         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  5:adj  |  5:noun   |  5:vrb  |  6:adj  |  6:noun   |  6:vrb  |
+|var|                          rand_b                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  7:adj  |  7:noun   |  7:vrb  |  8:adj  |  8:noun   |  8:vrb  |
+|                            rand_b                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+Notable overlaps:
+
+* ''T4:adj'' (5 bits) straddles `ver` (4 bits) + `rand_a` (1 bit) — 4 of 5 bits are fixed
+* ''T5:adj'' (5 bits) straddles `var` (2 bits) + `rand_b` (3 bits) — 2 of 5 bits are fixed
+
 !! Triplet stability
 
 The first 48 bits of a UUID v7 are the Unix timestamp in milliseconds. Since the high bits change the slowest, the first two triplets form a human-readable timestamp:
 
 |!Triplet |!Word |!Bits |!Stable for |
 | 1 | Adjective | 5 | ~278 years |
-| 1 | Noun | 6 | ~8.7 years |
+| 1 | Noun | 6 | ~4 years |
 | 1 | Verb | 5 | ~50 days |
 | 2 | Adjective | 5 | ~1.5 days |
 | 2 | Noun | 6 | ~34 minutes |
@@ -26,7 +51,7 @@ The first 48 bits of a UUID v7 are the Unix timestamp in milliseconds. Since the
 
 Triplet 3 encodes the lowest 16 bits of the timestamp (changes sub-second). Triplets 4-8 encode the random and fixed (version/variant) bits — they change with every UUID.
 
-Triplets 1-2 form a human-readable "when" grouping. For example, all tiddlers created in the same era share the same `"bold fox"` (adjective + noun of triplet 1, stable for ~8.7 years).
+Triplets 1-2 form a human-readable "when" grouping. For example, all tiddlers created in the same era share the same `"metal dog"` (adjective + noun of triplet 1, stable for ~4 years).
 
 !! Filter operators
 
@@ -43,21 +68,20 @@ Triplets 1-2 form a human-readable "when" grouping. For example, all tiddlers cr
 !! Example
 
 ```
-UUID:       019ce2eb-b2e4-739b-bd29-4f9b77c76b04
-All:        bold crab seeks, stark fawn flies, proud fawn charms, crisp crane wakes,
-            deep dune hunts, stark reef soars, warm creek rides, quick cloud binds
-[phrase],[1],[2]: bold crab seeks, stark fawn flies
-[phrase],[1]:     bold crab seeks
+UUID:       019d26fd-f885-7519-81d0-77a62358ac45
+All:        metal dog soars, calm seal hunts, ...
+[phrase],[1],[2]: metal dog soars, calm seal hunts
+[phrase],[1]:     metal dog soars
 ```
 
 !! Plugin tiddlers
 
-|`$:/plugins/wikilabs/uuid7/creator.js` | UUID v7 generator and validator (`module-type: library`) |
-|`$:/plugins/wikilabs/uuid7/phraselib.js` | Phrase encode/decode library (`module-type: library`) |
-|`$:/plugins/wikilabs/uuid7/wordlist/adjectives` | 32 adjectives (`type: text/plain`) |
-|`$:/plugins/wikilabs/uuid7/wordlist/nouns` | 64 nouns (`type: text/plain`) |
-|`$:/plugins/wikilabs/uuid7/wordlist/verbs` | 32 verbs (`type: text/plain`) |
-|`$:/plugins/wikilabs/uuid7/readme` | This file |
+|`$:/plugins/wikilabs/uuid7/creator.js` |UUID v7 generator and validator (`module-type: library`) |
+|`$:/plugins/wikilabs/uuid7/phraselib.js` |Phrase encode/decode library (`module-type: library`) |
+|`$:/plugins/wikilabs/uuid7/wordlist/adjectives` |32 adjectives (`type: text/plain`) |
+|`$:/plugins/wikilabs/uuid7/wordlist/nouns` |64 nouns (`type: text/plain`) |
+|`$:/plugins/wikilabs/uuid7/wordlist/verbs` |32 verbs (`type: text/plain`) |
+|`$:/plugins/wikilabs/uuid7/readme` |This file |
 
 !! Wordlist
 
