@@ -38,7 +38,7 @@ Mode: <$select tiddler="$:/config/wikilabs/uuid7/backfill-mode" default="dry-run
 <option value="disabled">disabled</option>
 </$select>
 
-//Changes take effect on next reload.//
+''Changes take effect on next reload.''
 
 !! Reset
 
