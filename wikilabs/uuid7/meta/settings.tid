@@ -23,10 +23,28 @@ Enable UUID Phrase Search Tab
 </$button>
 <%endif%>
 
+!! Backfill
+
+Adds a `c7` field to existing tiddlers that don't have one. The timestamp is derived from the tiddler's `created` field (or `modified` if `created` is missing). See [[uuid7/backfill|uuid7/backfill]] for details.
+
+|!Mode |!Description |
+|''dry-run'' |Logs what would change to [[_log/backfill-c7]] — no tiddlers are modified (default) |
+|''live'' |Writes `c7` fields to all tiddlers without one |
+|''disabled'' |Does nothing |
+
+Mode: <$select tiddler="$:/config/wikilabs/uuid7/backfill-mode" default="dry-run">
+<option value="dry-run">dry-run</option>
+<option value="live">live</option>
+<option value="disabled">disabled</option>
+</$select>
+
+//Changes take effect on next reload.//
+
 !! Reset
 
 <$button>
 <$action-deletetiddler $tiddler="$:/config/wikilabs/uuid7"/>
+<$action-deletetiddler $tiddler="$:/config/wikilabs/uuid7/backfill-mode"/>
 <$action-deletetiddler $tiddler="$:/plugins/wikilabs/uuid7/ui/SearchResults"/>
 Reset all Settings to Default!
 </$button>

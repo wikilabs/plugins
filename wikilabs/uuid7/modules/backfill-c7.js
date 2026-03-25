@@ -116,14 +116,21 @@ exports.startup = function() {
 	}
 
 	// Write the log tiddler (timestamps are re-enabled at this point)
-	var summary = "Backfill mode: " + mode + "\n\n"
-		+ "Tiddlers " + (isLive ? "updated" : "that would be updated") + ": " + count + "\n\n";
+	var summary = "Backfill mode: ''" + mode + "''\n\n";
+	if(isLive) {
+		summary += "Tiddlers updated: " + count + "\n\n";
+	} else {
+		summary += "Tiddlers that would be updated: " + count + "\n\n"
+			+ "* ''No tiddlers have been changed.''\n"
+			+ "* This is a dry-run preview.\n"
+			+ "* Set the mode to ''live'' in [[$:/ControlPanel]] > Settings > WikiLabs > UUID v7\n"
+			+ "* ''Reload'' to apply changes.\n\n";
+	}
 	$tw.wiki.addTiddler(new $tw.Tiddler(
 		$tw.wiki.getCreationFields(),
 		$tw.wiki.getModificationFields(),
 		{
 			title: LOG_TITLE,
-			type: "text/vnd.tiddlywiki",
 			text: summary + logLines.join("\n")
 		}
 	));
