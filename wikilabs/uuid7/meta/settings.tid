@@ -1,0 +1,22 @@
+caption: UUID v7
+tags: $:/tags/ControlPanel/WikiLabs
+title: $:/plugins/wikilabs/uuid7/settings
+type: text/vnd.tiddlywiki
+
+The full documentation can be found at [[uuid7 plugin|https://wikilabs.github.io/editions/uuid7/]] main page.
+
+!! Phrase Display
+
+<$checkbox tiddler="$:/plugins/wikilabs/uuid7/config" field="show-phrase-badge" checked="yes" unchecked="no" default="yes"> Show mnemonic phrase badge on tiddlers</$checkbox>
+
+<$checkbox tiddler="$:/plugins/wikilabs/uuid7/config" field="bold-triplets" checked="yes" unchecked="no" default="yes"> Bold triplets 2 and 8 in phrase badge</$checkbox>
+
+!! Search
+
+<$checkbox tiddler="$:/plugins/wikilabs/uuid7/config" field="show-search-tab" checked="yes" unchecked="no" default="yes"> Show ''UUID Phrase'' tab in sidebar search</$checkbox>
+
+!! Reset
+
+<$button message="tm-delete-tiddler" param="$:/plugins/wikilabs/uuid7/config">
+Reset to Default!
+</$button>
