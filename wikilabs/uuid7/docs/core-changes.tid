@@ -1,0 +1,89 @@
+title: $:/plugins/wikilabs/uuid7/core-changes
+type: text/vnd.tiddlywiki
+
+! Future Core Changes for Native UUID v7 Support
+
+This document describes what TiddlyWiki core changes would enable deeper UUID v7
+integration. Currently the plugin works without core changes by monkey-patching
+`getCreationFields()` at startup.
+
+!! 1. Native field type in boot.js
+
+Add `c7` as a built-in field type alongside `created`, `modified`, `tags`, `list`, and `color`:
+
+```javascript
+$tw.modules.define("$:/boot/tiddlerfields/c7", "tiddlerfield", {
+    name: "c7"
+});
+```
+
+''Why:'' Registering in boot.js makes the field available before plugins load, ensuring
+shadow tiddlers and early-boot tiddlers are handled correctly.
+
+!! 2. Integrate into getCreationFields()
+
+In `core/modules/wiki.js`, modify `getCreationFields()` to generate a UUID v7 and
+derive `created` from its timestamp:
+
+```javascript
+exports.getCreationFields = function() {
+    var uuid7 = generateUUIDv7();
+    var fields = {
+        c7: uuid7,
+        created: new Date(extractTimestampMs(uuid7))
+    };
+    // creator field unchanged
+    var creator = this.getTiddlerText(USER_NAME_TITLE);
+    if(creator) {
+        fields.creator = creator;
+    }
+    return fields;
+};
+```
+
+''Why:'' This decouples `created` from `$:/config/TimestampDisable` — the timestamp
+is always derived from the UUID, ensuring chronological consistency. The `modified`
+field and `$:/config/TimestampDisable` behaviour remain unchanged.
+
+!! 3. Read-only enforcement in addTiddler()
+
+In the `Tiddler` constructor or `addTiddler()`, strip user-provided `c7` values if
+the tiddler already has one:
+
+```javascript
+// In addTiddler or Tiddler constructor
+if(existingTiddler && existingTiddler.fields.c7) {
+    newFields.c7 = existingTiddler.fields.c7; // preserve original
+}
+```
+
+''Why:'' Once a `c7` is assigned, it must never change (spec point 5). This prevents
+accidental or intentional mutation through the UI or action widgets.
+
+!! 4. Binary storage for database backends
+
+For SQL/MWS backends, store `c7` as 16-byte binary instead of 36-char text:
+
+* Parse: `uuid string → 16-byte buffer` (on write)
+* Stringify: `16-byte buffer → uuid string` (on read)
+* Index as binary primary key for optimal B-tree performance
+
+''Why:'' Binary UUIDs are 2.25× smaller and faster to compare than text UUIDs.
+The monotonic timestamp prefix of UUID v7 makes them ideal B-tree primary keys.
+
+!! 5. Serializer awareness
+
+JSON and .tid serializers could treat `c7` as a first-class field:
+
+* Always include it in exports
+* Validate format on import
+* Optionally omit `created` from exports (since it's derivable from `c7`)
+
+!! Files that would need changes
+
+|!File|!Change|
+|`boot/boot.js` ~line 1135|Add `c7` field type definition|
+|`core/modules/wiki.js` ~line 274|Modify `getCreationFields()`|
+|`core/modules/wiki.js` ~line 292|Consider `getModificationFields()` for future `modified-7`|
+|`boot/boot.js` Tiddler constructor ~line 1016|Read-only enforcement for `c7`|
+|MWS SQL adapter|Binary storage and primary key support|

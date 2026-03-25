@@ -1,0 +1,20 @@
+title: $:/core/ui/TiddlerFieldTemplate
+
+\whitespace trim
+<tr class="tc-view-field">
+<td class="tc-view-field-name">
+<$text text=<<listItem>>/>
+</td>
+<td class="tc-view-field-value">
+	<%if [<listItem>match[c7]] %>
+		<$let uuid={{{ [all[current]get[c7]] }}}>
+			<$text text={{{ [<uuid>uuid7[ms]format:timestamp[]] }}}/> <$text text=" - "/> <$text text=<<uuid>>/> <br>
+			<$text text={{{ [<uuid>uuid7[phrase],[1]] }}}/>  <$text text=", "/>
+			''<$text text={{{ [<uuid>uuid7[phrase],[2]] }}}/>'' <$text text=", "/>
+			<$text text={{{ [<uuid>uuid7[phrase],[3],[6]] }}}/>
+		</$let>
+	<%else%>
+		<$view field=<<listItem>>/>
+	<%endif%>
+</td>
+</tr>

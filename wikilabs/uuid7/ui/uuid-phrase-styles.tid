@@ -1,0 +1,16 @@
+title: $:/plugins/wikilabs/uuid7/styles
+tags: $:/tags/Stylesheet
+type: text/vnd.tiddlywiki
+
+.tc-tiddler-frame {
+	position: relative;
+}
+
+.tc-uuid-phrase-badge {
+	position: absolute;
+	bottom: 3px;
+	left: 6px;
+	font-size: 0.8rem;
+	opacity: 0.4;
+	line-height: 1;
+}

@@ -1,0 +1,88 @@
+title: $:/plugins/wikilabs/uuid7/arguments-created-as-uuid
+type: text/vnd.tiddlywiki
+
+! Arguments for UUID v7 as First-Class `created` Field
+
+!! 1. Title-based identity doesn't scale to MWS
+
+TiddlyWiki identifies tiddlers by `title`. This works for single-user, single-wiki. But MWS introduces multiple wikis, multiple users, bags, and recipes. When tiddlers move between wikis or get imported/merged, title collisions are inevitable. There is no way to tell if two tiddlers with the same title in different bags are the same tiddler or different tiddlers that happen to share a name.
+
+UUID v7 gives every tiddler a ''globally unique birth certificate'' that survives renaming, copying, and cross-wiki migration.
+
+!! 2. The current conflict model has no real identity
+
+The syncer uses `changeCount` (a local incrementing integer) and ETag-based optimistic locking. When there's a conflict, TiddlyWiki returns HTTP 412 with no resolution — the code literally says `// TODO: in case of edit conflict`. There is no merge, no ordering, no way to determine which version came first across different instances.
+
+UUID v7 embeds a ''millisecond-precision timestamp in the most significant bits''. This gives every tiddler a creation-ordered, globally unique identity — the foundation needed for any future conflict resolution, CRDT, or operational transform strategy.
+
+!! 3. UUID v7 is the optimal database primary key
+
+RFC 9562 UUID v7 is specifically designed for database use:
+
+* ''Monotonically increasing'' — new UUIDs sort after old ones, so B-tree inserts are always append-only. No page splits, no random I/O.
+* ''16 bytes binary'' — 2.25× smaller than the 36-char text representation, and smaller than TiddlyWiki's current 17-char date string (`YYYYMMDDHHmmssSSS`).
+* ''Globally unique without coordination'' — no central sequence generator needed. Multiple MWS instances can create tiddlers simultaneously with zero collision risk (probability < 2^-74 per ms).
+
+The current `created` field (`new Date()`) gives you a timestamp but no uniqueness. Two tiddlers created in the same millisecond on different instances get identical `created` values.
+
+!! 4. `created` is already almost a UUID — just without uniqueness
+
+Today, `getCreationFields()` does `created: new Date()`. UUID v7 does the same thing — the first 48 bits ''are'' the Unix millisecond timestamp — plus 74 bits of randomness for uniqueness. The timestamp is trivially extractable:
+
+```javascript
+var ms = parseInt(uuid.slice(0,8) + uuid.slice(9,13), 16);
+var created = new Date(ms);
+```
+
+Making `created` carry a UUID v7 doesn't lose any information — it ''adds'' uniqueness to what's already there.
+
+!! 5. The plugin proves the concept but hits a wall
+
+The `wikilabs/uuid7` plugin demonstrates that UUID v7 integration works with just 2 patches (field module override + `getCreationFields` hook). But it's forced to store ''two redundant fields'' (`c7` and `created`) because:
+
+* `tiddler.fields` is frozen — no computed properties from plugins
+* The field module `parse` runs during boot, before plugins load
+* 6+ core code paths assume `created` is a `Date` object
+
+A small core change — teaching the Tiddler constructor to accept UUID v7 strings in `created` and derive the Date internally — eliminates the redundancy and makes the feature clean.
+
+See [[$:/plugins/wikilabs/uuid7/lessons-learned]] for the full audit of 7 approaches tried.
+
+!! 6. The core change is minimal
+
+What's actually needed:
+
+# ''boot.js'' — In the `created` field module, make `parse` recognize UUID v7 strings (call `extractTimestampMs` instead of `parseDate` when the value matches UUID v7 format)
+# ''wiki.js'' — In `getCreationFields()`, generate UUID v7 and store it as `created`, letting the field module handle the Date conversion
+# ''Tiddler constructor'' — Store the original UUID v7 string alongside the parsed Date (e.g. as a property on the Date object, or a parallel internal field)
+
+That's ~20 lines of core code. Everything else — display, sorting, filtering, serialization — works unchanged because `tiddler.fields.created` remains a `Date` object.
+
+!! 7. Backward compatibility is built in
+
+* Existing tiddlers without UUID v7 keep working — the field module falls back to `parseDate` for traditional date strings
+* Existing code reading `tiddler.fields.created` gets a `Date` object as before
+* `getFieldString("created")` can return either the UUID or the formatted date (configurable)
+* The UUID is an ''addition'' to the timestamp, not a replacement — nothing is lost
+
+!! 8. It enables future capabilities
+
+With UUID v7 as tiddler identity:
+
+* ''Cross-wiki linking'' — Reference tiddlers by UUID, surviving renames
+* ''Merge/sync'' — Detect "same tiddler, different title" during import
+* ''Audit trails'' — Track tiddler lineage across forks and copies
+* ''Mnemonic phrases'' — 8-triplet (adjective-noun-verb) human-readable encoding of UUIDs (already implemented in the plugin) for sharing tiddler references verbally or in print
+* ''CRDT foundations'' — UUID v7's monotonic ordering provides the causal ordering primitive that CRDTs need
+
+!! 9. It's a standard, not a custom solution
+
+UUID v7 is defined in [[RFC 9562|https://www.rfc-editor.org/rfc/rfc9562]] (May 2024). It's the IETF's recommended UUID version for new applications. Libraries exist in every language. It's what PostgreSQL, MySQL, and every major database vendor is converging on for distributed primary keys.
+
+---
+
+!! The ask
+
+Modify the Tiddler constructor to recognize UUID v7 in the `created` field and derive the Date object during construction, before `Object.freeze()`. This is ~20 lines of code that unlocks globally unique tiddler identity for the entire ecosystem.
+
+See [[$:/plugins/wikilabs/uuid7/core-changes]] for the specific files and changes needed.

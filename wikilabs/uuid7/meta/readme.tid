@@ -1,0 +1,27 @@
+title: $:/plugins/wikilabs/uuid7/readme
+type: text/vnd.tiddlywiki
+
+! UUID v7 Plugin
+
+Assigns every tiddler a globally unique, time-ordered identity using [[RFC 9562|https://www.rfc-editor.org/rfc/rfc9562]] UUID v7.
+
+!! What it does
+
+* Generates a UUID v7 on tiddler creation and stores it in the `c7` field
+* The UUID embeds a millisecond-precision timestamp — tiddlers sort chronologically by default
+* Encodes UUIDs as memorable ''adjective-noun-verb'' phrases (e.g. `bold fox lurks`)
+* Provides the `uuid7` filter operator to extract timestamps, phrases, and UUID components
+
+!! Why
+
+TiddlyWiki identifies tiddlers by title. Titles collide on import, rename breaks links, and there is no way to tell if two tiddlers in different wikis are the same. UUID v7 gives every tiddler a birth certificate that survives renaming, copying, and cross-wiki migration.
+
+!! Quick reference
+
+|!Filter |!Returns |
+|`[get[c7]uuid7[phrase]]`|Full 8-triplet mnemonic phrase|
+|`[get[c7]uuid7[phrase],[1],[2]]`|First 2 triplets (timestamp grouping)|
+|`[get[c7]uuid7[ms]format:timestamp[]]`|Human-readable creation date|
+|`[get[c7]uuid7[valid]]`|`yes` or `no`|
+
+See [[$:/plugins/wikilabs/uuid7/filter-docs]] for the full operator reference and [[$:/plugins/wikilabs/uuid7/mnemonic]] for the phrase encoding details.

@@ -1,0 +1,90 @@
+/*\
+title: $:/plugins/wikilabs/uuid7/filters/uuid7.js
+type: application/javascript
+module-type: filteroperator
+
+Filter operator for extracting UUID v7 components.
+
+Usage:
+  [get[c7]uuid7[ms]]              → Unix timestamp in milliseconds
+  [get[c7]uuid7[rnd]]             → random part as hex (20 chars, visually matches UUID)
+  [get[c7]uuid7[phrase]]          → all 8 triplets (comma-separated)
+  [get[c7]uuid7[phrase],[1],[2]]   → triplets 1-2 (start, count — 1-based)
+  [get[c7]uuid7[phrase],[3]]       → triplet 3 only (count defaults to 1)
+  [get[c7]uuid7[version]]         → UUID version number (should be 7)
+  [get[c7]uuid7[variant]]         → variant bits as hex
+  [get[c7]uuid7[valid]]           → "yes" or "no"
+
+Date formatting is done by composing with existing operators:
+  [get[c7]uuid7[ms]format:timestamp[YYYY0MM0DD]]
+
+With no operand, passes through valid UUID v7 strings unchanged (filtering out invalid ones).
+
+\*/
+
+"use strict";
+
+exports.uuid7 = function(source,operator,options) {
+	var creator = require("$:/plugins/wikilabs/uuid7/creator.js");
+	var results = [];
+	var operands = operator.operands || [operator.operand || ""];
+	var suffix = operands[0] || "";
+	source(function(tiddler,title) {
+		switch(suffix) {
+			case "ms":
+				var ms = creator.extractTimestampMs(title);
+				if(ms !== null) {
+					results.push(String(ms));
+				}
+				break;
+			case "phrase":
+				var phraselib = require("$:/plugins/wikilabs/uuid7/phraselib.js");
+				var encResult = phraselib.encodeUUID(title);
+				if(encResult.phrase) {
+					var start = parseInt(operands[1],10);
+					if(start >= 1) {
+						// 1-based start; count defaults to 1
+						var count = parseInt(operands[2],10) || 1;
+						results.push(encResult.phrase.slice(start - 1, start - 1 + count).join(", "));
+					} else {
+						// No start: return all triplets
+						results.push(encResult.phrase.join(", "));
+					}
+				}
+				break;
+			case "rnd":
+				if(creator.isValidV7(title)) {
+					// Bytes 6-15 with dashes, visually matches the UUID:
+					// 019ce7af-ff4d-7897-ae47-6dd818e2d476
+					//               ^^^^ ^^^^ ^^^^^^^^^^^^
+					// rnd =         7897-ae47-6dd818e2d476
+					var hex = title.replace(/-/g,"");
+					var r = hex.slice(12);
+					results.push(r.slice(0,4) + "-" + r.slice(4,8) + "-" + r.slice(8));
+				}
+				break;
+			case "version":
+				if(creator.isValidV7(title)) {
+					var vHex = title.replace(/-/g,"");
+					results.push(String((parseInt(vHex[12],16) >> 0) & 0x0f));
+				}
+				break;
+			case "variant":
+				if(creator.isValidV7(title)) {
+					var varHex = title.replace(/-/g,"");
+					results.push(((parseInt(varHex[16],16) >> 2) & 0x03).toString(16));
+				}
+				break;
+			case "valid":
+				results.push(creator.isValidV7(title) ? "yes" : "no");
+				break;
+			default:
+				// No operand: pass through valid UUIDs only
+				if(creator.isValidV7(title)) {
+					results.push(title);
+				}
+				break;
+		}
+	});
+	return results;
+};

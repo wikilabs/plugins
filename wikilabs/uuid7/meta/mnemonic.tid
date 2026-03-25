@@ -1,0 +1,80 @@
+title: $:/plugins/wikilabs/uuid7/mnemonic
+
+! UUID v7 Mnemonic Phrases
+
+Converts UUID v7 identifiers to and from memorable phrases built from adjective-noun-verb triplets.
+
+!! How it works
+
+A UUID v7 contains 128 bits total. Of these, 6 bits are fixed (4-bit version `0x7` and 2-bit variant `0b10`), leaving '''122 variable bits''' to encode.
+
+Each triplet uses 32 adjectives x 64 nouns x 32 verbs = 65536 combinations = '''16 bits'''. Eight triplets encode 128 bits (122 variable + 6 padding), enough to fully represent any UUID v7.
+
+Bit layout per triplet: `adj(5) | noun(6) | verb(5)` — bit significance matches the English display order left-to-right, so the most stable bits come first.
+
+!! Triplet stability
+
+The first 48 bits of a UUID v7 are the Unix timestamp in milliseconds. Since the high bits change the slowest, the first two triplets form a human-readable timestamp:
+
+|!Triplet |!Word |!Bits |!Stable for |
+| 1 | Adjective | 5 | ~278 years |
+| 1 | Noun | 6 | ~8.7 years |
+| 1 | Verb | 5 | ~50 days |
+| 2 | Adjective | 5 | ~1.5 days |
+| 2 | Noun | 6 | ~34 minutes |
+| 2 | Verb | 5 | ~1 minute |
+
+Triplet 3 encodes the lowest 16 bits of the timestamp (changes sub-second). Triplets 4-8 encode the random and fixed (version/variant) bits — they change with every UUID.
+
+Triplets 1-2 form a human-readable "when" grouping. For example, all tiddlers created in the same era share the same `"bold fox"` (adjective + noun of triplet 1, stable for ~8.7 years).
+
+!! Filter operators
+
+|!Filter |!Returns |
+|`[get[c7]uuid7[phrase]]`|All 8 triplets, comma-separated|
+|`[get[c7]uuid7[phrase],[1],[2]]`|Triplets 1-2 (timestamp-based)|
+|`[get[c7]uuid7[phrase],[3]]`|Triplet 3 only (count defaults to 1)|
+|`[get[c7]uuid7[ms]]`|Unix timestamp in milliseconds|
+|`[get[c7]uuid7[rnd]]`|Random part as hex|
+|`[get[c7]uuid7[version]]`|UUID version number (7)|
+|`[get[c7]uuid7[variant]]`|Variant bits as hex|
+|`[get[c7]uuid7[valid]]`|`yes` or `no`|
+
+!! Example
+
+```
+UUID:       019ce2eb-b2e4-739b-bd29-4f9b77c76b04
+All:        bold crab seeks, stark fawn flies, proud fawn charms, crisp crane wakes,
+            deep dune hunts, stark reef soars, warm creek rides, quick cloud binds
+[phrase],[1],[2]: bold crab seeks, stark fawn flies
+[phrase],[1]:     bold crab seeks
+```
+
+!! Plugin tiddlers
+
+|`$:/plugins/wikilabs/uuid7/creator.js` | UUID v7 generator and validator (`module-type: library`) |
+|`$:/plugins/wikilabs/uuid7/phraselib.js` | Phrase encode/decode library (`module-type: library`) |
+|`$:/plugins/wikilabs/uuid7/wordlist/adjectives` | 32 adjectives (`type: text/plain`) |
+|`$:/plugins/wikilabs/uuid7/wordlist/nouns` | 64 nouns (`type: text/plain`) |
+|`$:/plugins/wikilabs/uuid7/wordlist/verbs` | 32 verbs (`type: text/plain`) |
+|`$:/plugins/wikilabs/uuid7/readme` | This file |
+
+!! Wordlist
+
+The wordlist follows BIP-39 rules: Levenshtein distance >= 2 between all words, no proper names. Each list is stored in its own tiddler (one word per line).
+
+You can shadow `$:/plugins/wikilabs/uuid7/wordlist/adjectives`, `nouns`, or `verbs` with your own tiddlers containing exactly 32 adjectives, 64 nouns, and 32 verbs respectively.
+
+!! JavaScript API
+
+```javascript
+var creator = require("$:/plugins/wikilabs/uuid7/creator.js");
+var phraselib = require("$:/plugins/wikilabs/uuid7/phraselib.js");
+
+var uuid   = creator.generateUUIDv7();
+var valid  = creator.isValidV7(uuid);            // true
+var ms     = creator.extractTimestampMs(uuid);    // Unix ms
+
+var enc    = phraselib.encodeUUID(uuid);          // { phrase: [8 triplets] }
+var dec    = phraselib.decodePhrase(enc.phrase);  // { uuid: "..." }
+```

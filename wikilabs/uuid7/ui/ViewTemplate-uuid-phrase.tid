@@ -1,0 +1,13 @@
+title: $:/plugins/wikilabs/uuid7/ui/ViewTemplate/uuid-phrase
+tags: $:/tags/ViewTemplate
+list-before: $:/core/ui/ViewTemplate/title
+
+\whitespace trim
+<%if [<currentTiddler>has[c7]] %>
+<div class="tc-uuid-phrase-badge">
+<$text text={{{ [<currentTiddler>get[c7]uuid7[phrase],[1]] }}}/>, <$text text=", "/>
+''<$text text={{{ [<currentTiddler>get[c7]uuid7[phrase],[2]] }}}/>'', <$text text=", "/>
+<$text text={{{ [<currentTiddler>get[c7]uuid7[phrase],[3],[5]] }}}/>, <$text text=", "/>
+''<$text text={{{ [<currentTiddler>get[c7]uuid7[phrase],[8]] }}}/>''
+</div>
+<%endif%>

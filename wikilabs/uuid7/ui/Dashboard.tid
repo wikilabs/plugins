@@ -1,0 +1,134 @@
+title: $:/plugins/wikilabs/uuid7/ui/Dashboard
+caption: C7 Dashboard
+
+\whitespace trim
+
+\procedure c7-coverage()
+\whitespace trim
+<table>
+	<tr><th>Metric</th><th>Count</th></tr>
+	<tr><td>Total tiddlers</td><td><$text text={{{ [all[tiddlers]count[]] }}} /></td></tr>
+	<tr><td>With c7 field</td><td><$text text={{{ [all[tiddlers]has[c7]count[]] }}} /></td></tr>
+	<tr><td>Without c7 field</td><td><$text text={{{ [all[tiddlers]!has[c7]count[]] }}} /></td></tr>
+	<tr><td>Valid c7</td><td><$text text={{{ [all[tiddlers]has[c7]] :filter[get[c7]uuid7[valid]match[yes]] +[count[]] }}} /></td></tr>
+	<tr><td>Invalid c7</td><td><$text text={{{ [all[tiddlers]has[c7]] :filter[get[c7]uuid7[valid]match[no]] +[count[]] }}} /></td></tr>
+</table>
+\end
+
+\procedure c7-duplicates()
+\whitespace trim
+<$let
+	totalC7={{{ [all[tiddlers]has[c7]count[]] }}}
+	uniqueC7={{{ [all[tiddlers]has[c7]] :map[get[c7]] +[unique[]] +[count[]] }}}
+>
+<%if [<totalC7>match<uniqueC7>] %>
+	No duplicates found. All <<totalC7>> c7 values are unique.
+<%else%>
+	@@color:red;Warning:@@ Duplicate c7 values detected! (<<totalC7>> tiddlers, <<uniqueC7>> unique values)
+<%endif%>
+</$let>
+\end
+
+\procedure c7-temporal()
+\whitespace trim
+<table>
+	<tr><th>Month</th><th>Count</th></tr>
+	<$list
+		filter="[all[tiddlers]has[c7]] :map[get[c7]uuid7[ms]format:timestamp[YYYY-0MM]] +[unique[]] +[nsort[]]"
+		variable="month"
+		emptyMessage="<tr><td colspan='2'><em>No c7 data available</em></td></tr>"
+	>
+		<$let monthCount={{{ [all[tiddlers]has[c7]] :filter[get[c7]uuid7[ms]format:timestamp[YYYY-0MM]match<month>] +[count[]] }}}>
+			<tr><td><<month>></td><td><<monthCount>></td></tr>
+		</$let>
+	</$list>
+</table>
+\end
+
+\procedure c7-triplet1()
+\whitespace trim
+<table>
+	<tr><th>Triplet 1</th><th>Count</th></tr>
+	<$list
+		filter="[all[tiddlers]has[c7]] :map[get[c7]uuid7[phrase],[1]] +[unique[]] +[sort[]]"
+		variable="triplet"
+		emptyMessage="<tr><td colspan='2'><em>No c7 data available</em></td></tr>"
+	>
+		<$let tripletCount={{{ [all[tiddlers]has[c7]] :filter[get[c7]uuid7[phrase],[1]match<triplet>] +[count[]] }}}>
+			<tr><td><<triplet>></td><td><<tripletCount>></td></tr>
+		</$let>
+	</$list>
+</table>
+\end
+
+\procedure c7-word-frequency(type)
+\whitespace trim
+<$let
+	wordlistTitle={{{ [[$:/plugins/wikilabs/uuid7/wordlist/]addsuffix<type>] }}}
+>
+	<table>
+		<tr><th>Word</th><th>Count</th></tr>
+		<$list
+			filter="[<wordlistTitle>get[text]splitregexp[\n]trim[]!is[blank]sort[]]"
+			variable="word"
+			emptyMessage="<tr><td colspan='2'><em>Wordlist not found</em></td></tr>"
+		>
+			<$let wordCount={{{ [all[tiddlers]has[c7]] :map[get[c7]uuid7[phrase]] +[split[, ]] +[split[ ]] +[match<word>] +[count[]] }}}>
+				<tr><td><<word>></td><td><<wordCount>></td></tr>
+			</$let>
+		</$list>
+	</table>
+</$let>
+\end
+
+! C7 UUID Phrase Dashboard
+
+!! Coverage
+
+<<c7-coverage>>
+
+!! Duplicate Detection
+
+<<c7-duplicates>>
+
+!! Temporal Distribution (by month)
+
+Tiddler creation months derived from c7 timestamps:
+
+<<c7-temporal>>
+
+!! Triplet 1 Distribution (Epoch Groups)
+
+Triplet 1 changes slowly (~50 days per verb change). Tiddlers sharing the same triplet 1 were created in the same epoch.
+
+<details>
+<summary>Show triplet 1 distribution</summary>
+
+<<c7-triplet1>>
+
+</details>
+
+!! Word Frequency
+
+How often each word appears across all c7 phrases (all 8 triplets).
+
+<details>
+<summary>Adjectives (32 words)</summary>
+
+<<c7-word-frequency adjectives>>
+
+</details>
+
+<details>
+<summary>Nouns (64 words)</summary>
+
+<<c7-word-frequency nouns>>
+
+</details>
+
+<details>
+<summary>Verbs (32 words)</summary>
+
+<<c7-word-frequency verbs>>
+
+</details>

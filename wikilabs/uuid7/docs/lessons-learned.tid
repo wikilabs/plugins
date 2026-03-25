@@ -1,0 +1,150 @@
+title: $:/plugins/wikilabs/uuid7/lessons-learned
+type: text/vnd.tiddlywiki
+
+! Lessons Learned: Virtual Tiddler Fields in TiddlyWiki
+
+This documents the attempts and findings from trying to make `created` a virtual field derived from `c7` (UUID v7) without storing it.
+
+!! Goal
+
+Store only `c7` on new tiddlers. Derive `created` on-the-fly from the UUID v7 timestamp. This would save storage and make `c7` the single source of truth.
+
+!! Approach 1: Override the `created` field module's `stringify`
+
+''What we did:'' In the startup module, overrode `$tw.Tiddler.fieldModules["created"]` with a custom `stringify` that derives the date from `this.fields.c7`.
+
+''Result:'' Only works if code calls `tiddler.getFieldString("created")`, which internally calls `stringify`. Many code paths don't go through `getFieldString`.
+
+''Lesson:'' `fieldModules` only affect `parse` (Tiddler constructor) and `stringify` (`getFieldString`). They are NOT called when code reads `tiddler.fields.created` directly.
+
+!! Approach 2: Patch `getFieldString`
+
+''What we did:'' Wrapped `$tw.Tiddler.prototype.getFieldString` to intercept `field === "created"` and derive the value from `c7`.
+
+''Result:'' Works for `[get[created]]` filter and anywhere using `getFieldString`. But the `$view` widget and other code check `$tw.utils.hop(tiddler.fields, "created")` //before// calling `getFieldString`. If `hop` returns `false`, `getFieldString` is never reached.
+
+''Lesson:'' `getFieldString` is guarded by `hop` checks in many places. Patching it alone is insufficient.
+
+!! Approach 3: Patch `hasField`
+
+''What we did:'' Wrapped `$tw.Tiddler.prototype.hasField` to return `true` for `"created"` when `c7` exists.
+
+''Result:'' Partially works. But critical code (like the `$view` widget at `core/modules/widgets/view.js:117`) uses `$tw.utils.hop(tiddler.fields, "created")` directly, not `hasField`. These are different code paths.
+
+''Lesson:'' `hasField` and `$tw.utils.hop` are separate. `hasField` is a Tiddler method; `hop` is a utility that does `Object.prototype.hasOwnProperty.call(object, property)`. Code inconsistently uses one or the other.
+
+!! Approach 4: Patch `$tw.utils.hop`
+
+''What we did:'' Wrapped `$tw.utils.hop` to return `true` for `"created"` when the object has a `c7` property.
+
+''Result:'' Causes cascading `TypeError` exceptions. When `hop` returns `true`, downstream code assumes `tiddler.fields.created` has a value and tries to access properties on it (e.g. `.length`). Since the field is `undefined`, these accesses throw.
+
+''Lesson:'' Making `hop` lie about field existence is dangerous. It passes the guard check but the actual value is still `undefined`. Every access pattern would need its own fix.
+
+!! Approach 5: Patch the `fields` filter operator
+
+''What we did:'' Wrapped `$tw.wiki.getFilterOperators().fields` to inject `"created"` into results when a tiddler has `c7` but no `created`.
+
+''Note on patching:'' The filter operator must be patched via `$tw.wiki.getFilterOperators().fields`, NOT via `$tw.modules.titles["$:/core/modules/filters/fields.js"]`. The module system and the runtime filter operator registry are separate — patching the module source doesn't affect the already-registered operator.
+
+''Result:'' The field name appears in listings, but the value is empty because the `$view` widget's `getValue()` still can't read `tiddler.fields.created`.
+
+!! Approach 6: Patch the `$view` widget's `getValue`
+
+This was considered but abandoned. It would fix the view widget but leave other direct `tiddler.fields.created` accesses broken (serializers, savers, exporters, etc.).
+
+!! Why a truly virtual field is not possible from a plugin
+
+The core issue: `tiddler.fields` is a //frozen// `Object.create(null)` set in the `$tw.Tiddler` constructor (`boot/boot.js:1016-1047`). Once frozen:
+
+* You cannot add properties to it
+* You cannot use `Object.defineProperty` for getters
+* You cannot use a `Proxy` wrapper (the object is already distributed to all consumers)
+
+The only way to make `created` truly virtual is to modify the ''Tiddler constructor'' in `boot.js` to inject the derived field during construction, before the object is frozen. This is a core change.
+
+!! Final solution
+
+Store `created` alongside `c7`, derived from the UUID v7 timestamp:
+
+* `getCreationFields()` sets both `c7` and `created` (created = `new Date(extractTimestampMs(c7))`)
+* The `created` field module's `stringify` is overridden to always derive from `c7` when present
+* This ensures `c7` is the source of truth for //display//, while `created` exists in `tiddler.fields` for compatibility
+
+This requires only 2 patches (field module override + `getCreationFields` hook) instead of 6, and works with all existing TW code.
+
+---
+
+! Lessons Learned: Storing UUID v7 Directly in `created`
+
+This documents the audit of whether `created` could store a UUID v7 string instead of a `Date` object, eliminating the need for a separate `c7` field.
+
+!! Goal
+
+Use `created` as the single field — store UUID v7 string in it. Override the field module so `parse` keeps the string and `stringify` extracts the date. No separate `c7` field needed.
+
+!! Approach 7: Replace `created` Date with UUID v7 string
+
+''What we did:'' Audited all core code that accesses `tiddler.fields.created` to determine if a string value (instead of `Date`) would break.
+
+''Result:'' 6 critical breaking points found. Not viable from a plugin.
+
+!! Breaking point 1: `isFieldValueEqual` in boot.js
+
+`boot/boot.js:1086` — Tiddler equality comparison:
+
+```
+if($tw.utils.isDate(valueA) && $tw.utils.isDate(valueB)
+   && valueA.getTime() === valueB.getTime())
+```
+
+UUID strings fail the `isDate()` check. Tiddler comparisons would silently report inequality even when two tiddlers have the same `created` UUID.
+
+!! Breaking point 2: Field module `parse` runs in Tiddler constructor
+
+`boot/boot.js:1028-1040` — The `parse` function runs during `new $tw.Tiddler(...)`.
+
+Boot tiddlers and shadow tiddlers are constructed ''before'' any startup module runs. Even if we override the `created` field module in a startup module, boot/shadow tiddlers will already have had their `created` field parsed by `$tw.utils.parseDate`, which corrupts a UUID string into an `Invalid Date`.
+
+''Lesson:'' Startup modules cannot intercept field parsing for tiddlers constructed during boot.
+
+!! Breaking point 3: View widget date formatting
+
+`core/modules/widgets/view.js:177-187` — `getValueAsDate()` and `getValueAsRelativeDate()`:
+
+```
+if(value && $tw.utils.isDate(value) && value.toString() !== "Invalid Date")
+```
+
+`<$view field="created" format="date">` and `<$view field="created" format="relativedate">` would show nothing because UUID strings fail `$tw.utils.isDate()`.
+
+!! Breaking point 4: `format:date` filter operator
+
+`core/modules/filters/format/date.js:16` — Same `isDate()` guard. Filters like `[get[created]format:date[YYYY-MM-DD]]` would return empty.
+
+!! Breaking point 5: `format:relativedate` filter operator
+
+`core/modules/filters/format/relativedate.js:16` — Same pattern.
+
+!! Breaking point 6: Sort by created
+
+`core/modules/wiki.js:461-462` — Sort logic checks `Object.prototype.toString.call(a) === "[object Date]"`. Falls back to string comparison for non-Date values. UUID strings are ''not'' chronologically sortable as strings — the timestamp occupies only the first 8 hex characters, but the full 36-character UUID includes random bits that disrupt ordering.
+
+!! Why this cannot be fixed from a plugin
+
+* ''Boot timing:'' The Tiddler constructor applies `parse` before plugins load. Cannot intercept.
+* ''`$tw.utils.isDate`:'' Returns `value instanceof Date`. Cannot make strings pass this check without modifying boot.js.
+* ''Frozen fields:'' Even if we store the UUID, downstream code reads `tiddler.fields.created` directly and calls Date methods on it (`.getTime()`, `.toString()`).
+* ''Scope:'' 6+ code paths across boot.js, widgets, and filters all assume Date objects. Patching each from a plugin is fragile and incomplete.
+
+!! Conclusion
+
+''Option A (UUID in `created`) requires core changes.'' It is not viable as a plugin-only solution.
+
+---
+
+! Summary: What would need to change in core
+
+See [[$:/plugins/wikilabs/uuid7/core-changes]] for the full list. The key change:
+
+Modify the `$tw.Tiddler` constructor to support ''computed fields'' — fields that are derived from other fields during construction. This would allow `created` to be set from `c7` before `Object.freeze()` is called, making it a first-class field with no patching needed.

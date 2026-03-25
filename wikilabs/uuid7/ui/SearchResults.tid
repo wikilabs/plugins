@@ -1,0 +1,38 @@
+title: $:/plugins/wikilabs/uuid7/ui/SearchResults
+tags: $:/tags/SearchResults
+caption: UUID Phrase
+first-search-filter: [all[tiddlers]has[c7]!is[system]] :filter[get[c7]uuid7[phrase]search<userInput>] +[sort[title]limit[250]]
+second-search-filter: [is[system]has[c7]] :filter[get[c7]uuid7[phrase]search<userInput>] +[sort[title]limit[250]]
+
+\define searchResultList()
+\whitespace trim
+//<small>Tiddlers matching UUID phrase words</small>//
+
+<%if [<userInput>minlength[1]]"%>
+	<$list filter={{{ [<configTiddler>get[first-search-filter]] }}}
+		emptyMessage="//No matching UUID phrases//"
+	>
+		<$let uuidPhrase={{{ [<currentTiddler>get[c7]uuid7[phrase]] }}}>
+			<span class={{{[<currentTiddler>addsuffix[-primaryList]] -[<searchListState>get[text]] +[then[]else[tc-list-item-selected]] }}}
+				title=<<uuidPhrase>>
+			>
+				<$transclude tiddler="$:/core/ui/ListItemTemplate"/>
+			</span>
+		</$let>
+	</$list>
+<%endif%>
+
+//<small>System Tiddlers matching UUID phrase words</small>//
+
+<$list filter="[<userInput>minlength[1]]" variable="ignore">
+	<$list filter={{{ [<configTiddler>get[second-search-filter]] }}}
+		emptyMessage={{$:/language/Search/Matches/NoResult}}
+	>
+		<span class={{{[<currentTiddler>addsuffix[-secondaryList]] -[<searchListState>get[text]] +[then[]else[tc-list-item-selected]] }}}>
+			<$transclude tiddler="$:/core/ui/ListItemTemplate"/>
+		</span>
+	</$list>
+</$list>
+\end
+
+<<searchResultList>>

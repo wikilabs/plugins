@@ -1,0 +1,64 @@
+title: $:/plugins/wikilabs/uuid7/filter-docs
+type: text/vnd.tiddlywiki
+caption: uuid7 filter operator
+tags:
+
+! `uuid7` Filter Operator
+
+Extracts components from UUID v7 strings.
+
+!! Syntax
+
+```
+[uuid7[operand]]
+[uuid7[phrase],[start],[count]]
+```
+
+* ''Input:'' A UUID v7 string (e.g. from `[get[c7]]`)
+* ''Operand:'' Selects which component to extract
+* ''Start / Count:'' Optional, only for `phrase` — select specific triplets (1-based, count defaults to 1)
+
+!! Operands
+
+|!Operand |!Returns |!Example output |
+|`phrase`|All 8 adjective-noun-verb triplets, comma-separated|`bold crab seeks, stark fawn flies, ...`|
+|`phrase` + start|Single triplet at position (1-based)|`bold crab seeks`|
+|`phrase` + start + count|Range of triplets|`bold crab seeks, stark fawn flies`|
+|`ms`|Unix timestamp in milliseconds|`1710340000000`|
+|`rnd`|Random part as hex (with dashes)|`739b-bd29-4f9b77c76b04`|
+|`version`|UUID version number|`7`|
+|`variant`|Variant bits as hex|`2`|
+|`valid`|Validity check|`yes` or `no`|
+|(empty)|Pass through valid UUID v7 strings, filter out invalid ones|`019ce2eb-b2e4-739b-bd29-4f9b77c76b04`|
+
+!! Examples
+
+|!Filter |!Description |
+|`[get[c7]uuid7[phrase]]`|Full phrase for the tiddler's UUID|
+|`[get[c7]uuid7[phrase],[1]]`|First triplet only (stable for ~50 days)|
+|`[get[c7]uuid7[phrase],[1],[2]]`|First 2 triplets (timestamp-based grouping)|
+|`[get[c7]uuid7[phrase],[3]]`|Third triplet only|
+|`[get[c7]uuid7[ms]format:timestamp[YYYY-0MM-0DD]]`|Creation date formatted as `2024-03-13`|
+|`[get[c7]uuid7[ms]format:timestamp[]]`|Creation date in default format|
+|`[get[c7]uuid7[valid]]`|Check if the `c7` field contains a valid UUID v7|
+|`[get[c7]uuid7[]]`|Pass through only if valid UUID v7|
+
+!! Phrase triplet structure
+
+Each triplet is an ''adjective noun verb'' combination (e.g. `bold fox lurks`) encoding 16 bits:
+
+* Adjective: 5 bits (32 words) — highest bits, most stable
+* Noun: 6 bits (64 words) — middle bits
+* Verb: 5 bits (32 words) — lowest bits, least stable
+
+The bit significance matches the display order left-to-right. In triplet 1, the adjective stays the same for ~278 years, the noun for ~8.7 years, and the verb for ~50 days.
+
+!! Combining with other operators
+
+The `uuid7` operator returns strings, so it composes naturally with TiddlyWiki's built-in operators:
+
+```
+[get[c7]uuid7[ms]format:timestamp[DDth MMM YYYY]]  → "13th Mar 2024"
+[get[c7]uuid7[ms]add[86400000]format:timestamp[]]   → next day
+[get[c7]uuid7[valid]match[yes]]                      → filter to valid UUIDs
+```
