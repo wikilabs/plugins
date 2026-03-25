@@ -60,7 +60,7 @@ exports.startup = function() {
 	var logLines = [];
 	var count = 0;
 
-	logLines.push("|!Title|!Source|!Generated c7|");
+	logLines.push("|!Title|!Source|!Created|!Generated c7|");
 
 	// In live mode, temporarily disable timestamps so writing c7 won't touch modified
 	var previousTimestampDisable = null;
@@ -94,8 +94,10 @@ exports.startup = function() {
 			var source = tiddler.fields.created ? "created"
 				: (tiddler.fields.modified ? "modified" : "Date.now()");
 			var c7 = creator.generateUUIDv7(ms);
+			var c7Ms = creator.extractTimestampMs(c7);
+			var createdStr = $tw.utils.stringifyDate(new Date(c7Ms));
 
-			logLines.push("|[[" + title + "]]|" + source + "|" + c7 + "|");
+			logLines.push("|[[" + title + "]]|" + source + "|" + createdStr + "|" + c7 + "|");
 			count++;
 
 			if(isLive) {
@@ -116,22 +118,35 @@ exports.startup = function() {
 	}
 
 	// Write the log tiddler (timestamps are re-enabled at this point)
-	var summary = "Backfill mode: ''" + mode + "''\n\n";
+	var newSection = "! Backfill — ''" + mode + "'' — " + new Date().toISOString().slice(0, 10) + "\n\n";
 	if(isLive) {
-		summary += "Tiddlers updated: " + count + "\n\n";
+		newSection += "Tiddlers updated: " + count + "\n\n";
 	} else {
-		summary += "Tiddlers that would be updated: " + count + "\n\n"
+		newSection += "Tiddlers that would be updated: " + count + "\n\n"
 			+ "* ''No tiddlers have been changed.''\n"
 			+ "* This is a dry-run preview.\n"
 			+ "* Set the mode to ''live'' in [[$:/ControlPanel]] > Settings > WikiLabs > UUID v7\n"
 			+ "* ''Reload'' to apply changes.\n\n";
 	}
+	newSection += logLines.join("\n");
+
+	// Prepend to existing log if last run was live
+	var existingLog = $tw.wiki.getTiddler(LOG_TITLE);
+	var previousMode = existingLog ? (existingLog.fields["backfill-mode"] || "") : "";
+	var text;
+	if(previousMode === "live" && existingLog && existingLog.fields.text) {
+		text = newSection + "\n\n---\n\n" + existingLog.fields.text;
+	} else {
+		text = newSection;
+	}
+
 	$tw.wiki.addTiddler(new $tw.Tiddler(
 		$tw.wiki.getCreationFields(),
 		$tw.wiki.getModificationFields(),
 		{
 			title: LOG_TITLE,
-			text: summary + logLines.join("\n")
+			"backfill-mode": mode,
+			text: text
 		}
 	));
 };
