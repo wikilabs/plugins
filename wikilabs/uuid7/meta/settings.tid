@@ -1,22 +1,38 @@
 caption: UUID v7
 tags: $:/tags/ControlPanel/WikiLabs
-title: $:/plugins/wikilabs/uuid7/settings
+title: $:/wikilabs/uuid7/settings
 type: text/vnd.tiddlywiki
 
 The full documentation can be found at [[uuid7 plugin|https://wikilabs.github.io/editions/uuid7/]] main page.
 
 !! Phrase Display
 
-<$checkbox tiddler="$:/plugins/wikilabs/uuid7/config" field="show-phrase-badge" checked="yes" unchecked="no" default="yes"> Show mnemonic phrase badge on tiddlers</$checkbox>
+<$checkbox tiddler="$:/config/wikilabs/uuid7" field="show-phrase-badge" checked="yes" unchecked="no" default="yes"> Show mnemonic phrase badge on tiddlers</$checkbox>
 
-<$checkbox tiddler="$:/plugins/wikilabs/uuid7/config" field="bold-triplets" checked="yes" unchecked="no" default="yes"> Bold triplets 2 and 8 in phrase badge</$checkbox>
+<$checkbox tiddler="$:/config/wikilabs/uuid7" field="bold-triplets" checked="yes" unchecked="no" default="yes"> Bold triplets 2 and 8 in phrase badge</$checkbox>
 
 !! Search
 
-<$checkbox tiddler="$:/plugins/wikilabs/uuid7/config" field="show-search-tab" checked="yes" unchecked="no" default="yes"> Show ''UUID Phrase'' tab in sidebar search</$checkbox>
+<%if [[$:/plugins/wikilabs/uuid7/ui/SearchResults]tags[]match[$:/tags/SearchResults]] %>
+<$button actions="<$action-setfield $tiddler='$:/plugins/wikilabs/uuid7/ui/SearchResults' tags='$:/tags/SearchResults-disabled'/>">
+Disable UUID Phrase Search Tab
+</$button>
+<%else%>
+<$button actions="""<$action-deletetiddler $tiddler="$:/plugins/wikilabs/uuid7/ui/SearchResults"/>""">
+Enable UUID Phrase Search Tab
+</$button>
+<%endif%>
 
 !! Reset
 
-<$button message="tm-delete-tiddler" param="$:/plugins/wikilabs/uuid7/config">
-Reset to Default!
+<$button>
+<$action-deletetiddler $tiddler="$:/config/wikilabs/uuid7"/>
+<$action-deletetiddler $tiddler="$:/plugins/wikilabs/uuid7/ui/SearchResults"/>
+Reset all Settings to Default!
 </$button>
+
+!! Overwritten Shadow Tiddlers
+
+* Search Results: {{{ [[$:/plugins/wikilabs/uuid7/ui/SearchResults]] :filter[is[tiddler]then<currentTiddler>] ~[[n/a]] }}}
+* Config Tiddler: {{{ [prefix[$:/config/wikilabs/uuid7]] :filter[is[tiddler]then<currentTiddler>] ~[[n/a]] }}}
+
