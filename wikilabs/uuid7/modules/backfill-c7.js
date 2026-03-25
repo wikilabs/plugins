@@ -95,7 +95,7 @@ exports.startup = function() {
 				: (tiddler.fields.modified ? "modified" : "Date.now()");
 			var c7 = creator.generateUUIDv7(ms);
 
-			logLines.push("|" + title + "|" + source + "|" + c7 + "|");
+			logLines.push("|[[" + title + "]]|" + source + "|" + c7 + "|");
 			count++;
 
 			if(isLive) {
