@@ -11,6 +11,10 @@ The full documentation can be found at [[uuid7 plugin|https://wikilabs.github.io
 
 <$checkbox tiddler="$:/config/wikilabs/uuid7" field="bold-triplets" checked="yes" unchecked="no" default="yes"> Bold triplets 2 and 8 in phrase badge</$checkbox>
 
+!! Creation Fields
+
+<$checkbox tiddler="$:/config/wikilabs/uuid7" field="no-created" checked="yes" unchecked="no" default="no"> Do not add `created` field to new tiddlers — only `c7` is set</$checkbox>
+
 !! Search
 
 <%if [[$:/plugins/wikilabs/uuid7/ui/SearchResults]tags[]match[$:/tags/SearchResults]] %>

@@ -53,6 +53,10 @@ exports.startup = function() {
 	$tw.wiki.getCreationFields = function() {
 		var fields = originalGetCreationFields();
 		fields.c7 = creator.generateUUIDv7();
+		var cfg = $tw.wiki.getTiddler("$:/config/wikilabs/uuid7");
+		if(cfg && cfg.fields["no-created"] === "yes") {
+			delete fields.created;
+		}
 		return fields;
 	};
 
@@ -61,6 +65,11 @@ exports.startup = function() {
 	// into every tiddler. If the original tiddler had no created,
 	// strip the injected created to respect the user's choice.
 	$tw.hooks.addHook("th-saving-tiddler",function(newTiddler,draftTiddler) {
+		var cfg = $tw.wiki.getTiddler("$:/config/wikilabs/uuid7");
+		var noCreated = cfg && cfg.fields["no-created"] === "yes";
+		if(noCreated) {
+			return new $tw.Tiddler(newTiddler, {created: undefined});
+		}
 		var draftOf = draftTiddler && draftTiddler.fields["draft.of"];
 		if(draftOf) {
 			var originalTiddler = $tw.wiki.getTiddler(draftOf);
