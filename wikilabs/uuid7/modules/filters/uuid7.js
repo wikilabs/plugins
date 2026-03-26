@@ -15,6 +15,8 @@ Usage:
   [get[c7]uuid7[version]]         → UUID version number (should be 7)
   [get[c7]uuid7[variant]]         → variant bits as hex
   [get[c7]uuid7[valid]]           → "yes" or "no"
+  [get[c7]uuid7[c32]]             → convert to Crockford Base32 (6-4-12-4)
+  [get[c7]uuid7[check]]           → check symbol (mod 37, via c32)
 
 Date formatting is done by composing with existing operators:
   [get[c7]uuid7[ms]format:timestamp[YYYY0MM0DD]]
@@ -76,6 +78,18 @@ exports.uuid7 = function(source,operator,options) {
 				if(creator.isValidV7(title)) {
 					var varHex = title.replace(/-/g,"");
 					results.push(((parseInt(varHex[16],16) >> 2) & 0x03).toString(16));
+				}
+				break;
+			case "c32":
+				if(creator.isValidV7(title)) {
+					var c32lib = require("$:/plugins/wikilabs/uuid7/crockford32.js");
+					results.push(c32lib.fromUUID(title));
+				}
+				break;
+			case "check":
+				if(creator.isValidV7(title)) {
+					var c32chk = require("$:/plugins/wikilabs/uuid7/crockford32.js");
+					results.push(c32chk.checkSymbol(c32chk.fromUUID(title)));
 				}
 				break;
 			case "valid":
