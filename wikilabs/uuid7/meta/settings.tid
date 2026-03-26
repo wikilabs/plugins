@@ -44,11 +44,30 @@ Mode: <$select tiddler="$:/config/wikilabs/uuid7/backfill-mode" default="dry-run
 
 ''Changes take effect on next reload.''
 
+!! Custom Backfill Filter
+
+By default, only non-system tiddlers are backfilled. Define an additional filter to also backfill specific system tiddlers or other tiddlers. This filter is also applied at import.
+
+Filter: <$edit-text tiddler="$:/config/wikilabs/uuid7/backfill-filter" tag="input" default="" placeholder="e.g. [is[system]prefix[$:/config/]]" size="60"/>
+
+<%if [{$:/config/wikilabs/uuid7/backfill-filter}minlength[1]] %>
+Matching tiddlers without `c7`:
+
+<ol>
+<$list filter={{{ [{$:/config/wikilabs/uuid7/backfill-filter}] }}} variable="item">
+<%if [<item>!has[c7]] %>
+<li><<item>></li>
+<%endif%>
+</$list>
+</ol>
+<%endif%>
+
 !! Reset
 
 <$button>
 <$action-deletetiddler $tiddler="$:/config/wikilabs/uuid7"/>
 <$action-deletetiddler $tiddler="$:/config/wikilabs/uuid7/backfill-mode"/>
+<$action-deletetiddler $tiddler="$:/config/wikilabs/uuid7/backfill-filter"/>
 <$action-deletetiddler $tiddler="$:/plugins/wikilabs/uuid7/ui/SearchResults"/>
 Reset all Settings to Default!
 </$button>

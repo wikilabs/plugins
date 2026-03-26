@@ -56,8 +56,13 @@ exports.startup = function() {
 	}
 
 	var isLive = (mode === "live");
-	// Only process real tiddlers, not shadows
-	var titles = $tw.wiki.filterTiddlers("[is[tiddler]!is[system]]");
+	// Default: real non-system tiddlers. Custom filter adds additional tiddlers.
+	var customFilter = ($tw.wiki.getTiddlerText("$:/config/wikilabs/uuid7/backfill-filter", "") || "").trim();
+	var filter = "[is[tiddler]!is[system]]";
+	if(customFilter) {
+		filter = filter + " " + customFilter;
+	}
+	var titles = $tw.wiki.filterTiddlers(filter);
 	var logLines = [];
 	var count = 0;
 
