@@ -20,6 +20,7 @@ Shadow tiddlers are skipped. Tiddlers that already have c7 are skipped.
 "use strict";
 
 var creator = require("$:/plugins/wikilabs/uuid7/creator.js");
+var c32lib = require("$:/plugins/wikilabs/uuid7/crockford32.js");
 
 function parseDateField(value) {
 	if(!value) {
@@ -48,14 +49,22 @@ exports.upgrade = function(wiki, titles, tiddlers) {
 		if(title.charAt(0) === "$") {
 			return;
 		}
+		// Backfill c32 from existing c7
+		if(tiddler.c7 && !tiddler.c32) {
+			tiddler.c32 = c32lib.fromUUID(tiddler.c7);
+			messages[title] = "Added c32 field from existing c7";
+			return;
+		}
 		if(tiddler.c7) {
 			return;
 		}
 		// Find best available timestamp: created > modified > now
 		var ms = parseDateField(tiddler.created) || parseDateField(tiddler.modified) || Date.now();
-		tiddler.c7 = creator.generateUUIDv7(ms);
+		var bytes = creator.generateUUIDv7Bytes(ms);
+		tiddler.c7 = creator.toUUIDString(bytes);
+		tiddler.c32 = c32lib.format(c32lib.encode(bytes));
 		var source = tiddler.created ? "created" : (tiddler.modified ? "modified" : "Date.now()");
-		messages[title] = "Added c7 field from " + source + " timestamp";
+		messages[title] = "Added c7 and c32 fields from " + source + " timestamp";
 	});
 	return messages;
 };

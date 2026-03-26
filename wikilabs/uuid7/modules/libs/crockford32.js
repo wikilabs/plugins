@@ -230,9 +230,9 @@ function normalize(str) {
 // ---------------------------------------------------------------------------
 
 // Accept all letters that Crockford decoding allows (including I, L, O aliases).
-// Only U is excluded (check-symbol only).
-var C32_RAW_RE = /^[0-9A-TV-Za-tv-z]{26}$/;
-var C32_FMT_RE = /^[0-9A-TV-Za-tv-z]{6}-[0-9A-TV-Za-tv-z]{4}-[0-9A-TV-Za-tv-z]{12}-[0-9A-TV-Za-tv-z]{4}$/;
+// Only U is excluded (check-symbol only). Case-insensitive.
+var C32_RAW_RE = /^[0-9a-tv-zA-TV-Z]{26}$/;
+var C32_FMT_RE = /^[0-9a-tv-zA-TV-Z]{6}-[0-9a-tv-zA-TV-Z]{4}-[0-9a-tv-zA-TV-Z]{12}-[0-9a-tv-zA-TV-Z]{4}$/;
 
 function isValidC32(str) {
 	if(!str || typeof str !== "string") { return false; }
@@ -245,7 +245,7 @@ function isValidC32(str) {
 
 function extractTimestampMs(c32) {
 	if(!isValidC32(c32)) { return null; }
-	var raw = unformat(c32).toUpperCase();
+	var raw = unformat(c32);
 	// First 10 Crockford chars = 50 bits. Top 48 bits are the timestamp.
 	// Decode first 10 chars to get bits 0–49, then take bits 0–47.
 	// Use iterative approach: accum = accum × 32 + charValue

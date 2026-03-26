@@ -46,6 +46,7 @@ function parseDateField(value) {
 
 exports.startup = function() {
 	var creator = require("$:/plugins/wikilabs/uuid7/creator.js");
+	var c32lib = require("$:/plugins/wikilabs/uuid7/crockford32.js");
 
 	var mode = ($tw.wiki.getTiddlerText(BACKFILL_MODE_TITLE, "") || "").trim().toLowerCase();
 	if(!mode) {
@@ -85,7 +86,17 @@ exports.startup = function() {
 			if(!tiddler) {
 				continue;
 			}
-			// Skip if already has c7
+			// Backfill c32 from existing c7
+			if(tiddler.fields.c7 && !tiddler.fields.c32) {
+				var c32val = c32lib.fromUUID(tiddler.fields.c7);
+				logLines.push("|[[" + title + "]]|c7→c32| |" + c32val + "|");
+				count++;
+				if(isLive) {
+					$tw.wiki.addTiddler(new $tw.Tiddler(tiddler, {c32: c32val}));
+				}
+				continue;
+			}
+			// Skip if already has c7 and c32
 			if(tiddler.fields.c7) {
 				continue;
 			}
@@ -95,7 +106,9 @@ exports.startup = function() {
 				|| Date.now();
 			var source = tiddler.fields.created ? "created"
 				: (tiddler.fields.modified ? "modified" : "Date.now()");
-			var c7 = creator.generateUUIDv7(ms);
+			var bytes = creator.generateUUIDv7Bytes(ms);
+			var c7 = creator.toUUIDString(bytes);
+			var c32 = c32lib.format(c32lib.encode(bytes));
 			var c7Ms = creator.extractTimestampMs(c7);
 			var createdStr = $tw.utils.stringifyDate(new Date(c7Ms));
 
@@ -103,7 +116,7 @@ exports.startup = function() {
 			count++;
 
 			if(isLive) {
-				$tw.wiki.addTiddler(new $tw.Tiddler(tiddler, {c7: c7}));
+				$tw.wiki.addTiddler(new $tw.Tiddler(tiddler, {c7: c7, c32: c32}));
 			}
 		}
 	} finally {

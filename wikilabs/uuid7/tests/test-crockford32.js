@@ -289,6 +289,11 @@ test("isValidC32 accepts forgiving aliases (I→1, L→1, O→0)", function() {
 	assert.ok(c32.isValidC32("OOOOOOOOOOOOOOOOOOOOOOOOOO"), "O should be accepted (alias for 0)");
 });
 
+test("isValidC32 accepts uppercase input", function() {
+	assert.ok(c32.isValidC32("0CA4MA4C7YFW2DN1TR3S7J14DB"), "uppercase raw should be valid");
+	assert.ok(c32.isValidC32("0CA4MA-4C7Y-FW2DN1TR3S7J-14DB"), "uppercase formatted should be valid");
+});
+
 test("isValidC32 rejects U (check symbol only)", function() {
 	assert.ok(!c32.isValidC32("UUUUUUUUUUUUUUUUUUUUUUUUUU"), "U should be rejected");
 });
