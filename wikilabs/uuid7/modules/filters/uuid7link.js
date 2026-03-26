@@ -63,17 +63,15 @@ exports.uuid7link = function(source, operator, options) {
 		allWords[allTitles[a]] = words;
 	}
 
-	// Single tiddler: find shortest unique prefix
-	if(inputTitles.length === 1) {
-		var result = findShortestUnique(inputTitles[0], inputWords[inputTitles[0]], allWords);
-		return [formatLink(result)];
-	}
-
-	// Multiple tiddlers: find shared prefix + per-tiddler discriminators
+	// Find shared prefix + per-tiddler discriminators
 	// Step 1: Find the longest common word prefix across all input tiddlers
+	// Cap at timestamp triplets (words 0-8) — random triplets are for discrimination
 	var firstWords = inputWords[inputTitles[0]];
 	var commonLen = 0;
-	for(var pos = 0; pos < firstWords.length; pos++) {
+	// For single tiddler, cap prefix at triplet 1 (3 words) — only the most
+	// stable timestamp bits. For multiple, find actual common prefix.
+	var maxPrefix = inputTitles.length === 1 ? 3 : firstWords.length;
+	for(var pos = 0; pos < maxPrefix; pos++) {
 		var allMatch = true;
 		for(var t = 1; t < inputTitles.length; t++) {
 			var tw = inputWords[inputTitles[t]];
@@ -87,7 +85,8 @@ exports.uuid7link = function(source, operator, options) {
 	}
 
 	// Step 2: Check if the common prefix alone uniquely identifies exactly our set
-	if(commonLen > 0) {
+	// Skip for single tiddler — always want prefix + random discriminator for stability
+	if(commonLen > 0 && inputTitles.length > 1) {
 		var prefix = firstWords.slice(0, commonLen);
 		var prefixMatches = [];
 		for(var tt in allWords) {
@@ -99,10 +98,12 @@ exports.uuid7link = function(source, operator, options) {
 		}
 	}
 
-	// Step 3: Greedy minimum discriminator search
-	// Discriminators MUST come from random triplets (4-8, word indices 9+)
-	// to survive imports of tiddlers with matching timestamps.
-	// Convert shared prefix words into triplet-aligned patterns
+	// Step 3: Discriminator search
+	// Discriminators MUST come from random triplets (4-8) to survive imports.
+	// With 128 words and 10k+ tiddlers, single words (~18% collision rate)
+	// and pairs (~0.5%) are not reliable. Start with full triplets (16 bits
+	// = 65536 combos, ~15% collision at 10k) which are the minimum reliable
+	// discriminator. Fall back to two full triplets (32 bits) if needed.
 	var sharedPrefixWords = commonLen > 0 ? firstWords.slice(0, commonLen) : [];
 	var prefixPatterns = [];
 	for(var p = 0; p < sharedPrefixWords.length; p += 3) {
@@ -110,82 +111,45 @@ exports.uuid7link = function(source, operator, options) {
 		prefixPatterns.push(sharedPrefixWords.slice(p, end));
 	}
 	var discriminators = [];
-	var RANDOM_START = 9; // word index where random triplets begin (triplet 4)
+	// Random triplet indices: 3=T4, 4=T5, 5=T6, 6=T7, 7=T8
+	var RANDOM_TRIPLET_START = 3;
+	var RANDOM_TRIPLET_END = 6; // T7 (index 6) is last full triplet; T8 has only 2 words
 
 	for(var i = 0; i < inputTitles.length; i++) {
 		var title = inputTitles[i];
 		var myPhrase = allPhrases[title];
-		var myWords = inputWords[title];
 		var discrim = null;
 
-		// Pass 1: Single word from random triplets (last first)
-		for(var w = myWords.length - 1; w >= RANDOM_START && !discrim; w--) {
-			var candidate = prefixPatterns.concat([[myWords[w]]]);
+		// Pass 1: Full random triplet (last first = most random)
+		for(var t = RANDOM_TRIPLET_END; t >= RANDOM_TRIPLET_START && !discrim; t--) {
+			var tw = myPhrase[t].toLowerCase().split(/\s+/);
+			var candidate = prefixPatterns.concat([tw]);
 			var matches = countMatchingTitlesByPatterns(candidate, allPhrases);
 			if(matches.length === 1 && matches[0] === title) {
-				discrim = [myWords[w]];
+				discrim = tw.join("+");
 			}
 		}
 
-		// Pass 2: Pair within a random triplet (last first)
+		// Pass 2: Two full random triplets (last pair first)
 		if(!discrim) {
-			for(var t = myPhrase.length - 1; t >= 3 && !discrim; t--) {
-				var tw = myPhrase[t].toLowerCase().split(/\s+/);
-				for(var s = 0; s < tw.length - 1 && !discrim; s++) {
-					var pair = [tw[s], tw[s+1]];
-					var candidate = prefixPatterns.concat([pair]);
+			for(var t1 = RANDOM_TRIPLET_END; t1 >= RANDOM_TRIPLET_START && !discrim; t1--) {
+				for(var t2 = t1 - 1; t2 >= RANDOM_TRIPLET_START && !discrim; t2--) {
+					var tw1 = myPhrase[t2].toLowerCase().split(/\s+/);
+					var tw2 = myPhrase[t1].toLowerCase().split(/\s+/);
+					var candidate = prefixPatterns.concat([tw1, tw2]);
 					var matches = countMatchingTitlesByPatterns(candidate, allPhrases);
 					if(matches.length === 1 && matches[0] === title) {
-						discrim = pair;
+						discrim = tw1.join("+") + "," + tw2.join("+");
 					}
 				}
 			}
 		}
 
-		// Pass 3: Full random triplet (last first)
+		// Last resort: triplets 7 + 8 (28 bits, unique among ~268M)
 		if(!discrim) {
-			for(var t = myPhrase.length - 1; t >= 3 && !discrim; t--) {
-				var tw = myPhrase[t].toLowerCase().split(/\s+/);
-				var candidate = prefixPatterns.concat([tw]);
-				var matches = countMatchingTitlesByPatterns(candidate, allPhrases);
-				if(matches.length === 1 && matches[0] === title) {
-					discrim = tw;
-				}
-			}
-		}
-
-		// Pass 4: Two single words from different random triplets
-		if(!discrim) {
-			for(var w1 = myWords.length - 1; w1 >= RANDOM_START && !discrim; w1--) {
-				for(var w2 = w1 - 1; w2 >= RANDOM_START && !discrim; w2--) {
-					var candidate = prefixPatterns.concat([[myWords[w2]], [myWords[w1]]]);
-					var matches = countMatchingTitlesByPatterns(candidate, allPhrases);
-					if(matches.length === 1 && matches[0] === title) {
-						discrim = [myWords[w2] + "," + myWords[w1]];
-					}
-				}
-			}
-		}
-
-		// Pass 5: Three single words from different random triplets
-		if(!discrim) {
-			for(var w1 = myWords.length - 1; w1 >= RANDOM_START && !discrim; w1--) {
-				for(var w2 = w1 - 1; w2 >= RANDOM_START && !discrim; w2--) {
-					for(var w3 = w2 - 1; w3 >= RANDOM_START && !discrim; w3--) {
-						var candidate = prefixPatterns.concat([[myWords[w3]], [myWords[w2]], [myWords[w1]]]);
-						var matches = countMatchingTitlesByPatterns(candidate, allPhrases);
-						if(matches.length === 1 && matches[0] === title) {
-							discrim = [myWords[w3] + "," + myWords[w2] + "," + myWords[w1]];
-						}
-					}
-				}
-			}
-		}
-
-		// Last resort: full random triplet 7 (most entropy before last)
-		if(!discrim) {
-			var fallbackTriplet = myPhrase[6].toLowerCase().split(/\s+/);
-			discrim = fallbackTriplet;
+			var t7 = myPhrase[6].toLowerCase().split(/\s+/);
+			var t8 = myPhrase[7].toLowerCase().split(/\s+/);
+			discrim = t7.join("+") + "," + t8.join("+");
 		}
 
 		discriminators.push(discrim);
@@ -197,32 +161,15 @@ exports.uuid7link = function(source, operator, options) {
 	var parts = [];
 	for(var i = 0; i < discriminators.length; i++) {
 		if(i === 0) {
-			var firstGroup = formatLink(sharedPrefixWords) + "," + discriminators[i].join("+");
-			parts.push(firstGroup);
+			var prefix = formatLink(sharedPrefixWords);
+			parts.push(prefix ? prefix + "," + discriminators[i] : discriminators[i]);
 		} else {
-			parts.push(discriminators[i].join("+"));
+			parts.push(discriminators[i]);
 		}
 	}
 	return [parts.join(";")];
 };
 
-// Find shortest prefix of myWords that uniquely identifies title
-function findShortestUnique(title, myWords, allWords) {
-	for(var len = 1; len <= myWords.length; len++) {
-		var candidate = myWords.slice(0, len);
-		var matchCount = 0;
-		for(var t in allWords) {
-			if(consecutiveMatch(allWords[t], candidate)) {
-				matchCount++;
-				if(matchCount > 1) { break; }
-			}
-		}
-		if(matchCount === 1) {
-			return candidate;
-		}
-	}
-	return myWords;
-}
 
 // Check if candidate words appear as consecutive sequence in words
 function consecutiveMatch(words, candidate) {
