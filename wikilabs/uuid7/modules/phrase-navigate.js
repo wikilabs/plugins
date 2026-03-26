@@ -5,17 +5,19 @@ module-type: startup
 
 Phrase-based URL navigation
 ============================
-Runs BEFORE the story module. If the URL hash contains phrase words
-separated by + (within triplets) and , (between triplets), and no
-tiddler with that title exists, rewrite $tw.locationHash to open
-all matching tiddlers.
+Runs BEFORE the story module. If the URL hash contains phrase words,
+rewrite $tw.locationHash to open all matching tiddlers.
 
-URL format: #adj+noun+verb,adj+noun,word
-  - commas separate search patterns (matched against individual triplets)
-  - plus signs separate words within a pattern
-  - each pattern is matched against every triplet in the tiddler's phrase
-  - all patterns must match for a tiddler to be included
-  - in-order matches (triplet indices ascending) are listed first
+URL format:
+  #adj+noun+verb          — words within a triplet pattern
+  #pattern1,pattern2      — AND: all patterns must match (different triplets)
+  #group1;group2;group3   — OR: tiddlers matching ANY group are opened
+
+  Separators:  + (words)  , (AND)  ; (OR)
+
+  Example: #metal+dog,lake;metal+dog,hawk;metal+dog,pine
+  Smart:   #metal+dog,lake;hawk;pine
+    (groups without , inherit the shared prefix from the first group)
 
 Also hooks th-navigating for in-wiki navigation.
 
@@ -34,7 +36,6 @@ function matchTriplet(phrase, searchWords, excludeIndices) {
 	for(var t = 0; t < phrase.length; t++) {
 		if(excludeIndices && excludeIndices.indexOf(t) >= 0) { continue; }
 		var tripletWords = phrase[t].toLowerCase().split(/\s+/);
-		// Slide searchWords over tripletWords
 		for(var s = 0; s <= tripletWords.length - searchWords.length; s++) {
 			var match = true;
 			for(var j = 0; j < searchWords.length; j++) {
@@ -49,9 +50,9 @@ function matchTriplet(phrase, searchWords, excludeIndices) {
 	return -1;
 }
 
-// Parse search string: commas separate triplet patterns, + separates words
-function parseSearchPatterns(searchText) {
-	var parts = searchText.split(",");
+// Parse a single AND group: commas separate triplet patterns, + separates words
+function parseSearchPatterns(groupText) {
+	var parts = groupText.split(",");
 	var patterns = [];
 	for(var i = 0; i < parts.length; i++) {
 		var words = parts[i].trim().replace(/\+/g, " ").toLowerCase()
@@ -63,9 +64,7 @@ function parseSearchPatterns(searchText) {
 	return patterns;
 }
 
-// Match all patterns against the phrase. Returns:
-//   null if not all patterns match
-//   { inOrder: true/false, indices: [...] } if all match
+// Match all AND patterns against a phrase
 function matchAllPatterns(phrase, patterns) {
 	var indices = [];
 	var used = [];
@@ -75,7 +74,6 @@ function matchAllPatterns(phrase, patterns) {
 		indices.push(idx);
 		used.push(idx);
 	}
-	// Check if indices are in ascending order
 	var inOrder = true;
 	for(var i = 1; i < indices.length; i++) {
 		if(indices[i] <= indices[i - 1]) {
@@ -86,34 +84,73 @@ function matchAllPatterns(phrase, patterns) {
 	return { inOrder: inOrder, indices: indices };
 }
 
-function findAllByPhrase(searchText) {
+// Parse full search string with OR (;) and AND (,) groups.
+// Smart mode: groups without , inherit the shared prefix from the first group.
+function parseOrGroups(searchStr) {
+	var orParts = searchStr.split(";");
+	var groups = [];
+	var sharedPrefix = null;
+	for(var g = 0; g < orParts.length; g++) {
+		var groupText = orParts[g].trim();
+		if(!groupText) { continue; }
+		var patterns = parseSearchPatterns(groupText);
+		if(patterns.length === 0) { continue; }
+		if(g === 0) {
+			// First group defines the shared prefix (all patterns except last)
+			if(patterns.length > 1) {
+				sharedPrefix = patterns.slice(0, patterns.length - 1);
+			}
+			groups.push(patterns);
+		} else {
+			// Subsequent groups: if they have no comma (single pattern),
+			// prepend the shared prefix from group 1
+			if(sharedPrefix && groupText.indexOf(",") === -1) {
+				groups.push(sharedPrefix.concat(patterns));
+			} else {
+				groups.push(patterns);
+			}
+		}
+	}
+	return groups;
+}
+
+// Find all tiddlers matching any OR group. Results ordered:
+// in-order matches first, then out-of-order, deduplicated, preserving first-seen order.
+function findAllByPhrase(searchStr) {
 	var phraselib = require("$:/plugins/wikilabs/uuid7/phraselib.js");
-	var patterns = parseSearchPatterns(searchText);
-	if(patterns.length === 0) { return []; }
+	var groups = parseOrGroups(searchStr);
+	if(groups.length === 0) { return []; }
 	var titles = $tw.wiki.filterTiddlers("[has[c7]!is[system]]");
 	var ordered = [];
 	var unordered = [];
-	for(var i = 0; i < titles.length; i++) {
-		var tiddler = $tw.wiki.getTiddler(titles[i]);
-		if(!tiddler || !tiddler.fields.c7) { continue; }
-		var enc = phraselib.encodeUUID(tiddler.fields.c7);
-		if(!enc.phrase) { continue; }
-		var result = matchAllPatterns(enc.phrase, patterns);
-		if(result) {
-			if(result.inOrder) {
-				ordered.push(titles[i]);
-			} else {
-				unordered.push(titles[i]);
+	var seen = {};
+	for(var g = 0; g < groups.length; g++) {
+		for(var i = 0; i < titles.length; i++) {
+			if(seen[titles[i]]) { continue; }
+			var tiddler = $tw.wiki.getTiddler(titles[i]);
+			if(!tiddler || !tiddler.fields.c7) { continue; }
+			var enc = phraselib.encodeUUID(tiddler.fields.c7);
+			if(!enc.phrase) { continue; }
+			var result = matchAllPatterns(enc.phrase, groups[g]);
+			if(result) {
+				seen[titles[i]] = true;
+				if(result.inOrder) {
+					ordered.push(titles[i]);
+				} else {
+					unordered.push(titles[i]);
+				}
 			}
 		}
 	}
 	return ordered.concat(unordered);
 }
 
-// Check if a string looks like a phrase search (contains + or ,, only lowercase+separators)
+// Check if a string looks like a phrase search
 function isPhraseSearch(str) {
-	if(str.indexOf("+") === -1 && str.indexOf(",") === -1) { return false; }
-	var cleaned = str.replace(/[+,]/g, " ").trim();
+	if(str.indexOf("+") === -1 && str.indexOf(",") === -1 && str.indexOf(";") === -1) {
+		return false;
+	}
+	var cleaned = str.replace(/[+,;]/g, " ").trim();
 	return cleaned.length > 0 && /^[a-z\s]+$/.test(cleaned);
 }
 
@@ -133,7 +170,7 @@ exports.startup = function() {
 		}
 	}
 
-	// Hook th-navigating for in-wiki navigation (links, search)
+	// Hook th-navigating for in-wiki navigation
 	$tw.hooks.addHook("th-navigating",function(event) {
 		var target = event.navigateTo;
 		if(!target || $tw.wiki.tiddlerExists(target)) {
