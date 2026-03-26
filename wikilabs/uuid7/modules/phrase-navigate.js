@@ -54,9 +54,11 @@ function getCachedPhrase(c7) {
 
 // Check if searchWords match consecutive words within a single triplet.
 // Returns the triplet index (0-7) or -1 if no match.
-// phraseWords is a pre-split array of word arrays (one per triplet).
-function matchTriplet(phraseWords, searchWords, excludeIndices) {
-	for(var t = 0; t < phraseWords.length; t++) {
+// If position >= 0, only check that specific triplet (1-based in URL, 0-based here).
+function matchTriplet(phraseWords, searchWords, excludeIndices, position) {
+	var start = (position >= 0) ? position : 0;
+	var end = (position >= 0) ? position + 1 : phraseWords.length;
+	for(var t = start; t < end; t++) {
 		if(excludeIndices && excludeIndices.indexOf(t) >= 0) { continue; }
 		var tw = phraseWords[t];
 		for(var s = 0; s <= tw.length - searchWords.length; s++) {
@@ -73,15 +75,24 @@ function matchTriplet(phraseWords, searchWords, excludeIndices) {
 	return -1;
 }
 
-// Parse a single AND group: commas separate triplet patterns, + separates words
+// Parse a single AND group: commas separate triplet patterns, + separates words.
+// A leading digit specifies the triplet position (1-based): "4cool+dune+casts"
+// Returns array of { words: string[], position: number } (position = -1 for any)
 function parseSearchPatterns(groupText) {
 	var parts = groupText.split(",");
 	var patterns = [];
 	for(var i = 0; i < parts.length; i++) {
-		var words = parts[i].trim().replace(/\+/g, " ").toLowerCase()
+		var part = parts[i].trim();
+		var position = -1;
+		// Check for leading digit (triplet position, 1-based)
+		if(part.length > 1 && part[0] >= "1" && part[0] <= "8") {
+			position = parseInt(part[0], 10) - 1; // convert to 0-based
+			part = part.substr(1);
+		}
+		var words = part.replace(/\+/g, " ").toLowerCase()
 			.split(/\s+/).filter(function(w) { return w.length > 0; });
 		if(words.length > 0) {
-			patterns.push(words);
+			patterns.push({ words: words, position: position });
 		}
 	}
 	return patterns;
@@ -92,7 +103,7 @@ function matchAllPatterns(phraseWords, patterns) {
 	var indices = [];
 	var used = [];
 	for(var p = 0; p < patterns.length; p++) {
-		var idx = matchTriplet(phraseWords, patterns[p], used);
+		var idx = matchTriplet(phraseWords, patterns[p].words, used, patterns[p].position);
 		if(idx === -1) { return null; }
 		indices.push(idx);
 		used.push(idx);
@@ -172,7 +183,7 @@ function isPhraseSearch(str) {
 	if(str.indexOf("+") === -1 && str.indexOf(",") === -1 && str.indexOf(";") === -1) {
 		return false;
 	}
-	var cleaned = str.replace(/[+,;]/g, " ").trim();
+	var cleaned = str.replace(/[+,;0-9]/g, " ").trim();
 	return cleaned.length > 0 && /^[a-z\s]+$/.test(cleaned);
 }
 

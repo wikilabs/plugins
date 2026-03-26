@@ -120,36 +120,49 @@ exports.uuid7link = function(source, operator, options) {
 		var myPhrase = allPhrases[title];
 		var discrim = null;
 
-		// Pass 1: Full random triplet (last first = most random)
-		for(var t = RANDOM_TRIPLET_END; t >= RANDOM_TRIPLET_START && !discrim; t--) {
+		// Pass 1: Position-specific full random triplet
+		// Shuffle triplet order randomly so links use varied positions
+		var randomTriplets = [];
+		for(var rt = RANDOM_TRIPLET_START; rt <= RANDOM_TRIPLET_END; rt++) {
+			randomTriplets.push(rt);
+		}
+		for(var s = randomTriplets.length - 1; s > 0; s--) {
+			var r = Math.floor(Math.random() * (s + 1));
+			var tmp = randomTriplets[s]; randomTriplets[s] = randomTriplets[r]; randomTriplets[r] = tmp;
+		}
+		for(var r = 0; r < randomTriplets.length && !discrim; r++) {
+			var t = randomTriplets[r];
 			var tw = myPhrase[t].toLowerCase().split(/\s+/);
-			var candidate = prefixPatterns.concat([tw]);
+			var candidate = prefixPatterns.concat([{words: tw, position: t}]);
 			var matches = countMatchingTitlesByPatterns(candidate, allPhrases);
 			if(matches.length === 1 && matches[0] === title) {
-				discrim = tw.join("+");
+				discrim = (t + 1) + tw.join("+"); // 1-based position prefix
 			}
 		}
 
-		// Pass 2: Two full random triplets (last pair first)
+		// Pass 2: Two position-specific random triplets (last pair first)
 		if(!discrim) {
 			for(var t1 = RANDOM_TRIPLET_END; t1 >= RANDOM_TRIPLET_START && !discrim; t1--) {
 				for(var t2 = t1 - 1; t2 >= RANDOM_TRIPLET_START && !discrim; t2--) {
 					var tw1 = myPhrase[t2].toLowerCase().split(/\s+/);
 					var tw2 = myPhrase[t1].toLowerCase().split(/\s+/);
-					var candidate = prefixPatterns.concat([tw1, tw2]);
+					var candidate = prefixPatterns.concat([
+						{words: tw1, position: t2},
+						{words: tw2, position: t1}
+					]);
 					var matches = countMatchingTitlesByPatterns(candidate, allPhrases);
 					if(matches.length === 1 && matches[0] === title) {
-						discrim = tw1.join("+") + "," + tw2.join("+");
+						discrim = (t2 + 1) + tw1.join("+") + "," + (t1 + 1) + tw2.join("+");
 					}
 				}
 			}
 		}
 
-		// Last resort: triplets 7 + 8 (28 bits, unique among ~268M)
+		// Last resort: triplets 7 + 8 position-specific
 		if(!discrim) {
 			var t7 = myPhrase[6].toLowerCase().split(/\s+/);
 			var t8 = myPhrase[7].toLowerCase().split(/\s+/);
-			discrim = t7.join("+") + "," + t8.join("+");
+			discrim = "7" + t7.join("+") + ",8" + t8.join("+");
 		}
 
 		discriminators.push(discrim);
@@ -186,9 +199,10 @@ function consecutiveMatch(words, candidate) {
 	return false;
 }
 
-// Count titles where candidate appears as consecutive words
-// Count titles matching a set of AND patterns (array of word arrays)
-// Each pattern must match consecutive words in some triplet
+// Count titles matching a set of AND patterns.
+// Each pattern is { words: string[], position: number } where position is
+// 0-based triplet index (-1 = any position).
+// Legacy: plain arrays are treated as { words: arr, position: -1 }.
 function countMatchingTitlesByPatterns(patterns, allPhrases) {
 	var matches = [];
 	for(var title in allPhrases) {
@@ -196,9 +210,13 @@ function countMatchingTitlesByPatterns(patterns, allPhrases) {
 		var used = [];
 		var allMatch = true;
 		for(var p = 0; p < patterns.length; p++) {
-			var pattern = Array.isArray(patterns[p]) ? patterns[p] : [patterns[p]];
+			var pat = patterns[p];
+			var pattern = Array.isArray(pat) ? pat : (pat.words || [pat]);
+			var position = (!Array.isArray(pat) && pat.position >= 0) ? pat.position : -1;
 			var found = false;
-			for(var t = 0; t < phrase.length; t++) {
+			var tStart = position >= 0 ? position : 0;
+			var tEnd = position >= 0 ? position + 1 : phrase.length;
+			for(var t = tStart; t < tEnd; t++) {
 				if(used.indexOf(t) >= 0) { continue; }
 				var tripletWords = phrase[t].toLowerCase().split(/\s+/);
 				for(var s = 0; s <= tripletWords.length - pattern.length; s++) {
