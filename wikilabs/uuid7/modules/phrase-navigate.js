@@ -30,16 +30,39 @@ exports.before = ["story"];
 exports.after = ["startup"];
 exports.synchronous = true;
 
+// ---------------------------------------------------------------------------
+// Phrase cache: UUID string → { phrase: string[], words: string[][] }
+// phrase = raw triplet strings, words = pre-split lowercase word arrays per triplet
+// TODO: Entries for deleted tiddlers are never removed (~220 bytes each).
+//       If memory becomes a concern, add a wiki "change" listener that
+//       evicts entries whose UUID is no longer referenced by any tiddler.
+// ---------------------------------------------------------------------------
+var _phraseCache = Object.create(null);
+
+function getCachedPhrase(c7) {
+	if(_phraseCache[c7]) { return _phraseCache[c7]; }
+	var phraselib = require("$:/plugins/wikilabs/uuid7/phraselib.js");
+	var enc = phraselib.encodeUUID(c7);
+	if(!enc.phrase) { return null; }
+	var words = [];
+	for(var t = 0; t < enc.phrase.length; t++) {
+		words.push(enc.phrase[t].toLowerCase().split(/\s+/));
+	}
+	_phraseCache[c7] = { phrase: enc.phrase, words: words };
+	return _phraseCache[c7];
+}
+
 // Check if searchWords match consecutive words within a single triplet.
 // Returns the triplet index (0-7) or -1 if no match.
-function matchTriplet(phrase, searchWords, excludeIndices) {
-	for(var t = 0; t < phrase.length; t++) {
+// phraseWords is a pre-split array of word arrays (one per triplet).
+function matchTriplet(phraseWords, searchWords, excludeIndices) {
+	for(var t = 0; t < phraseWords.length; t++) {
 		if(excludeIndices && excludeIndices.indexOf(t) >= 0) { continue; }
-		var tripletWords = phrase[t].toLowerCase().split(/\s+/);
-		for(var s = 0; s <= tripletWords.length - searchWords.length; s++) {
+		var tw = phraseWords[t];
+		for(var s = 0; s <= tw.length - searchWords.length; s++) {
 			var match = true;
 			for(var j = 0; j < searchWords.length; j++) {
-				if(tripletWords[s + j] !== searchWords[j]) {
+				if(tw[s + j] !== searchWords[j]) {
 					match = false;
 					break;
 				}
@@ -64,12 +87,12 @@ function parseSearchPatterns(groupText) {
 	return patterns;
 }
 
-// Match all AND patterns against a phrase
-function matchAllPatterns(phrase, patterns) {
+// Match all AND patterns against pre-split phrase word arrays
+function matchAllPatterns(phraseWords, patterns) {
 	var indices = [];
 	var used = [];
 	for(var p = 0; p < patterns.length; p++) {
-		var idx = matchTriplet(phrase, patterns[p], used);
+		var idx = matchTriplet(phraseWords, patterns[p], used);
 		if(idx === -1) { return null; }
 		indices.push(idx);
 		used.push(idx);
@@ -117,7 +140,6 @@ function parseOrGroups(searchStr) {
 // Find all tiddlers matching any OR group. Results ordered:
 // in-order matches first, then out-of-order, deduplicated, preserving first-seen order.
 function findAllByPhrase(searchStr) {
-	var phraselib = require("$:/plugins/wikilabs/uuid7/phraselib.js");
 	var groups = parseOrGroups(searchStr);
 	if(groups.length === 0) { return []; }
 	var titles = $tw.wiki.filterTiddlers("[has[c7]!is[system]]");
@@ -129,9 +151,9 @@ function findAllByPhrase(searchStr) {
 			if(seen[titles[i]]) { continue; }
 			var tiddler = $tw.wiki.getTiddler(titles[i]);
 			if(!tiddler || !tiddler.fields.c7) { continue; }
-			var enc = phraselib.encodeUUID(tiddler.fields.c7);
-			if(!enc.phrase) { continue; }
-			var result = matchAllPatterns(enc.phrase, groups[g]);
+			var cached = getCachedPhrase(tiddler.fields.c7);
+			if(!cached) { continue; }
+			var result = matchAllPatterns(cached.words, groups[g]);
 			if(result) {
 				seen[titles[i]] = true;
 				if(result.inOrder) {
