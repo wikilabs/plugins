@@ -106,19 +106,27 @@ test("encodeUUID returns 8 triplets", function() {
 	assert.strictEqual(result.phrase.length, 8);
 });
 
-test("encodeUUID each triplet is 'adjective noun verb'", function() {
+test("encodeUUID triplets 1-7 are 'adjective noun verb', triplet 8 is 'adjective noun'", function() {
 	var wl = phraselib.getWordlist();
 	var uuid = creator.generateUUIDv7();
 	var result = phraselib.encodeUUID(uuid);
 	result.phrase.forEach(function(triplet, i) {
 		var words = triplet.split(" ");
-		assert.strictEqual(words.length, 3, "triplet " + i + " should have 3 words: " + triplet);
-		assert.ok(wl.adjIndex[words[0]] !== undefined,
-			"triplet " + i + " adjective '" + words[0] + "' not in wordlist");
-		assert.ok(wl.nounIndex[words[1]] !== undefined,
-			"triplet " + i + " noun '" + words[1] + "' not in wordlist");
-		assert.ok(wl.verbIndex[words[2]] !== undefined,
-			"triplet " + i + " verb '" + words[2] + "' not in wordlist");
+		if(i < 7) {
+			assert.strictEqual(words.length, 3, "triplet " + (i+1) + " should have 3 words: " + triplet);
+			assert.ok(wl.adjIndex[words[0]] !== undefined,
+				"triplet " + (i+1) + " adjective '" + words[0] + "' not in wordlist");
+			assert.ok(wl.nounIndex[words[1]] !== undefined,
+				"triplet " + (i+1) + " noun '" + words[1] + "' not in wordlist");
+			assert.ok(wl.verbIndex[words[2]] !== undefined,
+				"triplet " + (i+1) + " verb '" + words[2] + "' not in wordlist");
+		} else {
+			assert.strictEqual(words.length, 2, "triplet 8 should have 2 words: " + triplet);
+			assert.ok(wl.adjIndex[words[0]] !== undefined,
+				"triplet 8 adjective '" + words[0] + "' not in wordlist");
+			assert.ok(wl.nounIndex[words[1]] !== undefined,
+				"triplet 8 noun '" + words[1] + "' not in wordlist");
+		}
 	});
 });
 
