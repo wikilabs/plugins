@@ -207,6 +207,25 @@ function toUUID(c32) {
 }
 
 // ---------------------------------------------------------------------------
+// Normalize: canonical uppercase with alias substitution (works on partials)
+// ---------------------------------------------------------------------------
+
+function normalize(str) {
+	var result = [];
+	for(var i = 0; i < str.length; i++) {
+		var ch = str[i];
+		if(ch === "-") {
+			result.push("-");
+			continue;
+		}
+		var val = DECODE_MAP[ch];
+		if(val === undefined) { return null; }
+		result.push(ENCODE_ALPHABET[val]);
+	}
+	return result.join("");
+}
+
+// ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
 
@@ -249,6 +268,7 @@ exports.encode             = encode;
 exports.decode             = decode;
 exports.format             = format;
 exports.unformat           = unformat;
+exports.normalize          = normalize;
 exports.checkSymbol        = checkSymbol;
 exports.fromUUID           = fromUUID;
 exports.toUUID             = toUUID;
