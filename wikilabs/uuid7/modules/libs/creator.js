@@ -10,6 +10,7 @@ it can be used independently.
 
 Public API:
 	generateUUIDv7([ms])      → string (new UUID v7; optional ms timestamp)
+	generateUUIDv7Bytes([ms]) → Uint8Array(16) (raw bytes)
 	isValidV7(uuidStr)       → boolean
 	extractTimestampMs(uuid)  → number | null (Unix ms)
 	msToISO(ms)               → string (ISO 8601 UTC)
@@ -24,11 +25,11 @@ Public API:
 // ---------------------------------------------------------------------------
 
 /**
- * Generate a UUID v7 string.
+ * Generate UUID v7 raw bytes (16-byte Uint8Array).
  * Uses crypto.getRandomValues when available, falls back to Math.random.
  * @param {number} [ms] - Optional Unix ms timestamp. Defaults to Date.now().
  */
-function generateUUIDv7(ms) {
+function generateUUIDv7Bytes(ms) {
 	if(ms === undefined) { ms = Date.now(); }
 	var b = new Uint8Array(16);
 
@@ -55,7 +56,15 @@ function generateUUIDv7(ms) {
 	// byte 8: variant bits 0b10 in high 2 bits
 	b[8] = 0x80 | (b[8] & 0x3f);
 
-	return toUUIDString(b);
+	return b;
+}
+
+/**
+ * Generate a UUID v7 string.
+ * @param {number} [ms] - Optional Unix ms timestamp. Defaults to Date.now().
+ */
+function generateUUIDv7(ms) {
+	return toUUIDString(generateUUIDv7Bytes(ms));
 }
 
 /**
@@ -110,8 +119,9 @@ function msToISO(ms) {
 // Exports
 // ---------------------------------------------------------------------------
 
-exports.generateUUIDv7    = generateUUIDv7;
-exports.toUUIDString      = toUUIDString;
+exports.generateUUIDv7      = generateUUIDv7;
+exports.generateUUIDv7Bytes = generateUUIDv7Bytes;
+exports.toUUIDString        = toUUIDString;
 exports.isValidV7         = isValidV7;
 exports.extractTimestampMs = extractTimestampMs;
 exports.msToISO           = msToISO;
