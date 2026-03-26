@@ -178,6 +178,20 @@ function findAllByPhrase(searchStr) {
 	return ordered.concat(unordered);
 }
 
+// Check if a string is a UUID v7 and find the tiddler with that c7 value
+function findByUUID(uuidStr) {
+	var creator = require("$:/plugins/wikilabs/uuid7/creator.js");
+	if(!creator.isValidV7(uuidStr)) { return null; }
+	var titles = $tw.wiki.filterTiddlers("[has[c7]!is[system]]");
+	for(var i = 0; i < titles.length; i++) {
+		var tiddler = $tw.wiki.getTiddler(titles[i]);
+		if(tiddler && tiddler.fields.c7 === uuidStr) {
+			return titles[i];
+		}
+	}
+	return null;
+}
+
 // Check if a string looks like a phrase search
 function isPhraseSearch(str) {
 	if(str.indexOf("+") === -1 && str.indexOf(",") === -1 && str.indexOf(";") === -1) {
@@ -194,11 +208,17 @@ exports.startup = function() {
 		var split = hash.indexOf(":");
 		var target = split === -1 ? hash.trim() : hash.substr(0, split).trim();
 		var decoded = $tw.utils.decodeURIComponentSafe(target);
-		if(isPhraseSearch(decoded) && !$tw.wiki.tiddlerExists(decoded)) {
-			var matches = findAllByPhrase(decoded);
-			if(matches.length > 0) {
-				var storyList = $tw.utils.stringifyList(matches);
-				$tw.locationHash = "#" + encodeURIComponent(matches[0]) + ":" + encodeURIComponent(storyList);
+		if(!$tw.wiki.tiddlerExists(decoded)) {
+			// Try UUID lookup first
+			var uuidMatch = findByUUID(decoded);
+			if(uuidMatch) {
+				$tw.locationHash = "#" + encodeURIComponent(uuidMatch);
+			} else if(isPhraseSearch(decoded)) {
+				var matches = findAllByPhrase(decoded);
+				if(matches.length > 0) {
+					var storyList = $tw.utils.stringifyList(matches);
+					$tw.locationHash = "#" + encodeURIComponent(matches[0]) + ":" + encodeURIComponent(storyList);
+				}
 			}
 		}
 	}
@@ -207,6 +227,12 @@ exports.startup = function() {
 	$tw.hooks.addHook("th-navigating",function(event) {
 		var target = event.navigateTo;
 		if(!target || $tw.wiki.tiddlerExists(target)) {
+			return event;
+		}
+		// Try UUID lookup first
+		var uuidMatch = findByUUID(target);
+		if(uuidMatch) {
+			event.navigateTo = uuidMatch;
 			return event;
 		}
 		if(!isPhraseSearch(target)) { return event; }
