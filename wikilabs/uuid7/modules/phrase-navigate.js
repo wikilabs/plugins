@@ -192,6 +192,35 @@ function findByUUID(uuidStr) {
 	return null;
 }
 
+// Check if a string looks like a c32 value (full or partial)
+function isC32Search(str) {
+	var c32lib = require("$:/plugins/wikilabs/uuid7/crockford32.js");
+	var normalized = c32lib.normalize(str);
+	if(!normalized || normalized.length < 4) { return false; }
+	return true;
+}
+
+// Find tiddlers by c32 value (full or partial, normalized match)
+function findByC32(searchStr) {
+	var c32lib = require("$:/plugins/wikilabs/uuid7/crockford32.js");
+	var normalized = c32lib.normalize(searchStr);
+	if(!normalized) { return []; }
+	var titles = $tw.wiki.filterTiddlers("[has[c32]!is[system]]");
+	var exact = [];
+	var partial = [];
+	for(var i = 0; i < titles.length; i++) {
+		var tiddler = $tw.wiki.getTiddler(titles[i]);
+		if(!tiddler || !tiddler.fields.c32) { continue; }
+		var c32val = tiddler.fields.c32;
+		if(c32val === normalized) {
+			exact.push(titles[i]);
+		} else if(c32val.indexOf(normalized) >= 0) {
+			partial.push(titles[i]);
+		}
+	}
+	return exact.concat(partial);
+}
+
 // Check if a string looks like a phrase search
 function isPhraseSearch(str) {
 	if(str.indexOf("+") === -1 && str.indexOf(",") === -1 && str.indexOf(";") === -1) {
@@ -201,26 +230,66 @@ function isPhraseSearch(str) {
 	return cleaned.length > 0 && /^[a-z\s]+$/.test(cleaned);
 }
 
+// Rewrite a location hash, resolving UUID/c32/phrase to tiddler title(s).
+// Returns the rewritten hash string, or null if no match.
+function rewriteHash(hash) {
+	if(!hash || hash.length < 2) { return null; }
+	var raw = hash.substr(1);
+	var split = raw.indexOf(":");
+	var target = split === -1 ? raw.trim() : raw.substr(0, split).trim();
+	var decoded = $tw.utils.decodeURIComponentSafe(target);
+	if($tw.wiki.tiddlerExists(decoded)) { return null; }
+	// Try UUID lookup
+	var uuidMatch = findByUUID(decoded);
+	if(uuidMatch) {
+		return "#" + encodeURIComponent(uuidMatch);
+	}
+	// Try c32 lookup (full or partial)
+	if(isC32Search(decoded)) {
+		var c32matches = findByC32(decoded);
+		if(c32matches.length === 1) {
+			return "#" + encodeURIComponent(c32matches[0]);
+		} else if(c32matches.length > 1) {
+			var c32storyList = $tw.utils.stringifyList(c32matches);
+			return "#" + encodeURIComponent(c32matches[0]) + ":" + encodeURIComponent(c32storyList);
+		}
+	}
+	// Try phrase search
+	if(isPhraseSearch(decoded)) {
+		var matches = findAllByPhrase(decoded);
+		if(matches.length > 0) {
+			var storyList = $tw.utils.stringifyList(matches);
+			return "#" + encodeURIComponent(matches[0]) + ":" + encodeURIComponent(storyList);
+		}
+	}
+	return null;
+}
+
 exports.startup = function() {
 	// Rewrite the location hash before the story module reads it
-	if($tw.browser && $tw.locationHash && $tw.locationHash.length > 1) {
-		var hash = $tw.locationHash.substr(1);
-		var split = hash.indexOf(":");
-		var target = split === -1 ? hash.trim() : hash.substr(0, split).trim();
-		var decoded = $tw.utils.decodeURIComponentSafe(target);
-		if(!$tw.wiki.tiddlerExists(decoded)) {
-			// Try UUID lookup first
-			var uuidMatch = findByUUID(decoded);
-			if(uuidMatch) {
-				$tw.locationHash = "#" + encodeURIComponent(uuidMatch);
-			} else if(isPhraseSearch(decoded)) {
-				var matches = findAllByPhrase(decoded);
-				if(matches.length > 0) {
-					var storyList = $tw.utils.stringifyList(matches);
-					$tw.locationHash = "#" + encodeURIComponent(matches[0]) + ":" + encodeURIComponent(storyList);
-				}
-			}
+	if($tw.browser && $tw.locationHash) {
+		var rewritten = rewriteHash($tw.locationHash);
+		if(rewritten) {
+			$tw.locationHash = rewritten;
 		}
+	}
+
+	// Listen for hashchange to handle URL bar edits in existing windows.
+	// TW's handler checks (hash !== $tw.locationHash) before processing.
+	// We set $tw.locationHash = hash to make TW skip this event, then
+	// replace the URL with the resolved title, triggering a new hashchange
+	// that TW processes normally.
+	if($tw.browser) {
+		window.addEventListener("hashchange",function() {
+			var hash = $tw.utils.getLocationHash();
+			var rewritten = rewriteHash(hash);
+			if(rewritten) {
+				$tw.locationHash = hash;
+				window.location.replace(
+					window.location.toString().split("#")[0] + rewritten
+				);
+			}
+		},false);
 	}
 
 	// Hook th-navigating for in-wiki navigation
@@ -234,6 +303,32 @@ exports.startup = function() {
 		if(uuidMatch) {
 			event.navigateTo = uuidMatch;
 			return event;
+		}
+		// Try c32 lookup (full or partial)
+		if(isC32Search(target)) {
+			var c32matches = findByC32(target);
+			if(c32matches.length === 1) {
+				event.navigateTo = c32matches[0];
+				return event;
+			} else if(c32matches.length > 1) {
+				event.navigateTo = c32matches[0];
+				var storyTitle = event.navigateFromNode
+					? event.navigateFromNode.getVariable("tv-story-list")
+					: null;
+				storyTitle = storyTitle || "$:/StoryList";
+				var storyList = $tw.wiki.getTiddlerList(storyTitle);
+				for(var j = c32matches.length - 1; j >= 0; j--) {
+					if(storyList.indexOf(c32matches[j]) === -1) {
+						storyList.unshift(c32matches[j]);
+					}
+				}
+				$tw.wiki.addTiddler({
+					title: storyTitle,
+					text: "",
+					list: storyList
+				}, $tw.wiki.getModificationFields());
+				return event;
+			}
 		}
 		if(!isPhraseSearch(target)) { return event; }
 		var matches = findAllByPhrase(target);
