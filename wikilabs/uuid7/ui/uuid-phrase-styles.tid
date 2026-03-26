@@ -14,3 +14,17 @@ type: text/vnd.tiddlywiki
 	opacity: 0.4;
 	line-height: 1;
 }
+
+.tc-uuid-c32-badge {
+	position: absolute;
+	bottom: 3px;
+	right: 6px;
+	font-size: 1rem;
+	font-family: monospace;
+	opacity: 0.5;
+	line-height: 1;
+}
+
+.tc-uuid-c32-check {
+	opacity: 0.6;
+}

@@ -13,6 +13,10 @@ title: $:/core/ui/TiddlerFieldTemplate
 			''<$text text={{{ [<uuid>uuid7[phrase],[2]] }}}/>'' <$text text=", "/>
 			<$text text={{{ [<uuid>uuid7[phrase],[3],[6]] }}}/>
 		</$let>
+	<%elseif [<listItem>match[c32]] %>
+		<$let c32val={{{ [all[current]get[c32]] }}}>
+			<$text text={{{ [<c32val>c32[ms]format:timestamp[]] }}}/> <$text text=" - "/> <$text text=<<c32val>>/>
+		</$let>
 	<%else%>
 		<$view field=<<listItem>>/>
 	<%endif%>
