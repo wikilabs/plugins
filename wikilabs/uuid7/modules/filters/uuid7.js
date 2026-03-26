@@ -8,9 +8,10 @@ Filter operator for extracting UUID v7 components.
 Usage:
   [get[c7]uuid7[ms]]              → Unix timestamp in milliseconds
   [get[c7]uuid7[rnd]]             → random part as hex (20 chars, visually matches UUID)
-  [get[c7]uuid7[phrase]]          → all 8 triplets (comma-separated)
+  [get[c7]uuid7[phrase]]          → all 8 triplets (comma-separated, spaces between words)
+  [get[c7]uuid7:+[phrase]]        → all 8 triplets (comma-separated, + between words)
   [get[c7]uuid7[phrase],[1],[2]]   → triplets 1-2 (start, count — 1-based)
-  [get[c7]uuid7[phrase],[3]]       → triplet 3 only (count defaults to 1)
+  [get[c7]uuid7:+[phrase],[3]]     → triplet 3 with + separator
   [get[c7]uuid7[version]]         → UUID version number (should be 7)
   [get[c7]uuid7[variant]]         → variant bits as hex
   [get[c7]uuid7[valid]]           → "yes" or "no"
@@ -41,14 +42,16 @@ exports.uuid7 = function(source,operator,options) {
 				var phraselib = require("$:/plugins/wikilabs/uuid7/phraselib.js");
 				var encResult = phraselib.encodeUUID(title);
 				if(encResult.phrase) {
+					var wordSep = operator.suffix || " ";
+					var triplets = encResult.phrase.map(function(t) {
+						return wordSep !== " " ? t.replace(/ /g, wordSep) : t;
+					});
 					var start = parseInt(operands[1],10);
 					if(start >= 1) {
-						// 1-based start; count defaults to 1
 						var count = parseInt(operands[2],10) || 1;
-						results.push(encResult.phrase.slice(start - 1, start - 1 + count).join(", "));
+						results.push(triplets.slice(start - 1, start - 1 + count).join(", "));
 					} else {
-						// No start: return all triplets
-						results.push(encResult.phrase.join(", "));
+						results.push(triplets.join(", "));
 					}
 				}
 				break;
