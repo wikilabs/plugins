@@ -127,6 +127,13 @@ function indexToTriplet(idx, wl) {
  */
 function tripletToIndex(triplet, wl) {
 	var words = triplet.trim().toLowerCase().split(/\s+/);
+	if(words.length === 2) {
+		// Last triplet: adj + noun only (verb = 0)
+		var ai = wl.adjIndex[words[0]];
+		var ni = wl.nounIndex[words[1]];
+		if(ai === undefined || ni === undefined) { return -1; }
+		return (ai << 11) | (ni << 5);
+	}
 	if(words.length !== 3) {
 		return -1;
 	}
@@ -273,7 +280,14 @@ function bitsToTriplets(bits, wl) {
 		for(var b = 0; b < BITS_PER_TRIPLET; b++) {
 			idx = (idx << 1) | padded[i * BITS_PER_TRIPLET + b];
 		}
-		triplets.push(indexToTriplet(idx, wl));
+		if(i === PHRASE_TRIPLETS - 1) {
+			// Last triplet: only adj + noun (verb is always padding zeros)
+			var ai = (idx >> 11) & 0x1F;
+			var ni = (idx >> 5)  & 0x3F;
+			triplets.push(wl.adjectives[ai] + " " + wl.nouns[ni]);
+		} else {
+			triplets.push(indexToTriplet(idx, wl));
+		}
 	}
 	return triplets;
 }
