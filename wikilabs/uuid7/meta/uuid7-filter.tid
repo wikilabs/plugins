@@ -12,18 +12,21 @@ Extracts components from UUID v7 strings.
 ```
 [uuid7[operand]]
 [uuid7[phrase],[start],[count]]
+[uuid7:+[phrase]]
 ```
 
 * ''Input:'' A UUID v7 string (e.g. from `[get[c7]]`)
 * ''Operand:'' Selects which component to extract
+* ''Suffix:'' Optional word separator for `phrase` (default: space). Use `:+` for phrase links
 * ''Start / Count:'' Optional, only for `phrase` — select specific triplets (1-based, count defaults to 1)
 
 !! Operands
 
 |!Operand |!Returns |!Example output |
-|`phrase`|All 8 adjective-noun-verb triplets, comma-separated|`bold crab seeks, stark fawn flies, ...`|
-|`phrase` + start|Single triplet at position (1-based)|`bold crab seeks`|
-|`phrase` + start + count|Range of triplets|`bold crab seeks, stark fawn flies`|
+|`phrase`|All 8 triplets, comma-separated (spaces between words)|`metal dog soars, calm seal hunts, ...`|
+|`phrase` with `:+` suffix|Same but with `+` between words|`metal+dog+soars, calm+seal+hunts, ...`|
+|`phrase` + start|Single triplet at position (1-based)|`metal dog soars`|
+|`phrase` + start + count|Range of triplets|`metal dog soars, calm seal hunts`|
 |`ms`|Unix timestamp in milliseconds|`1710340000000`|
 |`rnd`|Random part as hex (with dashes)|`739b-bd29-4f9b77c76b04`|
 |`version`|UUID version number|`7`|
@@ -31,9 +34,25 @@ Extracts components from UUID v7 strings.
 |`valid`|Validity check|`yes` or `no`|
 |(empty)|Pass through valid UUID v7 strings, filter out invalid ones|`019ce2eb-b2e4-739b-bd29-4f9b77c76b04`|
 
+!! `uuid7link` Filter Operator
+
+Generates the shortest stable phrase link for a set of tiddlers.
+
+```
+[<myTiddler>uuid7link[]]
+[[A]] [[B]] [[C]] +[uuid7link[]]
+```
+
+* Output: a single phrase link string (e.g. `metal+dog+soars,cool+dune+casts;sharp+reef+keeps`)
+* Timestamp prefix (triplet 1) is shared; discriminators come from random triplets 4-7
+* Uses `;` for OR (multiple tiddlers), `,` for AND (prefix + discriminator)
+
 !! Examples
 
 |!Filter |!Description |
+|`[get[c7]uuid7:+[phrase]]`|Phrase with `+` separators for links|
+|`[<tiddler>uuid7link[]]`|Shortest stable link for one tiddler|
+|`[[A]] [[B]] +[uuid7link[]]`|One link that opens both A and B|
 |`[get[c7]uuid7[phrase]]`|Full phrase for the tiddler's UUID|
 |`[get[c7]uuid7[phrase],[1]]`|First triplet only (stable for ~50 days)|
 |`[get[c7]uuid7[phrase],[1],[2]]`|First 2 triplets (timestamp-based grouping)|
