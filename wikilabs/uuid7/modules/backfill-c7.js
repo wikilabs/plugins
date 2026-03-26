@@ -56,7 +56,8 @@ exports.startup = function() {
 	}
 
 	var isLive = (mode === "live");
-	var titles = $tw.wiki.allTitles();
+	// Only process real tiddlers, not shadows
+	var titles = $tw.wiki.filterTiddlers("[is[tiddler]!is[system]]");
 	var logLines = [];
 	var count = 0;
 
@@ -75,10 +76,6 @@ exports.startup = function() {
 	try {
 		for(var i = 0; i < titles.length; i++) {
 			var title = titles[i];
-			// Skip system tiddlers
-			if(title.charAt(0) === "$") {
-				continue;
-			}
 			var tiddler = $tw.wiki.getTiddler(title);
 			if(!tiddler) {
 				continue;
