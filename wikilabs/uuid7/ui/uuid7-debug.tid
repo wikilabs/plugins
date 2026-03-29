@@ -1,8 +1,6 @@
 title: $:/plugins/wikilabs/uuid7/ui/uuid7-debug
 caption: UUID7 Debug
 
-\whitespace trim
-
 \procedure uuid7-bit-table(uuidValue)
 \whitespace trim
 <$let

@@ -1,8 +1,6 @@
 title: $:/plugins/wikilabs/uuid7/ui/c32-debug
 caption: C32 Debug
 
-\whitespace trim
-
 \procedure c32-bit-table(c32Value)
 \whitespace trim
 <$let
