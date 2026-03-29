@@ -59,6 +59,18 @@ exports.c32 = function(source,operator,options) {
 					}
 				}
 				break;
+			case "bits":
+				var bin = c32lib.toBinary(title);
+				if(bin !== null) {
+					results.push(bin);
+				}
+				break;
+			case "value":
+				var bin2 = c32lib.toBinary(title);
+				if(bin2 !== null) {
+					results.push(String(parseInt(bin2, 2)));
+				}
+				break;
 			case "rnd":
 				if(c32lib.isValidC32(title)) {
 					var hex = c32lib.toUUID(title).replace(/-/g,"");

@@ -207,6 +207,16 @@ function toUUID(c32) {
 }
 
 // ---------------------------------------------------------------------------
+// toBinary: convert a Crockford character to its 5-bit binary string
+// ---------------------------------------------------------------------------
+
+function toBinary(ch) {
+	var val = DECODE_MAP[ch];
+	if(val === undefined) { return null; }
+	return ("00000" + val.toString(2)).slice(-5);
+}
+
+// ---------------------------------------------------------------------------
 // Normalize: canonical uppercase with alias substitution (works on partials)
 // ---------------------------------------------------------------------------
 
@@ -269,6 +279,7 @@ exports.decode             = decode;
 exports.format             = format;
 exports.unformat           = unformat;
 exports.normalize          = normalize;
+exports.toBinary           = toBinary;
 exports.checkSymbol        = checkSymbol;
 exports.fromUUID           = fromUUID;
 exports.toUUID             = toUUID;
