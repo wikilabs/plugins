@@ -46,8 +46,8 @@ caption: C32 Debug
 </tr>
 <tr>
 	<th>Group</th>
-	<td style="text-align:center; background:#e8f4e8;" colspan="6">group 1 (6)</td>
-	<td style="text-align:center; background:#e8e8f4;" colspan="4">group 2 (4)</td>
+	<td style="text-align:center; background:#b8e6b8;" colspan="6">group 1 (6)</td>
+	<td style="text-align:center; background:#b8c8e6;" colspan="4">group 2 (4)</td>
 </tr>
 <tr>
 	<th>Contains</th>
@@ -87,8 +87,8 @@ caption: C32 Debug
 </tr>
 <tr>
 	<th>Group</th>
-	<td style="text-align:center; background:#f4e8e8;" colspan="12">group 3 (12)</td>
-	<td style="text-align:center; background:#f4f4e8;" colspan="4">group 4 (4)</td>
+	<td style="text-align:center; background:#e6b8b8;" colspan="12">group 3 (12)</td>
+	<td style="text-align:center; background:#e6d8a0;" colspan="4">group 4 (4)</td>
 </tr>
 <tr>
 	<th>Contains</th>
@@ -107,13 +107,13 @@ caption: C32 Debug
 <table>
 <tr>
 	<th>Format</th>
-	<td style="text-align:center; background:#e8f4e8;" colspan="6"><code><$text text={{{ [<formatted>split[-]nth[1]] }}}/></code></td>
+	<td style="text-align:center; background:#b8e6b8;" colspan="6"><code><$text text={{{ [<formatted>split[-]nth[1]] }}}/></code></td>
 	<td style="text-align:center;">-</td>
-	<td style="text-align:center; background:#e8e8f4;" colspan="4"><code><$text text={{{ [<formatted>split[-]nth[2]] }}}/></code></td>
+	<td style="text-align:center; background:#b8c8e6;" colspan="4"><code><$text text={{{ [<formatted>split[-]nth[2]] }}}/></code></td>
 	<td style="text-align:center;">-</td>
-	<td style="text-align:center; background:#f4e8e8;" colspan="12"><code><$text text={{{ [<formatted>split[-]nth[3]] }}}/></code></td>
+	<td style="text-align:center; background:#e6b8b8;" colspan="12"><code><$text text={{{ [<formatted>split[-]nth[3]] }}}/></code></td>
 	<td style="text-align:center;">-</td>
-	<td style="text-align:center; background:#f4f4e8;" colspan="4"><code><$text text={{{ [<formatted>split[-]nth[4]] }}}/></code></td>
+	<td style="text-align:center; background:#e6d8a0;" colspan="4"><code><$text text={{{ [<formatted>split[-]nth[4]] }}}/></code></td>
 </tr>
 <tr>
 	<th>Bits</th>
