@@ -137,7 +137,60 @@ caption: C32 Debug
 
 !! Phrase encoding
 
-<$text text={{{ [<stripped>c32[phrase]] }}}/>
+Each triplet encodes 16 bits: adjective (5 bits) + noun (6 bits) + verb (5 bits). Triplet 8 has only adjective + noun (11 bits).
+
+<$let
+	t1={{{ [<stripped>c32[phrase],[1]] }}}  t2={{{ [<stripped>c32[phrase],[2]] }}}
+	t3={{{ [<stripped>c32[phrase],[3]] }}}  t4={{{ [<stripped>c32[phrase],[4]] }}}
+	t5={{{ [<stripped>c32[phrase],[5]] }}}  t6={{{ [<stripped>c32[phrase],[6]] }}}
+	t7={{{ [<stripped>c32[phrase],[7]] }}}  t8={{{ [<stripped>c32[phrase],[8]] }}}
+>
+<table>
+<tr>
+	<th>Triplet</th>
+	<td style="text-align:center;" colspan="3">1</td>
+	<td style="text-align:center;" colspan="3">2</td>
+	<td style="text-align:center;" colspan="3">3</td>
+	<td style="text-align:center;" colspan="3">4</td>
+	<td style="text-align:center;" colspan="3">5</td>
+	<td style="text-align:center;" colspan="3">6</td>
+	<td style="text-align:center;" colspan="3">7</td>
+	<td style="text-align:center;" colspan="2">8</td>
+</tr>
+<$let allwords={{{ [<t1>addsuffix[ ]addsuffix<t2>addsuffix[ ]addsuffix<t3>addsuffix[ ]addsuffix<t4>addsuffix[ ]addsuffix<t5>addsuffix[ ]addsuffix<t6>addsuffix[ ]addsuffix<t7>addsuffix[ ]addsuffix<t8>] }}}>
+<tr>
+	<th>Binary</th>
+	<$list filter="[<allwords>split[ ]]" variable="word">
+		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<word>c32[wordbits]] }}}/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Decimal</th>
+	<$list filter="[<allwords>split[ ]]" variable="word">
+		<td style="text-align:center;"><$text text={{{ [<word>c32[wordvalue]] }}}/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Word</th>
+	<$list filter="[<allwords>split[ ]]" variable="word">
+		<td style="text-align:center; font-size:0.8em;"><$text text=<<word>>/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Type</th>
+	<$list filter="[<allwords>split[ ]]" variable="word" counter="cnt">
+		<%if [<cnt>remainder[3]match[1]] %>
+			<td style="text-align:center; font-size:0.7em;">adj 5b</td>
+		<%elseif [<cnt>remainder[3]match[2]] %>
+			<td style="text-align:center; font-size:0.7em;">noun 6b</td>
+		<%else%>
+			<td style="text-align:center; font-size:0.7em;">verb 5b</td>
+		<%endif%>
+	</$list>
+</tr>
+</$let>
+</table>
+</$let>
 
 </$let>
 \end

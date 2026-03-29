@@ -71,6 +71,30 @@ exports.c32 = function(source,operator,options) {
 					results.push(String(parseInt(bin2, 2)));
 				}
 				break;
+			case "wordbits":
+				var plib = require("$:/plugins/wikilabs/uuid7/phraselib.js");
+				var wl = plib.getWordlist();
+				if(wl) {
+					var word = title.toLowerCase();
+					if(wl.adjIndex[word] !== undefined) {
+						results.push(("00000" + wl.adjIndex[word].toString(2)).slice(-5));
+					} else if(wl.nounIndex[word] !== undefined) {
+						results.push(("000000" + wl.nounIndex[word].toString(2)).slice(-6));
+					} else if(wl.verbIndex[word] !== undefined) {
+						results.push(("00000" + wl.verbIndex[word].toString(2)).slice(-5));
+					}
+				}
+				break;
+			case "wordvalue":
+				var plib2 = require("$:/plugins/wikilabs/uuid7/phraselib.js");
+				var wl2 = plib2.getWordlist();
+				if(wl2) {
+					var w = title.toLowerCase();
+					if(wl2.adjIndex[w] !== undefined) { results.push(String(wl2.adjIndex[w])); }
+					else if(wl2.nounIndex[w] !== undefined) { results.push(String(wl2.nounIndex[w])); }
+					else if(wl2.verbIndex[w] !== undefined) { results.push(String(wl2.verbIndex[w])); }
+				}
+				break;
 			case "rnd":
 				if(c32lib.isValidC32(title)) {
 					var hex = c32lib.toUUID(title).replace(/-/g,"");
