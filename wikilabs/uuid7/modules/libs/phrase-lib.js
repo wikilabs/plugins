@@ -280,14 +280,7 @@ function bitsToTriplets(bits, wl) {
 		for(var b = 0; b < BITS_PER_TRIPLET; b++) {
 			idx = (idx << 1) | padded[i * BITS_PER_TRIPLET + b];
 		}
-		if(i === PHRASE_TRIPLETS - 1) {
-			// Last triplet: only adj + noun (verb is always padding zeros)
-			var ai = (idx >> 11) & 0x1F;
-			var ni = (idx >> 5)  & 0x3F;
-			triplets.push(wl.adjectives[ai] + " " + wl.nouns[ni]);
-		} else {
-			triplets.push(indexToTriplet(idx, wl));
-		}
+		triplets.push(indexToTriplet(idx, wl));
 	}
 	return triplets;
 }
