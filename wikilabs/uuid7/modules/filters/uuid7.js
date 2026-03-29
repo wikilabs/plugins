@@ -92,6 +92,18 @@ exports.uuid7 = function(source,operator,options) {
 					results.push(c32chk.checkSymbol(c32chk.fromUUID(title)));
 				}
 				break;
+			case "bits":
+				var hexVal = parseInt(title, 16);
+				if(!isNaN(hexVal) && title.length === 1) {
+					results.push(("0000" + hexVal.toString(2)).slice(-4));
+				}
+				break;
+			case "value":
+				var hexDec = parseInt(title, 16);
+				if(!isNaN(hexDec) && title.length === 1) {
+					results.push(String(hexDec));
+				}
+				break;
 			case "valid":
 				results.push(creator.isValidV7(title) ? "yes" : "no");
 				break;
