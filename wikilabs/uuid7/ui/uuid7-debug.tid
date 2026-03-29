@@ -1,0 +1,191 @@
+title: $:/plugins/wikilabs/uuid7/ui/uuid7-debug
+caption: UUID7 Debug
+
+\whitespace trim
+
+\procedure uuid7-bit-table(uuidValue)
+\whitespace trim
+<$let
+	hex={{{ [<uuidValue>search-replace:g:literal[-],[]] }}}
+>
+
+! UUID v7 Hex Encoding Breakdown
+
+''c7:'' <code><$text text=<<uuidValue>>/></code>
+
+''c32:'' <code><$text text={{{ [<uuidValue>uuid7[c32]] }}}/></code> ''check:'' <code><$text text={{{ [<uuidValue>uuid7[check]] }}}/></code>
+
+!! Table 1: UUID v7 hex layout (8-4-4-4-12)
+
+<table>
+<tr>
+	<th>Hex</th>
+	<$list filter="[<hex>split[]first[8]]" variable="ch">
+		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+	</$list>
+	<td style="text-align:center;">-</td>
+	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
+		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+	</$list>
+	<td style="text-align:center;">-</td>
+	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
+		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+	</$list>
+	<td style="text-align:center;">-</td>
+	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
+		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+	</$list>
+	<td style="text-align:center;">-</td>
+	<$list filter="[<hex>split[]rest[20]]" variable="ch">
+		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Decimal</th>
+	<$list filter="[<hex>split[]first[8]]" variable="ch">
+		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
+		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
+		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
+		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[20]]" variable="ch">
+		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Binary</th>
+	<$list filter="[<hex>split[]first[8]]" variable="ch">
+		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
+		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
+		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
+		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[20]]" variable="ch">
+		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Group</th>
+	<td style="text-align:center; background:#b8e6b8;" colspan="8">timestamp high (32 bits)</td>
+	<td></td>
+	<td style="text-align:center; background:#b8c8e6;" colspan="4">timestamp low (16 bits)</td>
+	<td></td>
+	<td style="text-align:center; background:#d8b8e6;" colspan="4">ver (4) + rand_a (12)</td>
+	<td></td>
+	<td style="text-align:center; background:#e6b8b8;" colspan="4">var (2) + rand_b (14)</td>
+	<td></td>
+	<td style="text-align:center; background:#e6d8a0;" colspan="12">rand_b (48 bits)</td>
+</tr>
+<tr>
+	<th>Bits/char</th>
+	<td style="text-align:center;" colspan="8">4 bits each</td>
+	<td></td>
+	<td style="text-align:center;" colspan="4">4 bits each</td>
+	<td></td>
+	<td style="text-align:center;" colspan="1">ver=7</td>
+	<td style="text-align:center;" colspan="3">rand_a</td>
+	<td></td>
+	<td style="text-align:center;" colspan="1">var=2</td>
+	<td style="text-align:center;" colspan="3">rand_b</td>
+	<td></td>
+	<td style="text-align:center;" colspan="12">rand_b</td>
+</tr>
+</table>
+
+''Timestamp:'' <$text text={{{ [<uuidValue>uuid7[ms]] }}}/> ms — <$text text={{{ [<uuidValue>uuid7[ms]format:timestamp[YYYY-0MM-0DD 0hh:0mm:0ss.XXX]] }}}/>
+
+''Version:'' <$text text={{{ [<uuidValue>uuid7[version]] }}}/> — ''Variant:'' <$text text={{{ [<uuidValue>uuid7[variant]] }}}/> — ''Random:'' <code><$text text={{{ [<uuidValue>uuid7[rnd]] }}}/></code>
+
+!! Table 2: Comparison UUID hex vs Crockford Base32
+
+<table>
+<tr>
+	<th></th>
+	<th>c7 (UUID hex)</th>
+	<th>c32 (Crockford Base32)</th>
+</tr>
+<tr>
+	<td>''Value''</td>
+	<td><code><$text text=<<uuidValue>>/></code></td>
+	<td><code><$text text={{{ [<uuidValue>uuid7[c32]] }}}/></code></td>
+</tr>
+<tr>
+	<td>''Length''</td>
+	<td>36 chars</td>
+	<td>29 chars</td>
+</tr>
+<tr>
+	<td>''Chars''</td>
+	<td>32 hex + 4 hyphens</td>
+	<td>26 base32 + 3 hyphens</td>
+</tr>
+<tr>
+	<td>''Bits/char''</td>
+	<td>4</td>
+	<td>5</td>
+</tr>
+<tr>
+	<td>''Alphabet''</td>
+	<td><code>0-9a-f</code></td>
+	<td><code>0-9A-Z</code> (no I,L,O,U)</td>
+</tr>
+<tr>
+	<td>''Sortable''</td>
+	<td>Yes</td>
+	<td>Yes</td>
+</tr>
+</table>
+
+!! Phrase encoding
+
+<$text text={{{ [<uuidValue>uuid7[phrase]] }}}/>
+
+</$let>
+\end
+
+Enter a UUID v7 or c32 value to inspect:
+
+<$edit-text tiddler="$:/temp/uuid7-debug-input" field="text" tag="input" default="" placeholder="UUID v7 hex or c32 value" size="40"/>
+
+<$let
+	userInput={{{ [[$:/temp/uuid7-debug-input]get[text]trim[]] }}}
+	isUUID={{{ [<userInput>uuid7[valid]] }}}
+	asC32={{{ [<userInput>search-replace:g:literal[-],[]c32[]] }}}
+	inputVal={{{ [<isUUID>match[yes]then<userInput>] ~[<asC32>length[]match[26]then<asC32>c32[c7]] }}}
+>
+<%if [<inputVal>uuid7[valid]match[yes]] %>
+	<$macrocall $name="uuid7-bit-table" uuidValue=<<inputVal>>/>
+<%elseif [<userInput>length[]compare:number:gt[0]] %>
+	//Enter a valid UUID v7 or c32 value//
+<%else%>
+
+---
+
+Or inspect the current tiddler's c7 field:
+
+<$list filter="[all[current]has[c7]]" variable="t" emptyMessage="//This tiddler has no c7 field. Enter a value above.//">
+	<$macrocall $name="uuid7-bit-table" uuidValue={{{ [all[current]get[c7]] }}}/>
+</$list>
+
+<%endif%>
+</$let>
