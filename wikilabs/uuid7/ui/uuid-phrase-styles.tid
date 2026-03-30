@@ -38,7 +38,7 @@ tags: $:/tags/Stylesheet
 	position: absolute;
 	top: 3px;
 	right: 6px;
-	font-size: 1rem;
+	font-size: 1.1rem;
 	font-family: monospace;
 	opacity: 0.4;
 	line-height: 1;
