@@ -119,9 +119,9 @@ function msToISO(ms) {
 // Exports
 // ---------------------------------------------------------------------------
 
-exports.generateUUIDv7      = generateUUIDv7;
+exports.generateUUIDv7 = generateUUIDv7;
 exports.generateUUIDv7Bytes = generateUUIDv7Bytes;
-exports.toUUIDString        = toUUIDString;
-exports.isValidV7         = isValidV7;
+exports.toUUIDString = toUUIDString;
+exports.isValidV7 = isValidV7;
 exports.extractTimestampMs = extractTimestampMs;
-exports.msToISO           = msToISO;
+exports.msToISO = msToISO;

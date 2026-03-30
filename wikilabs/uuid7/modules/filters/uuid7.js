@@ -6,20 +6,20 @@ module-type: filteroperator
 Filter operator for extracting UUID v7 components.
 
 Usage:
-  [get[c7]uuid7[ms]]              → Unix timestamp in milliseconds
-  [get[c7]uuid7[rnd]]             → random part as hex (20 chars, visually matches UUID)
-  [get[c7]uuid7[phrase]]          → all 8 triplets (comma-separated, spaces between words)
-  [get[c7]uuid7:+[phrase]]        → all 8 triplets (comma-separated, + between words)
-  [get[c7]uuid7[phrase],[1],[2]]   → triplets 1-2 (start, count — 1-based)
-  [get[c7]uuid7:+[phrase],[3]]     → triplet 3 with + separator
-  [get[c7]uuid7[version]]         → UUID version number (should be 7)
-  [get[c7]uuid7[variant]]         → variant bits as hex
-  [get[c7]uuid7[valid]]           → "yes" or "no"
-  [get[c7]uuid7[c32]]             → convert to Crockford Base32 (6-4-12-4)
-  [get[c7]uuid7[check]]           → check symbol (mod 37, via c32)
+	[get[c7]uuid7[ms]]              → Unix timestamp in milliseconds
+	[get[c7]uuid7[rnd]]             → random part as hex (20 chars, visually matches UUID)
+	[get[c7]uuid7[phrase]]          → all 8 triplets (comma-separated, spaces between words)
+	[get[c7]uuid7:+[phrase]]        → all 8 triplets (comma-separated, + between words)
+	[get[c7]uuid7[phrase],[1],[2]]   → triplets 1-2 (start, count — 1-based)
+	[get[c7]uuid7:+[phrase],[3]]     → triplet 3 with + separator
+	[get[c7]uuid7[version]]         → UUID version number (should be 7)
+	[get[c7]uuid7[variant]]         → variant bits as hex
+	[get[c7]uuid7[valid]]           → "yes" or "no"
+	[get[c7]uuid7[c32]]             → convert to Crockford Base32 (6-4-12-4)
+	[get[c7]uuid7[check]]           → check symbol (mod 37, via c32)
 
 Date formatting is done by composing with existing operators:
-  [get[c7]uuid7[ms]format:timestamp[YYYY0MM0DD]]
+	[get[c7]uuid7[ms]format:timestamp[YYYY0MM0DD]]
 
 With no operand, passes through valid UUID v7 strings unchanged (filtering out invalid ones).
 

@@ -12,14 +12,14 @@ Display format: 6-4-12-4  (31 chars with hyphens)
 Storage format: same as display (hyphens at fixed positions preserve sort)
 
 Public API:
-	encode(bytes)             → string  (26-char raw Crockford)
-	decode(str)               → Uint8Array(16)
-	format(raw)               → string  (6-4-12-4 with hyphens, 31 chars)
-	unformat(formatted)       → string  (26-char raw, strips hyphens)
-	checkSymbol(raw)          → string  (single check character, mod 37)
-	fromUUID(uuidHex)         → string  (formatted c32 from UUID hex string)
-	toUUID(c32)               → string  (UUID hex string from c32)
-	isValidC32(str)           → boolean (accepts raw or formatted)
+	encode(bytes)			 → string  (26-char raw Crockford)
+	decode(str)			   → Uint8Array(16)
+	format(raw)			   → string  (6-4-12-4 with hyphens, 31 chars)
+	unformat(formatted)	   → string  (26-char raw, strips hyphens)
+	checkSymbol(raw)		  → string  (single check character, mod 37)
+	fromUUID(uuidHex)		 → string  (formatted c32 from UUID hex string)
+	toUUID(c32)			   → string  (UUID hex string from c32)
+	isValidC32(str)		   → boolean (accepts raw or formatted)
 	extractTimestampMs(c32)   → number | null
 
 Standalone — no TiddlyWiki dependencies.
@@ -119,7 +119,7 @@ function decode(str) {
 			throw new Error("invalid Crockford character: " + str[c]);
 		}
 		var offset = c * 5;
-		bits[offset]     = (val >> 4) & 1;
+		bits[offset]	 = (val >> 4) & 1;
 		bits[offset + 1] = (val >> 3) & 1;
 		bits[offset + 2] = (val >> 2) & 1;
 		bits[offset + 3] = (val >> 1) & 1;
@@ -146,7 +146,7 @@ function decode(str) {
 function format(raw) {
 	raw = unformat(raw);
 	return raw.slice(0, 6) + "-" + raw.slice(6, 10) + "-" +
-		   raw.slice(10, 22) + "-" + raw.slice(22, 26);
+			raw.slice(10, 22) + "-" + raw.slice(22, 26);
 }
 
 // ---------------------------------------------------------------------------
@@ -203,7 +203,7 @@ function toUUID(c32) {
 		return ("0" + x.toString(16)).slice(-2);
 	}).join("");
 	return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" +
-		   hex.slice(16, 20) + "-" + hex.slice(20);
+			hex.slice(16, 20) + "-" + hex.slice(20);
 }
 
 // ---------------------------------------------------------------------------
@@ -274,14 +274,14 @@ function extractTimestampMs(c32) {
 // Exports
 // ---------------------------------------------------------------------------
 
-exports.encode             = encode;
-exports.decode             = decode;
-exports.format             = format;
-exports.unformat           = unformat;
-exports.normalize          = normalize;
-exports.toBinary           = toBinary;
-exports.checkSymbol        = checkSymbol;
-exports.fromUUID           = fromUUID;
-exports.toUUID             = toUUID;
-exports.isValidC32         = isValidC32;
+exports.encode = encode;
+exports.decode = decode;
+exports.format = format;
+exports.unformat = unformat;
+exports.normalize = normalize;
+exports.toBinary = toBinary;
+exports.checkSymbol = checkSymbol;
+exports.fromUUID = fromUUID;
+exports.toUUID = toUUID;
+exports.isValidC32 = isValidC32;
 exports.extractTimestampMs = extractTimestampMs;
