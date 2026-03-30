@@ -4,5 +4,5 @@
 	"description": "Use UUID-7 to replace created field",
 	"list": "readme license mnemonic Dashboard",
 	"stability": "STABILITY_1_EXPERIMENTAL",
-	"version": "0.1.1"
+	"version": "0.2.0"
 }

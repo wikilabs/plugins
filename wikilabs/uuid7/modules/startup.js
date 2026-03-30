@@ -26,6 +26,7 @@ exports.synchronous = true;
 exports.startup = function() {
 	var creator = require("$:/plugins/wikilabs/uuid7/creator.js");
 	var c32lib = require("$:/plugins/wikilabs/uuid7/crockford32.js");
+	var b62lib = require("$:/plugins/wikilabs/uuid7/base62id.js");
 
 	// --- 1. Override the "created" field module ---
 	// When c7 is present, stringify always derives from it, ensuring c7
@@ -56,6 +57,7 @@ exports.startup = function() {
 		var bytes = creator.generateUUIDv7Bytes();
 		fields.c7 = creator.toUUIDString(bytes);
 		fields.c32 = c32lib.format(c32lib.encode(bytes));
+		fields.c62 = b62lib.encode(bytes);
 		var cfg = $tw.wiki.getTiddler("$:/config/wikilabs/uuid7");
 		if(cfg && cfg.fields["no-created"] === "yes") {
 			delete fields.created;
@@ -150,12 +152,13 @@ exports.startup = function() {
 		var bytes = creator.generateUUIDv7Bytes(ms || undefined);
 		var c7 = creator.toUUIDString(bytes);
 		var c32 = c32lib.format(c32lib.encode(bytes));
+		var c62 = b62lib.encode(bytes);
 		var c7Ms = creator.extractTimestampMs(c7);
 		var createdStr = $tw.utils.stringifyDate(new Date(c7Ms));
 		importLogLines.push("|[[" + title + "]]|" + source + "|" + createdStr + "|" + c7 + "|");
 		// Schedule log flush after all import hooks have fired
 		clearTimeout(importLogTimer);
 		importLogTimer = setTimeout(flushImportLog, 100);
-		return new $tw.Tiddler(tiddler, {c7: c7, c32: c32});
+		return new $tw.Tiddler(tiddler, {c7: c7, c32: c32, c62: c62});
 	});
 };

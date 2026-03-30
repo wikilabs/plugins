@@ -1,0 +1,113 @@
+title: $:/plugins/wikilabs/uuid7/ui/c62-debug
+caption: C62 Debug
+
+\whitespace trim
+
+\procedure c62-bit-table(uuidValue)
+\whitespace trim
+<$let
+	hex={{{ [<uuidValue>search-replace:g:literal[-],[]] }}}
+>
+
+! Base62id Encoding Breakdown
+
+''c7:'' <code><$text text=<<uuidValue>>/></code>
+
+''c32:'' <code><$text text={{{ [<uuidValue>uuid7[c32]] }}}/></code>
+
+!! Comparison: c32 vs Base62id vs c7
+
+<table class="wltc-debug-table">
+<tr>
+	<th></th>
+	<th>c32 (Crockford Base32)</th>
+	<th>Base62id</th>
+	<th>c7 (UUID hex)</th>
+</tr>
+<tr>
+	<td>''Value''</td>
+	<td><code><$text text={{{ [<uuidValue>uuid7[c32]] }}}/></code></td>
+	<td><code><$text text={{{ [<uuidValue>uuid7[c62]] }}}/></code></td>
+	<td><code><$text text=<<uuidValue>>/></code></td>
+</tr>
+<tr>
+	<td>''Length''</td>
+	<td>29 chars (26 + 3 hyphens)</td>
+	<td>22 chars</td>
+	<td>36 chars (32 + 4 hyphens)</td>
+</tr>
+<tr>
+	<td>''Bits/char''</td>
+	<td>5</td>
+	<td>5.95</td>
+	<td>4</td>
+</tr>
+<tr>
+	<td>''Alphabet''</td>
+	<td><code>0-9A-Z</code> (no I,L,O,U)</td>
+	<td><code>0-9A-Za-z</code></td>
+	<td><code>0-9a-f</code></td>
+</tr>
+<tr>
+	<td>''Case''</td>
+	<td>Uppercase (case-insensitive decode)</td>
+	<td>Case-sensitive</td>
+	<td>Lowercase</td>
+</tr>
+<tr>
+	<td>''Sortable''</td>
+	<td>Yes</td>
+	<td>Yes (ASCII order)</td>
+	<td>Yes</td>
+</tr>
+<tr>
+	<td>''Prefix''</td>
+	<td>2-bit zero padding</td>
+	<td>2-bit <code>10</code> prefix (first char always A-L)</td>
+	<td>None</td>
+</tr>
+<tr>
+	<td>''URL-safe''</td>
+	<td>Yes</td>
+	<td>Yes</td>
+	<td>Yes</td>
+</tr>
+<tr>
+	<td>''Human-friendly''</td>
+	<td>Grouped (6-4-12-4), no ambiguous chars</td>
+	<td>Compact, no grouping</td>
+	<td>Grouped (8-4-4-4-12)</td>
+</tr>
+</table>
+
+''Timestamp:'' <$text text={{{ [<uuidValue>uuid7[ms]] }}}/> ms — <$text text={{{ [<uuidValue>uuid7[ms]format:timestamp[YYYY-0MM-0DD 0hh:0mm:0ss.XXX]] }}}/>
+
+</$let>
+\end
+
+Enter a UUID v7 or c32 value to inspect:
+
+<$edit-text tiddler="$:/debug/wikilabs/uuid7/c62-debug-input" field="text" tag="input" default="" placeholder="UUID v7 hex or c32 value" size="40"/>
+
+<$let
+	userInput={{{ [[$:/debug/wikilabs/uuid7/c62-debug-input]get[text]trim[]] }}}
+	isUUID={{{ [<userInput>uuid7[valid]] }}}
+	asC32={{{ [<userInput>search-replace:g:literal[-],[]c32[]] }}}
+	inputVal={{{ [<isUUID>match[yes]then<userInput>] ~[<asC32>length[]match[26]then<asC32>c32[c7]] }}}
+>
+<%if [<inputVal>uuid7[valid]match[yes]] %>
+	<$macrocall $name="c62-bit-table" uuidValue=<<inputVal>>/>
+<%elseif [<userInput>length[]compare:number:gt[0]] %>
+	//Enter a valid UUID v7 or c32 value//
+<%else%>
+
+---
+
+Or inspect the current tiddler's c7 field:
+
+<$list filter="[all[current]has[c7]]" variable="t" emptyMessage="//This tiddler has no c7 field. Enter a value above.//">
+	<$macrocall $name="c62-bit-table" uuidValue={{{ [all[current]get[c7]] }}}/>
+</$list>
+
+<%endif%>
+</$let>

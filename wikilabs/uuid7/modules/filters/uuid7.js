@@ -86,6 +86,12 @@ exports.uuid7 = function(source,operator,options) {
 					results.push(c32lib.fromUUID(title));
 				}
 				break;
+			case "c62":
+				if(creator.isValidV7(title)) {
+					var b62lib = require("$:/plugins/wikilabs/uuid7/base62id.js");
+					results.push(b62lib.fromUUID(title));
+				}
+				break;
 			case "check":
 				if(creator.isValidV7(title)) {
 					var c32chk = require("$:/plugins/wikilabs/uuid7/crockford32.js");

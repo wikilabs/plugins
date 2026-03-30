@@ -40,6 +40,12 @@ exports.c32 = function(source,operator,options) {
 					results.push(c32lib.toUUID(title));
 				}
 				break;
+			case "c62":
+				if(c32lib.isValidC32(title)) {
+					var b62conv = require("$:/plugins/wikilabs/uuid7/base62id.js");
+					results.push(b62conv.fromUUID(c32lib.toUUID(title)));
+				}
+				break;
 			case "phrase":
 				if(c32lib.isValidC32(title)) {
 					var phraselib = require("$:/plugins/wikilabs/uuid7/phraselib.js");

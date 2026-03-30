@@ -47,6 +47,7 @@ function parseDateField(value) {
 exports.startup = function() {
 	var creator = require("$:/plugins/wikilabs/uuid7/creator.js");
 	var c32lib = require("$:/plugins/wikilabs/uuid7/crockford32.js");
+	var b62lib = require("$:/plugins/wikilabs/uuid7/base62id.js");
 
 	var mode = ($tw.wiki.getTiddlerText(BACKFILL_MODE_TITLE, "") || "").trim().toLowerCase();
 	if(!mode) {
@@ -86,17 +87,19 @@ exports.startup = function() {
 			if(!tiddler) {
 				continue;
 			}
-			// Backfill c32 from existing c7
-			if(tiddler.fields.c7 && !tiddler.fields.c32) {
-				var c32val = c32lib.fromUUID(tiddler.fields.c7);
-				logLines.push("|[[" + title + "]]|c7→c32| |" + c32val + "|");
+			// Backfill c32/c62 from existing c7
+			if(tiddler.fields.c7 && (!tiddler.fields.c32 || !tiddler.fields.c62)) {
+				var newFields = {};
+				if(!tiddler.fields.c32) { newFields.c32 = c32lib.fromUUID(tiddler.fields.c7); }
+				if(!tiddler.fields.c62) { newFields.c62 = b62lib.fromUUID(tiddler.fields.c7); }
+				logLines.push("|[[" + title + "]]|c7→backfill| |" + (newFields.c32 || tiddler.fields.c32) + "|");
 				count++;
 				if(isLive) {
-					$tw.wiki.addTiddler(new $tw.Tiddler(tiddler, {c32: c32val}));
+					$tw.wiki.addTiddler(new $tw.Tiddler(tiddler, newFields));
 				}
 				continue;
 			}
-			// Skip if already has c7 and c32
+			// Skip if already has c7, c32 and c62
 			if(tiddler.fields.c7) {
 				continue;
 			}
@@ -109,6 +112,7 @@ exports.startup = function() {
 			var bytes = creator.generateUUIDv7Bytes(ms);
 			var c7 = creator.toUUIDString(bytes);
 			var c32 = c32lib.format(c32lib.encode(bytes));
+			var c62 = b62lib.encode(bytes);
 			var c7Ms = creator.extractTimestampMs(c7);
 			var createdStr = $tw.utils.stringifyDate(new Date(c7Ms));
 
@@ -116,7 +120,7 @@ exports.startup = function() {
 			count++;
 
 			if(isLive) {
-				$tw.wiki.addTiddler(new $tw.Tiddler(tiddler, {c7: c7, c32: c32}));
+				$tw.wiki.addTiddler(new $tw.Tiddler(tiddler, {c7: c7, c32: c32, c62: c62}));
 			}
 		}
 	} finally {
