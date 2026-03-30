@@ -1,12 +1,13 @@
 title: $:/plugins/wikilabs/uuid7/styles
 tags: $:/tags/Stylesheet
-type: text/vnd.tiddlywiki
 
 .tc-tiddler-frame {
 	position: relative;
 }
 
-.tc-uuid-phrase-badge {
+/* --- Phrase badge --- */
+
+.wltc-uuid-phrase-badge {
 	position: absolute;
 	bottom: 3px;
 	left: 6px;
@@ -15,7 +16,9 @@ type: text/vnd.tiddlywiki
 	line-height: 1;
 }
 
-.tc-uuid-c32-badge {
+/* --- C32 badge --- */
+
+.wltc-uuid-c32-badge {
 	position: absolute;
 	bottom: 3px;
 	right: 6px;
@@ -25,6 +28,68 @@ type: text/vnd.tiddlywiki
 	line-height: 1;
 }
 
-.tc-uuid-c32-check {
+.wltc-uuid-c32-check {
 	opacity: 0.6;
+}
+
+/* --- Debug tables --- */
+
+.wltc-debug-table td,
+.wltc-debug-table th {
+	text-align: center;
+}
+
+.wltc-debug-table th {
+	text-align: left;
+}
+
+.wltc-debug-char {
+	font-weight: bold;
+}
+
+.wltc-debug-binary {
+	font-family: monospace;
+	font-size: 0.8em;
+}
+
+.wltc-debug-word {
+	font-size: 0.8em;
+}
+
+.wltc-debug-type {
+	font-size: 0.7em;
+}
+
+.wltc-debug-pad {
+	color: #999;
+}
+
+/* --- Group colours --- */
+
+.wltc-grp-ts1 {
+	background: #b8e6b8;
+}
+
+.wltc-grp-ts2 {
+	background: #b8c8e6;
+}
+
+.wltc-grp-rnd {
+	background: #e6b8b8;
+}
+
+.wltc-grp-tail {
+	background: #e6d8a0;
+}
+
+.wltc-grp-ver {
+	background: #d8b8e6;
+}
+
+.wltc-grp-mix {
+	background: #c8b0d8;
+}
+
+.wltc-grp-pad {
+	background: #ccc;
 }

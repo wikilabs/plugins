@@ -15,98 +15,98 @@ caption: UUID7 Debug
 
 !! Table 1: UUID v7 hex layout (8-4-4-4-12)
 
-<table>
+<table class="wltc-debug-table">
 <tr>
 	<th>Hex</th>
 	<$list filter="[<hex>split[]first[8]]" variable="ch">
-		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
 	</$list>
-	<td style="text-align:center;">-</td>
+	<td>-</td>
 	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
-		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
 	</$list>
-	<td style="text-align:center;">-</td>
+	<td>-</td>
 	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
-		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
 	</$list>
-	<td style="text-align:center;">-</td>
+	<td>-</td>
 	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
-		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
 	</$list>
-	<td style="text-align:center;">-</td>
+	<td>-</td>
 	<$list filter="[<hex>split[]rest[20]]" variable="ch">
-		<td style="text-align:center; font-weight:bold;"><$text text=<<ch>>/></td>
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
 	</$list>
 </tr>
 <tr>
 	<th>Decimal</th>
 	<$list filter="[<hex>split[]first[8]]" variable="ch">
-		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+		<td><$text text={{{ [<ch>uuid7[value]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
-		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+		<td><$text text={{{ [<ch>uuid7[value]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
-		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+		<td><$text text={{{ [<ch>uuid7[value]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
-		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+		<td><$text text={{{ [<ch>uuid7[value]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[20]]" variable="ch">
-		<td style="text-align:center;"><$text text={{{ [<ch>uuid7[value]] }}}/></td>
+		<td><$text text={{{ [<ch>uuid7[value]] }}}/></td>
 	</$list>
 </tr>
 <tr>
 	<th>Binary</th>
 	<$list filter="[<hex>split[]first[8]]" variable="ch">
-		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
-		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
-		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
-		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
 	</$list>
 	<td></td>
 	<$list filter="[<hex>split[]rest[20]]" variable="ch">
-		<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
 	</$list>
 </tr>
 <tr>
 	<th>Group</th>
-	<td style="text-align:center; background:#b8e6b8;" colspan="8">timestamp high (32 bits)</td>
+	<td class="wltc-grp-ts1" colspan="8">timestamp high (32 bits)</td>
 	<td></td>
-	<td style="text-align:center; background:#b8c8e6;" colspan="4">timestamp low (16 bits)</td>
+	<td class="wltc-grp-ts2" colspan="4">timestamp low (16 bits)</td>
 	<td></td>
-	<td style="text-align:center; background:#d8b8e6;" colspan="4">ver (4) + rand_a (12)</td>
+	<td class="wltc-grp-ver" colspan="4">ver (4) + rand_a (12)</td>
 	<td></td>
-	<td style="text-align:center; background:#e6b8b8;" colspan="4">var (2) + rand_b (14)</td>
+	<td class="wltc-grp-rnd" colspan="4">var (2) + rand_b (14)</td>
 	<td></td>
-	<td style="text-align:center; background:#e6d8a0;" colspan="12">rand_b (48 bits)</td>
+	<td class="wltc-grp-tail" colspan="12">rand_b (48 bits)</td>
 </tr>
 <tr>
 	<th>Bits/char</th>
-	<td style="text-align:center;" colspan="8">4 bits each</td>
+	<td colspan="8">4 bits each</td>
 	<td></td>
-	<td style="text-align:center;" colspan="4">4 bits each</td>
+	<td colspan="4">4 bits each</td>
 	<td></td>
-	<td style="text-align:center;" colspan="1">ver=7</td>
-	<td style="text-align:center;" colspan="3">rand_a</td>
+	<td colspan="1">ver=7</td>
+	<td colspan="3">rand_a</td>
 	<td></td>
-	<td style="text-align:center;" colspan="1">var=2</td>
-	<td style="text-align:center;" colspan="3">rand_b</td>
+	<td colspan="1">var=2</td>
+	<td colspan="3">rand_b</td>
 	<td></td>
-	<td style="text-align:center;" colspan="12">rand_b</td>
+	<td colspan="12">rand_b</td>
 </tr>
 </table>
 
@@ -116,7 +116,7 @@ caption: UUID7 Debug
 
 !! Table 2: Comparison UUID hex vs Crockford Base32
 
-<table>
+<table class="wltc-debug-table">
 <tr>
 	<th></th>
 	<th>c7 (UUID hex)</th>
@@ -164,90 +164,90 @@ Phrases encode the 122 ''variable'' bits of the UUID (48 timestamp + 12 rand_a +
 	t5={{{ [<uuidValue>uuid7[phrase],[5]] }}}  t6={{{ [<uuidValue>uuid7[phrase],[6]] }}}
 	t7={{{ [<uuidValue>uuid7[phrase],[7]] }}}  t8={{{ [<uuidValue>uuid7[phrase],[8]] }}}
 >
-<table>
+<table class="wltc-debug-table">
 <tr>
 	<th>Triplet</th>
-	<td style="text-align:center;" colspan="3">1</td>
-	<td style="text-align:center;" colspan="3">2</td>
-	<td style="text-align:center;" colspan="3">3</td>
-	<td style="text-align:center;" colspan="3">4</td>
-	<td style="text-align:center;" colspan="3">5</td>
-	<td style="text-align:center;" colspan="3">6</td>
-	<td style="text-align:center;" colspan="3">7</td>
-	<td style="text-align:center;" colspan="3">8</td>
+	<td colspan="3">1</td>
+	<td colspan="3">2</td>
+	<td colspan="3">3</td>
+	<td colspan="3">4</td>
+	<td colspan="3">5</td>
+	<td colspan="3">6</td>
+	<td colspan="3">7</td>
+	<td colspan="3">8</td>
 </tr>
 <tr>
 	<th>Binary</th>
 	<$let a={{{[<t1>split[ ]nth[1]]}}} n={{{[<t1>split[ ]nth[2]]}}} v={{{[<t1>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 	<$let a={{{[<t2>split[ ]nth[1]]}}} n={{{[<t2>split[ ]nth[2]]}}} v={{{[<t2>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 	<$let a={{{[<t3>split[ ]nth[1]]}}} n={{{[<t3>split[ ]nth[2]]}}} v={{{[<t3>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 	<$let a={{{[<t4>split[ ]nth[1]]}}} n={{{[<t4>split[ ]nth[2]]}}} v={{{[<t4>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 	<$let a={{{[<t5>split[ ]nth[1]]}}} n={{{[<t5>split[ ]nth[2]]}}} v={{{[<t5>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 	<$let a={{{[<t6>split[ ]nth[1]]}}} n={{{[<t6>split[ ]nth[2]]}}} v={{{[<t6>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 	<$let a={{{[<t7>split[ ]nth[1]]}}} n={{{[<t7>split[ ]nth[2]]}}} v={{{[<t7>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 	<$let a={{{[<t8>split[ ]nth[1]]}}} n={{{[<t8>split[ ]nth[2]]}}} v={{{[<t8>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<a>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em;"><$text text={{{[<n>c32[wordbits]]}}}/></td><td style="text-align:center; font-family:monospace; font-size:0.8em; color:#999;"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary wltc-debug-pad"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
 </tr>
 <tr>
 	<th>Decimal</th>
 	<$let a={{{[<t1>split[ ]nth[1]]}}} n={{{[<t1>split[ ]nth[2]]}}} v={{{[<t1>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 	<$let a={{{[<t2>split[ ]nth[1]]}}} n={{{[<t2>split[ ]nth[2]]}}} v={{{[<t2>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 	<$let a={{{[<t3>split[ ]nth[1]]}}} n={{{[<t3>split[ ]nth[2]]}}} v={{{[<t3>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 	<$let a={{{[<t4>split[ ]nth[1]]}}} n={{{[<t4>split[ ]nth[2]]}}} v={{{[<t4>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 	<$let a={{{[<t5>split[ ]nth[1]]}}} n={{{[<t5>split[ ]nth[2]]}}} v={{{[<t5>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 	<$let a={{{[<t6>split[ ]nth[1]]}}} n={{{[<t6>split[ ]nth[2]]}}} v={{{[<t6>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 	<$let a={{{[<t7>split[ ]nth[1]]}}} n={{{[<t7>split[ ]nth[2]]}}} v={{{[<t7>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 	<$let a={{{[<t8>split[ ]nth[1]]}}} n={{{[<t8>split[ ]nth[2]]}}} v={{{[<t8>split[ ]nth[3]]}}}>
-	<td style="text-align:center;"><$text text={{{[<a>c32[wordvalue]]}}}/></td><td style="text-align:center;"><$text text={{{[<n>c32[wordvalue]]}}}/></td><td style="text-align:center; color:#999;"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td class="wltc-debug-pad"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
 </tr>
 <tr>
 	<th>Word</th>
 	<$let a={{{[<t1>split[ ]nth[1]]}}} n={{{[<t1>split[ ]nth[2]]}}} v={{{[<t1>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
 	<$let a={{{[<t2>split[ ]nth[1]]}}} n={{{[<t2>split[ ]nth[2]]}}} v={{{[<t2>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
 	<$let a={{{[<t3>split[ ]nth[1]]}}} n={{{[<t3>split[ ]nth[2]]}}} v={{{[<t3>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
 	<$let a={{{[<t4>split[ ]nth[1]]}}} n={{{[<t4>split[ ]nth[2]]}}} v={{{[<t4>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
 	<$let a={{{[<t5>split[ ]nth[1]]}}} n={{{[<t5>split[ ]nth[2]]}}} v={{{[<t5>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
 	<$let a={{{[<t6>split[ ]nth[1]]}}} n={{{[<t6>split[ ]nth[2]]}}} v={{{[<t6>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
 	<$let a={{{[<t7>split[ ]nth[1]]}}} n={{{[<t7>split[ ]nth[2]]}}} v={{{[<t7>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
 	<$let a={{{[<t8>split[ ]nth[1]]}}} n={{{[<t8>split[ ]nth[2]]}}} v={{{[<t8>split[ ]nth[3]]}}}>
-	<td style="text-align:center; font-size:0.8em;"><$text text=<<a>>/></td><td style="text-align:center; font-size:0.8em;"><$text text=<<n>>/></td><td style="text-align:center; font-size:0.8em; color:#999;"><$text text=<<v>>/></td></$let>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word wltc-debug-pad"><$text text=<<v>>/></td></$let>
 </tr>
 <tr>
 	<th>Type</th>
 	<$list filter="1 2 3 4 5 6 7 8">
-		<td style="text-align:center; font-size:0.7em;">adj 5b</td>
-		<td style="text-align:center; font-size:0.7em;">noun 6b</td>
-		<td style="text-align:center; font-size:0.7em;">verb 5b</td>
+		<td class="wltc-debug-type">adj 5b</td>
+		<td class="wltc-debug-type">noun 6b</td>
+		<td class="wltc-debug-type">verb 5b</td>
 	</$list>
 </tr>
 <tr>
 	<th>Source</th>
-	<td style="text-align:center; background:#b8e6b8;" colspan="9">timestamp (48 bits)</td>
-	<td style="text-align:center; background:#d8b8e6;" colspan="2">rand_a</td>
-	<td style="text-align:center; background:#c8b0d8;" colspan="1">a+b</td>
-	<td style="text-align:center; background:#e6b8b8;" colspan="9">rand_b (62 bits)</td>
-	<td style="text-align:center; background:#ccc;" colspan="3">adj + noun + pad (6bits=0)</td>
+	<td class="wltc-grp-ts1" colspan="9">timestamp (48 bits)</td>
+	<td class="wltc-grp-ver" colspan="2">rand_a</td>
+	<td class="wltc-grp-mix" colspan="1">a+b</td>
+	<td class="wltc-grp-rnd" colspan="9">rand_b (62 bits)</td>
+	<td class="wltc-grp-pad" colspan="3">adj + noun + pad (6bits=0)</td>
 </tr>
 </table>
 </$let>
@@ -257,10 +257,10 @@ Phrases encode the 122 ''variable'' bits of the UUID (48 timestamp + 12 rand_a +
 
 Enter a UUID v7 or c32 value to inspect:
 
-<$edit-text tiddler="$:/temp/uuid7-debug-input" field="text" tag="input" default="" placeholder="UUID v7 hex or c32 value" size="40"/>
+<$edit-text tiddler="$:/debug/wikilabs/uuid7/uuid7-debug-input" field="text" tag="input" default="" placeholder="UUID v7 hex or c32 value" size="40"/>
 
 <$let
-	userInput={{{ [[$:/temp/uuid7-debug-input]get[text]trim[]] }}}
+	userInput={{{ [[$:/debug/wikilabs/uuid7/uuid7-debug-input]get[text]trim[]] }}}
 	isUUID={{{ [<userInput>uuid7[valid]] }}}
 	asC32={{{ [<userInput>search-replace:g:literal[-],[]c32[]] }}}
 	inputVal={{{ [<isUUID>match[yes]then<userInput>] ~[<asC32>length[]match[26]then<asC32>c32[c7]] }}}

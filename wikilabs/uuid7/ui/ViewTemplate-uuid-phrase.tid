@@ -4,7 +4,7 @@ list-before: $:/core/ui/ViewTemplate/title
 
 \whitespace trim
 <%if [<currentTiddler>has[c7]] [{$:/config/wikilabs/uuid7!!show-phrase-badge}!match[no]] +[count[]compare:number:eq[2]] %>
-<div class="tc-uuid-phrase-badge">
+<div class="wltc-uuid-phrase-badge">
 	<%if [{$:/config/wikilabs/uuid7!!bold-triplets}!match[no]] %>
 		<$text text={{{ [<currentTiddler>get[c7]uuid7:+[phrase],[1]] }}}/> <$text text=", "/>
 		''<$text text={{{ [<currentTiddler>get[c7]uuid7:+[phrase],[2]] }}}/>'' <$text text=", "/>
