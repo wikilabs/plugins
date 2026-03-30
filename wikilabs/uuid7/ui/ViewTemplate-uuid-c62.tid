@@ -1,0 +1,10 @@
+title: $:/plugins/wikilabs/uuid7/ui/ViewTemplate/uuid-c62
+tags: $:/tags/ViewTemplate
+list-before: $:/core/ui/ViewTemplate/title
+
+\whitespace trim
+<%if [<currentTiddler>has[c62]] [{$:/config/wikilabs/uuid7!!show-c62-badge}!match[no]] +[count[]compare:number:eq[2]] %>
+<div class="wltc-uuid-c62-badge">
+	<$text text={{{ [<currentTiddler>get[c62]] }}}/>
+</div>
+<%endif%>

@@ -110,6 +110,14 @@ exports.c62 = function(source, operator, options) {
 					results.push(c32chk.checkSymbol(c32chk.fromUUID(u7)));
 				}
 				break;
+			case "value":
+				// Decode a single Base62id character to its decimal value
+				if(title.length === 1) {
+					var ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+					var idx = ALPHABET.indexOf(title);
+					if(idx >= 0) { results.push(String(idx)); }
+				}
+				break;
 			case "valid":
 				results.push(b62lib.isValidB62(title) ? "yes" : "no");
 				break;

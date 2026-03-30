@@ -1,10 +1,7 @@
 title: $:/plugins/wikilabs/uuid7/ui/c62-debug
 caption: C62 Debug
 
-\whitespace trim
-
 \procedure c62-bit-table(uuidValue)
-\whitespace trim
 <$let
 	hex={{{ [<uuidValue>search-replace:g:literal[-],[]] }}}
 >
@@ -63,7 +60,7 @@ caption: C62 Debug
 <tr>
 	<td>''Prefix''</td>
 	<td>2-bit zero padding</td>
-	<td>2-bit <code>10</code> prefix (first char always A-L)</td>
+	<td>2-bit binary <code>10</code> prefix (first char always A-L)</td>
 	<td>None</td>
 </tr>
 <tr>
@@ -82,31 +79,225 @@ caption: C62 Debug
 
 ''Timestamp:'' <$text text={{{ [<uuidValue>uuid7[ms]] }}}/> ms — <$text text={{{ [<uuidValue>uuid7[ms]format:timestamp[YYYY-0MM-0DD 0hh:0mm:0ss.XXX]] }}}/>
 
+''Version:'' <$text text={{{ [<uuidValue>uuid7[version]] }}}/> — ''Variant:'' <$text text={{{ [<uuidValue>uuid7[variant]] }}}/> — ''Random:'' <code><$text text={{{ [<uuidValue>uuid7[rnd]] }}}/></code>
+
+!! Base62id character table (22 chars)
+
+Note: Base62id uses big-number division (base 62), so characters do NOT map to fixed bit boundaries like c32 (5 bits) or hex (4 bits). Each character carries ~5.95 bits.
+
+<$let b62val={{{ [<uuidValue>uuid7[c62]] }}}>
+<table class="wltc-debug-table">
+<tr>
+	<th>Position</th>
+	<$list filter="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22">
+		<td><$text text=<<currentTiddler>>/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Base62</th>
+	<$list filter="[<b62val>split[]first[22]]" variable="ch">
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Decimal</th>
+	<$list filter="[<b62val>split[]first[22]]" variable="ch">
+		<td><$text text={{{ [<ch>c62[value]] }}}/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Note</th>
+	<td colspan="1">prefix (A-L)</td>
+	<td colspan="21">encodes 2-bit prefix <code>10</code> + 128-bit UUID as single big number ÷ 62</td>
+</tr>
+</table>
+</$let>
+
+!! UUID v7 hex layout (8-4-4-4-12)
+
+<table class="wltc-debug-table">
+<tr>
+	<th>Hex</th>
+	<$list filter="[<hex>split[]first[8]]" variable="ch">
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
+	</$list>
+	<td>-</td>
+	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
+	</$list>
+	<td>-</td>
+	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
+	</$list>
+	<td>-</td>
+	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
+	</$list>
+	<td>-</td>
+	<$list filter="[<hex>split[]rest[20]]" variable="ch">
+		<td class="wltc-debug-char"><$text text=<<ch>>/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Binary</th>
+	<$list filter="[<hex>split[]first[8]]" variable="ch">
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[8]first[4]]" variable="ch">
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[12]first[4]]" variable="ch">
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[16]first[4]]" variable="ch">
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+	<td></td>
+	<$list filter="[<hex>split[]rest[20]]" variable="ch">
+		<td class="wltc-debug-binary"><$text text={{{ [<ch>uuid7[bits]] }}}/></td>
+	</$list>
+</tr>
+<tr>
+	<th>Group</th>
+	<td class="wltc-grp-ts1" colspan="8">timestamp high (32 bits)</td>
+	<td></td>
+	<td class="wltc-grp-ts2" colspan="4">timestamp low (16 bits)</td>
+	<td></td>
+	<td class="wltc-grp-ver" colspan="4">ver (4) + rand_a (12)</td>
+	<td></td>
+	<td class="wltc-grp-rnd" colspan="4">var (2) + rand_b (14)</td>
+	<td></td>
+	<td class="wltc-grp-tail" colspan="12">rand_b (48 bits)</td>
+</tr>
+</table>
+
+!! Phrase encoding
+
+Phrases encode the 122 ''variable'' bits of the UUID (48 timestamp + 12 rand_a + 62 rand_b), skipping 6 fixed bits (4 version + 2 variant). Padded to 128 bits with 6 trailing zeros → 8 triplets of 16 bits each. Triplet 8's verb (5 bits) and noun's LSB (1 bit) are padding zeros.
+
+<$let
+	t1={{{ [<uuidValue>uuid7[phrase],[1]] }}}  t2={{{ [<uuidValue>uuid7[phrase],[2]] }}}
+	t3={{{ [<uuidValue>uuid7[phrase],[3]] }}}  t4={{{ [<uuidValue>uuid7[phrase],[4]] }}}
+	t5={{{ [<uuidValue>uuid7[phrase],[5]] }}}  t6={{{ [<uuidValue>uuid7[phrase],[6]] }}}
+	t7={{{ [<uuidValue>uuid7[phrase],[7]] }}}  t8={{{ [<uuidValue>uuid7[phrase],[8]] }}}
+>
+<table class="wltc-debug-table">
+<tr>
+	<th>Triplet</th>
+	<td colspan="3">1</td>
+	<td colspan="3">2</td>
+	<td colspan="3">3</td>
+	<td colspan="3">4</td>
+	<td colspan="3">5</td>
+	<td colspan="3">6</td>
+	<td colspan="3">7</td>
+	<td colspan="3">8</td>
+</tr>
+<tr>
+	<th>Binary</th>
+	<$let a={{{[<t1>split[ ]nth[1]]}}} n={{{[<t1>split[ ]nth[2]]}}} v={{{[<t1>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<$let a={{{[<t2>split[ ]nth[1]]}}} n={{{[<t2>split[ ]nth[2]]}}} v={{{[<t2>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<$let a={{{[<t3>split[ ]nth[1]]}}} n={{{[<t3>split[ ]nth[2]]}}} v={{{[<t3>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<$let a={{{[<t4>split[ ]nth[1]]}}} n={{{[<t4>split[ ]nth[2]]}}} v={{{[<t4>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<$let a={{{[<t5>split[ ]nth[1]]}}} n={{{[<t5>split[ ]nth[2]]}}} v={{{[<t5>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<$let a={{{[<t6>split[ ]nth[1]]}}} n={{{[<t6>split[ ]nth[2]]}}} v={{{[<t6>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<$let a={{{[<t7>split[ ]nth[1]]}}} n={{{[<t7>split[ ]nth[2]]}}} v={{{[<t7>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+	<$let a={{{[<t8>split[ ]nth[1]]}}} n={{{[<t8>split[ ]nth[2]]}}} v={{{[<t8>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-binary"><$text text={{{[<a>c32[wordbits]]}}}/></td><td class="wltc-debug-binary"><$text text={{{[<n>c32[wordbits]]}}}/></td><td class="wltc-debug-binary wltc-debug-pad"><$text text={{{[<v>c32[wordbits]]}}}/></td></$let>
+</tr>
+<tr>
+	<th>Decimal</th>
+	<$let a={{{[<t1>split[ ]nth[1]]}}} n={{{[<t1>split[ ]nth[2]]}}} v={{{[<t1>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<$let a={{{[<t2>split[ ]nth[1]]}}} n={{{[<t2>split[ ]nth[2]]}}} v={{{[<t2>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<$let a={{{[<t3>split[ ]nth[1]]}}} n={{{[<t3>split[ ]nth[2]]}}} v={{{[<t3>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<$let a={{{[<t4>split[ ]nth[1]]}}} n={{{[<t4>split[ ]nth[2]]}}} v={{{[<t4>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<$let a={{{[<t5>split[ ]nth[1]]}}} n={{{[<t5>split[ ]nth[2]]}}} v={{{[<t5>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<$let a={{{[<t6>split[ ]nth[1]]}}} n={{{[<t6>split[ ]nth[2]]}}} v={{{[<t6>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<$let a={{{[<t7>split[ ]nth[1]]}}} n={{{[<t7>split[ ]nth[2]]}}} v={{{[<t7>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+	<$let a={{{[<t8>split[ ]nth[1]]}}} n={{{[<t8>split[ ]nth[2]]}}} v={{{[<t8>split[ ]nth[3]]}}}>
+	<td><$text text={{{[<a>c32[wordvalue]]}}}/></td><td><$text text={{{[<n>c32[wordvalue]]}}}/></td><td class="wltc-debug-pad"><$text text={{{[<v>c32[wordvalue]]}}}/></td></$let>
+</tr>
+<tr>
+	<th>Word</th>
+	<$let a={{{[<t1>split[ ]nth[1]]}}} n={{{[<t1>split[ ]nth[2]]}}} v={{{[<t1>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
+	<$let a={{{[<t2>split[ ]nth[1]]}}} n={{{[<t2>split[ ]nth[2]]}}} v={{{[<t2>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
+	<$let a={{{[<t3>split[ ]nth[1]]}}} n={{{[<t3>split[ ]nth[2]]}}} v={{{[<t3>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
+	<$let a={{{[<t4>split[ ]nth[1]]}}} n={{{[<t4>split[ ]nth[2]]}}} v={{{[<t4>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
+	<$let a={{{[<t5>split[ ]nth[1]]}}} n={{{[<t5>split[ ]nth[2]]}}} v={{{[<t5>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
+	<$let a={{{[<t6>split[ ]nth[1]]}}} n={{{[<t6>split[ ]nth[2]]}}} v={{{[<t6>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
+	<$let a={{{[<t7>split[ ]nth[1]]}}} n={{{[<t7>split[ ]nth[2]]}}} v={{{[<t7>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word"><$text text=<<v>>/></td></$let>
+	<$let a={{{[<t8>split[ ]nth[1]]}}} n={{{[<t8>split[ ]nth[2]]}}} v={{{[<t8>split[ ]nth[3]]}}}>
+	<td class="wltc-debug-word"><$text text=<<a>>/></td><td class="wltc-debug-word"><$text text=<<n>>/></td><td class="wltc-debug-word wltc-debug-pad"><$text text=<<v>>/></td></$let>
+</tr>
+<tr>
+	<th>Type</th>
+	<$list filter="1 2 3 4 5 6 7 8">
+		<td class="wltc-debug-type">adj 5b</td>
+		<td class="wltc-debug-type">noun 6b</td>
+		<td class="wltc-debug-type">verb 5b</td>
+	</$list>
+</tr>
+<tr>
+	<th>Source</th>
+	<td class="wltc-grp-ts1" colspan="9">timestamp (48 bits)</td>
+	<td class="wltc-grp-ver" colspan="2">rand_a</td>
+	<td class="wltc-grp-mix" colspan="1">a+b</td>
+	<td class="wltc-grp-rnd" colspan="9">rand_b (62 bits)</td>
+	<td class="wltc-grp-pad" colspan="3">adj + noun + pad (6bits=0)</td>
+</tr>
+</table>
+</$let>
+
 </$let>
 \end
 
-Enter a UUID v7 or c32 value to inspect:
+Enter a c62, c32, or UUID v7 value to inspect:
 
-<$edit-text tiddler="$:/debug/wikilabs/uuid7/c62-debug-input" field="text" tag="input" default="" placeholder="UUID v7 hex or c32 value" size="40"/>
+<$edit-text tiddler="$:/debug/wikilabs/uuid7/c62-debug-input" field="text" tag="input" default="" placeholder="c62, c32, or UUID v7 hex" size="40"/>
 
 <$let
 	userInput={{{ [[$:/debug/wikilabs/uuid7/c62-debug-input]get[text]trim[]] }}}
 	isUUID={{{ [<userInput>uuid7[valid]] }}}
+	isC62={{{ [<userInput>c62[valid]] }}}
 	asC32={{{ [<userInput>search-replace:g:literal[-],[]c32[]] }}}
-	inputVal={{{ [<isUUID>match[yes]then<userInput>] ~[<asC32>length[]match[26]then<asC32>c32[c7]] }}}
+	inputVal={{{ [<isUUID>match[yes]then<userInput>] ~[<isC62>match[yes]then<userInput>c62[c7]] ~[<asC32>length[]match[26]then<asC32>c32[c7]] }}}
 >
 <%if [<inputVal>uuid7[valid]match[yes]] %>
 	<$macrocall $name="c62-bit-table" uuidValue=<<inputVal>>/>
 <%elseif [<userInput>length[]compare:number:gt[0]] %>
-	//Enter a valid UUID v7 or c32 value//
+	//Enter a valid c62, c32, or UUID v7 value//
 <%else%>
 
 ---
 
-Or inspect the current tiddler's c7 field:
+Or inspect the current tiddler's c62 field:
 
-<$list filter="[all[current]has[c7]]" variable="t" emptyMessage="//This tiddler has no c7 field. Enter a value above.//">
-	<$macrocall $name="c62-bit-table" uuidValue={{{ [all[current]get[c7]] }}}/>
+<$list filter="[all[current]has[c62]]" variable="t" emptyMessage="//This tiddler has no c62 field. Enter a value above.//">
+	<$macrocall $name="c62-bit-table" uuidValue={{{ [all[current]get[c62]c62[c7]] }}}/>
 </$list>
 
 <%endif%>
