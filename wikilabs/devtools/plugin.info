@@ -1,0 +1,10 @@
+{
+	"title": "$:/plugins/wikilabs/devtools",
+	"name": "Developer Tools",
+	"description": "Hover tooltips, context menu, variable inspector, source viewer. Useful for any TiddlyWiki developer.",
+	"author": "pmario",
+	"core-version": ">=5.1.22",
+	"version": "0.3.2",
+	"list": "readme license history",
+	"stability": "STABILITY_1_EXPERIMENTAL"
+}
