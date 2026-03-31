@@ -1,0 +1,57 @@
+title: $:/plugins/wikilabs/devtools/styles
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline macrocallblock
+
+[data-source-pos] {
+	outline: 1px dashed transparent;
+	transition: outline-color 0.15s;
+}
+
+[data-source-pos]:hover {
+	outline: 2px dashed rgba(255, 100, 0, 0.8);
+}
+
+/* Tooltip is rendered by JavaScript with a 400ms hover delay (click-handler.js) */
+
+/* Hide outline on parent when a child with data-source-pos is hovered */
+[data-source-pos]:has([data-source-pos]:hover) {
+	outline-color: transparent;
+}
+
+/* Source viewer: highlight origin element */
+[data-source-pos].sourcepos-highlight-origin {
+	outline: 2px solid rgba(100, 180, 255, 0.9);
+	outline-offset: 2px;
+}
+
+[data-source-pos].sourcepos-highlight-blink {
+	outline: 3px solid rgba(255, 60, 60, 0.9);
+	outline-offset: 2px;
+}
+
+/* Variable inspector: per-panel highlight colors */
+[data-source-pos].sourcepos-highlight-color-0 {
+	outline: 2px solid rgba(100, 180, 255, 0.9);
+	outline-offset: 2px;
+}
+[data-source-pos].sourcepos-highlight-color-1 {
+	outline: 2px solid rgba(100, 220, 100, 0.9);
+	outline-offset: 2px;
+}
+[data-source-pos].sourcepos-highlight-color-2 {
+	outline: 2px solid rgba(255, 180, 60, 0.9);
+	outline-offset: 2px;
+}
+[data-source-pos].sourcepos-highlight-color-3 {
+	outline: 2px solid rgba(220, 100, 255, 0.9);
+	outline-offset: 2px;
+}
+[data-source-pos].sourcepos-highlight-color-4 {
+	outline: 2px solid rgba(255, 255, 80, 0.9);
+	outline-offset: 2px;
+}
+[data-source-pos].sourcepos-highlight-color-5 {
+	outline: 2px solid rgba(80, 220, 220, 0.9);
+	outline-offset: 2px;
+}
