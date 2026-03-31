@@ -9,6 +9,6 @@ caption: Source Position Tracking
 	default="no"
 > Source Position Tracking </$checkbox>
 
-When enabled, hover over elements to see their wikitext source position. Ctrl+click to edit the source tiddler.
+When enabled, hover over elements to see their wikitext source position. Right-click to open the DevTools context menu.
 
 //Save and reload the page for this setting to take effect.//

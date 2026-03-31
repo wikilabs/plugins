@@ -16,7 +16,7 @@ Line numbers are file-ready — they include the `.tid` file header offset and m
 
 * ''Hover'' — tooltip showing source position, context (`currentTiddler`), and caller chain
 * ''Right-click'' — context menu with copy options, navigation, source viewer, and optional edit features
-* ''Ctrl+click'' — navigate directly to the source tiddler
+
 * ''Ctrl+right-click'' — native browser context menu (passthrough)
 
 !!! Right-Click Context Menu

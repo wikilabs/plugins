@@ -3,7 +3,7 @@ title: $:/plugins/wikilabs/devtools/click-handler.js
 type: application/javascript
 module-type: startup
 
-Click handler: Ctrl+click opens source tiddler, right-click shows sourcepos context menu.
+Click handler: right-click shows sourcepos context menu.
 Ctrl+right-click passes through to native browser context menu.
 
 \*/
@@ -1012,18 +1012,6 @@ exports.startup = function() {
 	document.addEventListener("mouseout", function(event) {
 		if(!event.relatedTarget || !findSourcePos(event.relatedTarget)) {
 			removeTooltip();
-		}
-	}, true);
-	// Ctrl+click: navigate to source tiddler
-	document.addEventListener("click", function(event) {
-		if(!$tw.wiki.trackSourcePositions || !event.ctrlKey) {
-			return;
-		}
-		var info = findSourcePos(event.target);
-		if(info) {
-			event.preventDefault();
-			event.stopPropagation();
-			new $tw.Story().navigateTiddler(info.tiddler);
 		}
 	}, true);
 	// Right-click: show sourcepos context menu (Ctrl+right-click = native browser menu)
