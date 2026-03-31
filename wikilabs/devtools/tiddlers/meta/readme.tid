@@ -70,17 +70,6 @@ The only core changes required are `th-dom-rendering-link` hook call in `link.js
 
 The full documentation can be found at [[devtools plugin|https://wikilabs.github.io/editions/devtools/]] main page.
 
-! Basics
-
-
-! Settings
-
-Th current setting is: TODO
-
-| Setting | Description |h
-
-----
-
 ''Important'': This plugin modifies several core modules
 
-<$list filter="[[$:/plugins/wikilabs/devtools]plugintiddlers[]prefix[$:/core/]]"><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></$list>
+<<list-links "[[$:/plugins/wikilabs/devtools]plugintiddlers[]prefix[$:/core/]]" emptyMessage="none">>
