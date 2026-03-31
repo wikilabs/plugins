@@ -2,13 +2,13 @@ title: $:/plugins/wikilabs/devtools/toggle
 tags: $:/tags/ControlPanel/Settings
 caption: Source Position Tracking
 
+See: [[DevTools Settings|$:/plugins/wikilabs/devtools/settings]] in the ''WikiLabs'' tab for all configuration options.
+
 <$checkbox tiddler="$:/config/wikilabs/SourcePositionTracking"
 	field="text"
 	checked="yes"
 	unchecked="no"
 	default="no"
-> Source Position Tracking </$checkbox>
-
-When enabled, hover over elements to see their wikitext source position. Right-click to open the DevTools context menu.
+> Enable source position tracking</$checkbox>
 
 //Save and reload the page for this setting to take effect.//

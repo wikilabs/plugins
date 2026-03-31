@@ -4,7 +4,7 @@
 	"description": "Hover tooltips, context menu, variable inspector, source viewer. Useful for any TiddlyWiki developer.",
 	"author": "pmario",
 	"core-version": ">=5.3.8",
-	"version": "0.5.0",
+	"version": "0.5.1",
 	"list": "readme license history",
 	"stability": "STABILITY_1_EXPERIMENTAL"
 }

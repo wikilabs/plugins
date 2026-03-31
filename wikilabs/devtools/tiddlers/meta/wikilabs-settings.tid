@@ -7,7 +7,7 @@ Get an overview about all [[WikiLab Pugins|https://wikilabs.github.io]]
 <div class="tc-control-panel">
 <$macrocall $name="tabs" 
     tabsList="[all[shadows+tiddlers]tag[$:/tags/ControlPanel/WikiLabs]!has[draft.of]]"
-    default="$:/plugins/wikilabs/devtools/readme"
+    default="$:/plugins/wikilabs/devtools/settings"
     explicitState="$:/state/tab/settings/wikilabs"
 />
 </div>

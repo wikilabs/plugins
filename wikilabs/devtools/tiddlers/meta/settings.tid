@@ -1,0 +1,36 @@
+caption: DevTools
+tags: $:/tags/ControlPanel/WikiLabs
+title: $:/plugins/wikilabs/devtools/settings
+type: text/vnd.tiddlywiki
+
+The full documentation can be found at the [[devtools plugin|https://wikilabs.github.io/editions/devtools/]] main page.
+
+!! Source Position Tracking
+
+<$checkbox tiddler="$:/config/wikilabs/SourcePositionTracking"
+	field="text"
+	checked="yes"
+	unchecked="no"
+	default="no"
+> Enable source position tracking</$checkbox>
+
+//Save and reload the page for this setting to take effect.//
+
+When enabled, hover over elements to see their wikitext source position. Right-click to open the DevTools context menu.
+
+!! Context Menu Options
+
+These settings control which additional items appear in the right-click context menu.
+
+<$checkbox tiddler="$:/config/wikilabs/SourcePositionTracking/ShowEditMenuItem"
+	field="text"
+	checked="show"
+	unchecked=""
+	default=""
+> Show ''Edit at L...'' — opens the tiddler in edit mode and selects the source range</$checkbox>
+
+!! Modified Core Modules
+
+This plugin modifies the following core modules:
+
+<<list-links "[[$:/plugins/wikilabs/devtools]plugintiddlers[]prefix[$:/core/]]" emptyMessage:"none">>

@@ -1,6 +1,4 @@
 title: $:/plugins/wikilabs/devtools/readme
-caption: DevTools
-tags: $:/tags/ControlPanel/WikiLabs
 
 !! Source Position Tracking Plugin
 
@@ -44,17 +42,6 @@ A floating, draggable, resizable panel that accumulates source code entries. Cli
 |!Tiddler |!Values |!Description |
 |`$:/config/wikilabs/SourcePositionTracking` |`yes` / `no` |Enable or disable source position tracking. Default: `no` |
 |`$:/config/wikilabs/SourcePositionTracking/ShowEditMenuItem` |`show` / (empty) |Show "Edit at L..." menu item in the right-click context menu. Default: hidden |
-|`$:/config/wikilabs/SourcePositionTracking/ShowEditInline` |`show` / (empty) |Show "Edit inline" menu item for direct wikitext editing in a floating popup. Default: hidden |
-
-!!! Inline Editor
-
-When enabled via `ShowEditInline`, the inline editor popup provides:
-
-* Monospace textarea with the source wikitext for the selected element
-* ''Apply'' (or ''Ctrl+Enter'') — splices the edited text back into the source tiddler
-* ''Cancel'' (or ''Escape'') — dismisses without changes
-* Draggable header and resizable corner — layout stored in `$:/temp/sourcepos/editor-layout`
-
 !!! How It Works
 
 The plugin uses TiddlyWiki's hook system — zero overhead when disabled:
