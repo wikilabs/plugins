@@ -10,21 +10,14 @@ source code entries from data-source-pos right-click actions.
 
 "use strict";
 
-var sourcePosUtils = require("$:/plugins/wikilabs/devtools/utils.js");
-var sharedState = sourcePosUtils.state;
+var utils = require("$:/plugins/wikilabs/devtools/utils.js");
+var el = utils.el;
+var sharedState = utils.state;
 
 var MAX_SOURCE_ENTRIES = 100;
 var viewer = null;
 var entries = [];
 var snippetMap = {};
-
-var editIconCache = "";
-function getEditIconHTML() {
-	if(!editIconCache) {
-		editIconCache = sourcePosUtils.renderIconHTML("{{$:/core/images/edit-button}}");
-	}
-	return editIconCache;
-}
 
 function getLayout() {
 	var s = sharedState.viewerLayout;
@@ -36,69 +29,14 @@ function getLayout() {
 }
 
 function saveLayout(props) {
-	for(var k in props) {
-		sharedState.viewerLayout[k] = parseInt(props[k], 10);
-	}
+	for(var k in props) sharedState.viewerLayout[k] = parseInt(props[k], 10);
 }
 
-// Helper: create element with className and optional text
-function el(tag, cls, text) {
-	var e = document.createElement(tag);
-	if(cls) e.className = cls;
-	if(text) e.textContent = text;
-	return e;
-}
-
-// Helper: unhighlight all entry headers
 function clearAllHighlights() {
 	var headers = getAllHeaders();
 	for(var i = 0; i < headers.length; i++) {
 		if(headers[i]._unhighlightOrigin) headers[i]._unhighlightOrigin();
 	}
-}
-
-// Helper: make an element draggable via a handle
-function makeDraggable(handle, target, opts) {
-	handle.addEventListener("mousedown", function(e) {
-		if(opts.ignore && opts.ignore(e)) return;
-		e.preventDefault();
-		var startX = e.clientX, startY = e.clientY;
-		var rect = target.getBoundingClientRect();
-		var origLeft = rect.left, origTop = rect.top;
-		if(opts.onStart) opts.onStart(origLeft, origTop);
-		var onMove = function(me) {
-			target.style.left = Math.max(0, origLeft + me.clientX - startX) + "px";
-			target.style.top = Math.max(0, origTop + me.clientY - startY) + "px";
-		};
-		var onUp = function() {
-			document.removeEventListener("mousemove", onMove);
-			document.removeEventListener("mouseup", onUp);
-			if(opts.onEnd) opts.onEnd();
-		};
-		document.addEventListener("mousemove", onMove);
-		document.addEventListener("mouseup", onUp);
-	});
-}
-
-// Helper: make an element resizable via a handle
-function makeResizable(handle, target, opts) {
-	handle.addEventListener("mousedown", function(e) {
-		e.preventDefault();
-		e.stopPropagation();
-		var startX = e.clientX, startY = e.clientY;
-		var origW = target.offsetWidth, origH = target.offsetHeight;
-		var onMove = function(me) {
-			target.style.width = Math.max(opts.minW || 300, origW + me.clientX - startX) + "px";
-			target.style.height = Math.max(opts.minH || 150, origH + me.clientY - startY) + "px";
-		};
-		var onUp = function() {
-			document.removeEventListener("mousemove", onMove);
-			document.removeEventListener("mouseup", onUp);
-			if(opts.onEnd) opts.onEnd();
-		};
-		document.addEventListener("mousemove", onMove);
-		document.addEventListener("mouseup", onUp);
-	});
 }
 
 function getOrCreate() {
@@ -151,14 +89,14 @@ function getOrCreate() {
 	document.body.appendChild(viewer);
 
 	// Drag & resize
-	makeDraggable(header, viewer, {
+	utils.makeDraggable(header, viewer, {
 		ignore: function(e) { return e.target === closeBtn || e.target === clearBtn; },
 		onStart: function() { viewer.style.right = "auto"; },
 		onEnd: function() {
 			saveLayout({ left: String(parseInt(viewer.style.left, 10)), top: String(parseInt(viewer.style.top, 10)) });
 		}
 	});
-	makeResizable(resizeHandle, viewer, {
+	utils.makeResizable(resizeHandle, viewer, {
 		onEnd: function() {
 			saveLayout({ width: String(viewer.offsetWidth), height: String(viewer.offsetHeight) });
 		}
@@ -233,11 +171,7 @@ function createHeaderRow(info, procName, editAtPosition) {
 	// Buttons
 	var btns = el("span", "wltc-btn-group-tight");
 	if(editAtPosition && !isNaN(info.charStart) && !isNaN(info.charEnd)) {
-		var editBtn = el("span", "wltc-btn-icon");
-		editBtn.innerHTML = getEditIconHTML();
-		editBtn.title = "Edit at " + info.range;
-		var svg = editBtn.querySelector("svg");
-		if(svg) { svg.setAttribute("width", "12px"); svg.setAttribute("height", "12px"); }
+		var editBtn = utils.makeIconBtn("wltc-btn-icon", "{{$:/core/images/edit-button}}", "Edit at " + info.range);
 		editBtn.addEventListener("click", function(e) { e.stopPropagation(); editAtPosition(); });
 		btns.appendChild(editBtn);
 	}
@@ -340,6 +274,3 @@ function addEntry(info, editAtPosition) {
 }
 
 exports.addEntry = addEntry;
-exports.makeDraggable = makeDraggable;
-exports.makeResizable = makeResizable;
-exports.el = el;
