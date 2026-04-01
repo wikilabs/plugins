@@ -50,8 +50,7 @@ function getOrCreate() {
 	}
 	viewer = document.createElement("div");
 	viewer.id = "sourcepos-source-viewer";
-	viewer.style.cssText = "position:fixed;z-index:100000;background:#2a2a2a;color:#eee;border-radius:6px;padding:0;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden;";
-	// Click isolation handled by global capture handler in click-handler.js
+	viewer.className = "wltc-panel";
 	// Load saved layout
 	var layout = getLayout();
 	viewer.style.width = Math.max(300, layout.width) + "px";
@@ -64,18 +63,16 @@ function getOrCreate() {
 	viewer.style.top = layout.top + "px";
 	// Header
 	var header = document.createElement("div");
-	header.style.cssText = "padding:6px 12px;background:#3a3a3a;border-radius:6px 6px 0 0;font-family:monospace;font-size:13px;color:#ffd;display:flex;justify-content:space-between;align-items:center;cursor:move;flex-shrink:0;user-select:none;";
+	header.className = "wltc-panel-header";
 	var headerLabel = document.createElement("span");
 	headerLabel.textContent = "Source Viewer";
 	header.appendChild(headerLabel);
 	var headerBtns = document.createElement("span");
-	headerBtns.style.cssText = "display:flex;gap:8px;align-items:center;";
+	headerBtns.className = "wltc-btn-group";
 	// Clear all button
 	var clearBtn = document.createElement("span");
 	clearBtn.textContent = "Clear";
-	clearBtn.style.cssText = "cursor:pointer;padding:2px 8px;border-radius:3px;font-size:11px;background:rgba(255,255,255,0.1);";
-	clearBtn.addEventListener("mouseenter", function() { clearBtn.style.background = "rgba(255,255,255,0.25)"; });
-	clearBtn.addEventListener("mouseleave", function() { clearBtn.style.background = "rgba(255,255,255,0.1)"; });
+	clearBtn.className = "wltc-btn-clear";
 	clearBtn.addEventListener("click", function() {
 		var headers = getAllHeaders();
 		for(var i = 0; i < headers.length; i++) {
@@ -90,9 +87,7 @@ function getOrCreate() {
 	// Close button
 	var closeBtn = document.createElement("span");
 	closeBtn.textContent = "\u2715";
-	closeBtn.style.cssText = "cursor:pointer;padding:2px 6px;border-radius:3px;font-size:14px;";
-	closeBtn.addEventListener("mouseenter", function() { closeBtn.style.background = "rgba(255,255,255,0.2)"; });
-	closeBtn.addEventListener("mouseleave", function() { closeBtn.style.background = ""; });
+	closeBtn.className = "wltc-btn-close";
 	closeBtn.addEventListener("click", function() {
 		var headers = getAllHeaders();
 		for(var i = 0; i < headers.length; i++) {
@@ -105,14 +100,13 @@ function getOrCreate() {
 	viewer.appendChild(header);
 	// Scrollable content area
 	var content = document.createElement("div");
-	content.className = "sourcepos-viewer-content";
-	content.style.cssText = "flex:1;overflow-y:auto;padding:0;font-family:monospace;font-size:12px;";
+	content.className = "sourcepos-viewer-content wltc-panel-content";
 	viewer.appendChild(content);
 	// Resize handle
 	var resizeHandle = document.createElement("div");
-	resizeHandle.style.cssText = "position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize;";
+	resizeHandle.className = "wltc-panel-resize";
 	var grip = document.createElement("div");
-	grip.style.cssText = "position:absolute;bottom:3px;right:3px;width:8px;height:8px;border-right:2px solid #666;border-bottom:2px solid #666;";
+	grip.className = "wltc-panel-grip";
 	resizeHandle.appendChild(grip);
 	viewer.appendChild(resizeHandle);
 	document.body.appendChild(viewer);
@@ -199,7 +193,7 @@ function createHeaderRow(info, procName, editAtPosition) {
 	var sourceElement = info.element;
 	var highlightClass = "sourcepos-highlight-origin";
 	var row = document.createElement("div");
-	row.style.cssText = "padding:4px 12px;background:#333;color:#ffd;font-size:11px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;";
+	row.className = "wltc-entry-header";
 	row._sourceElement = sourceElement;
 	var blinkTimer = null;
 	row._highlightOrigin = function() {
@@ -241,26 +235,22 @@ function createHeaderRow(info, procName, editAtPosition) {
 	}
 	row.appendChild(label);
 	var btns = document.createElement("span");
-	btns.style.cssText = "display:flex;gap:4px;align-items:center;";
+	btns.className = "wltc-btn-group-tight";
 	// Edit button
 	if(editAtPosition && !isNaN(info.charStart) && !isNaN(info.charEnd)) {
 		var editBtn = document.createElement("span");
 		editBtn.innerHTML = getEditIconHTML();
 		editBtn.title = "Edit at " + info.range;
-		editBtn.style.cssText = "cursor:pointer;fill:#ffd;font-size:0;line-height:0;padding:1px 3px;border-radius:3px;background:rgba(255,255,255,0.1);";
+		editBtn.className = "wltc-btn-icon";
 		var svg = editBtn.querySelector("svg");
 		if(svg) { svg.setAttribute("width", "12px"); svg.setAttribute("height", "12px"); }
-		editBtn.addEventListener("mouseenter", function() { editBtn.style.background = "rgba(255,255,255,0.25)"; });
-		editBtn.addEventListener("mouseleave", function() { editBtn.style.background = "rgba(255,255,255,0.1)"; });
 		editBtn.addEventListener("click", function(e) { e.stopPropagation(); editAtPosition(); });
 		btns.appendChild(editBtn);
 	}
 	// Remove header row button
 	var removeBtn = document.createElement("span");
 	removeBtn.textContent = "\u2715";
-	removeBtn.style.cssText = "cursor:pointer;padding:1px 4px;border-radius:3px;font-size:11px;color:#999;";
-	removeBtn.addEventListener("mouseenter", function() { removeBtn.style.color = "#fff"; });
-	removeBtn.addEventListener("mouseleave", function() { removeBtn.style.color = "#999"; });
+	removeBtn.className = "wltc-btn-remove";
 	removeBtn.addEventListener("click", function(e) {
 		e.stopPropagation();
 		row._unhighlightOrigin();
@@ -283,7 +273,7 @@ function createHeaderRow(info, procName, editAtPosition) {
 	});
 	btns.appendChild(removeBtn);
 	row.appendChild(btns);
-	row.className = "sourcepos-entry-header";
+	row.classList.add("sourcepos-entry-header");
 	// Highlight on hover
 	row.addEventListener("mouseenter", row._highlightOrigin);
 	row.addEventListener("mouseleave", row._unhighlightOrigin);
@@ -337,13 +327,13 @@ function addEntry(info, editAtPosition) {
 	}
 	// Create new entry
 	var entry = document.createElement("div");
-	entry.style.cssText = "border-bottom:1px solid #444;";
+	entry.className = "wltc-entry";
 	// Header row
 	var headerRow = createHeaderRow(info, si.procName, editAtPosition);
 	entry.appendChild(headerRow);
 	// Source code (read-only)
 	var code = document.createElement("pre");
-	code.style.cssText = "margin:0;padding:6px 12px;background:#1e1e1e;color:#d4d4d4;font-size:12px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;overflow-x:auto;";
+	code.className = "wltc-entry-code";
 	code.textContent = si.snippet;
 	entry.appendChild(code);
 	// Prepend at top

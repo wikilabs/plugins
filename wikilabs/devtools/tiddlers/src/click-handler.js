@@ -154,17 +154,18 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 	var existingPanels = document.querySelectorAll(".sourcepos-var-inspector");
 	var offsetN = existingPanels.length;
 	var panel = document.createElement("div");
-	panel.className = "sourcepos-var-inspector";
-	panel.style.cssText = "position:fixed;z-index:" + (100001 + offsetN) + ";background:#2a2a2a;color:#eee;border-radius:6px;padding:0;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden;";
+	panel.className = "sourcepos-var-inspector wltc-panel";
+	panel.style.zIndex = 100001 + offsetN;
 	panel.style.width = layout.width + "px";
 	panel.style.height = layout.height + "px";
 	panel.style.borderTop = "3px solid " + panelColor;
 	// Header
 	var header = document.createElement("div");
-	header.style.cssText = "padding:6px 12px;background:#3a3a3a;border-radius:6px 6px 0 0;font-family:monospace;font-size:13px;color:#ffd;display:flex;justify-content:space-between;align-items:center;cursor:move;flex-shrink:0;user-select:none;";
+	header.className = "wltc-panel-header";
 	// Color indicator dot
 	var colorDot = document.createElement("span");
-	colorDot.style.cssText = "display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;flex-shrink:0;background:" + panelColor + ";";
+	colorDot.className = "wltc-color-dot";
+	colorDot.style.background = panelColor;
 	header.appendChild(colorDot);
 	var headerLabel = document.createElement("span");
 	headerLabel.textContent = "Variables in scope (" + vars.length + ")";
@@ -178,7 +179,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 	// Disconnected indicator — shows in the header when origin is lost
 	var disconnectedBadge = document.createElement("span");
 	disconnectedBadge.textContent = " \u26A0 disconnected";
-	disconnectedBadge.style.cssText = "color:#f88;font-size:10px;display:none;";
+	disconnectedBadge.className = "wltc-disconnected-badge";
 	function setDisconnected(val) {
 		disconnected = val;
 		colorDot.style.opacity = val ? "0.3" : "1";
@@ -238,24 +239,22 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 	header.appendChild(headerLabel);
 	header.appendChild(disconnectedBadge);
 	var headerBtns = document.createElement("span");
-	headerBtns.style.cssText = "display:flex;gap:8px;align-items:center;";
+	headerBtns.className = "wltc-btn-group";
 	// Filter input
 	var filterInput = document.createElement("input");
 	filterInput.type = "text";
 	filterInput.placeholder = "filter...";
-	filterInput.style.cssText = "background:#555;color:#eee;border:1px solid #666;border-radius:3px;padding:1px 6px;font-size:11px;font-family:monospace;width:240px;outline:none;";
+	filterInput.className = "wltc-inspector-filter";
 	headerBtns.appendChild(filterInput);
 	// Link toggle button — links filter/size/previews across all inspector panels
 	var linkBtn = document.createElement("span");
 	linkBtn.title = "Link filter across panels";
-	linkBtn.style.cssText = "cursor:pointer;padding:2px 4px;border-radius:3px;font-size:13px;line-height:1;background:rgba(255,255,255,0.1);";
+	linkBtn.className = "wltc-inspector-link-btn";
 	linkBtn.textContent = "\uD83D\uDD17";
 	function updateLinkStyle() {
 		linkBtn.style.opacity = isInspectorLinked() ? "1" : "0.4";
 	}
 	updateLinkStyle();
-	linkBtn.addEventListener("mouseenter", function() { linkBtn.style.background = "rgba(255,255,255,0.25)"; });
-	linkBtn.addEventListener("mouseleave", function() { linkBtn.style.background = "rgba(255,255,255,0.1)"; });
 	linkBtn.addEventListener("click", function() {
 		var nowLinked = !isInspectorLinked();
 		setInspectorLinked(nowLinked);
@@ -269,9 +268,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 	// Close button
 	var closeBtn = document.createElement("span");
 	closeBtn.textContent = "\u2715";
-	closeBtn.style.cssText = "cursor:pointer;padding:2px 6px;border-radius:3px;font-size:14px;";
-	closeBtn.addEventListener("mouseenter", function() { closeBtn.style.background = "rgba(255,255,255,0.2)"; });
-	closeBtn.addEventListener("mouseleave", function() { closeBtn.style.background = ""; });
+	closeBtn.className = "wltc-btn-close";
 	closeBtn.addEventListener("click", function() {
 		if(panel._unhighlightOrigin) panel._unhighlightOrigin();
 		if(panel._cleanup) panel._cleanup();
@@ -282,7 +279,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 	panel.appendChild(header);
 	// Content area
 	var content = document.createElement("div");
-	content.style.cssText = "flex:1;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;";
+	content.className = "wltc-inspector-content";
 	panel.appendChild(content);
 	// Track expand/collapse state locally (per-panel, survives re-renders but not page reload)
 	var expandedState = {};
@@ -317,10 +314,10 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 			var span = document.createElement("span");
 			if(varMap[name] !== undefined) {
 				span.textContent = varMap[name];
-				span.style.color = "#8d8";
+				span.className = "wltc-subst-match";
 			} else {
 				span.textContent = "$(" + name + ")$";
-				span.style.color = "#f88";
+				span.className = "wltc-subst-missing";
 				span.title = name + " (not in scope)";
 			}
 			frag.appendChild(span);
@@ -403,7 +400,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 			if(curSource !== lastSourceTitle) {
 				lastSourceTitle = curSource;
 				var sep = document.createElement("div");
-				sep.style.cssText = "padding:3px 12px;font-size:10px;color:#888;border-top:1px solid #444;margin-top:2px;";
+				sep.className = "wltc-var-separator";
 				if(curSource === "(local)") {
 					sep.textContent = "\u2500\u2500 local scope";
 				} else {
@@ -413,12 +410,10 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 			}
 			shown++;
 			var row = document.createElement("div");
-			row.style.cssText = "padding:2px 12px;border-bottom:1px solid #333;display:flex;gap:6px;align-items:center;";
-			row.addEventListener("mouseenter", function() { this.style.background = "#383838"; });
-			row.addEventListener("mouseleave", function() { this.style.background = ""; });
+			row.className = "wltc-var-row";
 			// Type badge
 			var badge = document.createElement("span");
-			badge.style.cssText = "flex-shrink:0;font-size:10px;padding:1px 4px;border-radius:2px;color:#fff;";
+			badge.className = "wltc-var-badge";
 			var type = getVarType(v);
 			badge.textContent = type;
 			var typeColors = { widget: "#7a2a7a", fn: "#7a2a5a", proc: "#2a7a2a", macro: "#7a5a2a", def: "#2a5a7a", "var": "#555" };
@@ -427,21 +422,21 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 			// Name
 			var nameEl = document.createElement("span");
 			nameEl.textContent = v.name;
-			nameEl.style.cssText = "color:#8cf;flex-shrink:0;";
+			nameEl.className = "wltc-var-name";
 			row.appendChild(nameEl);
 			// Value or params
 			if(v.params) {
 				var paramStr = "(" + v.params.map(function(p) { return p.name + (p["default"] ? ":" + p["default"] : ""); }).join(", ") + ")";
 				var paramEl = document.createElement("span");
 				paramEl.textContent = paramStr;
-				paramEl.style.cssText = "color:#999;flex-shrink:0;";
+				paramEl.className = "wltc-var-params";
 				row.appendChild(paramEl);
 				// Evaluate macro body lazily when row scrolls into view
 				if(v.value !== undefined && v.value.indexOf("\n") === -1) {
 					(function(varEntry, parentRow) {
 						var evalEl = document.createElement("span");
 						evalEl.setAttribute("data-flex-fill", "1");
-						evalEl.style.cssText = "color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;";
+						evalEl.className = "wltc-var-value";
 						parentRow.appendChild(evalEl);
 						parentRow._lazyEval = function() {
 							evalEl.appendChild(document.createTextNode("= "));
@@ -456,13 +451,13 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 				if(val.length > 80) val = val.substring(0, 80) + "\u2026";
 				valEl.textContent = "= " + val;
 				valEl.setAttribute("data-flex-fill", "1");
-				valEl.style.cssText = "color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;";
+				valEl.className = "wltc-var-value";
 				row.appendChild(valEl);
 			}
 			// Spacer pushes buttons to the right (only if no flex:1 value element already present)
 			if(!row.querySelector("[data-flex-fill]")) {
 				var spacer = document.createElement("span");
-				spacer.style.cssText = "flex:1;min-width:0;";
+				spacer.className = "wltc-var-spacer";
 				row.appendChild(spacer);
 			}
 			// Append row to DOM first, so preview insertAdjacentElement works
@@ -474,22 +469,20 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 					var previewBtn = document.createElement("span");
 					previewBtn.innerHTML = getViewIconHTML();
 					previewBtn.title = "Preview " + title;
-					previewBtn.style.cssText = "cursor:pointer;flex-shrink:0;fill:#aaa;font-size:0;line-height:0;padding:1px 3px;border-radius:3px;";
+					previewBtn.className = "wltc-var-action-btn";
 					var prSvg = previewBtn.querySelector("svg");
 					if(prSvg) { prSvg.setAttribute("width", "12px"); prSvg.setAttribute("height", "12px"); }
-					previewBtn.addEventListener("mouseenter", function() { previewBtn.style.fill = "#ffd"; previewBtn.style.background = "rgba(255,255,255,0.15)"; });
-					previewBtn.addEventListener("mouseleave", function() { previewBtn.style.fill = "#aaa"; previewBtn.style.background = ""; });
 					var previewEl = null;
 					var isExpanded = expandedState[varName] || false;
 					function showPreview(expanded) {
 						var text = $tw.wiki.getTiddlerText(title, "");
 						previewEl = document.createElement("div");
-						previewEl.style.cssText = "position:relative;border-bottom:1px solid #333;cursor:pointer;";
+						previewEl.className = "wltc-preview";
 						var pre = document.createElement("pre");
 						pre.textContent = text;
-						pre.style.cssText = "margin:0;padding:4px 12px 4px 32px;background:#1a1a1a;color:#ccc;font-size:11px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;";
+						pre.className = "wltc-preview-code";
 						var fade = document.createElement("div");
-						fade.style.cssText = "position:absolute;bottom:0;left:0;right:0;height:1.5em;background:linear-gradient(transparent,#1a1a1a);pointer-events:none;";
+						fade.className = "wltc-preview-fade";
 						previewEl.appendChild(pre);
 						previewEl.appendChild(fade);
 						function applyState(exp) {
@@ -540,11 +533,9 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 					var linkBtn = document.createElement("span");
 					linkBtn.innerHTML = getLinkIconHTML();
 					linkBtn.title = "Open " + title;
-					linkBtn.style.cssText = "cursor:pointer;flex-shrink:0;fill:#aaa;font-size:0;line-height:0;padding:1px 3px;border-radius:3px;";
+					linkBtn.className = "wltc-var-action-btn";
 					var lnSvg = linkBtn.querySelector("svg");
 					if(lnSvg) { lnSvg.setAttribute("width", "12px"); lnSvg.setAttribute("height", "12px"); }
-					linkBtn.addEventListener("mouseenter", function() { linkBtn.style.fill = "#ffd"; linkBtn.style.background = "rgba(255,255,255,0.15)"; });
-					linkBtn.addEventListener("mouseleave", function() { linkBtn.style.fill = "#aaa"; linkBtn.style.background = ""; });
 					linkBtn.addEventListener("click", function(e) {
 						e.stopPropagation();
 						new $tw.Story().navigateTiddler(title);
@@ -558,17 +549,15 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 					var defBtn = document.createElement("span");
 					defBtn.innerHTML = getViewIconHTML();
 					defBtn.title = "View definition of " + varEntry.name;
-					defBtn.style.cssText = "cursor:pointer;flex-shrink:0;fill:#aaa;font-size:0;line-height:0;padding:1px 3px;border-radius:3px;";
+					defBtn.className = "wltc-var-action-btn";
 					var defSvg = defBtn.querySelector("svg");
 					if(defSvg) { defSvg.setAttribute("width", "12px"); defSvg.setAttribute("height", "12px"); }
-					defBtn.addEventListener("mouseenter", function() { defBtn.style.fill = "#ffd"; defBtn.style.background = "rgba(255,255,255,0.15)"; });
-					defBtn.addEventListener("mouseleave", function() { defBtn.style.fill = "#aaa"; defBtn.style.background = ""; });
 					var defEl = null;
 					var defKey = "def:" + varEntry.name;
 					var isDefExpanded = expandedState[defKey] || false;
 					function showDef(expanded) {
 						defEl = document.createElement("div");
-						defEl.style.cssText = "position:relative;border-bottom:1px solid #333;cursor:pointer;";
+						defEl.className = "wltc-preview";
 						var pre = document.createElement("pre");
 						// Build full definition with pragma header and \end
 						var defType = varEntry.isProcedure ? "procedure" : varEntry.isMacro ? "define" : varEntry.isFunction ? "function" : "define";
@@ -578,9 +567,9 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 						var header = "\\" + defType + " " + varEntry.name + "(" + paramStr + ")\n";
 						var footer = "\n\\end";
 						pre.textContent = header + String(varEntry.value) + footer;
-						pre.style.cssText = "margin:0;padding:4px 12px 4px 32px;background:#1a1a1a;color:#ccc;font-size:11px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;";
+						pre.className = "wltc-preview-code";
 						var fade = document.createElement("div");
-						fade.style.cssText = "position:absolute;bottom:0;left:0;right:0;height:2em;background:linear-gradient(transparent,#1a1a1a);pointer-events:none;";
+						fade.className = "wltc-preview-fade wltc-preview-fade-tall";
 						defEl.appendChild(pre);
 						defEl.appendChild(fade);
 						function applyState(exp) {
@@ -629,11 +618,9 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 					var evalBtn = document.createElement("span");
 					evalBtn.innerHTML = getViewIconHTML();
 					evalBtn.title = "Evaluate " + varEntry.name;
-					evalBtn.style.cssText = "cursor:pointer;flex-shrink:0;fill:#aaa;font-size:0;line-height:0;padding:1px 3px;border-radius:3px;";
+					evalBtn.className = "wltc-var-action-btn";
 					var evSvg = evalBtn.querySelector("svg");
 					if(evSvg) { evSvg.setAttribute("width", "12px"); evSvg.setAttribute("height", "12px"); }
-					evalBtn.addEventListener("mouseenter", function() { evalBtn.style.fill = "#ffd"; evalBtn.style.background = "rgba(255,255,255,0.15)"; });
-					evalBtn.addEventListener("mouseleave", function() { evalBtn.style.fill = "#aaa"; evalBtn.style.background = ""; });
 					var resultEl = null;
 					evalBtn.addEventListener("click", function(e) {
 						e.stopPropagation();
@@ -658,7 +645,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 								lines += "\nresult: " + (resultText || "(empty)");
 							}
 							resultEl.textContent = lines;
-							resultEl.style.cssText = "margin:0;padding:4px 12px 4px 32px;background:#1a1a1a;color:#adf;font-size:11px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;border-bottom:1px solid #333;max-height:5em;overflow:auto;cursor:pointer;";
+							resultEl.className = "wltc-eval-result";
 							resultEl.title = "Click to dismiss";
 							resultEl.addEventListener("click", function() {
 								resultEl.remove();
@@ -668,7 +655,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 						} catch(err) {
 							resultEl = document.createElement("pre");
 							resultEl.textContent = "Error: " + err.message;
-							resultEl.style.cssText = "margin:0;padding:4px 12px 4px 32px;background:#1a1a1a;color:#f88;font-size:11px;line-height:1.4;border-bottom:1px solid #333;cursor:pointer;";
+							resultEl.className = "wltc-eval-error";
 							resultEl.addEventListener("click", function() { resultEl.remove(); resultEl = null; });
 							parentRow.insertAdjacentElement("afterend", resultEl);
 						}
@@ -680,7 +667,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 		if(shown === 0) {
 			var empty = document.createElement("div");
 			empty.textContent = filterLower ? "No variables match \"" + filter + "\"" : "No variables in scope";
-			empty.style.cssText = "padding:12px;color:#888;text-align:center;";
+			empty.className = "wltc-empty-state";
 			content.appendChild(empty);
 		}
 		headerLabel.textContent = "Variables in scope (" + shown + (filterLower ? "/" + vars.length : "") + ")";
@@ -755,9 +742,9 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 	};
 	// Resize handle
 	var resizeHandle = document.createElement("div");
-	resizeHandle.style.cssText = "position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize;";
+	resizeHandle.className = "wltc-panel-resize";
 	var grip = document.createElement("div");
-	grip.style.cssText = "position:absolute;bottom:3px;right:3px;width:8px;height:8px;border-right:2px solid #666;border-bottom:2px solid #666;";
+	grip.className = "wltc-panel-grip";
 	resizeHandle.appendChild(grip);
 	panel.appendChild(resizeHandle);
 	document.body.appendChild(panel);
@@ -878,9 +865,7 @@ function showVariableInspector(vars, anchorX, anchorY, originElement, widget) {
 function makeMenuItem(text, onClick) {
 	var item = document.createElement("div");
 	item.textContent = text;
-	item.style.cssText = "padding:3px 12px;cursor:pointer;white-space:nowrap;";
-	item.addEventListener("mouseenter", function() { item.style.background = "#555"; });
-	item.addEventListener("mouseleave", function() { item.style.background = ""; });
+	item.className = "wltc-menu-item";
 	item.addEventListener("click", function(e) {
 		e.stopPropagation();
 		e.preventDefault();
@@ -977,18 +962,18 @@ exports.startup = function() {
 				}
 			}
 			tooltip = document.createElement("div");
-			tooltip.style.cssText = "position:fixed;background:rgba(40,40,40,0.95);color:#ffd;font-family:monospace;line-height:1.4;padding:2px 6px;border-radius:2px;white-space:pre;z-index:10000;pointer-events:none;";
+			tooltip.className = "wltc-tooltip";
 			// Header line (bigger)
 			var tipHeader = document.createElement("div");
 			tipHeader.textContent = text.split("\n")[0];
-			tipHeader.style.fontSize = "13px";
+			tipHeader.className = "wltc-tooltip-header";
 			tooltip.appendChild(tipHeader);
 			// Remaining lines (smaller)
 			var restLines = text.split("\n").slice(1).join("\n");
 			if(restLines) {
 				var tipBody = document.createElement("div");
 				tipBody.textContent = restLines;
-				tipBody.style.fontSize = "11px";
+				tipBody.className = "wltc-tooltip-body";
 				tooltip.appendChild(tipBody);
 			}
 			document.body.appendChild(tooltip);
@@ -1036,7 +1021,7 @@ exports.startup = function() {
 		// Create context menu
 		var menu = document.createElement("div");
 		menu.id = "sourcepos-context-menu";
-		menu.style.cssText = "position:fixed;z-index:99999;background:#333;color:#eee;border-radius:4px;padding:2px 0;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.3);max-width:500px;";
+		menu.className = "wltc-menu";
 		// Cleanup function: removes menu and its document-level event listeners
 		var closeMenu, closeOnEscape;
 		var removeMenu = function() {
@@ -1136,23 +1121,18 @@ exports.startup = function() {
 		};
 		// Header: source position with edit icon button
 		var header = document.createElement("div");
-		header.style.cssText = "padding:3px 12px;color:#ffd;font-family:monospace;font-size:1rem;border-bottom:1px solid #555;white-space:pre-wrap;display:flex;align-items:center;justify-content:space-between;gap:8px;";
+		header.className = "wltc-menu-header";
 		var headerText = document.createElement("span");
 		headerText.textContent = info.raw;
 		header.appendChild(headerText);
-		var headerBtnStyle = "cursor:pointer;flex-shrink:0;padding:2px 6px;border-radius:3px;font-size:14px;color:#999;fill:#999;";
-		var headerBtnEnter = function(btn) { btn.style.color = "#fff"; btn.style.fill = "#fff"; btn.style.background = "rgba(255,255,255,0.15)"; };
-		var headerBtnLeave = function(btn) { btn.style.color = "#999"; btn.style.fill = "#999"; btn.style.background = ""; };
 		// Edit icon button
 		if(rangeInfo) {
 			var editBtn = document.createElement("span");
 			editBtn.innerHTML = getEditIconHTML();
 			editBtn.title = "Edit at " + info.range;
-			editBtn.style.cssText = headerBtnStyle + "font-size:0;line-height:0;";
+			editBtn.className = "wltc-menu-btn-icon";
 			var svg = editBtn.querySelector("svg");
 			if(svg) { svg.setAttribute("width", "14px"); svg.setAttribute("height", "14px"); }
-			editBtn.addEventListener("mouseenter", function() { headerBtnEnter(editBtn); });
-			editBtn.addEventListener("mouseleave", function() { headerBtnLeave(editBtn); });
 			editBtn.addEventListener("click", editAtPosition);
 			header.appendChild(editBtn);
 		}
@@ -1161,11 +1141,9 @@ exports.startup = function() {
 			var viewBtn = document.createElement("span");
 			viewBtn.innerHTML = getViewIconHTML();
 			viewBtn.title = "Show source";
-			viewBtn.style.cssText = headerBtnStyle + "font-size:0;line-height:0;";
+			viewBtn.className = "wltc-menu-btn-icon";
 			var viewSvg = viewBtn.querySelector("svg");
 			if(viewSvg) { viewSvg.setAttribute("width", "14px"); viewSvg.setAttribute("height", "14px"); }
-			viewBtn.addEventListener("mouseenter", function() { headerBtnEnter(viewBtn); });
-			viewBtn.addEventListener("mouseleave", function() { headerBtnLeave(viewBtn); });
 			viewBtn.addEventListener("click", function() {
 				sourceViewer.addEntry(info, editAtPosition);
 				removeMenu();
@@ -1175,9 +1153,7 @@ exports.startup = function() {
 		// Close button
 		var menuCloseBtn = document.createElement("span");
 		menuCloseBtn.textContent = "\u2715";
-		menuCloseBtn.style.cssText = headerBtnStyle;
-		menuCloseBtn.addEventListener("mouseenter", function() { headerBtnEnter(menuCloseBtn); });
-		menuCloseBtn.addEventListener("mouseleave", function() { headerBtnLeave(menuCloseBtn); });
+		menuCloseBtn.className = "wltc-menu-btn";
 		menuCloseBtn.addEventListener("click", function() { removeMenu(); });
 		header.appendChild(menuCloseBtn);
 		menu.appendChild(header);
@@ -1236,40 +1212,39 @@ exports.startup = function() {
 				// Create the inline editor popup
 				var popup = document.createElement("div");
 				popup.id = "sourcepos-inline-editor";
-				popup.style.cssText = "position:fixed;z-index:100000;background:#2a2a2a;color:#eee;border-radius:6px;padding:0;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden;";
+				popup.className = "wltc-panel";
 				popup.style.width = popupWidth + "px";
 				popup.style.height = popupHeight + "px";
 				// Header (draggable)
 				var popupHeader = document.createElement("div");
-				popupHeader.style.cssText = "padding:6px 12px;background:#3a3a3a;border-radius:6px 6px 0 0;font-family:monospace;font-size:12px;color:#ffd;display:flex;justify-content:space-between;align-items:center;cursor:move;flex-shrink:0;user-select:none;";
+				popupHeader.className = "wltc-panel-header";
+				popupHeader.style.fontSize = "12px";
 				var headerLabel = document.createElement("span");
 				headerLabel.textContent = info.raw;
 				popupHeader.appendChild(headerLabel);
 				// Close button
 				var closeBtn = document.createElement("span");
 				closeBtn.textContent = "\u2715";
-				closeBtn.style.cssText = "cursor:pointer;padding:2px 6px;border-radius:3px;font-size:14px;";
-				closeBtn.addEventListener("mouseenter", function() { closeBtn.style.background = "rgba(255,255,255,0.2)"; });
-				closeBtn.addEventListener("mouseleave", function() { closeBtn.style.background = ""; });
+				closeBtn.className = "wltc-btn-close";
 				closeBtn.addEventListener("click", function() { popup.remove(); });
 				popupHeader.appendChild(closeBtn);
 				popup.appendChild(popupHeader);
 				// Textarea for editing — fills remaining space
 				var editorArea = document.createElement("textarea");
 				editorArea.value = snippet;
-				editorArea.style.cssText = "flex:1;background:#1e1e1e;color:#d4d4d4;border:none;padding:8px 12px;font-family:monospace;font-size:13px;line-height:1.5;resize:none;box-sizing:border-box;outline:none;";
+				editorArea.className = "wltc-editor-textarea";
 				popup.appendChild(editorArea);
 				// Button bar
 				var btnBar = document.createElement("div");
-				btnBar.style.cssText = "padding:6px 12px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #444;flex-shrink:0;";
+				btnBar.className = "wltc-editor-btnbar";
 				var cancelBtn = document.createElement("button");
 				cancelBtn.textContent = "Cancel";
-				cancelBtn.style.cssText = "padding:4px 12px;background:#555;color:#eee;border:none;border-radius:3px;cursor:pointer;font-size:12px;";
+				cancelBtn.className = "wltc-editor-btn-cancel";
 				cancelBtn.addEventListener("click", function() { popup.remove(); });
 				btnBar.appendChild(cancelBtn);
 				var applyBtn = document.createElement("button");
 				applyBtn.textContent = "Apply";
-				applyBtn.style.cssText = "padding:4px 12px;background:#2a7a2a;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:12px;";
+				applyBtn.className = "wltc-editor-btn-apply";
 				applyBtn.addEventListener("click", function() {
 					var newText = editorArea.value;
 					var tiddler = $tw.wiki.getTiddler(info.tiddler);
@@ -1284,10 +1259,10 @@ exports.startup = function() {
 				popup.appendChild(btnBar);
 				// Resize handle (bottom-right corner)
 				var resizeHandle = document.createElement("div");
-				resizeHandle.style.cssText = "position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize;";
+				resizeHandle.className = "wltc-panel-resize";
 				// Draw resize grip lines
 				var grip = document.createElement("div");
-				grip.style.cssText = "position:absolute;bottom:3px;right:3px;width:8px;height:8px;border-right:2px solid #666;border-bottom:2px solid #666;";
+				grip.className = "wltc-panel-grip";
 				resizeHandle.appendChild(grip);
 				popup.appendChild(resizeHandle);
 				document.body.appendChild(popup);
