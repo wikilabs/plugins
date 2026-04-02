@@ -18,7 +18,7 @@ All --listen parameters (port, host, credentials, tls-*, etc.) are accepted.
 
 "use strict";
 
-var startMCPServer = require("$:/core/modules/commands/inspect/mcp.js").startMCPServer;
+var startMCPServer = require("$:/core/modules/commands/inspect/mcp-lib.js").startMCPServer;
 var Server = require("$:/core/modules/server/server.js").Server;
 
 exports.info = {
