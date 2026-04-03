@@ -461,7 +461,7 @@ function startPipeServer() {
 				}
 			}
 			// Write discovery file to the canonical wiki path so all editions converge
-			writeDiscoveryFile({ pipe: pipePath, token: authToken, pid: process.pid, label: serverLabel || undefined });
+			writeDiscoveryFile({ pipe: pipePath, token: authToken, pid: process.pid, label: serverLabel || undefined, listen: !!$tw.httpServer });
 		});
 	});
 
@@ -1120,3 +1120,4 @@ function startMCPServer(options) {
 }
 
 exports.startMCPServer = startMCPServer;
+exports.readDiscoveryFile = readDiscoveryFile;

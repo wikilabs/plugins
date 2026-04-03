@@ -60,25 +60,31 @@ Command.prototype.execute = function() {
 	}
 	// Start HTTP server if listen mode is enabled
 	if(listenMode) {
-		if(!$tw.boot.wikiTiddlersPath) {
-			$tw.utils.warning("Warning: Wiki folder '" + $tw.boot.wikiPath + "' does not exist or is missing a tiddlywiki.info file");
-		}
-		var server = new Server({
-			wiki: this.commander.wiki,
-			variables: listenParams
-		});
-		var nodeServer = server.listen();
-		$tw.httpServer = {
-			server: server,
-			nodeServer: nodeServer,
-			heartbeat: function() {
-				return {
-					listening: nodeServer.listening,
-					address: nodeServer.address()
-				};
+		var mcpLib = require("$:/core/modules/commands/inspect/mcp-lib.js");
+		var discovery = mcpLib.readDiscoveryFile();
+		if(discovery && discovery.listen) {
+			console.error("Primary already serves HTTP — skipping local HTTP server");
+		} else {
+			if(!$tw.boot.wikiTiddlersPath) {
+				$tw.utils.warning("Warning: Wiki folder '" + $tw.boot.wikiPath + "' does not exist or is missing a tiddlywiki.info file");
 			}
-		};
-		$tw.hooks.invokeHook("th-server-command-post-start", server, nodeServer, "tiddlywiki");
+			var server = new Server({
+				wiki: this.commander.wiki,
+				variables: listenParams
+			});
+			var nodeServer = server.listen();
+			$tw.httpServer = {
+				server: server,
+				nodeServer: nodeServer,
+				heartbeat: function() {
+					return {
+						listening: nodeServer.listening,
+						address: nodeServer.address()
+					};
+				}
+			};
+			$tw.hooks.invokeHook("th-server-command-post-start", server, nodeServer, "tiddlywiki");
+		}
 	}
 	startMCPServer(options);
 	return null;
