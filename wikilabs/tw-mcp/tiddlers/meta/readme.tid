@@ -4,16 +4,8 @@ tags: $:/tags/ControlPanel/WikiLabs
 
 The full documentation can be found at [[tw-mcp plugin|https://wikilabs.github.io/editions/tw-mcp/]] main page.
 
-! Basics
-
-TODO
-
-! Settings
-
-TODO
-
 ----
 
-''Important'': This plugin modifies several core modules
+''Important'': This plugin adds or modifies several core modules
 
 <$list filter="[[$:/plugins/wikilabs/tw-mcp]plugintiddlers[]prefix[$:/core/]]"><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></$list>
