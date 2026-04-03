@@ -37,21 +37,20 @@ module.exports = {
 		var systemTiddlerCount = parseInt($tw.wiki.filterTiddlers("[is[system]count[]]")[0]) || 0;
 		var shadowTiddlerCount = parseInt($tw.wiki.filterTiddlers("[all[shadows]count[]]")[0]) || 0;
 		var overriddenShadowCount = parseInt($tw.wiki.filterTiddlers("[is[tiddler]is[shadow]count[]]")[0]) || 0;
-		var basicsLinks = $tw.wiki.filterTiddlers("[[$:/core/ui/ControlPanel/Basics]links[]]");
-		var promptMap = {
-			"$:/SiteTitle": "Title/Prompt",
-			"$:/SiteSubtitle": "Subtitle/Prompt",
-			"$:/status/UserName": "Username/Prompt",
-			"$:/config/AnimationDuration": "AnimDuration/Prompt",
-			"$:/DefaultTiddlers": "DefaultTiddlers/Prompt",
-			"$:/language/DefaultNewTiddlerTitle": "NewTiddler/Title/Prompt",
-			"$:/config/NewJournal/Title": "NewJournal/Title/Prompt",
-			"$:/config/NewJournal/Text": "NewJournal/Text/Prompt",
-			"$:/config/NewTiddler/Tags": "NewTiddler/Tags/Prompt",
-			"$:/config/NewJournal/Tags": "NewJournal/Tags/Prompt",
-			"$:/config/AutoFocus": "AutoFocus/Prompt",
-			"$:/config/AutoFocusEdit": "AutoFocusEdit/Prompt"
-		};
+		var settingsList = [
+			{title: "$:/SiteTitle", prompt: "Title/Prompt"},
+			{title: "$:/SiteSubtitle", prompt: "Subtitle/Prompt"},
+			{title: "$:/status/UserName", prompt: "Username/Prompt"},
+			{title: "$:/config/AnimationDuration", prompt: "AnimDuration/Prompt"},
+			{title: "$:/DefaultTiddlers", prompt: "DefaultTiddlers/Prompt"},
+			{title: "$:/language/DefaultNewTiddlerTitle", prompt: "NewTiddler/Title/Prompt"},
+			{title: "$:/config/NewJournal/Title", prompt: "NewJournal/Title/Prompt"},
+			{title: "$:/config/NewJournal/Text", prompt: "NewJournal/Text/Prompt"},
+			{title: "$:/config/NewTiddler/Tags", prompt: "NewTiddler/Tags/Prompt"},
+			{title: "$:/config/NewJournal/Tags", prompt: "NewJournal/Tags/Prompt"},
+			{title: "$:/config/AutoFocus", prompt: "AutoFocus/Prompt"},
+			{title: "$:/config/AutoFocusEdit", prompt: "AutoFocusEdit/Prompt"}
+		];
 		var lines = [];
 		lines.push(wikiTitle + (wikiSubtitle ? " — " + wikiSubtitle : ""));
 		lines.push("TiddlyWiki v" + $tw.version + (shared.isReadonly() ? " (readonly)" : ""));
@@ -79,15 +78,14 @@ module.exports = {
 		}
 		lines.push("");
 		lines.push("Settings:");
-		$tw.utils.each(basicsLinks, function(title) {
-			var promptKey = promptMap[title];
-			var description = promptKey ? $tw.wiki.getTiddlerText("$:/language/ControlPanel/Basics/" + promptKey, "") : "";
-			var value = $tw.wiki.getTiddlerText(title, "");
+		$tw.utils.each(settingsList, function(entry) {
+			var description = $tw.wiki.getTiddlerText("$:/language/ControlPanel/Basics/" + entry.prompt, "");
+			var value = $tw.wiki.getTiddlerText(entry.title, "");
 			if(value.indexOf("\n") !== -1) {
-				lines.push("  " + title + (description ? " (" + description + ")" : "") + ":");
+				lines.push("  " + entry.title + (description ? " (" + description + ")" : "") + ":");
 				lines.push("    " + value.split("\n").join("\n    "));
 			} else {
-				lines.push("  " + title + " = " + value + (description ? " (" + description + ")" : ""));
+				lines.push("  " + entry.title + " = " + value + (description ? " (" + description + ")" : ""));
 			}
 		});
 		return { content: [{ type: "text", text: lines.join("\n") }] };
