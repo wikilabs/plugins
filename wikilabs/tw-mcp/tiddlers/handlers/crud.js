@@ -36,48 +36,65 @@ module.exports = {
 			var output = fieldStrings.join("\n") + "\n\n" + header + ns.tree;
 			return { content: [{ type: "text", text: output }] };
 		}
-		var includeText = !!args.detailed;
-		if(args.format === "json") {
-			// JSON format — no hashes
-		} else if(args.format === "tid") {
-			// Explicit plain text requested
-			var fieldStrings = [];
-			for(var f in tiddler.fields) {
-				if(f === "text") continue;
-				fieldStrings.push(f + ": " + tiddler.getFieldString(f));
+		var includeText = !!args.detailed || !!args.lines;
+		// Detect unsafe fields (same check as TW filesystem: control chars, leading/trailing whitespace, : or # in field names)
+		var hasUnsafeFields = false;
+		$tw.utils.each(tiddler.getFieldStrings(),function(value,fieldName) {
+			if(fieldName !== "text") {
+				hasUnsafeFields = hasUnsafeFields || /[\x00-\x1F]/mg.test(value);
+				hasUnsafeFields = hasUnsafeFields || ($tw.utils.trim(value) !== value);
 			}
-			var output = fieldStrings.join("\n");
+			hasUnsafeFields = hasUnsafeFields || /:|#/mg.test(fieldName);
+		});
+		if(args.format === "json") {
+			// Pure JSON — no hashes, includes text if detailed
+			var fields = {};
+			for(var field in tiddler.fields) {
+				if(field === "text" && !includeText) continue;
+				var value = tiddler.fields[field];
+				if(Array.isArray(value)) {
+					fields[field] = value.slice();
+				} else if($tw.utils.isDate(value)) {
+					fields[field] = $tw.utils.stringifyDate(value);
+				} else {
+					fields[field] = value;
+				}
+			}
+			return { content: [{ type: "text", text: JSON.stringify(fields, null, $tw.config.preferences.jsonSpaces) }] };
+		} else if(args.format === "tid") {
+			// Plain tid — no hashes
+			var output = tiddler.getFieldStringBlock({exclude: ["text"]});
 			if(includeText && tiddler.fields.text !== undefined) {
 				output += "\n\n" + tiddler.fields.text;
 			}
 			return { content: [{ type: "text", text: output }] };
 		} else {
-			// Default: hashline when detailed, plain fields otherwise
-			var fieldStrings = [];
-			for(var f in tiddler.fields) {
-				if(f === "text") continue;
-				fieldStrings.push(f + ": " + tiddler.getFieldString(f));
+			// Default (hashline): tid headers for safe fields, JSON for unsafe, hashlined text
+			var header;
+			if(hasUnsafeFields) {
+				var fields = {};
+				for(var field in tiddler.fields) {
+					if(field === "text") continue;
+					var value = tiddler.fields[field];
+					if(Array.isArray(value)) {
+						fields[field] = value.slice();
+					} else if($tw.utils.isDate(value)) {
+						fields[field] = $tw.utils.stringifyDate(value);
+					} else {
+						fields[field] = value;
+					}
+				}
+				header = JSON.stringify(fields, null, $tw.config.preferences.jsonSpaces);
+			} else {
+				header = tiddler.getFieldStringBlock({exclude: ["text"]});
 			}
-			var output = fieldStrings.join("\n");
+			var output = header;
 			if(includeText && tiddler.fields.text !== undefined) {
 				var hashline = require("$:/core/modules/commands/inspect/hashline.js");
 				output += "\n\n" + hashline.formatHashLines(tiddler.fields.text);
 			}
 			return { content: [{ type: "text", text: output }] };
 		}
-		var fields = {};
-		for(var field in tiddler.fields) {
-			if(field === "text" && !includeText) continue;
-			var value = tiddler.fields[field];
-			if(Array.isArray(value)) {
-				fields[field] = value.slice();
-			} else if($tw.utils.isDate(value)) {
-				fields[field] = $tw.utils.stringifyDate(value);
-			} else {
-				fields[field] = value;
-			}
-		}
-		return { content: [{ type: "text", text: JSON.stringify(fields, null, $tw.config.preferences.jsonSpaces) }] };
 	},
 
 	"put_tiddler": function(args) {
@@ -138,25 +155,49 @@ module.exports = {
 		if(!tiddler) {
 			return { isError: true, content: [{ type: "text", text: "Tiddler not found: " + args.title }] };
 		}
-		var edits = [];
-		for(var i = 0; i < args.edits.length; i++) {
-			var e = args.edits[i];
-			var edit = { op: e.op, lines: e.lines || [] };
-			if(e.pos) edit.pos = hashline.parseTag(e.pos);
-			if(e.end) edit.end = hashline.parseTag(e.end);
-			edits.push(edit);
-		}
-		try {
-			var result = hashline.applyEdits(tiddler.fields.text || "", edits);
-		} catch(e) {
-			if(e.name === "HashlineMismatchError") {
-				return { isError: true, content: [{ type: "text", text: e.message }] };
+		// Apply text edits if provided
+		var newText = tiddler.fields.text || "";
+		if(args.edits && args.edits.length > 0) {
+			var edits = [];
+			for(var i = 0; i < args.edits.length; i++) {
+				var e = args.edits[i];
+				var edit = { op: e.op, lines: e.lines || [] };
+				if(e.pos) edit.pos = hashline.parseTag(e.pos);
+				if(e.end) edit.end = hashline.parseTag(e.end);
+				edits.push(edit);
 			}
-			return { isError: true, content: [{ type: "text", text: "Edit failed: " + e.message }] };
+			try {
+				var result = hashline.applyEdits(newText, edits);
+				newText = result.text;
+			} catch(e) {
+				if(e.name === "HashlineMismatchError") {
+					return { isError: true, content: [{ type: "text", text: e.message }] };
+				}
+				return { isError: true, content: [{ type: "text", text: "Edit failed: " + e.message }] };
+			}
+		}
+		// Build updated fields
+		var updates = { text: newText };
+		if(args.set_fields) {
+			for(var key in args.set_fields) {
+				if(key !== "text" && key !== "title") {
+					updates[key] = args.set_fields[key];
+				}
+			}
 		}
 		var title = args.title;
 		var modificationFields = $tw.wiki.getModificationFields();
-		var newTiddler = new $tw.Tiddler(tiddler.fields, { text: result.text }, modificationFields, { title: title });
+		var newTiddler = new $tw.Tiddler(tiddler.fields, updates, modificationFields, { title: title });
+		// Delete fields if requested
+		if(args.delete_fields && args.delete_fields.length > 0) {
+			var fieldsToKeep = {};
+			for(var f in newTiddler.fields) {
+				if(args.delete_fields.indexOf(f) === -1) {
+					fieldsToKeep[f] = newTiddler.fields[f];
+				}
+			}
+			newTiddler = new $tw.Tiddler(fieldsToKeep);
+		}
 		$tw.wiki.addTiddler(newTiddler);
 		if($tw.boot.wikiTiddlersPath) {
 			try {

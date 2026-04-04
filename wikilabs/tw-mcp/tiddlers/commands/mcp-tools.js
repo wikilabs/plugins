@@ -176,13 +176,14 @@ var writeTools = [
 	},
 	{
 		name: "edit_tiddler",
-		description: "Edit a tiddler using hashline references from get_tiddler(format='hashline'). Only sends changed lines. Hashes validate automatically; if the tiddler changed since your read, the edit is rejected with updated references.",
+		description: "Edit a tiddler's text and/or fields. Text edits use hashline references — only changed lines are sent. Field edits use set_fields/delete_fields. All in one call.",
 		inputSchema: {
 			type: "object",
 			properties: {
 				title: { type: "string" },
 				edits: {
 					type: "array",
+					description: "Text line edits using hashline anchors (optional if only changing fields)",
 					items: {
 						type: "object",
 						properties: {
@@ -193,9 +194,11 @@ var writeTools = [
 						},
 						required: ["op", "lines"]
 					}
-				}
+				},
+				set_fields: { type: "object", description: "Fields to add or update (key: value). Does not affect text field — use edits for text.", additionalProperties: true },
+				delete_fields: { type: "array", items: { type: "string" }, description: "Field names to remove" }
 			},
-			required: ["title", "edits"]
+			required: ["title"]
 		}
 	},
 	{
