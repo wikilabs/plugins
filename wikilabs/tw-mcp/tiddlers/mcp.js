@@ -6,9 +6,10 @@ module-type: command
 MCP (Model Context Protocol) server for TiddlyWiki.
 Exposes wiki tools to Claude CLI and other MCP clients via stdio.
 
-Usage:
-  tiddlywiki ./wiki --mcp [label=<name>] [readonly] [allowed-paths=<paths>]
-  tiddlywiki ./wiki --mcp listen [port=<n>] [host=<h>] [label=<name>] ...
+Usage (readonly by default):
+  tiddlywiki ./wiki --mcp [label=<name>] [allowed-paths=<paths>]
+  tiddlywiki ./wiki --mcp rw [label=<name>] [allowed-paths=<paths>]
+  tiddlywiki ./wiki --mcp rw listen [port=<n>] [host=<h>] [label=<name>] ...
 
 When "listen" is specified, an HTTP server is started in the same process
 before the MCP server, so browser edits and MCP tool calls share one $tw.wiki.
@@ -33,13 +34,15 @@ var Command = function(params, commander, callback) {
 };
 
 Command.prototype.execute = function() {
-	var options = {};
+	var options = { readonly: true }; // readonly by default
 	var listenMode = false;
 	var listenParams = {};
 	for(var i = 0; i < this.params.length; i++) {
 		var param = this.params[i];
 		if(param === "readonly") {
 			options.readonly = true;
+		} else if(param === "rw" || param === "readwrite") {
+			options.readonly = false;
 		} else if(param === "listen") {
 			listenMode = true;
 		} else if(param.indexOf("allowed-paths=") === 0) {
