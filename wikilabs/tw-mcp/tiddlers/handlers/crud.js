@@ -37,6 +37,19 @@ module.exports = {
 			return { content: [{ type: "text", text: output }] };
 		}
 		var includeText = !!args.detailed;
+		if(args.format === "hashline") {
+			var hashline = require("$:/core/modules/commands/inspect/hashline.js");
+			var fieldStrings = [];
+			for(var f in tiddler.fields) {
+				if(f === "text") continue;
+				fieldStrings.push(f + ": " + tiddler.getFieldString(f));
+			}
+			var output = fieldStrings.join("\n");
+			if(tiddler.fields.text !== undefined) {
+				output += "\n\n" + hashline.formatHashLines(tiddler.fields.text);
+			}
+			return { content: [{ type: "text", text: output }] };
+		}
 		if(args.format !== "json") {
 			var fieldStrings = [];
 			for(var f in tiddler.fields) {
@@ -111,6 +124,66 @@ module.exports = {
 			}
 		}
 		return { content: [{ type: "text", text: "Tiddler saved to store only (no wiki tiddlers path): " + title }] };
+	},
+
+	"edit_tiddler": function(args) {
+		var denied = shared.checkWritable("edit_tiddler");
+		if(denied) return denied;
+		var checkPathAllowed = shared.getCheckPathAllowed();
+		var hashline = require("$:/core/modules/commands/inspect/hashline.js");
+		var tiddler = $tw.wiki.getTiddler(args.title);
+		if(!tiddler) {
+			return { isError: true, content: [{ type: "text", text: "Tiddler not found: " + args.title }] };
+		}
+		var edits = [];
+		for(var i = 0; i < args.edits.length; i++) {
+			var e = args.edits[i];
+			var edit = { op: e.op, lines: e.lines || [] };
+			if(e.pos) edit.pos = hashline.parseTag(e.pos);
+			if(e.end) edit.end = hashline.parseTag(e.end);
+			edits.push(edit);
+		}
+		try {
+			var result = hashline.applyEdits(tiddler.fields.text || "", edits);
+		} catch(e) {
+			if(e.name === "HashlineMismatchError") {
+				return { isError: true, content: [{ type: "text", text: e.message }] };
+			}
+			return { isError: true, content: [{ type: "text", text: "Edit failed: " + e.message }] };
+		}
+		var title = args.title;
+		var modificationFields = $tw.wiki.getModificationFields();
+		var newTiddler = new $tw.Tiddler(tiddler.fields, { text: result.text }, modificationFields, { title: title });
+		$tw.wiki.addTiddler(newTiddler);
+		if($tw.boot.wikiTiddlersPath) {
+			try {
+				var pathFilters, extFilters;
+				if($tw.wiki.tiddlerExists("$:/config/FileSystemPaths")) {
+					pathFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "").split("\n");
+				}
+				if($tw.wiki.tiddlerExists("$:/config/FileSystemExtensions")) {
+					extFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "").split("\n");
+				}
+				var fileInfo = $tw.utils.generateTiddlerFileInfo(newTiddler, {
+					directory: $tw.boot.wikiTiddlersPath,
+					pathFilters: pathFilters,
+					extFilters: extFilters,
+					wiki: $tw.wiki,
+					fileInfo: $tw.boot.files[title] || {}
+				});
+				var pathDenied = checkPathAllowed(fileInfo.filepath);
+				if(pathDenied) {
+					$tw.wiki.deleteTiddler(title);
+					return pathDenied;
+				}
+				$tw.utils.saveTiddlerToFileSync(newTiddler, fileInfo);
+				$tw.boot.files[title] = fileInfo;
+				return { content: [{ type: "text", text: "Tiddler edited: " + title + " -> " + fileInfo.filepath }] };
+			} catch(e) {
+				return { isError: true, content: [{ type: "text", text: "Tiddler edited in store but failed to save to disk: " + e.message }] };
+			}
+		}
+		return { content: [{ type: "text", text: "Tiddler edited in store only: " + title }] };
 	},
 
 	"delete_tiddler": function(args) {

@@ -17,7 +17,7 @@ var readTools = [
 			type: "object",
 			properties: {
 				title: { type: "string", description: "The tiddler title" },
-				format: { type: "string", enum: ["tid", "json"], default: "tid" },
+				format: { type: "string", enum: ["tid", "json", "hashline"], default: "tid" },
 				detailed: { type: "boolean", default: false, description: "Include the text field" }
 			},
 			required: ["title"]
@@ -172,6 +172,30 @@ var writeTools = [
 				overwrite: { type: "boolean", default: false }
 			},
 			required: ["title", "fields"]
+		}
+	},
+	{
+		name: "edit_tiddler",
+		description: "Edit a tiddler using hashline references from get_tiddler(format='hashline'). Only sends changed lines. Hashes validate automatically; if the tiddler changed since your read, the edit is rejected with updated references.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				title: { type: "string" },
+				edits: {
+					type: "array",
+					items: {
+						type: "object",
+						properties: {
+							op: { type: "string", enum: ["replace_line", "replace_range", "append_at", "prepend_at"] },
+							pos: { type: "string", description: "LINE#HASH anchor (e.g. '5#AB')" },
+							end: { type: "string", description: "End anchor for replace_range" },
+							lines: { type: "array", items: { type: "string" }, description: "New lines to insert/replace" }
+						},
+						required: ["op", "lines"]
+					}
+				}
+			},
+			required: ["title", "edits"]
 		}
 	},
 	{
