@@ -12,12 +12,12 @@ MCP tool definitions (input schemas) for TiddlyWiki MCP server.
 var readTools = [
 	{
 		name: "get_tiddler",
-		description: "Get a tiddler's fields by title. Returns metadata only by default; set detailed=true to include the text field.",
+		description: "Get a tiddler's fields by title. Returns metadata only by default; set detailed=true to include the text field with hashline anchors (ready for edit_tiddler). Use format='tid' for plain text without hashes.",
 		inputSchema: {
 			type: "object",
 			properties: {
 				title: { type: "string", description: "The tiddler title" },
-				format: { type: "string", enum: ["tid", "json", "hashline"], default: "tid" },
+				format: { type: "string", enum: ["tid", "json", "hashline"], default: "hashline", description: "hashline (default) — text with hash anchors for editing. tid — plain text. json — structured fields." },
 				detailed: { type: "boolean", default: false, description: "Include the text field" }
 			},
 			required: ["title"]

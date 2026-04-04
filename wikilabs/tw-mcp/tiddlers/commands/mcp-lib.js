@@ -134,9 +134,10 @@ function dispatchMessage(line, send) {
 					"- Tool results are pre-formatted. Present them DIRECTLY — do not reformat or restructure.\n" +
 					"- Prefer MCP tools for rendering/filters/wiki info. Prefer file access (Read/Grep/Glob) for code search.\n" +
 					"\n## Tool selection (IMPORTANT)\n" +
+					"- get_tiddler(detailed=true) returns text with hashline anchors by default. Use edit_tiddler with these anchors for edits.\n" +
 					"- User trigger words determine your tool choice:\n" +
-					"  - WRITE words (create, edit, update, change, fix, delete, rename, tag, untag) → read with get_tiddler(format='hashline', detailed=true), then use edit_tiddler for small edits or put_tiddler for new/full rewrites.\n" +
-					"  - READ words (show, list, find, search, render, what, how many, which) → use get_tiddler(detailed=true) without hashline.\n" +
+					"  - WRITE words (create, edit, update, change, fix, delete, rename, tag, untag) → read with get_tiddler(detailed=true), then use edit_tiddler for small edits or put_tiddler for new/full rewrites.\n" +
+					"  - READ words (show, list, find, search, render, what, how many, which) → use get_tiddler(detailed=true). Use format='tid' only if the user needs plain text without hashes.\n" +
 					"- NEVER use put_tiddler to change a few lines in an existing tiddler. put_tiddler resends the full text and wastes tokens.\n" +
 					"- Use put_tiddler ONLY for: creating new tiddlers, or full rewrites where most of the text changes.\n" +
 					"- Omit the type field in put_tiddler/edit_tiddler when it is text/vnd.tiddlywiki (that is the default).\n" +

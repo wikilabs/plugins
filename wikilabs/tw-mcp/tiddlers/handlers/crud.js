@@ -37,20 +37,10 @@ module.exports = {
 			return { content: [{ type: "text", text: output }] };
 		}
 		var includeText = !!args.detailed;
-		if(args.format === "hashline") {
-			var hashline = require("$:/core/modules/commands/inspect/hashline.js");
-			var fieldStrings = [];
-			for(var f in tiddler.fields) {
-				if(f === "text") continue;
-				fieldStrings.push(f + ": " + tiddler.getFieldString(f));
-			}
-			var output = fieldStrings.join("\n");
-			if(tiddler.fields.text !== undefined) {
-				output += "\n\n" + hashline.formatHashLines(tiddler.fields.text);
-			}
-			return { content: [{ type: "text", text: output }] };
-		}
-		if(args.format !== "json") {
+		if(args.format === "json") {
+			// JSON format — no hashes
+		} else if(args.format === "tid") {
+			// Explicit plain text requested
 			var fieldStrings = [];
 			for(var f in tiddler.fields) {
 				if(f === "text") continue;
@@ -59,6 +49,19 @@ module.exports = {
 			var output = fieldStrings.join("\n");
 			if(includeText && tiddler.fields.text !== undefined) {
 				output += "\n\n" + tiddler.fields.text;
+			}
+			return { content: [{ type: "text", text: output }] };
+		} else {
+			// Default: hashline when detailed, plain fields otherwise
+			var fieldStrings = [];
+			for(var f in tiddler.fields) {
+				if(f === "text") continue;
+				fieldStrings.push(f + ": " + tiddler.getFieldString(f));
+			}
+			var output = fieldStrings.join("\n");
+			if(includeText && tiddler.fields.text !== undefined) {
+				var hashline = require("$:/core/modules/commands/inspect/hashline.js");
+				output += "\n\n" + hashline.formatHashLines(tiddler.fields.text);
 			}
 			return { content: [{ type: "text", text: output }] };
 		}
