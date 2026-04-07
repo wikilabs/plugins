@@ -122,6 +122,7 @@ function dispatchMessage(line, send) {
 				},
 				instructions: "TiddlyWiki MCP server." +
 					(readonlyMode ? " READONLY mode — write tools are disabled." : "") +
+					(!readonlyMode && !$tw.httpServer ? "\n\n## Persistence WARNING\nNo HTTP server running (--mcp started without 'listen'). Write tools (put_tiddler, edit_tiddler, delete_tiddler) may NOT persist text changes to .tid files reliably. For tiddler content edits, use the file Edit tool directly on .tid files instead. MCP read tools (get_tiddler, run_filter, render_tiddler, etc.) work normally." : "") +
 					"\n\n## Safety (CRITICAL)\n" +
 					"- NEVER modify, create, or delete tiddlers unless the user EXPLICITLY asks (create, edit, update, delete, rename, tag, untag). Words like 'list', 'show', 'find', 'search' are read-only — never write.\n" +
 					"- Before bulk operations, list affected tiddlers and ask for confirmation.\n" +
