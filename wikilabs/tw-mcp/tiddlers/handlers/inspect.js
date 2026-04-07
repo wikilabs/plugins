@@ -332,17 +332,30 @@ module.exports = {
 		}
 		keys.sort();
 		var availableDepth = shared.computeMaxDepth(target, 5);
-		var lines = [];
-		lines.push(prefix + " " + keys.length + "keys maxDepth=" + availableDepth);
-		for(var k = 0; k < keys.length; k++) {
-			if(excludeSet && excludeSet[keys[k]]) { continue; }
-			try {
-				lines = lines.concat(shared.inspectValue(target[keys[k]], keys[k], 0, requestedDepth - 1, excludeSet));
-			} catch(e) {
-				lines.push(keys[k] + " !err");
+		var MAX_RESULT_CHARS = 10000;
+		var currentDepth = requestedDepth;
+		var result, depthNote = "";
+		while(currentDepth >= 0) {
+			var lines = [];
+			lines.push(prefix + " " + keys.length + "keys maxDepth=" + availableDepth);
+			for(var k = 0; k < keys.length; k++) {
+				if(excludeSet && excludeSet[keys[k]]) { continue; }
+				try {
+					lines = lines.concat(shared.inspectValue(target[keys[k]], keys[k], 0, currentDepth - 1, excludeSet));
+				} catch(e) {
+					lines.push(keys[k] + " !err");
+				}
 			}
+			result = lines.join("\n");
+			if(result.length <= MAX_RESULT_CHARS || currentDepth <= 0) {
+				break;
+			}
+			currentDepth--;
 		}
-		return { content: [{ type: "text", text: lines.join("\n") }] };
+		if(currentDepth < requestedDepth) {
+			depthNote = "\u26A0 depth reduced from " + requestedDepth + " to " + currentDepth + " (result exceeded " + MAX_RESULT_CHARS + " chars)\n";
+		}
+		return { content: [{ type: "text", text: depthNote + result }] };
 	},
 
 	"inspect_scope": function(args) {
