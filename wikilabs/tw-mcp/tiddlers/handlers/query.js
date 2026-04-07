@@ -14,7 +14,7 @@ var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 module.exports = {
 	"run_filter": function(args) {
 		if(args.filter && args.filter.length > shared.MAX_FILTER_LENGTH) {
-			return { isError: true, content: [{ type: "text", text: "Filter too long (" + args.filter.length + " chars). Maximum: " + shared.MAX_FILTER_LENGTH }] };
+			return shared.errorResult("Filter too long (" + args.filter.length + " chars). Maximum: " + shared.MAX_FILTER_LENGTH);
 		}
 		try {
 			var results = $tw.wiki.filterTiddlers(args.filter);
@@ -28,9 +28,9 @@ module.exports = {
 			} else {
 				output = results.slice(0, maxResults).join("\n") + "\n\n(" + total + " total, showing first " + maxResults + ")";
 			}
-			return { content: [{ type: "text", text: output }] };
+			return shared.textResult(output);
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "Filter error: " + e.message }] };
+			return shared.errorResult("Filter error: " + e.message);
 		}
 	},
 
@@ -96,7 +96,7 @@ module.exports = {
 				lines.push("  " + entry.title + " = " + value + (description ? " (" + description + ")" : ""));
 			}
 		});
-		return { content: [{ type: "text", text: lines.join("\n") }] };
+		return shared.textResult(lines.join("\n"));
 	},
 
 	"list_tiddlers": function(args) {
@@ -119,7 +119,7 @@ module.exports = {
 		if(total > 100 && !args.limit) {
 			var ns = shared.buildTree(results);
 			var header = ns.prefix ? ns.prefix + " ... " + total + " tiddlers\n" : "";
-			return { content: [{ type: "text", text: header + ns.tree }] };
+			return shared.textResult(header + ns.tree);
 		}
 		var limit = args.limit || 100;
 		var truncated = results.length > limit;
@@ -132,6 +132,6 @@ module.exports = {
 		if(truncated) {
 			output += "\n\n(" + total + " total, showing first " + limit + ")";
 		}
-		return { content: [{ type: "text", text: output }] };
+		return shared.textResult(output);
 	}
 };

@@ -49,7 +49,7 @@ module.exports = {
 		// Reload edition tiddlers
 		if(scope === "tiddlers" || scope === "all") {
 			if(!$tw.boot.wikiTiddlersPath) {
-				return { isError: true, content: [{ type: "text", text: "No wiki tiddlers path available. Cannot reload from filesystem." }] };
+				return shared.errorResult("No wiki tiddlers path available. Cannot reload from filesystem.");
 			}
 			var resolvedWikiPath = $tw.boot.wikiTiddlersPath;
 			var wikiInfo = $tw.boot.wikiInfo || {};
@@ -170,7 +170,7 @@ module.exports = {
 			}
 		}
 
-		return { content: [{ type: "text", text: messages.join("\n") }] };
+		return shared.textResult(messages.join("\n"));
 	},
 
 	"save_wiki_folder": function(args) {
@@ -193,9 +193,9 @@ module.exports = {
 				$tw.wiki
 			);
 			commander.execute();
-			return { content: [{ type: "text", text: "Wiki folder saved to: " + outputPath }] };
+			return shared.textResult("Wiki folder saved to: " + outputPath);
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "Failed to save wiki folder: " + e.message }] };
+			return shared.errorResult("Failed to save wiki folder: " + e.message);
 		}
 	},
 
@@ -205,17 +205,17 @@ module.exports = {
 		var checkPathAllowed = shared.getCheckPathAllowed();
 		var filename = args.filename;
 		if(filename.indexOf("/") !== -1 || filename.indexOf("\\") !== -1 || filename.indexOf("..") !== -1) {
-			return { isError: true, content: [{ type: "text", text: "Invalid filename: must not contain path separators or '..'" }] };
+			return shared.errorResult("Invalid filename: must not contain path separators or '..'");
 		}
 		var wikiPath = $tw.boot.wikiPath;
 		if(!wikiPath) {
-			return { isError: true, content: [{ type: "text", text: "No wiki path available" }] };
+			return shared.errorResult("No wiki path available");
 		}
 		var filesDir = path.resolve(wikiPath, "files");
 		if(args.subfolder) {
 			var subfolder = args.subfolder;
 			if(subfolder.indexOf("..") !== -1) {
-				return { isError: true, content: [{ type: "text", text: "Invalid subfolder: must not contain '..'" }] };
+				return shared.errorResult("Invalid subfolder: must not contain '..'");
 			}
 			filesDir = path.resolve(filesDir, subfolder);
 		}
@@ -227,7 +227,7 @@ module.exports = {
 			$tw.utils.createDirectory(filesDir);
 			fs.writeFileSync(targetPath, buffer);
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "Failed to write file: " + e.message }] };
+			return shared.errorResult("Failed to write file: " + e.message);
 		}
 		var title = args.title || filename;
 		var canonicalUri = "files/" + (args.subfolder ? args.subfolder + "/" : "") + filename;
@@ -252,9 +252,9 @@ module.exports = {
 			$tw.utils.saveTiddlerToFileSync(tiddler, tiddlerFileInfo);
 			$tw.boot.files[title] = tiddlerFileInfo;
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "File saved but failed to write .tid tiddler: " + e.message }] };
+			return shared.errorResult("File saved but failed to write .tid tiddler: " + e.message);
 		}
-		return { content: [{ type: "text", text: "File uploaded: " + targetPath + "\nTiddler created: " + tiddlerFileInfo.filepath + " (_canonical_uri: " + canonicalUri + ")" }] };
+		return shared.textResult("File uploaded: " + targetPath + "\nTiddler created: " + tiddlerFileInfo.filepath + " (_canonical_uri: " + canonicalUri + ")");
 	},
 
 	"build_wiki": function(args) {
@@ -269,9 +269,9 @@ module.exports = {
 			var text = $tw.wiki.renderTiddler("text/plain", template);
 			$tw.utils.createFileDirectories(outputFile);
 			fs.writeFileSync(outputFile, text, "utf8");
-			return { content: [{ type: "text", text: "Wiki built: " + outputFile }] };
+			return shared.textResult("Wiki built: " + outputFile);
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "Failed to build wiki: " + e.message }] };
+			return shared.errorResult("Failed to build wiki: " + e.message);
 		}
 	}
 };

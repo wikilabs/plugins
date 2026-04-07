@@ -31,7 +31,7 @@ function init(context) {
 
 function checkWritable(toolName) {
 	if(readonlyMode) {
-		return { isError: true, content: [{ type: "text", text: "Tool '" + toolName + "' is disabled in readonly mode" }] };
+		return errorResult("Tool '" + toolName + "' is disabled in readonly mode");
 	}
 	return null;
 }
@@ -250,6 +250,52 @@ function computeMaxDepth(obj, limit) {
 	return deepest;
 }
 
+// --- Response helpers ---
+
+function textResult(msg) {
+	return { content: [{ type: "text", text: msg }] };
+}
+
+function errorResult(msg) {
+	return { isError: true, content: [{ type: "text", text: msg }] };
+}
+
+// --- File persistence helper (used by put_tiddler and edit_tiddler) ---
+
+function persistTiddler(tiddler, title, action) {
+	var checkPathAllowed = getCheckPathAllowed();
+	$tw.wiki.addTiddler(tiddler);
+	if($tw.boot.wikiTiddlersPath) {
+		try {
+			var pathFilters, extFilters;
+			if($tw.wiki.tiddlerExists("$:/config/FileSystemPaths")) {
+				pathFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "").split("\n");
+			}
+			if($tw.wiki.tiddlerExists("$:/config/FileSystemExtensions")) {
+				extFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "").split("\n");
+			}
+			var fileInfo = $tw.utils.generateTiddlerFileInfo(tiddler, {
+				directory: $tw.boot.wikiTiddlersPath,
+				pathFilters: pathFilters,
+				extFilters: extFilters,
+				wiki: $tw.wiki,
+				fileInfo: $tw.boot.files[title] || {}
+			});
+			var pathDenied = checkPathAllowed(fileInfo.filepath);
+			if(pathDenied) {
+				$tw.wiki.deleteTiddler(title);
+				return pathDenied;
+			}
+			$tw.utils.saveTiddlerToFileSync(tiddler, fileInfo);
+			$tw.boot.files[title] = fileInfo;
+			return textResult("Tiddler " + action + ": " + title + " -> " + fileInfo.filepath);
+		} catch(e) {
+			return errorResult("Tiddler " + action + " in store but failed to save to disk: " + e.message);
+		}
+	}
+	return textResult("Tiddler " + action + " in store only (no wiki tiddlers path): " + title);
+}
+
 exports.init = init;
 exports.checkWritable = checkWritable;
 exports.isReadonly = isReadonly;
@@ -262,3 +308,6 @@ exports.inspectValue = inspectValue;
 exports.computeMaxDepth = computeMaxDepth;
 exports.MAX_FILTER_LENGTH = MAX_FILTER_LENGTH;
 exports.MAX_TEXT_LENGTH = MAX_TEXT_LENGTH;
+exports.textResult = textResult;
+exports.errorResult = errorResult;
+exports.persistTiddler = persistTiddler;

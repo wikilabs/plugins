@@ -14,12 +14,12 @@ var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 module.exports = {
 	"inspect_tree": function(args) {
 		if(args.text && args.text.length > shared.MAX_TEXT_LENGTH) {
-			return { isError: true, content: [{ type: "text", text: "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH }] };
+			return shared.errorResult( "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH );
 		}
 		try {
 			var rendered = shared.parseAndRender(args.text, args.type, args.context);
 			if(!rendered) {
-				return { isError: true, content: [{ type: "text", text: "No parser for text" }] };
+				return shared.errorResult( "No parser for text" );
 			}
 			var widgetNode = rendered.widgetNode;
 			var wExcludeSet = {};
@@ -101,24 +101,24 @@ module.exports = {
 				header += "Links (" + linkTargets.length + "): " + linkTargets.join(", ") + "\n";
 			}
 			if(linkTargets.length > 0) {
-				return { content: [{ type: "text", text: header }] };
+				return shared.textResult( header );
 			}
 			header += "(showing depth=" + maxDepth + ")\n";
-			return { content: [{ type: "text", text: header + JSON.stringify(result, null, $tw.config.preferences.jsonSpaces) }] };
+			return shared.textResult( header + JSON.stringify(result, null, $tw.config.preferences.jsonSpaces) );
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "inspect_tree error: " + e.message }] };
+			return shared.errorResult( "inspect_tree error: " + e.message );
 		}
 	},
 
 	"inspect_pos": function(args) {
 		if(args.text && args.text.length > shared.MAX_TEXT_LENGTH) {
-			return { isError: true, content: [{ type: "text", text: "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH }] };
+			return shared.errorResult( "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH );
 		}
 		var inputType = args.type || "text/vnd.tiddlywiki";
 		try {
 			var parser = $tw.wiki.parseText(inputType, args.text, { parseAsInline: false });
 			if(!parser) {
-				return { isError: true, content: [{ type: "text", text: "No parser for type: " + inputType }] };
+				return shared.errorResult( "No parser for type: " + inputType );
 			}
 			var importFilter = $tw.wiki.getTiddlerText("$:/core/config/GlobalImportFilter");
 			var wrappedTree = {tree: [{
@@ -232,7 +232,7 @@ module.exports = {
 				posWidget.sourceContext = args.context || "(inline)";
 				var posContainer = $tw.fakeDocument.createElement("div");
 				posWidget.render(posContainer, null);
-				return { content: [{ type: "text", text: posContainer.innerHTML }] };
+				return shared.textResult( posContainer.innerHTML );
 			} finally {
 				$tw.wiki.trackSourcePositions = false;
 				$tw.hooks.removeHook("th-dom-rendering-element", posHook);
@@ -241,7 +241,7 @@ module.exports = {
 				TranscludeWidget.prototype.execute = origExecute;
 			}
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "inspect_pos error: " + e.message }] };
+			return shared.errorResult( "inspect_pos error: " + e.message );
 		}
 	},
 
@@ -261,20 +261,20 @@ module.exports = {
 			var segments = targetPath.split(".");
 			for(var i = 0; i < segments.length; i++) {
 				if(blockedSegments[segments[i]]) {
-					return { isError: true, content: [{ type: "text", text: "Access to " + segments[i] + " is blocked for security" }] };
+					return shared.errorResult( "Access to " + segments[i] + " is blocked for security" );
 				}
 				if(target === null || target === undefined) {
-					return { isError: true, content: [{ type: "text", text: "$tw." + segments.slice(0, i).join(".") + " is " + String(target) }] };
+					return shared.errorResult( "$tw." + segments.slice(0, i).join(".") + " is " + String(target) );
 				}
 				if(typeof target !== "object" && typeof target !== "function") {
-					return { isError: true, content: [{ type: "text", text: "$tw." + segments.slice(0, i).join(".") + " is " + typeof target }] };
+					return shared.errorResult( "$tw." + segments.slice(0, i).join(".") + " is " + typeof target );
 				}
 				target = target[segments[i]];
 			}
 		}
 		var prefix = "$tw" + (targetPath ? "." + targetPath : "");
 		if(target === null || target === undefined) {
-			return { content: [{ type: "text", text: prefix + "=" + String(target) }] };
+			return shared.textResult( prefix + "=" + String(target) );
 		}
 		// Auto-resolve: path is an object (not function) + call provided + call[0] is a method name
 		if(typeof target === "object" && target !== null && args.call && args.call.length > 0) {
@@ -290,7 +290,7 @@ module.exports = {
 					fullSource: args.fullSource
 				});
 			} else {
-				return { isError: true, content: [{ type: "text", text: prefix + " is not a function. '" + methodName + "' is " + typeof target[methodName] + " on this object. Did you mean path='" + targetPath + "." + methodName + "'?" }] };
+				return shared.errorResult( prefix + " is not a function. '" + methodName + "' is " + typeof target[methodName] + " on this object. Did you mean path='" + targetPath + "." + methodName + "'?" );
 			}
 		}
 		if(typeof target === "function") {
@@ -313,7 +313,7 @@ module.exports = {
 				var isSafe = safeCallFunctions[targetPath] || targetPath.indexOf("utils.") === 0;
 				if(!isSafe) {
 					var safeList = Object.keys(safeCallFunctions).map(function(k) { return "$tw." + k; }).join(", ");
-					return { isError: true, content: [{ type: "text", text: "call is only allowed on safe read-only functions: " + safeList + ", $tw.utils.*" }] };
+					return shared.errorResult( "call is only allowed on safe read-only functions: " + safeList + ", $tw.utils.*" );
 				}
 				var parent = $tw;
 				if(targetPath) {
@@ -327,7 +327,7 @@ module.exports = {
 					target = target.apply(parent, args.call);
 					prefix = prefix + "(" + args.call.map(function(a) { return JSON.stringify(a); }).join(",") + ")";
 				} catch(callErr) {
-					return { isError: true, content: [{ type: "text", text: prefix + " call error: " + callErr.message }] };
+					return shared.errorResult( prefix + " call error: " + callErr.message );
 				}
 			} else {
 				var fnStr = Function.prototype.toString.call(target);
@@ -336,17 +336,17 @@ module.exports = {
 				var lines = [];
 				lines.push("fn " + prefix + sig);
 				lines = lines.concat(shared.formatFnSource(fnStr, "", !!args.fullSource));
-				return { content: [{ type: "text", text: lines.join("\n") }] };
+				return shared.textResult( lines.join("\n") );
 			}
 		}
 		if(typeof target !== "object") {
-			return { content: [{ type: "text", text: prefix + "=" + String(target) }] };
+			return shared.textResult( prefix + "=" + String(target) );
 		}
 		var keys;
 		try {
 			keys = Object.keys(target);
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "Cannot enumerate " + prefix + ": " + e.message }] };
+			return shared.errorResult( "Cannot enumerate " + prefix + ": " + e.message );
 		}
 		keys.sort();
 		var availableDepth = shared.computeMaxDepth(target, 5);
@@ -373,7 +373,7 @@ module.exports = {
 		if(currentDepth < requestedDepth) {
 			depthNote = "\u26A0 depth reduced from " + requestedDepth + " to " + currentDepth + " (result exceeded " + MAX_RESULT_CHARS + " chars)\n";
 		}
-		return { content: [{ type: "text", text: depthNote + result }] };
+		return shared.textResult( depthNote + result );
 	},
 
 	"inspect_scope": function(args) {
@@ -384,10 +384,10 @@ module.exports = {
 			} else if(args.tiddler) {
 				textToRender = $tw.wiki.getTiddlerText(args.tiddler, "");
 				if(!textToRender) {
-					return { isError: true, content: [{ type: "text", text: "Tiddler not found or empty: " + args.tiddler }] };
+					return shared.errorResult( "Tiddler not found or empty: " + args.tiddler );
 				}
 			} else {
-				return { isError: true, content: [{ type: "text", text: "Provide either 'tiddler' or 'text' parameter" }] };
+				return shared.errorResult( "Provide either 'tiddler' or 'text' parameter" );
 			}
 			var targetCharPos = args.charPos || 0;
 			var contextTiddler = args.context || args.tiddler;
@@ -413,7 +413,7 @@ module.exports = {
 			}
 			var rendered = shared.parseAndRender(textToRender, "text/vnd.tiddlywiki", contextTiddler, extraVars);
 			if(!rendered) {
-				return { isError: true, content: [{ type: "text", text: "No parser for text" }] };
+				return shared.errorResult( "No parser for text" );
 			}
 			var widgetNode = rendered.widgetNode;
 			var matchCriteria = args.match || null;
@@ -460,7 +460,7 @@ module.exports = {
 			walkTree(widgetNode);
 			if(!bestWidget) {
 				var matchInfo = matchCriteria ? " with match " + JSON.stringify(matchCriteria) : "";
-				return { isError: true, content: [{ type: "text", text: "No widget found near char position " + targetCharPos + matchInfo }] };
+				return shared.errorResult( "No widget found near char position " + targetCharPos + matchInfo );
 			}
 			var seen = {};
 			var varList = [];
@@ -625,9 +625,9 @@ module.exports = {
 				lines.push("");
 				lines.push("+" + unusedImported.length + " globals (use all:true to see all, or filter to narrow)");
 			}
-			return { content: [{ type: "text", text: lines.join("\n") }] };
+			return shared.textResult( lines.join("\n") );
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "inspect_scope error: " + e.message }] };
+			return shared.errorResult( "inspect_scope error: " + e.message );
 		}
 	}
 };

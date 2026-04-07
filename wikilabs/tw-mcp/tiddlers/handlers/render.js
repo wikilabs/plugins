@@ -25,7 +25,7 @@ module.exports = {
 				var wikitext = "\\whitespace trim\n<$tiddler tiddler=\"\"\"" + args.title + "\"\"\">\n<$transclude $tiddler=\"\"\"" + templateTitle + "\"\"\"/>\n</$tiddler>";
 				var rendered = shared.parseAndRender(wikitext, "text/vnd.tiddlywiki", args.title);
 				if(!rendered) {
-					return { isError: true, content: [{ type: "text", text: "Render error: failed to render viewtemplate" }] };
+					return shared.errorResult( "Render error: failed to render viewtemplate" );
 				}
 				container = rendered.container;
 			} else {
@@ -44,9 +44,9 @@ module.exports = {
 			} else {
 				text = container.textContent;
 			}
-			return { content: [{ type: "text", text: text }] };
+			return shared.textResult( text );
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "Render error: " + e.message }] };
+			return shared.errorResult( "Render error: " + e.message );
 		}
 	},
 
@@ -58,22 +58,22 @@ module.exports = {
 			if(args.index) {
 				value = $tw.wiki.extractTiddlerDataItem(args.title, args.index, undefined);
 				if(value === undefined) {
-					return { isError: true, content: [{ type: "text", text: "Index '" + args.index + "' not found in tiddler '" + args.title + "'" }] };
+					return shared.errorResult( "Index '" + args.index + "' not found in tiddler '" + args.title + "'" );
 				}
 			} else {
 				var tiddler = $tw.wiki.getTiddler(args.title);
 				if(!tiddler) {
-					return { isError: true, content: [{ type: "text", text: "Tiddler not found: " + args.title }] };
+					return shared.errorResult( "Tiddler not found: " + args.title );
 				}
 				var fieldName = args.field || "text";
 				value = tiddler.getFieldString(fieldName);
 				if(value === undefined || value === "") {
-					return { isError: true, content: [{ type: "text", text: "Field '" + fieldName + "' is empty or missing in '" + args.title + "'" }] };
+					return shared.errorResult( "Field '" + fieldName + "' is empty or missing in '" + args.title + "'" );
 				}
 			}
 			var rendered = shared.parseAndRender(value, "text/vnd.tiddlywiki", args.title);
 			if(!rendered) {
-				return { isError: true, content: [{ type: "text", text: "Render error: no parser" }] };
+				return shared.errorResult( "Render error: no parser" );
 			}
 			var text;
 			if(outputType === "text/html") {
@@ -83,15 +83,15 @@ module.exports = {
 			} else {
 				text = rendered.container.textContent;
 			}
-			return { content: [{ type: "text", text: text }] };
+			return shared.textResult( text );
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "render_field error: " + e.message }] };
+			return shared.errorResult( "render_field error: " + e.message );
 		}
 	},
 
 	"render_text": function(args) {
 		if(args.text && args.text.length > shared.MAX_TEXT_LENGTH) {
-			return { isError: true, content: [{ type: "text", text: "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH }] };
+			return shared.errorResult( "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH );
 		}
 		var inputType = args.type || "text/vnd.tiddlywiki";
 		var outputType = args.output || "text/plain";
@@ -99,7 +99,7 @@ module.exports = {
 			if(outputType === "parsetree") {
 				var parser = $tw.wiki.parseText(inputType, args.text, { parseAsInline: false });
 				if(!parser) {
-					return { isError: true, content: [{ type: "text", text: "No parser for type: " + inputType }] };
+					return shared.errorResult( "No parser for type: " + inputType );
 				}
 				var excludeSet = {};
 				if(args.exclude) {
@@ -139,11 +139,11 @@ module.exports = {
 					if(excludeSet.end) removed.push("end");
 					header = "(excluded: " + removed.join(", ") + ")\n";
 				}
-				return { content: [{ type: "text", text: header + JSON.stringify(compactTree, null, $tw.config.preferences.jsonSpaces) }] };
+				return shared.textResult( header + JSON.stringify(compactTree, null, $tw.config.preferences.jsonSpaces) );
 			}
 			var rendered = shared.parseAndRender(args.text, inputType, args.context);
 			if(!rendered) {
-				return { isError: true, content: [{ type: "text", text: "No parser for type: " + inputType }] };
+				return shared.errorResult( "No parser for type: " + inputType );
 			}
 			var text;
 			if(outputType === "text/html") {
@@ -153,9 +153,9 @@ module.exports = {
 			} else {
 				text = rendered.container.textContent;
 			}
-			return { content: [{ type: "text", text: text }] };
+			return shared.textResult( text );
 		} catch(e) {
-			return { isError: true, content: [{ type: "text", text: "Render error: " + e.message }] };
+			return shared.errorResult( "Render error: " + e.message );
 		}
 	}
 };

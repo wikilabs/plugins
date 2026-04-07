@@ -15,7 +15,7 @@ module.exports = {
 	"get_tiddler": function(args) {
 		var tiddler = $tw.wiki.getTiddler(args.title);
 		if(!tiddler) {
-			return { isError: true, content: [{ type: "text", text: "Tiddler not found: " + args.title }] };
+			return shared.errorResult("Tiddler not found: " + args.title);
 		}
 		if(tiddler.fields["plugin-type"]) {
 			var pluginInfo = $tw.wiki.getPluginInfo(args.title);
@@ -34,7 +34,7 @@ module.exports = {
 			var ns = shared.buildTree(shadowTitles);
 			var header = ns.prefix ? ns.prefix + " ... " + shadowTitles.length + " shadow tiddlers\n" : "";
 			var output = fieldStrings.join("\n") + "\n\n" + header + ns.tree;
-			return { content: [{ type: "text", text: output }] };
+			return shared.textResult(output);
 		}
 		var includeText = !!args.detailed || !!args.lines;
 		// Detect unsafe fields (same check as TW filesystem: control chars, leading/trailing whitespace, : or # in field names)
@@ -60,14 +60,14 @@ module.exports = {
 					fields[field] = value;
 				}
 			}
-			return { content: [{ type: "text", text: JSON.stringify(fields, null, $tw.config.preferences.jsonSpaces) }] };
+			return shared.textResult(JSON.stringify(fields, null, $tw.config.preferences.jsonSpaces));
 		} else if(args.format === "tid") {
 			// Plain tid — no hashes
 			var output = tiddler.getFieldStringBlock({exclude: ["text"]});
 			if(includeText && tiddler.fields.text !== undefined) {
 				output += "\n\n" + tiddler.fields.text;
 			}
-			return { content: [{ type: "text", text: output }] };
+			return shared.textResult(output);
 		} else {
 			// Default (hashline): tid headers for safe fields, JSON for unsafe, hashlined text
 			var header;
@@ -93,14 +93,13 @@ module.exports = {
 				var hashline = require("$:/core/modules/commands/inspect/hashline.js");
 				output += "\n\n" + hashline.formatHashLines(tiddler.fields.text);
 			}
-			return { content: [{ type: "text", text: output }] };
+			return shared.textResult(output);
 		}
 	},
 
 	"put_tiddler": function(args) {
 		var denied = shared.checkWritable("put_tiddler");
 		if(denied) return denied;
-		var checkPathAllowed = shared.getCheckPathAllowed();
 		var title = args.title,
 			existingTiddler = $tw.wiki.getTiddler(title),
 			creationFields = $tw.wiki.getCreationFields(),
@@ -114,46 +113,16 @@ module.exports = {
 		} else {
 			tiddler = new $tw.Tiddler(creationFields, args.fields, modificationFields, {title: title});
 		}
-		$tw.wiki.addTiddler(tiddler);
-		if($tw.boot.wikiTiddlersPath) {
-			try {
-				var pathFilters, extFilters;
-				if($tw.wiki.tiddlerExists("$:/config/FileSystemPaths")) {
-					pathFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "").split("\n");
-				}
-				if($tw.wiki.tiddlerExists("$:/config/FileSystemExtensions")) {
-					extFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "").split("\n");
-				}
-				var fileInfo = $tw.utils.generateTiddlerFileInfo(tiddler, {
-					directory: $tw.boot.wikiTiddlersPath,
-					pathFilters: pathFilters,
-					extFilters: extFilters,
-					wiki: $tw.wiki,
-					fileInfo: $tw.boot.files[title] || {}
-				});
-				var pathDenied = checkPathAllowed(fileInfo.filepath);
-				if(pathDenied) {
-					$tw.wiki.deleteTiddler(title);
-					return pathDenied;
-				}
-				$tw.utils.saveTiddlerToFileSync(tiddler, fileInfo);
-				$tw.boot.files[title] = fileInfo;
-				return { content: [{ type: "text", text: "Tiddler saved: " + title + " -> " + fileInfo.filepath }] };
-			} catch(e) {
-				return { isError: true, content: [{ type: "text", text: "Tiddler added to store but failed to save to disk: " + e.message }] };
-			}
-		}
-		return { content: [{ type: "text", text: "Tiddler saved to store only (no wiki tiddlers path): " + title }] };
+		return shared.persistTiddler(tiddler, title, "saved");
 	},
 
 	"edit_tiddler": function(args) {
 		var denied = shared.checkWritable("edit_tiddler");
 		if(denied) return denied;
-		var checkPathAllowed = shared.getCheckPathAllowed();
 		var hashline = require("$:/core/modules/commands/inspect/hashline.js");
 		var tiddler = $tw.wiki.getTiddler(args.title);
 		if(!tiddler) {
-			return { isError: true, content: [{ type: "text", text: "Tiddler not found: " + args.title }] };
+			return shared.errorResult("Tiddler not found: " + args.title);
 		}
 		// Apply text edits if provided
 		var newText = tiddler.fields.text || "";
@@ -171,9 +140,9 @@ module.exports = {
 				newText = result.text;
 			} catch(e) {
 				if(e.name === "HashlineMismatchError") {
-					return { isError: true, content: [{ type: "text", text: e.message }] };
+					return shared.errorResult(e.message);
 				}
-				return { isError: true, content: [{ type: "text", text: "Edit failed: " + e.message }] };
+				return shared.errorResult("Edit failed: " + e.message);
 			}
 		}
 		// Build updated fields
@@ -198,36 +167,7 @@ module.exports = {
 			}
 			newTiddler = new $tw.Tiddler(fieldsToKeep);
 		}
-		$tw.wiki.addTiddler(newTiddler);
-		if($tw.boot.wikiTiddlersPath) {
-			try {
-				var pathFilters, extFilters;
-				if($tw.wiki.tiddlerExists("$:/config/FileSystemPaths")) {
-					pathFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "").split("\n");
-				}
-				if($tw.wiki.tiddlerExists("$:/config/FileSystemExtensions")) {
-					extFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "").split("\n");
-				}
-				var fileInfo = $tw.utils.generateTiddlerFileInfo(newTiddler, {
-					directory: $tw.boot.wikiTiddlersPath,
-					pathFilters: pathFilters,
-					extFilters: extFilters,
-					wiki: $tw.wiki,
-					fileInfo: $tw.boot.files[title] || {}
-				});
-				var pathDenied = checkPathAllowed(fileInfo.filepath);
-				if(pathDenied) {
-					$tw.wiki.deleteTiddler(title);
-					return pathDenied;
-				}
-				$tw.utils.saveTiddlerToFileSync(newTiddler, fileInfo);
-				$tw.boot.files[title] = fileInfo;
-				return { content: [{ type: "text", text: "Tiddler edited: " + title + " -> " + fileInfo.filepath }] };
-			} catch(e) {
-				return { isError: true, content: [{ type: "text", text: "Tiddler edited in store but failed to save to disk: " + e.message }] };
-			}
-		}
-		return { content: [{ type: "text", text: "Tiddler edited in store only: " + title }] };
+		return shared.persistTiddler(newTiddler, title, "edited");
 	},
 
 	"delete_tiddler": function(args) {
@@ -235,7 +175,7 @@ module.exports = {
 		if(denied) return denied;
 		var checkPathAllowed = shared.getCheckPathAllowed();
 		if(!$tw.wiki.tiddlerExists(args.title)) {
-			return { isError: true, content: [{ type: "text", text: "Tiddler not found: " + args.title }] };
+			return shared.errorResult("Tiddler not found: " + args.title);
 		}
 		var fileInfo = $tw.boot.files && $tw.boot.files[args.title];
 		if(fileInfo) {
@@ -250,10 +190,10 @@ module.exports = {
 				delete $tw.boot.files[args.title];
 			} catch(e) {
 				$tw.wiki.deleteTiddler(args.title);
-				return { isError: true, content: [{ type: "text", text: "Tiddler deleted from store but failed to remove file: " + e.message }] };
+				return shared.errorResult("Tiddler deleted from store but failed to remove file: " + e.message);
 			}
 		}
 		$tw.wiki.deleteTiddler(args.title);
-		return { content: [{ type: "text", text: "Tiddler deleted: " + args.title }] };
+		return shared.textResult("Tiddler deleted: " + args.title);
 	}
 };
