@@ -19,7 +19,8 @@ var modules = [
 	require("$:/core/modules/commands/inspect/handlers/query.js"),
 	require("$:/core/modules/commands/inspect/handlers/render.js"),
 	require("$:/core/modules/commands/inspect/handlers/inspect.js"),
-	require("$:/core/modules/commands/inspect/handlers/filesystem.js")
+	require("$:/core/modules/commands/inspect/handlers/filesystem.js"),
+	require("$:/core/modules/commands/inspect/handlers/html-import.js")
 ];
 for(var i = 0; i < modules.length; i++) {
 	var mod = modules[i];

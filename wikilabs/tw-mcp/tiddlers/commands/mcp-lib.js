@@ -123,6 +123,16 @@ function dispatchMessage(line, send) {
 				instructions: "TiddlyWiki MCP server." +
 					(readonlyMode ? " READONLY mode — write tools are disabled." : "") +
 					(!readonlyMode && !$tw.httpServer ? "\n\n## Persistence WARNING\nNo HTTP server running (--mcp started without 'listen'). Write tools (put_tiddler, edit_tiddler, delete_tiddler) may NOT persist text changes to .tid files reliably. For tiddler content edits, use the file Edit tool directly on .tid files instead. MCP read tools (get_tiddler, run_filter, render_tiddler, etc.) work normally." : "") +
+					($tw.wiki.getTiddler("$:/temp/mcp/html-import") && $tw.wiki.getTiddler("$:/temp/mcp/html-import").fields.status === "pending" ?
+						"\n\n## HTML Import PENDING (ACTION REQUIRED)\n" +
+						"A single-file wiki has been loaded into memory but NOT yet extracted to disk.\n" +
+						"Your FIRST action should be:\n" +
+						"1. Call get_tiddler('$:/temp/mcp/html-import', detailed=true) to read the import analysis\n" +
+						"2. Present the proposed folder structure (FileSystemPaths rules) to the user and explain what each rule does\n" +
+						"3. Ask the user if the proposed structure is OK or if they want changes\n" +
+						"4. Once approved, call extract_html_wiki to write .tid files to disk\n" +
+						"5. If the user wants different rules, pass them as the fileSystemPaths parameter to extract_html_wiki"
+						: "") +
 					"\n\n## Safety (CRITICAL)\n" +
 					"- NEVER modify, create, or delete tiddlers unless the user EXPLICITLY asks (create, edit, update, delete, rename, tag, untag). Words like 'list', 'show', 'find', 'search' are read-only — never write.\n" +
 					"- Before bulk operations, list affected tiddlers and ask for confirmation.\n" +

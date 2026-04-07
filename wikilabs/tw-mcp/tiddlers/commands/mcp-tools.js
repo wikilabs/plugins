@@ -255,6 +255,17 @@ var writeTools = [
 		}
 	},
 	{
+		name: "extract_html_wiki",
+		description: "Extract pending HTML wiki import to disk files. Call after reviewing the import analysis in $:/temp/mcp/html-import. Optionally provide modified FileSystemPaths rules.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				fileSystemPaths: { type: "string", description: "Approved FileSystemPaths rules (one filter per line). If omitted, uses the proposed rules from the import analysis." }
+			},
+			required: []
+		}
+	},
+	{
 		name: "upload_file",
 		description: "Upload base64 file to files/ and create a canonical tiddler.",
 		inputSchema: {

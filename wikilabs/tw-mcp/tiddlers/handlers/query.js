@@ -84,6 +84,22 @@ module.exports = {
 			lines.push("Languages:");
 			$tw.utils.each(languages, function(l) { lines.push("  " + l); });
 		}
+		// HTML import status
+		var importTiddler = $tw.wiki.getTiddler("$:/temp/mcp/html-import");
+		if(importTiddler) {
+			var importStatus = importTiddler.fields.status;
+			var sourceFile = importTiddler.fields["source-file"] || "unknown";
+			var contentCount = importTiddler.fields["content-count"] || "?";
+			if(importStatus === "pending") {
+				lines.push("");
+				lines.push("HTML Import: PENDING — " + contentCount + " tiddlers in memory from " + sourceFile);
+				lines.push("  Read $:/temp/mcp/html-import for analysis and proposed FileSystemPaths");
+				lines.push("  Use extract_html_wiki to write .tid files after review");
+			} else if(importStatus === "extracted") {
+				lines.push("");
+				lines.push("HTML Import: extracted " + (importTiddler.fields["files-written"] || "?") + " files from " + sourceFile);
+			}
+		}
 		lines.push("");
 		lines.push("Settings:");
 		$tw.utils.each(settingsList, function(entry) {
