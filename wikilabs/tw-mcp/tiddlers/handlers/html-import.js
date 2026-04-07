@@ -386,7 +386,9 @@ function extractHandler(args) {
 			lines.push("  " + errors[ei]);
 		}
 	}
-	return shared.textResult(lines.join("\n"));
+	var result = lines.join("\n");
+	console.error("\nhtml-import: " + result + "\n");
+	return shared.textResult(result);
 }
 
 module.exports = {
