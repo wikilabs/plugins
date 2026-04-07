@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.7.0 - 2026.04.07
+
+* Single-file wiki import: `--mcp file=wiki.html` with `extract_html_wiki` tool
+
 V 0.6.1 - 2026.04.07
 
 * Refactor: `textResult()`, `errorResult()`, `persistTiddler()` helpers in shared.js
