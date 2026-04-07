@@ -18,9 +18,17 @@ module.exports = {
 		}
 		try {
 			var results = $tw.wiki.filterTiddlers(args.filter);
-			var ns = shared.buildTree(results);
-			var header = ns.prefix ? ns.prefix + " ... " + results.length + " results\n" : "";
-			return { content: [{ type: "text", text: header + ns.tree }] };
+			var maxResults = 500;
+			var total = results.length;
+			var output;
+			if(total === 0) {
+				output = "(no results)";
+			} else if(total <= maxResults) {
+				output = results.join("\n");
+			} else {
+				output = results.slice(0, maxResults).join("\n") + "\n\n(" + total + " total, showing first " + maxResults + ")";
+			}
+			return { content: [{ type: "text", text: output }] };
 		} catch(e) {
 			return { isError: true, content: [{ type: "text", text: "Filter error: " + e.message }] };
 		}
