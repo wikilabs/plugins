@@ -367,23 +367,6 @@ function extractHandler(args) {
 			errors.push(title + ": " + e.message);
 		}
 	}
-	// Also save the FileSystemPaths config tiddler to disk
-	var configTiddler = $tw.wiki.getTiddler("$:/config/FileSystemPaths");
-	if(configTiddler) {
-		try {
-			var configFileInfo = $tw.utils.generateTiddlerFileInfo(configTiddler, {
-				directory: tiddlersDir,
-				pathFilters: pathFilters,
-				extFilters: extFilters,
-				wiki: $tw.wiki,
-				fileInfo: {}
-			});
-			$tw.utils.saveTiddlerToFileSync(configTiddler, configFileInfo);
-			$tw.boot.files["$:/config/FileSystemPaths"] = configFileInfo;
-		} catch(e) {
-			errors.push("$:/config/FileSystemPaths: " + e.message);
-		}
-	}
 	// Update analysis tiddler status
 	$tw.wiki.addTiddler(new $tw.Tiddler(analysisTiddler, {
 		status: "extracted",
