@@ -276,6 +276,23 @@ module.exports = {
 		if(target === null || target === undefined) {
 			return { content: [{ type: "text", text: prefix + "=" + String(target) }] };
 		}
+		// Auto-resolve: path is an object (not function) + call provided + call[0] is a method name
+		if(typeof target === "object" && target !== null && args.call && args.call.length > 0) {
+			var methodName = args.call[0];
+			if(typeof target[methodName] === "function") {
+				var resolvedPath = targetPath + "." + methodName;
+				var resolvedArgs = args.call.slice(1);
+				return module.exports["inspect_tw"]({
+					path: resolvedPath,
+					call: resolvedArgs,
+					depth: requestedDepth,
+					exclude: args.exclude,
+					fullSource: args.fullSource
+				});
+			} else {
+				return { isError: true, content: [{ type: "text", text: prefix + " is not a function. '" + methodName + "' is " + typeof target[methodName] + " on this object. Did you mean path='" + targetPath + "." + methodName + "'?" }] };
+			}
+		}
 		if(typeof target === "function") {
 			if(args.call) {
 				var safeCallFunctions = {
