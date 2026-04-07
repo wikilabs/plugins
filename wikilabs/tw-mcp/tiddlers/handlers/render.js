@@ -50,6 +50,45 @@ module.exports = {
 		}
 	},
 
+	"render_field": function(args) {
+		var outputType = args.output || "text/html";
+		var mode = args.mode || "block";
+		try {
+			var value;
+			if(args.index) {
+				value = $tw.wiki.extractTiddlerDataItem(args.title, args.index, undefined);
+				if(value === undefined) {
+					return { isError: true, content: [{ type: "text", text: "Index '" + args.index + "' not found in tiddler '" + args.title + "'" }] };
+				}
+			} else {
+				var tiddler = $tw.wiki.getTiddler(args.title);
+				if(!tiddler) {
+					return { isError: true, content: [{ type: "text", text: "Tiddler not found: " + args.title }] };
+				}
+				var fieldName = args.field || "text";
+				value = tiddler.getFieldString(fieldName);
+				if(value === undefined || value === "") {
+					return { isError: true, content: [{ type: "text", text: "Field '" + fieldName + "' is empty or missing in '" + args.title + "'" }] };
+				}
+			}
+			var rendered = shared.parseAndRender(value, "text/vnd.tiddlywiki", args.title);
+			if(!rendered) {
+				return { isError: true, content: [{ type: "text", text: "Render error: no parser" }] };
+			}
+			var text;
+			if(outputType === "text/html") {
+				text = rendered.container.innerHTML;
+			} else if(outputType === "text/plain-formatted") {
+				text = rendered.container.formattedTextContent;
+			} else {
+				text = rendered.container.textContent;
+			}
+			return { content: [{ type: "text", text: text }] };
+		} catch(e) {
+			return { isError: true, content: [{ type: "text", text: "render_field error: " + e.message }] };
+		}
+	},
+
 	"render_text": function(args) {
 		if(args.text && args.text.length > shared.MAX_TEXT_LENGTH) {
 			return { isError: true, content: [{ type: "text", text: "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH }] };

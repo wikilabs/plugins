@@ -48,6 +48,20 @@ var readTools = [
 		}
 	},
 	{
+		name: "render_field",
+		description: "Render a tiddler field or data index as wikitext.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				title: { type: "string", description: "Tiddler title" },
+				field: { type: "string", default: "text", description: "Field name (default: text)" },
+				index: { type: "string", description: "Data tiddler index (alternative to field)" },
+				output: { type: "string", enum: ["text/plain", "text/plain-formatted", "text/html"], default: "text/html", description: "Output type" }
+			},
+			required: ["title"]
+		}
+	},
+	{
 		name: "render_text",
 		description: "Render wikitext to plain text, HTML, or parse tree. Full macro/procedure context.",
 		inputSchema: {
