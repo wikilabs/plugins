@@ -1,5 +1,15 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.6.0 - 2026.04.07
+
+* `inspect_tw`: auto-reduce depth when result exceeds 10K chars
+* `run_filter`: show full titles instead of prefix-grouped tree
+* `render_tiddler`: add `mode` parameter (raw / viewtemplate)
+* `reload_tiddlers`: add `scope` parameter (tiddlers / shadows / all)
+* `inspect_tw`: allow `$tw.utils.*` functions in call whitelist
+* `inspect_tw`: auto-resolve path + call when path is an object
+* New `render_field` tool for rendering individual fields / data indices
+
 V 0.5.0 - 2026.04.02
 
 * initial release
