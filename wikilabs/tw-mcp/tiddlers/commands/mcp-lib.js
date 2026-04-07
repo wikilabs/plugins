@@ -53,8 +53,8 @@ function isPathAllowed(targetPath) {
 }
 
 function checkPathAllowed(targetPath) {
-	process.stderr.write("[tw-mcp] checkPathAllowed: " + path.resolve(targetPath) + " | allowedPaths: " + JSON.stringify(allowedPaths) + " | result: " + (isPathAllowed(targetPath) ? "ALLOWED" : "BLOCKED") + "\n");
 	if(!isPathAllowed(targetPath)) {
+		process.stderr.write("[tw-mcp] BLOCKED path: " + path.resolve(targetPath) + " | allowed: " + allowedPaths.join(", ") + "\n");
 		return {
 			isError: true,
 			content: [{ type: "text", text: "Path not allowed: " + path.resolve(targetPath) + ". Allowed directories: " + allowedPaths.join(", ") }]
@@ -1046,7 +1046,8 @@ function startAsPrimary(options) {
 		allowedPaths = options.allowedPaths;
 	} else if($tw.boot.wikiPath) {
 		var canonical = getCanonicalWikiPath() || $tw.boot.wikiPath;
-		allowedPaths = [
+		var pathSet = {};
+		var paths = [
 			$tw.boot.wikiTiddlersPath || path.resolve(canonical, "tiddlers"),
 			path.resolve(canonical, "files"),
 			path.resolve(canonical, "output"),
@@ -1054,6 +1055,14 @@ function startAsPrimary(options) {
 			path.resolve($tw.boot.wikiPath, "files"),
 			path.resolve($tw.boot.wikiPath, "output")
 		];
+		allowedPaths = [];
+		for(var pi = 0; pi < paths.length; pi++) {
+			var resolved = path.resolve(paths[pi]);
+			if(!pathSet[resolved]) {
+				pathSet[resolved] = true;
+				allowedPaths.push(resolved);
+			}
+		}
 	} else {
 		allowedPaths = null;
 	}
