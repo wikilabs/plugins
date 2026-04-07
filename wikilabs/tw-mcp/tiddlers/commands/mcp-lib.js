@@ -128,10 +128,11 @@ function dispatchMessage(line, send) {
 						"A single-file wiki has been loaded into memory but NOT yet extracted to disk.\n" +
 						"Your FIRST action should be:\n" +
 						"1. Call get_tiddler('$:/temp/mcp/html-import', detailed=true) to read the import analysis\n" +
-						"2. Present the proposed folder structure (FileSystemPaths rules) to the user and explain what each rule does\n" +
-						"3. Ask the user if the proposed structure is OK or if they want changes\n" +
-						"4. Once approved, call extract_html_wiki to write .tid files to disk\n" +
-						"5. If the user wants different rules, pass them as the fileSystemPaths parameter to extract_html_wiki"
+						"2. Present a summary of the proposed folder structure to the user\n" +
+						"3. Tell the user to visit the wiki in the browser to see the full list of rules (the tiddler 'Import — Proposed Folder Structure' opens automatically)\n" +
+						"4. Tell the user they can edit $:/config/FileSystemPaths directly in the browser before extraction\n" +
+						"5. Ask the user if the proposed structure is OK or if they want changes\n" +
+						"6. Once approved, call extract_html_wiki to write .tid files to disk (it reads the current $:/config/FileSystemPaths from the wiki)"
 						: "") +
 					"\n\n## Safety (CRITICAL)\n" +
 					"- NEVER modify, create, or delete tiddlers unless the user EXPLICITLY asks (create, edit, update, delete, rename, tag, untag). Words like 'list', 'show', 'find', 'search' are read-only — never write.\n" +

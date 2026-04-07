@@ -218,9 +218,17 @@ function initialize(htmlFilePath, wiki) {
 		"## Proposed rules",
 		""
 	];
-	for(var ri = 0; ri < analysis.ruleDescriptions.length; ri++) {
+	var maxExamples = 10;
+	var ruleCount = analysis.ruleDescriptions.length;
+	var showCount = Math.min(ruleCount, maxExamples);
+	for(var ri = 0; ri < showCount; ri++) {
 		explanation.push("- " + analysis.ruleDescriptions[ri]);
 		explanation.push("  `" + analysis.proposedRules[ri] + "`");
+	}
+	if(ruleCount > maxExamples) {
+		explanation.push("- ... and " + (ruleCount - maxExamples) + " more rules");
+		explanation.push("");
+		explanation.push("See [[Import — Proposed Folder Structure]] for the full list. You can review it in the browser.");
 	}
 	explanation.push("");
 	explanation.push("## Tiddler counts");
@@ -229,25 +237,13 @@ function initialize(htmlFilePath, wiki) {
 	explanation.push("- Library plugins (added to tiddlywiki.info): " + libraryPlugins.length);
 	explanation.push("- Custom plugins: " + customPlugins.length);
 	explanation.push("- Ignored (boot/core): " + ignoredCount);
-	if(Object.keys(analysis.tagCounts).length > 0) {
+	var totalTags = Object.keys(analysis.tagCounts).length;
+	var totalPrefixes = Object.keys(analysis.prefixCounts).length;
+	if(totalTags > 0 || totalPrefixes > 0) {
 		explanation.push("");
-		explanation.push("## All tags");
-		var allTags = Object.keys(analysis.tagCounts).sort(function(a, b) {
-			return analysis.tagCounts[b] - analysis.tagCounts[a];
-		});
-		for(var ati = 0; ati < allTags.length; ati++) {
-			explanation.push("- " + allTags[ati] + " (" + analysis.tagCounts[allTags[ati]] + ")");
-		}
-	}
-	if(Object.keys(analysis.prefixCounts).length > 0) {
-		explanation.push("");
-		explanation.push("## All title prefixes");
-		var allPrefixes = Object.keys(analysis.prefixCounts).sort(function(a, b) {
-			return analysis.prefixCounts[b] - analysis.prefixCounts[a];
-		});
-		for(var api = 0; api < allPrefixes.length; api++) {
-			explanation.push("- " + allPrefixes[api] + " (" + analysis.prefixCounts[allPrefixes[api]] + ")");
-		}
+		explanation.push("## Summary");
+		explanation.push("- " + totalTags + " unique tags found (" + analysis.proposedRules.filter(function(r) { return r.indexOf("[tag[") !== -1; }).length + " with " + MIN_GROUP_COUNT + "+ tiddlers → proposed as folders)");
+		explanation.push("- " + totalPrefixes + " title prefixes found (" + analysis.proposedRules.filter(function(r) { return r.indexOf("[prefix[") !== -1; }).length + " with " + MIN_GROUP_COUNT + "+ tiddlers → proposed as folders)");
 	}
 	// Store analysis tiddler
 	var analysisTiddler = new $tw.Tiddler({
@@ -263,6 +259,48 @@ function initialize(htmlFilePath, wiki) {
 		"proposed-filesystem-paths": analysis.proposedText
 	});
 	wiki.addTiddler(analysisTiddler);
+	// Create a visible tiddler with the full proposed rules (browsable in the wiki)
+	var fullRulesLines = [
+		"! Proposed Folder Structure",
+		"",
+		"These rules will be used by `$:/config/FileSystemPaths` to organize your tiddlers into subdirectories.",
+		"Each tiddler is tested against the rules in order — the first match determines the folder.",
+		"",
+		"!! Rules (" + ruleCount + ")",
+		""
+	];
+	for(var fri = 0; fri < analysis.ruleDescriptions.length; fri++) {
+		fullRulesLines.push("# " + analysis.ruleDescriptions[fri]);
+		fullRulesLines.push("#* `" + analysis.proposedRules[fri] + "`");
+	}
+	fullRulesLines.push("");
+	fullRulesLines.push("!! What to do");
+	fullRulesLines.push("");
+	fullRulesLines.push("# Review the rules above");
+	fullRulesLines.push("# Edit [[$:/config/FileSystemPaths]] in the browser if you want to change anything");
+	fullRulesLines.push("# Tell the AI assistant to proceed with extraction");
+	fullRulesLines.push("");
+	fullRulesLines.push("[[Full documentation|https://tiddlywiki.com/#Customising%20Tiddler%20File%20Naming]]");
+	var now = $tw.utils.stringifyDate(new Date());
+	wiki.addTiddler(new $tw.Tiddler({
+		title: "Import — Proposed Folder Structure",
+		text: fullRulesLines.join("\n"),
+		tags: "Import",
+		modified: now,
+		created: now
+	}));
+	// Create $:/config/FileSystemPaths so user can edit it in the browser before extraction
+	wiki.addTiddler(new $tw.Tiddler({
+		title: "$:/config/FileSystemPaths",
+		text: analysis.proposedText,
+		modified: now,
+		created: now
+	}));
+	// Set as default tiddler so it opens on startup in the browser
+	wiki.addTiddler(new $tw.Tiddler({
+		title: "$:/DefaultTiddlers",
+		text: "[[Import — Proposed Folder Structure]]"
+	}));
 	// Log summary to stderr
 	console.error("");
 	console.error("html-import: Loaded " + filePath);
@@ -300,12 +338,14 @@ function extractHandler(args) {
 	if(analysisTiddler.fields.status === "extracted") {
 		return shared.errorResult("Tiddlers have already been extracted to disk.");
 	}
-	// Determine FileSystemPaths
-	var fileSystemPathsText = args.fileSystemPaths || analysisTiddler.fields["proposed-filesystem-paths"];
+	// Determine FileSystemPaths: args override > user-edited tiddler > proposed
+	var fileSystemPathsText = args.fileSystemPaths
+		|| $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "")
+		|| analysisTiddler.fields["proposed-filesystem-paths"];
 	if(!fileSystemPathsText) {
 		return shared.errorResult("No FileSystemPaths rules available.");
 	}
-	// Create the FileSystemPaths config tiddler
+	// Update the FileSystemPaths config tiddler (in case args override was used)
 	$tw.wiki.addTiddler(new $tw.Tiddler({
 		title: "$:/config/FileSystemPaths",
 		text: fileSystemPathsText
