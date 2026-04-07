@@ -12,6 +12,7 @@ Ported from oh-my-pi (MIT, Can Bölük & Mario Zechner).
 
 var crypto = require("crypto");
 
+var HASH_SEP = ": ";
 var NIBBLE_STR = "ZPMQVRWSNKTXJBYH";
 var DICT = [];
 for(var i = 0; i < 256; i++) {
@@ -44,7 +45,7 @@ function formatHashLines(text) {
 	var result = [];
 	for(var i = 0; i < lines.length; i++) {
 		var num = i + 1;
-		result.push(formatLineTag(num, lines[i]) + ":" + lines[i]);
+		result.push(formatLineTag(num, lines[i]) + HASH_SEP + lines[i]);
 	}
 	return result.join("\n");
 }
@@ -101,9 +102,9 @@ function formatMismatchError(mismatches, fileLines) {
 		var hash = computeLineHash(lineNum, text);
 		var prefix = lineNum + "#" + hash;
 		if(mismatchMap[lineNum]) {
-			lines.push(">>> " + prefix + ":" + text);
+			lines.push(">>> " + prefix + HASH_SEP + text);
 		} else {
-			lines.push("    " + prefix + ":" + text);
+			lines.push("    " + prefix + HASH_SEP + text);
 		}
 	}
 	return lines.join("\n");
