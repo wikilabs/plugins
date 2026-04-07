@@ -41,7 +41,8 @@ var readTools = [
 			type: "object",
 			properties: {
 				title: { type: "string", description: "Tiddler title" },
-				type: { type: "string", enum: ["text/plain", "text/plain-formatted", "text/html"], default: "text/plain-formatted" }
+				type: { type: "string", enum: ["text/plain", "text/plain-formatted", "text/html"], default: "text/plain-formatted" },
+				mode: { type: "string", enum: ["raw", "viewtemplate"], default: "raw", description: "raw = type parser (default), viewtemplate = ViewTemplate body cascade" }
 			},
 			required: ["title"]
 		}
