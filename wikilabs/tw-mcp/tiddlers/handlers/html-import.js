@@ -320,16 +320,25 @@ function extractHandler(args) {
 	if(!tiddlersDir) {
 		return shared.errorResult("No wiki tiddlers path available.");
 	}
-	// Get all non-plugin tiddlers to extract
-	var allTitles = $tw.wiki.filterTiddlers("[all[tiddlers]!has[plugin-type]]");
+	// Get tiddlers to extract — same exclusions as $:/core/save/all
+	var allTitles = $tw.wiki.filterTiddlers(
+		"[all[tiddlers]!has[plugin-type]]" +
+		" -[prefix[$:/state/popup/]]" +
+		" -[prefix[$:/temp/]]" +
+		" -[prefix[$:/HistoryList]]" +
+		" -[[$:/boot/boot.css]]" +
+		" -[[$:/boot/boot.js]]" +
+		" -[[$:/boot/bootprefix.js]]" +
+		" -[[$:/library/sjcl.js]]" +
+		" -[is[system]type[application/javascript]library[yes]]" +
+		" -[status[pending]plugin-type[import]]"
+	);
 	var checkPathAllowed = shared.getCheckPathAllowed();
 	var filesWritten = 0;
 	var errors = [];
 	var directorySummary = {};
 	for(var i = 0; i < allTitles.length; i++) {
 		var title = allTitles[i];
-		// Skip temp tiddlers
-		if(title.indexOf("$:/temp/") === 0) continue;
 		// Skip tiddlers that already have fileInfo (already on disk)
 		if($tw.boot.files[title]) continue;
 		var tiddler = $tw.wiki.getTiddler(title);
