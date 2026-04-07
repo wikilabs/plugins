@@ -121,7 +121,9 @@ var readTools = [
 		description: "Re-read tiddlers from disk + report changes since last call.",
 		inputSchema: {
 			type: "object",
-			properties: {},
+			properties: {
+				scope: { type: "string", enum: ["tiddlers", "shadows", "all"], default: "tiddlers", description: "tiddlers = edition tiddlers (default), shadows = re-read plugins/core, all = both" }
+			},
 			required: []
 		}
 	},
