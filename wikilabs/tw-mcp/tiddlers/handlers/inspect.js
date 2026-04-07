@@ -293,9 +293,10 @@ module.exports = {
 					"mcp.heartbeat": true,
 					"httpServer.heartbeat": true
 				};
-				if(!safeCallFunctions[targetPath]) {
+				var isSafe = safeCallFunctions[targetPath] || targetPath.indexOf("utils.") === 0;
+				if(!isSafe) {
 					var safeList = Object.keys(safeCallFunctions).map(function(k) { return "$tw." + k; }).join(", ");
-					return { isError: true, content: [{ type: "text", text: "call is only allowed on safe read-only functions: " + safeList }] };
+					return { isError: true, content: [{ type: "text", text: "call is only allowed on safe read-only functions: " + safeList + ", $tw.utils.*" }] };
 				}
 				var parent = $tw;
 				if(targetPath) {
