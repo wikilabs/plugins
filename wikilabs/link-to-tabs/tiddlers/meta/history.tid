@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 3.2.0 - 2026-04-08
+
+* Stop shadowing core tabs macro — only override `tabs-tab` sub-macro
+* Add `wltc-is-shadow` CSS class for shadow tiddler tab icons
+
 V 3.1.0 - 2026-04-08
 
 * Fix muted colour for link icon

@@ -7,6 +7,52 @@ This plugin adds a little link icon to every tab.
 * Have a closer look at the "settings-tab" here or
 * Open the ''$:/ControlPanel -> Settings -> WikiLabs'' tab
 
-''Important:'' This plugin modifies a core module and templates
+''Important:'' This plugin overrides the core `tabs-tab` macro defined in [[$:/core/macros/tabs]]
 
-<ul><$list filter="[[$:/plugins/wikilabs/link-to-tabs]plugintiddlers[]prefix[$:/core/]] "><li><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></li></$list></ul>
+!! CSS Classes
+
+The link icon `<span>` element uses the following classes:
+
+|!Class |!Description |
+|`wltc-link-to-tab` |Base class — always present |
+|`wltc-is-shadow` |Tab tiddler is a shadow tiddler |
+
+!! Customisation Examples
+
+Add the CSS below to a stylesheet tiddler tagged `$:/tags/Stylesheet`.
+
+!!! Hide icons in sidebar tabs
+
+```css
+.tc-sidebar-tabs .wltc-link-to-tab {
+    display: none;
+}
+```
+
+!!! Style shadow tiddler tab icons differently
+
+```css
+.wltc-is-shadow svg {
+    color: <<colour muted-foreground>>;
+    opacity: 0.5;
+}
+```
+
+!!! Hide icons in tiddlers with a specific tag
+
+Use the `data-tags` attribute on `.tc-tiddler-view-frame`:
+
+```css
+[data-tags*="MyTag"].tc-tiddler-view-frame .wltc-link-to-tab {
+    display: none;
+}
+```
+
+!!! Resize icons in tiddlers with a specific tag
+
+```css
+[data-tags*="MyTag"].tc-tiddler-view-frame .tc-tab-selected + .wltc-link-to-tab svg {
+    width: 2.0em;
+    height: 2.0em;
+}
+```
