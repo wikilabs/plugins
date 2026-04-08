@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 3.0.4 - 2026-04-08
+
+* Remove nodemon dev-dependency
+
 V 3.0.3 - 2026-01-06
 
 * Fix performance regression using `<$testcase/>` widget
