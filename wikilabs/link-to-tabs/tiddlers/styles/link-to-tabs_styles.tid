@@ -19,6 +19,7 @@ type: text/vnd.tiddlywiki
 .wltc-link-to-tab svg{
   width: 1.4em;
   height: 1.4em;
+  color: <<colour muted-foreground>>;
 }
 
 .wltc-link-to-tab:hover {

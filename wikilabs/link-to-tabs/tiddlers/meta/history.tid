@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 3.1.0 - 2026-04-08
+
+* Fix muted colour for link icon
+* Update accessibility changes from core
+
 V 3.0.1 - 2024-05-23
 
 * Add stability badges
