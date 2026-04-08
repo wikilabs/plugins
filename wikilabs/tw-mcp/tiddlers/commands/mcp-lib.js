@@ -82,7 +82,9 @@ function jsonrpcError(id, code, message, data) {
 // --- Shared message dispatcher (used by stdio and pipe transports) ---
 
 function log(msg) {
-	process.stderr.write("[tw-mcp] " + msg + "\n");
+	var now = new Date();
+	var ts = now.toISOString().slice(11, 23);
+	process.stderr.write("[tw-mcp " + ts + "] " + msg + "\n");
 }
 
 function dispatchMessage(line, send) {
