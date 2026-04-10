@@ -100,10 +100,10 @@ function show(vars, anchorX, anchorY, originElement, widget) {
 	var headerLabel = el("span", null, "Variables in scope (" + vars.length + ")");
 
 	// Origin tracking
-	var originSourcePos = originElement && originElement.getAttribute("data-source-pos");
-	var originSourceStart = originElement && originElement.getAttribute("data-source-start");
-	var originSourceContext = originElement && (originElement.getAttribute("data-source-context") || "");
-	var originSourceCaller = originElement && (originElement.getAttribute("data-source-caller") || "");
+	var originSourcePos = originElement && originElement.getAttribute("data-pos");
+	var originSourceRange = originElement && originElement.getAttribute("data-range");
+	var originSourceContext = originElement && (originElement.getAttribute("data-ctx") || "");
+	var originSourceCaller = originElement && (originElement.getAttribute("data-caller") || "");
 	var originTagName = originElement && originElement.tagName;
 	var disconnected = false;
 	var disconnectedBadge = el("span", "wltc-disconnected-badge", " \u26A0 disconnected");
@@ -140,14 +140,14 @@ function show(vars, anchorX, anchorY, originElement, widget) {
 			return false;
 		}
 		if(!originSourcePos) return false;
-		var all = document.querySelectorAll("[data-source-pos]");
+		var all = document.querySelectorAll("[data-pos]");
 		for(var ci = 0; ci < all.length; ci++) {
 			var c = all[ci];
-			if(c.getAttribute("data-source-pos") !== originSourcePos) continue;
+			if(c.getAttribute("data-pos") !== originSourcePos) continue;
 			if(originTagName && c.tagName !== originTagName) continue;
-			if(originSourceStart && c.getAttribute("data-source-start") !== originSourceStart) continue;
-			if((c.getAttribute("data-source-context") || "") !== originSourceContext) continue;
-			if((c.getAttribute("data-source-caller") || "") !== originSourceCaller) continue;
+			if(originSourceRange && c.getAttribute("data-range") !== originSourceRange) continue;
+			if((c.getAttribute("data-ctx") || "") !== originSourceContext) continue;
+			if((c.getAttribute("data-caller") || "") !== originSourceCaller) continue;
 			if(!isElementConnected(c)) continue;
 			originElement = c;
 			if(originElement._twWidget) widget = originElement._twWidget;

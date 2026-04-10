@@ -4,7 +4,7 @@ type: application/javascript
 module-type: library
 
 Source Viewer: a floating, draggable, resizable modal that accumulates
-source code entries from data-source-pos right-click actions.
+source code entries from data-pos right-click actions.
 
 \*/
 

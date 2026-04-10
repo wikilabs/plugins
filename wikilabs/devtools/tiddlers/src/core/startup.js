@@ -3,7 +3,7 @@ title: $:/plugins/wikilabs/devtools/startup.js
 type: application/javascript
 module-type: startup
 
-Source position tracking plugin. Adds data-source-pos attributes to rendered
+Source position tracking plugin. Adds data-pos attributes to rendered
 HTML elements and links, tracing each back to its source tiddler and line range.
 
 All tracking logic lives in this plugin — no core modifications required.
@@ -108,7 +108,7 @@ function buildCallerChain(widget) {
 	return chain;
 }
 
-// Build the data-source-pos value with line numbers: L{start}-L{end}@tiddlerTitle
+// Build the data-pos value with line numbers: L{start}-L{end} @ tiddlerTitle
 function buildPosInfo(widget) {
 	var ptn = widget.parseTreeNode;
 	if(!ptn || ptn.start === undefined) {
@@ -211,25 +211,24 @@ exports.startup = function() {
 		if($tw.wiki.trackSourcePositions) {
 			var posInfo = buildPosInfo(widget);
 			if(posInfo) {
-				domNode.setAttribute("data-source-pos", posInfo);
-				// Store raw char positions for precise editor selection
+				domNode.setAttribute("data-pos", posInfo);
+				// Store raw char range for precise editor selection
 				// Offset adjusts for macro body position within the tiddler text
 				var ptn = widget.parseTreeNode;
 				var srcInfo = getSourceInfo(widget);
 				var charOffset = srcInfo ? srcInfo.offset : 0;
 				if(ptn && ptn.start !== undefined) {
-					domNode.setAttribute("data-source-start", ptn.start + charOffset);
-					domNode.setAttribute("data-source-end", (ptn.end || ptn.start) + charOffset);
+					domNode.setAttribute("data-range", (ptn.start + charOffset) + "," + ((ptn.end || ptn.start) + charOffset));
 				}
 				var callers = buildCallerChain(widget);
 				// Add currentTiddler context so repeated list items can be distinguished
 				var ct = widget.getVariable("currentTiddler");
 				var info = getSourceInfo(widget);
 				if(ct && info && ct !== info.title) {
-					domNode.setAttribute("data-source-context", ct);
+					domNode.setAttribute("data-ctx", ct);
 				}
 				if(callers.length > 0) {
-					domNode.setAttribute("data-source-caller", callers.map(function(c) { return "\u2190 " + c; }).join("\n"));
+					domNode.setAttribute("data-caller", callers.map(function(c) { return "\u2190 " + c; }).join("\n"));
 				}
 			}
 			// Store widget back-reference for variable inspection
@@ -237,11 +236,11 @@ exports.startup = function() {
 		}
 		return domNode;
 	};
-	// Hook: add data-source-pos to element DOM nodes
+	// Hook: add data-pos to element DOM nodes
 	$tw.hooks.addHook("th-dom-rendering-element", addSourcePos);
-	// Hook: add data-source-pos to link DOM nodes
+	// Hook: add data-pos to link DOM nodes
 	$tw.hooks.addHook("th-dom-rendering-link", addSourcePos);
-	// Hook: add data-source-pos to codeblock DOM nodes
+	// Hook: add data-pos to codeblock DOM nodes
 	$tw.hooks.addHook("th-dom-rendering-codeblock", addSourcePos);
 	// Monkey-patch transclude widget to set sourceContext for position attribution
 	var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;

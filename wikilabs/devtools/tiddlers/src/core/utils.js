@@ -4,7 +4,7 @@ type: application/javascript
 module-type: library
 
 Shared utilities for source position formatting and parsing.
-Single source of truth for the data-source-pos attribute format.
+Single source of truth for the data-pos attribute format.
 
 \*/
 
@@ -12,7 +12,7 @@ Single source of truth for the data-source-pos attribute format.
 
 var SEPARATOR = " @ ";
 
-// Format a source position into the data-source-pos attribute value
+// Format a source position into the data-pos attribute value
 // Returns "L{start}-L{end} @ tiddlerTitle" or "L{start} @ tiddlerTitle" for single-line
 exports.format = function(startLine, endLine, title) {
 	var pos = (startLine === endLine) ? "L" + startLine : "L" + startLine + "-L" + endLine;
@@ -22,7 +22,7 @@ exports.format = function(startLine, endLine, title) {
 	return pos;
 };
 
-// Parse a data-source-pos attribute value
+// Parse a data-pos attribute value
 // Returns { range: "L81-L84", tiddler: "$:/cards/procedures" } or null
 exports.parse = function(posString) {
 	if(!posString) return null;
@@ -213,20 +213,27 @@ exports.makeExpandable = function(getText, opts) {
 	};
 };
 
-// Find nearest ancestor with data-source-pos and parse it
+// Find nearest ancestor with data-pos and parse it
 exports.findSourcePos = function(target) {
 	var node = target;
 	while(node && node !== document.body) {
-		var pos = node.getAttribute && node.getAttribute("data-source-pos");
+		var pos = node.getAttribute && node.getAttribute("data-pos");
 		if(pos) {
 			var parsed = exports.parse(pos);
 			if(parsed && parsed.tiddler) {
+				var range = node.getAttribute("data-range");
+				var charStart = NaN, charEnd = NaN;
+				if(range) {
+					var parts = range.split(",");
+					charStart = parseInt(parts[0], 10);
+					charEnd = parseInt(parts[1], 10);
+				}
 				return {
 					element: node, raw: pos, range: parsed.range, tiddler: parsed.tiddler,
-					charStart: parseInt(node.getAttribute("data-source-start"), 10),
-					charEnd: parseInt(node.getAttribute("data-source-end"), 10),
-					caller: node.getAttribute("data-source-caller") || null,
-					context: node.getAttribute("data-source-context") || null
+					charStart: charStart,
+					charEnd: charEnd,
+					caller: node.getAttribute("data-caller") || null,
+					context: node.getAttribute("data-ctx") || null
 				};
 			}
 		}

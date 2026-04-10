@@ -2,11 +2,11 @@ title: $:/plugins/wikilabs/devtools/readme
 
 !! Source Position Tracking Plugin
 
-This plugin adds `data-source-pos` attributes to rendered HTML elements and links, tracing each back to its source tiddler and line range. Works across transclusion boundaries — macros, procedures, and list widgets all report their correct source.
+This plugin adds `data-pos` attributes to rendered HTML elements and links, tracing each back to its source tiddler and line range. Works across transclusion boundaries — macros, procedures, and list widgets all report their correct source.
 
 !!! Format
 
-The `data-source-pos` attribute value is: `L{start}-L{end} @ tiddlerTitle` (multi-line) or `L{line} @ tiddlerTitle` (single-line).
+The `data-pos` attribute value is: `L{start}-L{end} @ tiddlerTitle` (multi-line) or `L{line} @ tiddlerTitle` (single-line).
 
 Line numbers are file-ready — they include the `.tid` file header offset and macro body offset.
 
@@ -46,9 +46,9 @@ A floating, draggable, resizable panel that accumulates source code entries. Cli
 
 The plugin uses TiddlyWiki's hook system — zero overhead when disabled:
 
-* `th-dom-rendering-element` hook — adds `data-source-pos` to HTML elements
-* `th-dom-rendering-link` hook — adds `data-source-pos` to link elements
-* `th-dom-rendering-codeblock` hook — adds `data-source-pos` to code blocks
+* `th-dom-rendering-element` hook — adds `data-pos` to HTML elements
+* `th-dom-rendering-link` hook — adds `data-pos` to link elements
+* `th-dom-rendering-codeblock` hook — adds `data-pos` to code blocks
 * Monkey-patches the transclude widget to track source context across transclusion boundaries
 
 The only core changes required are `th-dom-rendering-link` hook call in `link.js` and `th-dom-rendering-codeblock` hook call in `codeblock.js`.

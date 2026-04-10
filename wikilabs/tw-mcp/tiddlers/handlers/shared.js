@@ -311,3 +311,4 @@ exports.MAX_TEXT_LENGTH = MAX_TEXT_LENGTH;
 exports.textResult = textResult;
 exports.errorResult = errorResult;
 exports.persistTiddler = persistTiddler;
+exports.SOURCE_POS_SEPARATOR = SOURCE_POS_SEPARATOR;

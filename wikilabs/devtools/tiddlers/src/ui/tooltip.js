@@ -31,7 +31,7 @@ function setup() {
 		hoverTimer = setTimeout(function() {
 			hoverTimer = null;
 			var text = info.raw;
-			var context = info.element.getAttribute("data-source-context");
+			var context = info.element.getAttribute("data-ctx");
 			if(context) text += "  \u00BB " + context;
 			if(info.caller) {
 				var callerLines = info.caller.split("\n");

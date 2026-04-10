@@ -11,6 +11,65 @@ MCP tool handlers for inspection and analysis operations.
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
+// Post-process inspect_pos DOM: replace verbose data-pos attributes
+// with compact p="idx:lines" format. Returns title index header + innerHTML.
+// Browser devtools keeps the full format; this compaction is MCP-only.
+var SVG_TAGS = {"svg":1,"path":1,"g":1,"circle":1,"rect":1,"line":1,"polygon":1,
+	"polyline":1,"ellipse":1,"use":1,"defs":1,"marker":1,"clipPath":1,"text":1,"tspan":1};
+
+function compactPositions(container) {
+	var titleMap = [];
+	var titleIndex = {};
+	var walk = function(node, inSvg) {
+		if(!node.children) return;
+		for(var i = 0; i < node.children.length; i++) {
+			var child = node.children[i];
+			if(!child.tag) continue;
+			var isSvg = inSvg || SVG_TAGS[child.tag];
+			// Strip devtools attributes (added by startup.js hooks if devtools plugin is loaded)
+			child.removeAttribute("data-range");
+			child.removeAttribute("data-ctx");
+			child.removeAttribute("data-caller");
+			var pos = child.getAttribute && child.getAttribute("data-pos");
+			if(pos) {
+				if(isSvg) {
+					child.removeAttribute("data-pos");
+				} else {
+					var sepIdx = pos.indexOf(shared.SOURCE_POS_SEPARATOR);
+					if(sepIdx !== -1) {
+						var range = pos.slice(0, sepIdx);
+						var title = pos.slice(sepIdx + shared.SOURCE_POS_SEPARATOR.length);
+						var idx;
+						if(titleIndex[title] !== undefined) {
+							idx = titleIndex[title];
+						} else {
+							idx = titleMap.length;
+							titleIndex[title] = idx;
+							titleMap.push(title);
+						}
+						range = range.replace(/L/g, "");
+						child.removeAttribute("data-pos");
+						child.setAttribute("p", idx + ":" + range);
+					} else {
+						child.removeAttribute("data-pos");
+					}
+				}
+			}
+			walk(child, isSvg);
+		}
+	};
+	walk(container, false);
+	var header = "";
+	if(titleMap.length > 0) {
+		var parts = [];
+		for(var i = 0; i < titleMap.length; i++) {
+			parts.push(i + "=" + titleMap[i]);
+		}
+		header = "[" + parts.join(" ") + "]\n";
+	}
+	return header + container.innerHTML;
+}
+
 module.exports = {
 	"inspect_tree": function(args) {
 		if(args.text && args.text.length > shared.MAX_TEXT_LENGTH) {
@@ -192,7 +251,7 @@ module.exports = {
 			var posHook = function(domNode, widget) {
 				if($tw.wiki.trackSourcePositions) {
 					var info = posBuildInfo(widget);
-					if(info) domNode.setAttribute("data-source-pos", info);
+					if(info) domNode.setAttribute("data-pos", info);
 				}
 				return domNode;
 			};
@@ -232,7 +291,7 @@ module.exports = {
 				posWidget.sourceContext = args.context || "(inline)";
 				var posContainer = $tw.fakeDocument.createElement("div");
 				posWidget.render(posContainer, null);
-				return shared.textResult( posContainer.innerHTML );
+				return shared.textResult( compactPositions(posContainer) );
 			} finally {
 				$tw.wiki.trackSourcePositions = false;
 				$tw.hooks.removeHook("th-dom-rendering-element", posHook);

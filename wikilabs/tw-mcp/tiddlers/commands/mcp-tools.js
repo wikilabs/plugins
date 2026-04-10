@@ -95,7 +95,7 @@ var readTools = [
 	},
 	{
 		name: "inspect_pos",
-		description: "Render wikitext to HTML with data-source-pos attributes (file-ready line numbers). Use with inspect_scope.",
+		description: "Render wikitext to HTML with p= position attributes and title index header. Use with inspect_scope.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -158,7 +158,7 @@ var readTools = [
 	},
 	{
 		name: "inspect_scope",
-		description: "Variable scope at a source position. Shows local vars and used globals. Use data-source-pos from inspect_pos.",
+		description: "Variable scope at a source position. Shows local vars and used globals. Use p= positions from inspect_pos.",
 		inputSchema: {
 			type: "object",
 			properties: {
