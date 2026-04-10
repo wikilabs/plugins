@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.8.0 - 2026.04.10
+
+* `inspect_pos`: compact output format — `p="idx:lines"` with title index header
+* `inspect_pos`: strip SVG elements and devtools-only attributes (`data-range`, `data-ctx`, `data-caller`)
+* Rename: `data-source-pos` → `data-pos` across both plugins
+* `get_wiki_info`: fix empty Settings section (use direct settings list instead of `links[]` filter)
+
 V 0.7.0 - 2026.04.07
 
 * Single-file wiki import: `--mcp file=wiki.html` with `extract_html_wiki` tool
