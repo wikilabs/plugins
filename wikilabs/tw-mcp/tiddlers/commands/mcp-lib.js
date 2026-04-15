@@ -87,6 +87,30 @@ function log(msg) {
 	process.stderr.write("[tw-mcp " + ts + "] " + msg + "\n");
 }
 
+// Rolling history of recent requests so we can identify what was cancelled.
+// Map: requestId -> { method, toolName, at }
+var requestHistory = Object.create(null);
+var requestHistoryOrder = [];
+var REQUEST_HISTORY_SIZE = 50;
+
+function recordRequest(id, method, toolName) {
+	if(id === undefined || id === null) return;
+	requestHistory[id] = { method: method, toolName: toolName, at: Date.now() };
+	requestHistoryOrder.push(id);
+	while(requestHistoryOrder.length > REQUEST_HISTORY_SIZE) {
+		var old = requestHistoryOrder.shift();
+		delete requestHistory[old];
+	}
+}
+
+function describeRequest(id) {
+	var entry = requestHistory[id];
+	if(!entry) return "unknown (id=" + id + ")";
+	var elapsed = Date.now() - entry.at;
+	var name = entry.toolName ? entry.method + " " + entry.toolName : entry.method;
+	return name + " (id=" + id + ", " + elapsed + "ms ago)";
+}
+
 function dispatchMessage(line, send) {
 	var parsed;
 	try {
@@ -101,7 +125,9 @@ function dispatchMessage(line, send) {
 		if(parsed.method === "notifications/initialized") {
 			log("Client initialized");
 		} else if(parsed.method === "notifications/cancelled") {
-			log("Request cancelled: " + JSON.stringify(parsed.params));
+			var params = parsed.params || {};
+			var reason = params.reason || "no reason given";
+			log("Request cancelled: " + describeRequest(params.requestId) + " — reason: " + reason);
 		} else if(parsed.method === "notifications/takeover-request") {
 			handleTakeoverRequest(parsed.params);
 		}
@@ -110,6 +136,8 @@ function dispatchMessage(line, send) {
 
 	var id = parsed.id;
 	var method = parsed.method;
+	var toolName = (method === "tools/call" && parsed.params) ? parsed.params.name : null;
+	recordRequest(id, method, toolName);
 
 	switch(method) {
 		case "initialize":
