@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.8.1 - 2026.04.15
+
+* Fix `put_tiddler` silent failure on new tiddlers (0-byte file, false-success response)
+* Improve cancellation log to show method + tool name + elapsed time
+
 V 0.8.0 - 2026.04.10
 
 * `inspect_pos`: compact output format — `p="idx:lines"` with title index header
