@@ -264,35 +264,74 @@ function errorResult(msg) {
 
 function persistTiddler(tiddler, title, action) {
 	var checkPathAllowed = getCheckPathAllowed();
-	$tw.wiki.addTiddler(tiddler);
 	if($tw.boot.wikiTiddlersPath) {
 		try {
-			var pathFilters, extFilters;
-			if($tw.wiki.tiddlerExists("$:/config/FileSystemPaths")) {
-				pathFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "").split("\n");
-			}
-			if($tw.wiki.tiddlerExists("$:/config/FileSystemExtensions")) {
-				extFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "").split("\n");
-			}
+			// Read FileSystemPaths / FileSystemExtensions — use getTiddlerText
+			// so shadow tiddlers from the filesystem plugin are picked up too.
+			var fspText = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "");
+			var fseText = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "");
+			var pathFilters = fspText ? fspText.split("\n") : undefined;
+			var extFilters = fseText ? fseText.split("\n") : undefined;
+			// Compute filepath BEFORE addTiddler, passing overwrite:true so the
+			// uniquifier doesn't pick a _1/_2 suffix for an existing target file.
+			var baseFileInfo = $tw.boot.files[title] ? $tw.boot.files[title] : {};
+			baseFileInfo.overwrite = true;
+			// Temporarily seed the tiddler into a fresh filter source so pathFilters
+			// can evaluate against the tiddler's fields (tags, etc.) even before it
+			// is added to $tw.wiki. generateTiddlerFileInfo only needs the wiki for
+			// filter evaluation; addTiddler itself is done below.
 			var fileInfo = $tw.utils.generateTiddlerFileInfo(tiddler, {
 				directory: $tw.boot.wikiTiddlersPath,
 				pathFilters: pathFilters,
 				extFilters: extFilters,
 				wiki: $tw.wiki,
-				fileInfo: $tw.boot.files[title] || {}
+				fileInfo: baseFileInfo
 			});
 			var pathDenied = checkPathAllowed(fileInfo.filepath);
 			if(pathDenied) {
-				$tw.wiki.deleteTiddler(title);
 				return pathDenied;
 			}
-			$tw.utils.saveTiddlerToFileSync(tiddler, fileInfo);
+			// Pre-seed $tw.boot.files so the syncadaptor, when it fires on addTiddler,
+			// sees our resolved fileInfo and doesn't pick a different path.
 			$tw.boot.files[title] = fileInfo;
+			// Add to the in-memory wiki.
+			$tw.wiki.addTiddler(tiddler);
+			// Synchronous write — deterministic result, independent of the syncer.
+			$tw.utils.saveTiddlerToFileSync(tiddler, fileInfo);
+			// Verify: read back the file and confirm the title header is present.
+			// Catches both 0-byte writes and content that gets truncated by a racing
+			// async syncadaptor save before we report success.
+			var verified = false;
+			var content;
+			try {
+				content = fs.readFileSync(fileInfo.filepath, "utf8");
+				verified = content.length > 0 && content.indexOf("title: " + title) !== -1;
+			} catch(e) {
+				content = null;
+			}
+			if(!verified) {
+				// One retry: write again. The syncer only fires once per addTiddler,
+				// so a second sync write is not racing with another async save.
+				try { $tw.utils.saveTiddlerToFileSync(tiddler, fileInfo); } catch(e) {}
+				try {
+					content = fs.readFileSync(fileInfo.filepath, "utf8");
+					verified = content.length > 0 && content.indexOf("title: " + title) !== -1;
+				} catch(e) {}
+			}
+			if(!verified) {
+				// Roll back: remove the tiddler and the bad file.
+				try { fs.unlinkSync(fileInfo.filepath); } catch(e) {}
+				$tw.wiki.deleteTiddler(title);
+				delete $tw.boot.files[title];
+				return errorResult("Tiddler " + action + " failed: file at " + fileInfo.filepath + " did not contain expected content after save (size=" + (content ? content.length : "missing") + "). Store and filesystem rolled back.");
+			}
 			return textResult("Tiddler " + action + ": " + title + " -> " + fileInfo.filepath);
 		} catch(e) {
 			return errorResult("Tiddler " + action + " in store but failed to save to disk: " + e.message);
 		}
 	}
+	// No wiki tiddlers path — still add to in-memory store.
+	$tw.wiki.addTiddler(tiddler);
 	return textResult("Tiddler " + action + " in store only (no wiki tiddlers path): " + title);
 }
 
