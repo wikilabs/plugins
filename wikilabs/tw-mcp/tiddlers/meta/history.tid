@@ -1,5 +1,13 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.8.2 - 2026.04.18
+
+* CLI logs: titled takeover block with elapsed time
+* Collapse per-client connect/auth/init into one `Client ready` line
+* Tag former primary reconnecting as proxy with `[former-primary]`
+* Shorten repeated pipe paths to `pipe:…<tail>`
+* `mode: READONLY` / `mode: readwrite` replaces `readonly: true/false`
+
 V 0.8.1 - 2026.04.15
 
 * Fix `put_tiddler` silent failure on new tiddlers (0-byte file, false-success response)

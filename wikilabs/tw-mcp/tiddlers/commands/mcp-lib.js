@@ -87,6 +87,32 @@ function log(msg) {
 	process.stderr.write("[tw-mcp " + ts + "] " + msg + "\n");
 }
 
+// Shorten pipe paths after the first mention so repeated log lines stay readable.
+var pipePathFullyShown = false;
+function fmtPipe(p) {
+	if(!p) return p;
+	if(!pipePathFullyShown) {
+		pipePathFullyShown = true;
+		return p;
+	}
+	var idx = p.lastIndexOf("tiddlywiki-mcp-");
+	if(idx < 0) return p;
+	var tail = p.slice(idx + "tiddlywiki-mcp-".length);
+	if(tail.length > 24) {
+		tail = "…" + tail.slice(-22);
+	}
+	return "pipe:" + tail;
+}
+
+// Suppress the redundant "Initialized" log for pipe clients — the auth log already covers it.
+var suppressNextInitLog = false;
+
+// Readonly is the default but surprising — most expect RW from a debug tool.
+// Render READONLY prominently so users notice when writes are disabled.
+function fmtMode() {
+	return "mode: " + (readonlyMode ? "READONLY" : "readwrite");
+}
+
 // Rolling history of recent requests so we can identify what was cancelled.
 // Map: requestId -> { method, toolName, at }
 var requestHistory = Object.create(null);
@@ -186,7 +212,11 @@ function dispatchMessage(line, send) {
 					"\n## Filters\n" +
 					"- Narrowing first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers)prefix[$:/config/]]'."
 			}));
-			log("Initialized (protocol " + PROTOCOL_VERSION + ", readonly: " + readonlyMode + ")");
+			if(suppressNextInitLog) {
+				suppressNextInitLog = false;
+			} else {
+				log("Initialized (protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ")");
+			}
 			break;
 
 		case "ping":
@@ -384,8 +414,7 @@ function startPipeServer() {
 
 	var pipeServer = net.createServer(function(socket) {
 		var clientId = "pipe-" + Date.now();
-		var clientSuffix = ""; // will be set to " @<label>" after auth
-		log("Pipe client connected: " + clientId);
+		var clientSuffix = ""; // will be set to " @<label>[role]" after auth
 
 		var send = function(msg) {
 			if(!socket.destroyed) {
@@ -430,36 +459,42 @@ function startPipeServer() {
 				return;
 			}
 			authenticated = true;
-			// Append PID to clientId, keep label separate so it's always last
+			// Append PID to clientId, keep label/role separate so they're always last
 			var clientPid = parsed.params && parsed.params._pid;
 			var clientLabel = parsed.params && parsed.params._label;
+			var clientRole = parsed.params && parsed.params._role;
 			if(clientPid) {
 				clientId = clientId + " (PID " + clientPid + ")";
 			}
 			if(clientLabel) {
 				clientSuffix = " @" + clientLabel;
 			}
-			log("Client " + clientId + " authenticated" + clientSuffix);
+			if(clientRole) {
+				clientSuffix = clientSuffix + " [" + clientRole + "]";
+			}
+			log("Client ready: " + clientId + clientSuffix + " (protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ")");
 			// Register in client registry for broadcast
 			pipeClients[clientId] = { send: sendFn, socket: socket };
+			// Suppress the redundant per-client "Initialized" log — the line above already covers it
+			suppressNextInitLog = true;
 			// Forward the initialize message to the normal dispatcher
 			dispatchMessage(line, sendFn);
 		};
 
 		attachStreamHandler(socket, send, function() {
 			delete pipeClients[clientId];
-			log("Pipe client disconnected: " + clientId + clientSuffix);
+			log("Client gone: " + clientId + clientSuffix);
 		}, authenticatedDispatch);
 
 		socket.on("error", function(err) {
 			delete pipeClients[clientId];
-			log("Pipe client error (" + clientId + "): " + err.message + clientSuffix);
+			log("Client error: " + clientId + clientSuffix + " — " + err.message);
 		});
 	});
 
 	pipeServer.on("error", function(err) {
 		if(err.code === "EADDRINUSE") {
-			log("Pipe already in use: " + pipePath + " — another MCP server may be running for this wiki");
+			log("Pipe already in use: " + fmtPipe(pipePath) + " — another MCP server may be running for this wiki");
 		} else {
 			log("Pipe server error: " + err.message);
 		}
@@ -501,7 +536,7 @@ function startPipeServer() {
 			return;
 		}
 		pipeServer.listen(pipePath, function() {
-			log("Pipe server listening: " + pipePath);
+			log("Pipe server listening: " + fmtPipe(pipePath));
 			// Restrict socket permissions on Unix to owner only
 			if(process.platform !== "win32") {
 				try {
@@ -617,14 +652,15 @@ function waitForNewPrimary(expectedPid) {
 var stdinRelay = null;
 
 function transitionToProxy(newPrimary) {
-	log("Stepping down to PROXY → new primary (PID " + newPrimary.pid + ") at " + newPrimary.pipe + (newPrimary.label ? " @" + newPrimary.label : ""));
+	log("Stepping down to PROXY → new primary (PID " + newPrimary.pid + ") at " + fmtPipe(newPrimary.pipe) + (newPrimary.label ? " @" + newPrimary.label : ""));
 	$tw.mcp.role = "proxy";
 	takeoverInProgress = false;
 
 	// Connect to new primary's pipe
 	var proxySocket = net.createConnection(newPrimary.pipe, function() {
 		log("Transition: connected to new primary");
-		// Send initialize with auth token to authenticate
+		// Send initialize with auth token to authenticate.
+		// _role: "former-primary" tells the new primary we're the old one reconnecting as proxy.
 		var initMsg = JSON.stringify({
 			jsonrpc: "2.0",
 			id: "transition-init",
@@ -633,7 +669,8 @@ function transitionToProxy(newPrimary) {
 				protocolVersion: PROTOCOL_VERSION,
 				_auth_token: newPrimary.token,
 				_pid: process.pid,
-				_label: serverLabel
+				_label: serverLabel,
+				_role: "former-primary"
 			}
 		});
 		proxySocket.write(initMsg + "\n");
@@ -726,10 +763,11 @@ function startProxyMode(discovery) {
 
 	var takingOver = false; // true when we received a takeover notification (other proxies)
 	var initiatedTakeover = false; // true when WE requested the takeover
+	var takeoverStartedAt = 0; // ms timestamp for elapsed-time reporting
 	var currentPrimaryPid = discovery.pid;
 
 	$tw.mcp.role = "proxy";
-	log("Server started as PROXY (PID " + process.pid + ", readonly: " + readonlyMode + ") → primary (PID " + discovery.pid + ") at " + pipePath + (serverLabel ? " @" + serverLabel : ""));
+	log("Server started as PROXY (PID " + process.pid + ", " + fmtMode() + ") → primary (PID " + discovery.pid + ") at " + fmtPipe(pipePath) + (serverLabel ? " @" + serverLabel : ""));
 
 	// --- Pipe connection to primary ---
 	var proxyAuthenticated = false; // true after our self-init is ack'd
@@ -831,7 +869,7 @@ function startProxyMode(discovery) {
 	});
 
 	pipeSocket.on("end", function() {
-		log("Proxy: primary disconnected");
+		log("Proxy: primary disconnected" + (initiatedTakeover ? " (stepping up)" : ""));
 		handlePrimaryDisconnect();
 	});
 
@@ -956,7 +994,11 @@ function startProxyMode(discovery) {
 
 	function initiateTakeover() {
 		initiatedTakeover = true;
-		log("Proxy: HTTP server detected, initiating takeover");
+		takeoverStartedAt = Date.now();
+		log("── Takeover initiated ──");
+		log("   reason: --listen (HTTP server) detected in this process");
+		log("   old primary: PID " + currentPrimaryPid);
+		log("   new primary: PID " + process.pid + (serverLabel ? " @" + serverLabel : ""));
 
 		// Send takeover request to current primary
 		var request = JSON.stringify({
@@ -1002,6 +1044,8 @@ function startProxyMode(discovery) {
 		};
 		$tw.mcp.role = "primary";
 		log("Server started as PRIMARY (PID " + process.pid + ")" + (serverLabel ? " @" + serverLabel : ""));
+		var elapsed = Date.now() - takeoverStartedAt;
+		log("── Takeover complete (" + elapsed + "ms) ──");
 	}
 
 	// --- Relay: stdin -> pipe (swappable via proxyStdinHandler for takeover) ---
@@ -1124,7 +1168,7 @@ function startAsPrimary(options) {
 	currentPipeServer = startPipeServer();
 
 	$tw.mcp.role = "primary";
-	log("Server started as PRIMARY (PID " + process.pid + ", protocol " + PROTOCOL_VERSION + ", readonly: " + readonlyMode + ", filesystem: " + !!$tw.syncadaptor + ")" + (serverLabel ? " @" + serverLabel : ""));
+	log("Server started as PRIMARY (PID " + process.pid + ", protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ", filesystem: " + !!$tw.syncadaptor + ")" + (serverLabel ? " @" + serverLabel : ""));
 	if(allowedPaths) {
 		log("Allowed paths:\n  - " + allowedPaths.join("\n  - "));
 	}
