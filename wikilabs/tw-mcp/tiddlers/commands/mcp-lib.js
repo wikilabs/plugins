@@ -1174,10 +1174,33 @@ function startAsPrimary(options) {
 	}
 }
 
+// Detect IDE-spawned process and derive a workspace tag so instances launched
+// from different VSCode windows are distinguishable in logs and heartbeats.
+function deriveIDEWorkspaceTag() {
+	var env = process.env;
+	var fromIDE = !!(env.VSCODE_PID || env.VSCODE_IPC_HOOK || env.TERM_PROGRAM === "vscode" || env.CLAUDECODE || env.CLAUDE_CODE_ENTRYPOINT);
+	if(!fromIDE) {
+		return null;
+	}
+	var tag = path.basename(process.cwd());
+	var wikiPath = $tw && $tw.boot && $tw.boot.wikiPath;
+	if(wikiPath) {
+		var wikiBase = path.basename(path.resolve(wikiPath));
+		if(wikiBase && wikiBase !== tag) {
+			tag = tag + "/" + wikiBase;
+		}
+	}
+	return tag || null;
+}
+
 function startMCPServer(options) {
 	options = options || {};
 	readonlyMode = !!options.readonly;
 	serverLabel = options.label || null;
+	var ideTag = deriveIDEWorkspaceTag();
+	if(ideTag) {
+		serverLabel = serverLabel ? (serverLabel + ":" + ideTag) : ideTag;
+	}
 
 	// Expose MCP state on $tw so other commands (e.g. --listen) can discover it
 	$tw.mcp = {

@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.8.3 - 2026.04.18
+
+* Append workspace tag to label when launched from an IDE
+
 V 0.8.2 - 2026.04.18
 
 * CLI logs: titled takeover block with elapsed time
