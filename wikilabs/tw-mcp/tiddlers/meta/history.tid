@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.8.4 - 2026.04.20
+
+* `inspect_tree`: always return the JSON tree (was hidden when text had links)
+* Cleaner MCP instruction text: better tool-selection hints, fixed broken filter examples
+
 V 0.8.3 - 2026.04.18
 
 * Append workspace tag to label when launched from an IDE
