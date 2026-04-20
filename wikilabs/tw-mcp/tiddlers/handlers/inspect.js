@@ -159,9 +159,6 @@ module.exports = {
 			if(linkTargets.length > 0) {
 				header += "Links (" + linkTargets.length + "): " + linkTargets.join(", ") + "\n";
 			}
-			if(linkTargets.length > 0) {
-				return shared.textResult( header );
-			}
 			header += "(showing depth=" + maxDepth + ")\n";
 			return shared.textResult( header + JSON.stringify(result, null, $tw.config.preferences.jsonSpaces) );
 		} catch(e) {
