@@ -260,7 +260,7 @@ var writeTools = [
 		inputSchema: {
 			type: "object",
 			properties: {
-				fileSystemPaths: { type: "string", description: "Approved FileSystemPaths rules (one filter per line). If omitted, uses the proposed rules from the import analysis." }
+				fileSystemPaths: { type: "string", description: "Approved FileSystemPaths rules (one filter per line). If omitted, reads $:/config/FileSystemPaths from the wiki (which the user can edit in the browser before extraction)." }
 			},
 			required: []
 		}
