@@ -52,7 +52,6 @@ module.exports = {
 
 	"render_field": function(args) {
 		var outputType = args.output || "text/html";
-		var mode = args.mode || "block";
 		try {
 			var value;
 			if(args.index) {
