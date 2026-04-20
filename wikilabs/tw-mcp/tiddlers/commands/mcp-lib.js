@@ -178,7 +178,6 @@ function dispatchMessage(line, send) {
 				},
 				instructions: "TiddlyWiki MCP server." +
 					(readonlyMode ? " READONLY mode — write tools are disabled." : "") +
-					(!readonlyMode && !$tw.httpServer ? "\n\n## Persistence WARNING\nNo HTTP server running (--mcp started without 'listen'). Write tools (put_tiddler, edit_tiddler, delete_tiddler) may NOT persist text changes to .tid files reliably. For tiddler content edits, use the file Edit tool directly on .tid files instead. MCP read tools (get_tiddler, run_filter, render_tiddler, etc.) work normally." : "") +
 					($tw.wiki.getTiddler("$:/temp/mcp/html-import") && $tw.wiki.getTiddler("$:/temp/mcp/html-import").fields.status === "pending" ?
 						"\n\n## HTML Import PENDING (ACTION REQUIRED)\n" +
 						"A single-file wiki has been loaded into memory but NOT yet extracted to disk.\n" +
@@ -197,7 +196,7 @@ function dispatchMessage(line, send) {
 					"\n## System tiddlers\n" +
 					"- Exclude system tiddlers ('$:/') by default. Add '!is[system]' as the FIRST filter operator unless the user explicitly requests system/shadow tiddlers.\n" +
 					"- Never fetch '$:/core/modules/...' source tiddlers unless the user specifically names one.\n" +
-					"- Shadow tiddler fallback: if 2-3 searches fail, widen with '[all[tiddlers+shadows)]'. Many important tiddlers are shadows.\n" +
+					"- Shadow tiddler fallback: if 2-3 searches fail, widen with '[all[tiddlers+shadows]]'. Many important tiddlers are shadows.\n" +
 					"\n## Token efficiency\n" +
 					"- Tool results are pre-formatted. Present them DIRECTLY — do not reformat or restructure.\n" +
 					"- Prefer MCP tools for rendering/filters/wiki info. Prefer file access (Read/Grep/Glob) for code search.\n" +
@@ -205,12 +204,13 @@ function dispatchMessage(line, send) {
 					"- get_tiddler(detailed=true) returns text with hashline anchors by default. Use edit_tiddler with these anchors for edits.\n" +
 					"- User trigger words determine your tool choice:\n" +
 					"  - WRITE words (create, edit, update, change, fix, delete, rename, tag, untag) → read with get_tiddler(detailed=true), then use edit_tiddler for small edits or put_tiddler for new/full rewrites.\n" +
-					"  - READ words (show, list, find, search, render, what, how many, which) → use get_tiddler(detailed=true). Use format='tid' only if the user needs plain text without hashes.\n" +
+					"  - READ words (show, list, find, search, what, how many, which) → use get_tiddler(detailed=true). Use format='tid' only if the user needs plain text without hashes.\n" +
+					"  - RENDER words (render, preview, what does X look like) → use render_tiddler (whole tiddler), render_field (single field), or render_text (raw wikitext). get_tiddler returns source, NOT rendered output.\n" +
 					"- NEVER use put_tiddler to change a few lines in an existing tiddler. put_tiddler resends the full text and wastes tokens.\n" +
 					"- Use put_tiddler ONLY for: creating new tiddlers, or full rewrites where most of the text changes.\n" +
 					"- Omit the type field in put_tiddler/edit_tiddler when it is text/vnd.tiddlywiki (that is the default).\n" +
 					"\n## Filters\n" +
-					"- Narrowing first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers)prefix[$:/config/]]'."
+					"- Narrowing first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers]prefix[$:/config/]]'."
 			}));
 			if(suppressNextInitLog) {
 				suppressNextInitLog = false;
