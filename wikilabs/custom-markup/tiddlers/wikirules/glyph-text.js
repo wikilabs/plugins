@@ -97,14 +97,17 @@ exports.parse = function() {
 
 	var useParagraph = false; // use paragraph by default
 
-	// global custom pragmas
-	var gPc,
-		template = "$:/config/custom-markup/pragma/PageTemplate";
+	// global custom pragmas — parseTiddler caches the parser under "blockParseTree",
+	// so repeated calls are cheap. parser.configTickText is populated by our
+	// \importcustom pragma during parse.
+	var template = "$:/config/custom-markup/pragma/PageTemplate",
+		gParser = this.parser.wiki.parseTiddler(template),
+		gPc = (gParser && gParser.configTickText) || {};
 
-	if (!this.parser.wiki.caches[template].blockParseTree) {
-		this.parser.wiki.parseTiddler(template);
-	}
-	gPc = this.parser.wiki.caches[template].blockParseTree.configTickText;
+	// Ensure every id slot exists so downstream gPc[id][sym] never throws
+	["tick","single","degree","angle","approx","pilcrow","corner","braille","slash"].forEach(function(glyphId) {
+		gPc[glyphId] = gPc[glyphId] || {};
+	});
 
 	switch (this.match[1][0]) {
 		case "»":
