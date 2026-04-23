@@ -1,0 +1,41 @@
+created: 20260423144100000
+modified: 20260423145800000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/section-snapshot
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import [[$:/plugins/wikilabs/bundler/ui/plugin-config/helpers]]
+
+\procedure snapshot-actions()
+<$let
+	pluginConfig=<<currentTiddler>>
+	timestamp=<<now "YYYY0MM0DD-0hh0mm">>
+	snapName={{{ [<pluginConfig>addsuffix[-snap-]addsuffix<timestamp>addsuffix[.bundle]] }}}
+	snapBody={{{ [<pluginConfig>get[include-bundles]enlist-input[]] [<pluginConfig>get[exclude-bundles]enlist-input[]] [<pluginConfig>get[remove-bundles]enlist-input[]] [lane-tids[include-bundles]] [lane-tids[exclude-bundles]] [lane-tids[remove-bundles]] +[unique[]sort[title]format:titlelist[]join[ ]] }}}
+>
+	<$action-sendmessage $message="tm-new-tiddler"
+		title=<<snapName>>
+		tags="$:/tags/Bundle $:/tags/Milestone"
+		text=<<snapBody>>
+		caption=<<snapName>>
+		source-plugin-config=<<pluginConfig>>
+	/>
+</$let>
+\end
+
+<$transclude $variable="wlpc-collapsible" key="snapshot" defaultOpen="no">
+	<$fill $name="summary"><span class="wlpc-section-title">Snapshot</span></$fill>
+	<$fill $name="body">
+
+		<div class="wlpc-muted">
+			Creates a milestone bundle from the current resolved set. Auto-named, auto-tagged, ready to drag-export as a backup.
+		</div>
+
+		<div class="wlpc-row-form wlpc-small-gap-top">
+			<$button actions=<<snapshot-actions>> class="tc-btn-boxed">
+				{{$:/core/images/save-button}} Create snapshot
+			</$button>
+		</div>
+
+	</$fill>
+</$transclude>

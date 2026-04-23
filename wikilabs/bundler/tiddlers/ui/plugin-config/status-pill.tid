@@ -1,0 +1,25 @@
+created: 20260423143200000
+modified: 20260423143200000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/status-pill
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+<$let
+	isDraft={{{ [all[current]get[draft]match[yes]then[yes]else[no]] }}}
+	hasBuilt={{{ [all[current]has[last-built]then[yes]else[no]] }}}
+	hasPlugin={{{ [all[current]get[plugin]!is[blank]then[yes]else[no]] }}}
+>
+	<$list filter="[<isDraft>match[yes]]" variable="ignore">
+		<span class="wlpc-pill wlpc-pill-draft">draft</span>
+	</$list>
+	<$list filter="[<isDraft>match[no]] :and[<hasPlugin>match[no]]" variable="ignore">
+		<span class="wlpc-pill wlpc-pill-warn">no target</span>
+	</$list>
+	<$list filter="[<isDraft>match[no]] :and[<hasPlugin>match[yes]] :and[<hasBuilt>match[no]]" variable="ignore">
+		<span class="wlpc-pill wlpc-pill-new">unbuilt</span>
+	</$list>
+	<$list filter="[<isDraft>match[no]] :and[<hasPlugin>match[yes]] :and[<hasBuilt>match[yes]]" variable="ignore">
+		<span class="wlpc-pill wlpc-pill-clean">built</span>
+	</$list>
+</$let>

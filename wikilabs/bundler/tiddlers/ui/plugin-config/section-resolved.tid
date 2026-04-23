@@ -1,0 +1,45 @@
+created: 20260423144000000
+modified: 20260423150500000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/section-resolved
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import [[$:/plugins/wikilabs/bundler/ui/plugin-config/helpers]]
+
+\procedure resolved-list-body()
+<$list filter="[lane-tids[include-bundles]] -[lane-tids[exclude-bundles]] -[lane-tids[remove-bundles]] +[unique[]] +[sort[title]]" emptyMessage="<div class='wlpc-muted'>No tiddlers resolve from current sources. Add a Source bundle above.</div>">
+	<div class="wlpc-resolved-row">
+		<span class="wlpc-resolved-title"><$view field="title"/></span>
+	</div>
+</$list>
+\end
+
+\procedure resolved-count()
+<$count filter="[lane-tids[include-bundles]] -[lane-tids[exclude-bundles]] -[lane-tids[remove-bundles]] +[unique[]]"/>
+\end
+
+<$let pluginConfig=<<currentTiddler>>>
+<$transclude $variable="wlpc-collapsible" key="resolved" defaultOpen="no">
+	<$fill $name="summary">
+		<span class="wlpc-section-title">Resolved set</span>
+		<span class="wlpc-pill wlpc-pill-info tc-tiny-gap-left"><<resolved-count>> tiddlers</span>
+	</$fill>
+	<$fill $name="body">
+		<<resolved-list-body>>
+
+		<$list filter="[<pluginConfig>get[plugin]!is[blank]]" variable="ignore">
+			<div class="wlpc-resolved-extra wlpc-small-gap-top">
+				<span class="wlpc-eyebrow">Currently in plugin payload</span>
+				<span class="wlpc-pill wlpc-pill-info tc-tiny-gap-left">
+					<$count filter="[<pluginConfig>get[plugin]plugintiddlers[]]"/>
+				</span>
+			</div>
+		</$list>
+
+		<div class="wlpc-muted wlpc-small-gap-top">
+			Provenance per-row, conflict markers, and add/remove diff vs. the current plugin payload arrive in the next iteration.
+		</div>
+
+	</$fill>
+</$transclude>
+</$let>
