@@ -230,6 +230,20 @@ var writeTools = [
 		}
 	},
 	{
+		name: "resave_tiddler",
+		description: "Rewrite a tiddler's .tid file using current FileSystemPaths. Relocates the file if path rules changed. Preserves modified/modifier by default. Refuses on shadow-only, plugin/theme/language, or .multids-bundled tiddlers.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				title: { type: "string", description: "Tiddler title" },
+				preserve_timestamps: { type: "boolean", default: true, description: "Keep modified/modifier unchanged (default). Set false to stamp current time and user." },
+				strip_redundant: { type: "boolean", default: true, description: "Drop 'revision' and drop 'type' when it equals text/vnd.tiddlywiki (default)." },
+				dry_run: { type: "boolean", default: false, description: "Report old/new path and fields that would be stripped; do not write." }
+			},
+			required: ["title"]
+		}
+	},
+	{
 		name: "save_wiki_folder",
 		description: "Export wiki as a folder structure.",
 		inputSchema: {
