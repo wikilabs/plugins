@@ -230,6 +230,17 @@ var writeTools = [
 		}
 	},
 	{
+		name: "reload_mcp_modules",
+		description: "Hot-reload MCP plugin JS modules (handlers/*.js, mcp-tools.js, mcp-handlers.js, hashline.js) without restarting the server. Re-reads the plugin from disk, re-unpacks shadows, and re-executes each JS module. Excludes mcp.js, mcp-lib.js, shared.js, filesystem.js — these hold live state and still require a full restart.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				skip_disk_reload: { type: "boolean", default: false, description: "Skip the $tw.loadPlugin step. Use only when the wiki store already has fresh plugin source (e.g., after a manual reload_tiddlers)." }
+			},
+			required: []
+		}
+	},
+	{
 		name: "resave_tiddler",
 		description: "Rewrite a tiddler's .tid file using current FileSystemPaths. Relocates the file if path rules changed. Preserves modified/modifier by default. Refuses on shadow-only, plugin/theme/language, or .multids-bundled tiddlers.",
 		inputSchema: {
