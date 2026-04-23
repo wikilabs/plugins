@@ -210,7 +210,12 @@ function dispatchMessage(line, send) {
 					"- Use put_tiddler ONLY for: creating new tiddlers, or full rewrites where most of the text changes.\n" +
 					"- Omit the type field in put_tiddler/edit_tiddler when it is text/vnd.tiddlywiki (that is the default).\n" +
 					"\n## Filters\n" +
-					"- Narrowing first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers]prefix[$:/config/]]'."
+					"- Narrowing first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers]prefix[$:/config/]]'." +
+					"\n\n## Hot reload (no server restart needed)\n" +
+					"- Edition tiddlers on disk changed → reload_tiddlers (scope='tiddlers').\n" +
+					"- Non-JS plugin subtiddler changed (doc/wikitext/CSS) → reload_mcp_modules for the tw-mcp plugin; for OTHER plugins, have the user re-add the plugin tiddler so TW's auto-reload fires.\n" +
+					"- tw-mcp JS handler edited → reload_mcp_modules (re-reads plugin from disk + re-executes JS).\n" +
+					"- mcp.js / mcp-lib.js / shared.js / filesystem.js edits → full server restart required."
 			}));
 			if(suppressNextInitLog) {
 				suppressNextInitLog = false;

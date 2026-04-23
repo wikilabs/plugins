@@ -132,11 +132,11 @@ var readTools = [
 	},
 	{
 		name: "reload_tiddlers",
-		description: "Re-read tiddlers from disk + report changes since last call.",
+		description: "Re-read tiddlers from disk + report changes since last call. For non-JS plugin subtiddler edits (doc/wikitext/CSS inside a plugin), scope='shadows' refreshes content but does NOT re-execute any plugin JS. After editing JS in the tw-mcp plugin, use reload_mcp_modules instead (it also handles the disk re-read).",
 		inputSchema: {
 			type: "object",
 			properties: {
-				scope: { type: "string", enum: ["tiddlers", "shadows", "all"], default: "tiddlers", description: "tiddlers = edition tiddlers (default), shadows = re-read plugins/core, all = both" }
+				scope: { type: "string", enum: ["tiddlers", "shadows", "all"], default: "tiddlers", description: "tiddlers = edition tiddlers on disk (default). shadows = re-register plugins and re-unpack shadow tiddlers from in-memory plugin JSON (does NOT re-read plugin folders from disk). all = both." }
 			},
 			required: []
 		}
@@ -231,7 +231,7 @@ var writeTools = [
 	},
 	{
 		name: "reload_mcp_modules",
-		description: "Hot-reload MCP plugin JS modules (handlers/*.js, mcp-tools.js, mcp-handlers.js, hashline.js) without restarting the server. Re-reads the plugin from disk, re-unpacks shadows, and re-executes each JS module. Excludes mcp.js, mcp-lib.js, shared.js, filesystem.js — these hold live state and still require a full restart.",
+		description: "Hot-reload the tw-mcp plugin after editing its source. Re-reads the plugin folder from disk and refreshes ALL subtiddlers (JS AND non-JS — doc tiddlers, wikitext, CSS), then re-executes each JS module. Non-JS changes take effect immediately; JS module changes take effect on the next tool call. Excludes mcp.js, mcp-lib.js, shared.js, filesystem.js — these hold live state (dispatcher, sockets, init context, change listener) and still require a full server restart.",
 		inputSchema: {
 			type: "object",
 			properties: {
