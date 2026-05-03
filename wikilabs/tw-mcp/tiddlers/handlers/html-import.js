@@ -28,6 +28,33 @@ var TIDDLERS_TO_IGNORE = [
 
 var MIN_GROUP_COUNT = 3;
 
+// Plugins/themes/languages loaded by the running wiki via tiddlywiki.info
+// must NOT be treated as custom plugins from the imported HTML, and must
+// NOT be written to disk by extract (they will load from the local plugin
+// path again on the next boot).
+function bootedPluginTitleSet() {
+	var info = $tw.boot.wikiInfo || {};
+	var set = {};
+	(info.plugins || []).forEach(function(n) { set["$:/plugins/" + n] = true; });
+	(info.themes || []).forEach(function(n) { set["$:/themes/" + n] = true; });
+	(info.languages || []).forEach(function(n) { set["$:/languages/" + n] = true; });
+	return set;
+}
+
+// Trim leading/trailing whitespace and trailing dots from each path component.
+// Windows silently strips trailing whitespace/dots from path components when
+// passed through the Win32 API, so files written with such names become
+// unreachable through normal tools (they require the \\?\ prefix to access).
+function sanitisePathComponents(filepath) {
+	var parts = filepath.split(path.sep);
+	return parts.map(function(part, idx) {
+		if(part === "") return part;
+		if(idx === 0 && /^[A-Za-z]:$/.test(part)) return part;
+		var cleaned = part.replace(/^\s+/, "").replace(/[\s.]+$/, "");
+		return cleaned || "_unnamed_";
+	}).join(path.sep);
+}
+
 // --- Plugin detection (adapted from savewikifolder.js) ---
 
 function findPluginInLibrary(title) {
@@ -87,7 +114,10 @@ function analyzeForFileSystemPaths(tiddlers) {
 		.sort(function(a, b) { return tagCounts[b] - tagCounts[a]; });
 	for(var si = 0; si < sortedTags.length; si++) {
 		var tag = sortedTags[si];
-		var folder = tag.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "_");
+		var folder = tag.toLowerCase()
+			.replace(/\s+/g, "-")
+			.replace(/[^a-z0-9\-]+/g, "_")
+			.replace(/^[-_]+|[-_]+$/g, "");
 		rules.push("[tag[" + tag + "]addprefix[" + folder + "/]]");
 		ruleDescriptions.push(tagCounts[tag] + " tiddlers tagged '" + tag + "' → " + folder + "/ subfolder");
 	}
@@ -155,6 +185,7 @@ function importHandler(args) {
 	// Load tiddlers from HTML
 	var loaded = $tw.loadTiddlersFromPath(filePath);
 	// Classify tiddlers
+	var bootedPlugins = bootedPluginTitleSet();
 	var contentTiddlers = [];
 	var systemTiddlers = [];
 	var libraryPlugins = [];
@@ -172,12 +203,18 @@ function importHandler(args) {
 			var type = fields.type,
 				pluginType = fields["plugin-type"];
 			if(type === "application/json" && pluginType) {
+				// Plugin already loaded by the running tiddlywiki.info — skip; the
+				// local plugin path will load it again on next boot.
+				if(bootedPlugins[fields.title]) {
+					ignoredCount++;
+					return;
+				}
 				var libraryInfo = findPluginInLibrary(fields.title);
 				if(libraryInfo) {
 					libraryPlugins.push(libraryInfo);
 					return;
 				}
-				customPlugins.push(fields.title);
+				customPlugins.push(fields);
 				return;
 			}
 			// System vs content
@@ -203,8 +240,8 @@ function importHandler(args) {
 	if(infoChanged || !fs.existsSync(infoPath)) {
 		fs.writeFileSync(infoPath, JSON.stringify(wikiInfo, null, 4), "utf8");
 	}
-	// Import all content + system tiddlers into memory
-	var allTiddlers = contentTiddlers.concat(systemTiddlers);
+	// Import all content + system + custom-plugin tiddlers into memory
+	var allTiddlers = contentTiddlers.concat(systemTiddlers).concat(customPlugins);
 	for(var ai = 0; ai < allTiddlers.length; ai++) {
 		wiki.importTiddler(new $tw.Tiddler(allTiddlers[ai]));
 	}
@@ -244,7 +281,7 @@ function importHandler(args) {
 	explanation.push("- Content tiddlers: " + contentTiddlers.length);
 	explanation.push("- System tiddlers: " + systemTiddlers.length);
 	explanation.push("- Library plugins (added to tiddlywiki.info): " + libraryPlugins.length);
-	explanation.push("- Custom plugins: " + customPlugins.length);
+	explanation.push("- Custom plugins (kept as single .tid files): " + customPlugins.length);
 	explanation.push("- Ignored (boot/core): " + ignoredCount);
 	var totalTags = Object.keys(analysis.tagCounts).length;
 	var totalPrefixes = Object.keys(analysis.prefixCounts).length;
@@ -359,9 +396,12 @@ function extractHandler(args) {
 	if(!tiddlersDir) {
 		return shared.errorResult("No wiki tiddlers path available.");
 	}
-	// Get tiddlers to extract — same exclusions as $:/core/save/all
+	// Get tiddlers to extract — regular content + system + custom plugin tiddlers
+	// (kept as single tiddlers, not exploded). Library plugins live in tiddlywiki.info
+	// and are not in the regular tiddler space, so they're naturally excluded.
 	var allTitles = $tw.wiki.filterTiddlers(
 		"[all[tiddlers]!has[plugin-type]]" +
+		" [all[tiddlers]plugin-type[plugin]]" +
 		" -[prefix[$:/state/popup/]]" +
 		" -[prefix[$:/temp/]]" +
 		" -[prefix[$:/HistoryList]]" +
@@ -373,6 +413,7 @@ function extractHandler(args) {
 		" -[status[pending]plugin-type[import]]"
 	);
 	var checkPathAllowed = shared.getCheckPathAllowed();
+	var bootedPlugins = bootedPluginTitleSet();
 	var filesWritten = 0;
 	var errors = [];
 	var directorySummary = {};
@@ -380,6 +421,9 @@ function extractHandler(args) {
 		var title = allTitles[i];
 		// Skip tiddlers that already have fileInfo (already on disk)
 		if($tw.boot.files[title]) continue;
+		// Skip plugins/themes/languages loaded by tiddlywiki.info — they live in
+		// the local plugin path and must not be duplicated under tiddlers/.
+		if(bootedPlugins[title]) continue;
 		var tiddler = $tw.wiki.getTiddler(title);
 		if(!tiddler) continue;
 		try {
@@ -390,6 +434,7 @@ function extractHandler(args) {
 				wiki: $tw.wiki,
 				fileInfo: {}
 			});
+			fileInfo.filepath = sanitisePathComponents(fileInfo.filepath);
 			var pathDenied = checkPathAllowed(fileInfo.filepath);
 			if(pathDenied) {
 				errors.push(title + ": path denied");

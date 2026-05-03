@@ -1,5 +1,15 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.9.4 - 2026.05.04
+
+* `import_html_wiki`: collapse runs of non-alphanumeric characters in tag-derived folder slugs to a single `_` and trim edge separators. Tags like `Higher Caloric Value (H.C.V.)` previously produced `__` runs that the wikitext parser read as underline, breaking list rendering in `Import — Proposed Folder Structure`.
+
+V 0.9.3 - 2026.05.03
+
+* `import_html_wiki` / `extract_html_wiki`: keep 3rd-party (custom) plugins as single `.tid` files (TW unpacks them on boot). Previously they were dropped on restart because the extract filter excluded all plugin tiddlers.
+* Skip plugins/themes/languages already loaded by the running `tiddlywiki.info` (tw-mcp, filesystem, …) — they have no `$tw.boot.files` entries and were being duplicated under `_system/plugins/`.
+* Trim leading/trailing whitespace and trailing dots from each path component on write. Windows silently strips them, making files like `tiddlers/Gas /Endurance.tid` unreachable without the `\\?\` prefix.
+
 V 0.9.2 - 2026.05.03
 
 * Server version now tracks `plugin.info` (was hardcoded `0.2.0`). Surfaced in the startup log, MCP `initialize` response, `$tw.mcp.version` (+ `heartbeat()`), and the `MCP:` line of `get_wiki_info`.
