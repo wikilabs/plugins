@@ -66,7 +66,7 @@ module.exports = {
 		lines.push("Tiddlers: " + tiddlerCount + " | Tags: " + tagCount + " | System: " + systemTiddlerCount + " | Shadow: " + shadowTiddlerCount + " | Overridden: " + overriddenShadowCount);
 		lines.push("Filesystem: " + (!!$tw.syncadaptor ? "yes" : "no") + (($tw.boot.wikiTiddlersPath) ? " (" + $tw.boot.wikiTiddlersPath + ")" : ""));
 		if($tw.mcp) {
-			lines.push("MCP: " + $tw.mcp.role + " (PID " + $tw.mcp.pid + ")" + ($tw.mcp.label ? " @" + $tw.mcp.label : ""));
+			lines.push("MCP: " + $tw.mcp.role + " v" + ($tw.mcp.version || "?") + " (PID " + $tw.mcp.pid + ")" + ($tw.mcp.label ? " @" + $tw.mcp.label : ""));
 		}
 		if($tw.httpServer) {
 			var addr = $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();

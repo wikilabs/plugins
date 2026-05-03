@@ -109,21 +109,30 @@ function analyzeForFileSystemPaths(tiddlers) {
 	};
 }
 
-// --- Initialize: load HTML, analyze, import to memory ---
+// --- Import handler: load HTML, analyze, stage in memory ---
 
-function initialize(htmlFilePath, wiki) {
-	var filePath = path.resolve(htmlFilePath);
-	if(!fs.existsSync(filePath)) {
-		console.error("html-import: File not found: " + filePath);
-		return;
+function importHandler(args) {
+	var writeCheck = shared.checkWritable("import_html_wiki");
+	if(writeCheck) return writeCheck;
+	if(!args.path) {
+		return shared.errorResult("Missing required argument 'path' (path to single-file HTML wiki).");
 	}
-	// Re-launch detection: if tiddlers/ has .tid files and FileSystemPaths exists, skip
+	var filePath = path.resolve(args.path);
+	if(!fs.existsSync(filePath)) {
+		return shared.errorResult("File not found: " + filePath);
+	}
+	var wiki = $tw.wiki;
+	// Refuse if a pending import is already staged
+	var existing = wiki.getTiddler("$:/temp/mcp/html-import");
+	if(existing && existing.fields.status === "pending") {
+		return shared.errorResult("An HTML import is already pending (source: " + existing.fields["source-file"] + "). Call extract_html_wiki to commit it, or delete $:/temp/mcp/html-import to discard.");
+	}
+	// Refuse if the wiki folder is already populated
 	if($tw.boot.wikiTiddlersPath && fs.existsSync($tw.boot.wikiTiddlersPath)) {
 		var existingFiles = fs.readdirSync($tw.boot.wikiTiddlersPath);
 		var hasTidFiles = existingFiles.some(function(f) { return f.endsWith(".tid"); });
 		if(hasTidFiles && wiki.tiddlerExists("$:/config/FileSystemPaths")) {
-			console.error("html-import: Wiki already has extracted tiddlers and FileSystemPaths — skipping import");
-			return;
+			return shared.errorResult("Wiki already has extracted tiddlers and FileSystemPaths. Run import against an empty wiki folder.");
 		}
 	}
 	// Ensure tiddlers directory exists
@@ -301,29 +310,19 @@ function initialize(htmlFilePath, wiki) {
 		title: "$:/DefaultTiddlers",
 		text: "[[Import — Proposed Folder Structure]]"
 	}));
-	// Log summary to stderr
-	console.error("");
-	console.error("html-import: Loaded " + filePath);
-	console.error("  " + contentTiddlers.length + " content + " + systemTiddlers.length + " system tiddlers imported to memory");
-	console.error("  " + libraryPlugins.length + " library plugins added to tiddlywiki.info");
-	console.error("  " + analysis.proposedRules.length + " FileSystemPaths rules proposed");
-	console.error("");
-	console.error("  Tiddlers are in memory only — nothing written to disk yet.");
-	console.error("");
-	console.error("  Next steps:");
-	console.error("    1. Connect an MCP client to this wiki (see below)");
-	console.error("    2. Ask the AI: \"Check the tiddlywiki wiki info\"");
-	console.error("    3. The AI will show the proposed folder structure for your review");
-	console.error("    4. After you approve, the AI extracts .tid files to disk");
-	console.error("");
-	console.error("  Or browse the wiki at the URL shown below.");
-	console.error("");
-	console.error("  === Connect Claude Code ===");
-	console.error("  claude mcp add --transport stdio tiddlywiki -- tiddlywiki " + wikiPath + " --mcp rw label=claude");
-	console.error("");
-	console.error("  === Connect Gemini CLI ===");
-	console.error("  gemini mcp add --scope project tiddlywiki-mcp tiddlywiki " + wikiPath + " --mcp rw label=gemini");
-	console.error("");
+	var summary = [
+		"Loaded " + filePath,
+		"  content: " + contentTiddlers.length + " · system: " + systemTiddlers.length + " · library plugins: " + libraryPlugins.length + " · custom plugins: " + customPlugins.length + " · ignored: " + ignoredCount,
+		"  " + analysis.proposedRules.length + " FileSystemPaths rules proposed.",
+		"",
+		"Nothing written to disk yet. Next steps:",
+		"  1. Read $:/temp/mcp/html-import for the analysis summary.",
+		"  2. Show the user the proposed folder structure (also visible in the browser as 'Import — Proposed Folder Structure').",
+		"  3. Let the user edit $:/config/FileSystemPaths in the browser if they want changes.",
+		"  4. When approved, call extract_html_wiki() to commit the .tid files to disk.",
+		"  5. Restart the server once after extraction so any new library plugins activate."
+	].join("\n");
+	return shared.textResult(summary);
 }
 
 // --- MCP tool handler: extract to disk ---
@@ -333,7 +332,7 @@ function extractHandler(args) {
 	if(writeCheck) return writeCheck;
 	var analysisTiddler = $tw.wiki.getTiddler("$:/temp/mcp/html-import");
 	if(!analysisTiddler) {
-		return shared.errorResult("No pending HTML import found. Use --mcp file=xxx.html to load a single-file wiki first.");
+		return shared.errorResult("No pending HTML import found. Call import_html_wiki(path) first to stage a single-file wiki.");
 	}
 	if(analysisTiddler.fields.status === "extracted") {
 		return shared.errorResult("Tiddlers have already been extracted to disk.");
@@ -432,6 +431,6 @@ function extractHandler(args) {
 }
 
 module.exports = {
-	initialize: initialize,
+	"import_html_wiki": importHandler,
 	"extract_html_wiki": extractHandler
 };

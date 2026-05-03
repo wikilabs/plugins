@@ -11,11 +11,10 @@ Usage (readonly by default):
   tiddlywiki ./wiki --mcp rw [label=<name>] [allowed-paths=<paths>]
   tiddlywiki ./wiki --mcp rw listen [port=<n>] [host=<h>] [label=<name>] ...
 
-Single-file wiki workflow:
-  tiddlywiki ./workdir --mcp file=mywiki.html
-  Loads tiddlers from the HTML file into memory, analyzes structure,
-  and proposes a FileSystemPaths config. Implies "rw listen".
-  Use the extract_html_wiki tool to write .tid files after review.
+Single-file wiki workflow (runtime tools):
+  Start a normal --mcp rw listen server against an empty wiki folder, then
+  call import_html_wiki(path) to stage an HTML wiki for review and
+  extract_html_wiki() to commit it to disk.
 
 When "listen" is specified, an HTTP server is started in the same process
 before the MCP server, so browser edits and MCP tool calls share one $tw.wiki.
@@ -55,20 +54,10 @@ Command.prototype.execute = function() {
 			options.allowedPaths = param.slice("allowed-paths=".length).split(",");
 		} else if(param.indexOf("label=") === 0) {
 			options.label = param.slice("label=".length);
-		} else if(param.indexOf("file=") === 0) {
-			options.htmlFile = param.slice("file=".length);
 		} else if(param.indexOf("=") !== -1) {
 			// Named parameter — forward to listen server if in listen mode
 			var eq = param.indexOf("=");
 			listenParams[param.slice(0, eq)] = param.slice(eq + 1);
-		}
-	}
-	// Single-file wiki: force rw + listen mode
-	if(options.htmlFile) {
-		options.readonly = false;
-		listenMode = true;
-		if(!listenParams.port) {
-			listenParams.port = "9090";
 		}
 	}
 	// Load the filesystem plugin if not already present (needed for disk persistence)
@@ -76,11 +65,6 @@ Command.prototype.execute = function() {
 		$tw.loadPlugins(["tiddlywiki/filesystem"], $tw.config.pluginsPath, $tw.config.pluginsEnvVar);
 		$tw.wiki.registerPluginTiddlers("plugin");
 		$tw.wiki.unpackPluginTiddlers();
-	}
-	// Load and analyze single-file wiki if specified
-	if(options.htmlFile) {
-		var htmlImport = require("$:/core/modules/commands/inspect/handlers/html-import.js");
-		htmlImport.initialize(options.htmlFile, this.commander.wiki);
 	}
 	// Start HTTP server if listen mode is enabled
 	if(listenMode) {

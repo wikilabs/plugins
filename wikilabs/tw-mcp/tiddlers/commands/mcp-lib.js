@@ -20,7 +20,12 @@ var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
 
 var PROTOCOL_VERSION = "2025-03-26";
 var SERVER_NAME = "tiddlywiki-mcp";
-var SERVER_VERSION = "0.2.0";
+var PLUGIN_TITLE = "$:/plugins/wikilabs/tw-mcp";
+
+function getServerVersion() {
+	var pluginTiddler = $tw.wiki.getTiddler(PLUGIN_TITLE);
+	return (pluginTiddler && pluginTiddler.fields.version) || "0.0.0";
+}
 
 var readonlyMode = false;
 var allowedPaths = null; // null = no restriction, array of absolute paths = restrict output to these directories
@@ -174,22 +179,17 @@ function dispatchMessage(line, send) {
 				},
 				serverInfo: {
 					name: SERVER_NAME,
-					version: SERVER_VERSION
+					version: getServerVersion()
 				},
 				instructions: "TiddlyWiki MCP server." +
 					(readonlyMode ? " READONLY mode — write tools are disabled." : "") +
 					($tw.wiki.getTiddler("$:/temp/mcp/html-import") && $tw.wiki.getTiddler("$:/temp/mcp/html-import").fields.status === "pending" ?
-						"\n\n## HTML Import PENDING (ACTION REQUIRED)\n" +
-						"A single-file wiki has been loaded into memory but NOT yet extracted to disk.\n" +
-						"Your FIRST action should be:\n" +
-						"1. Call get_tiddler('$:/temp/mcp/html-import', detailed=true) to read the import analysis\n" +
-						"2. Present a summary of the proposed folder structure to the user\n" +
-						"3. Tell the user to visit the wiki in the browser to see the full list of rules (the tiddler 'Import — Proposed Folder Structure' opens automatically)\n" +
-						"4. Tell the user they can edit $:/config/FileSystemPaths directly in the browser before extraction\n" +
-						"5. Ask the user if the proposed structure is OK or if they want changes\n" +
-						"6. Once approved, call extract_html_wiki to write .tid files to disk (it reads the current $:/config/FileSystemPaths from the wiki)"
+						"\n\n## HTML import pending\n" +
+						"A previous import_html_wiki call staged a single-file wiki at $:/temp/mcp/html-import; it has not been written to disk yet. Read that tiddler for the analysis, let the user review/edit $:/config/FileSystemPaths in the browser, then call extract_html_wiki to commit."
 						: "") +
-					"\n\n## Safety (CRITICAL)\n" +
+					"\n\n## Single-file HTML wiki import\n" +
+					"- To import a single-file HTML wiki: call import_html_wiki(path) against an empty wiki folder, then extract_html_wiki() once the user approves the proposed FileSystemPaths.\n" +
+					"\n## Safety (CRITICAL)\n" +
 					"- NEVER modify, create, or delete tiddlers unless the user EXPLICITLY asks (create, edit, update, delete, rename, tag, untag). Words like 'list', 'show', 'find', 'search' are read-only — never write.\n" +
 					"- Before bulk operations, list affected tiddlers and ask for confirmation.\n" +
 					"- Always use get_tiddler to check existence before overwriting.\n" +
@@ -1173,7 +1173,7 @@ function startAsPrimary(options) {
 	currentPipeServer = startPipeServer();
 
 	$tw.mcp.role = "primary";
-	log("Server started as PRIMARY (PID " + process.pid + ", protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ", filesystem: " + !!$tw.syncadaptor + ")" + (serverLabel ? " @" + serverLabel : ""));
+	log("Server started as PRIMARY (v" + getServerVersion() + ", PID " + process.pid + ", protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ", filesystem: " + !!$tw.syncadaptor + ")" + (serverLabel ? " @" + serverLabel : ""));
 	if(allowedPaths) {
 		log("Allowed paths:\n  - " + allowedPaths.join("\n  - "));
 	}
@@ -1213,12 +1213,14 @@ function startMCPServer(options) {
 		label: serverLabel,
 		role: null,
 		readonly: readonlyMode,
+		version: getServerVersion(),
 		started: Date.now(),
 		heartbeat: function() {
 			return {
 				pid: process.pid,
 				role: $tw.mcp.role,
 				label: $tw.mcp.label,
+				version: getServerVersion(),
 				uptime: Date.now() - $tw.mcp.started,
 				readonly: $tw.mcp.readonly
 			};

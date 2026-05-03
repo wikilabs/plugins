@@ -280,12 +280,23 @@ var writeTools = [
 		}
 	},
 	{
-		name: "extract_html_wiki",
-		description: "Extract pending HTML wiki import to disk files. Call after reviewing the import analysis in $:/temp/mcp/html-import. Optionally provide modified FileSystemPaths rules.",
+		name: "import_html_wiki",
+		description: "Stage a single-file HTML wiki for import. Loads tiddlers from the file into memory, classifies them, proposes FileSystemPaths rules, and writes the staged analysis to $:/temp/mcp/html-import. Nothing is written to disk yet — call extract_html_wiki to commit. Refuses if the wiki folder is already populated or another import is already pending.",
 		inputSchema: {
 			type: "object",
 			properties: {
-				fileSystemPaths: { type: "string", description: "Approved FileSystemPaths rules (one filter per line). If omitted, reads $:/config/FileSystemPaths from the wiki (which the user can edit in the browser before extraction)." }
+				path: { type: "string", description: "Path to the .html single-file wiki to import" }
+			},
+			required: ["path"]
+		}
+	},
+	{
+		name: "extract_html_wiki",
+		description: "Commit a previously staged HTML wiki import (see import_html_wiki) to disk as .tid files. Reads $:/config/FileSystemPaths from the wiki by default; the user can edit it in the browser before this call. Optionally override the rules via fileSystemPaths.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				fileSystemPaths: { type: "string", description: "Approved FileSystemPaths rules (one filter per line). If omitted, reads $:/config/FileSystemPaths from the wiki." }
 			},
 			required: []
 		}
