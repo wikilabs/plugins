@@ -28,6 +28,7 @@ var DEFAULT_SYNC_FILTER = "[all[tiddlers]] -[[$:/isEncrypted]] -[prefix[$:/temp/
 // filesystem-watcher edits have no clientId and broadcast normally.
 var PER_TAB_TIDDLERS_TIDDLER = "$:/config/wikilabs/tw-mcp/per-tab-tiddlers";
 var DEFAULT_PER_TAB_FILTER = "[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]";
+var MODE_TIDDLER = "$:/config/wikilabs/tw-mcp/mode";
 
 var KNOWN_TIDDLYWEB_FIELDS = ["bag","created","creator","modified","modifier","permissions","recipe","revision","tags","text","title","type","uri"];
 
@@ -40,6 +41,8 @@ function SSEBroadcaster(wiki) {
 	this.nextId = 1;
 	this.serverInstanceId = generateInstanceId();
 	this.pendingOriginators = Object.create(null);
+	this.presenterClientId = null;
+	this.presenterUsername = null;
 	var filterText = wiki.getTiddlerText(SYNC_FILTER_TIDDLER) || DEFAULT_SYNC_FILTER;
 	this.filterFn = wiki.compileFilter(filterText);
 	wiki.addEventListener("change", function(changes) {
@@ -49,6 +52,12 @@ function SSEBroadcaster(wiki) {
 		self.sendHeartbeat();
 	}, HEARTBEAT_MS);
 }
+
+SSEBroadcaster.prototype.getMode = function() {
+	var raw = (this.wiki.getTiddlerText(MODE_TIDDLER, "default") || "default").trim();
+	if(raw === "presentation" || raw === "main") return raw;
+	return "default";
+};
 
 function generateInstanceId() {
 	var crypto = require("crypto");
@@ -113,12 +122,6 @@ SSEBroadcaster.prototype.applyPerTabFilter = function(titles) {
 	return set;
 };
 
-SSEBroadcaster.prototype.shouldSkipDelete = function(title) {
-	return title.indexOf("$:/temp/") === 0
-		|| title.indexOf("$:/state/") === 0
-		|| title === "$:/HistoryList";
-};
-
 SSEBroadcaster.prototype.serializeTiddler = function(tiddler) {
 	var fields = {};
 	$tw.utils.each(tiddler.fields, function(value, name) {
@@ -136,6 +139,20 @@ SSEBroadcaster.prototype.serializeTiddler = function(tiddler) {
 	return fields;
 };
 
+// Decide whether a browser-originated change to a per-tab tiddler should
+// broadcast. Returns true when the change should pass through.
+//   default mode -- never (each tab is independent)
+//   presentation -- only when originator is the current presenter
+//   main         -- like presentation if an admin is set; phase 4 wires that.
+//                   For now main behaves like presentation last-wins.
+SSEBroadcaster.prototype.shouldBroadcastPerTab = function(clientId) {
+	var mode = this.getMode();
+	if(mode === "presentation" || mode === "main") {
+		return !!(this.presenterClientId && clientId === this.presenterClientId);
+	}
+	return false;
+};
+
 SSEBroadcaster.prototype.handleWikiChange = function(changes) {
 	var self = this;
 	var titles = Object.keys(changes);
@@ -143,21 +160,29 @@ SSEBroadcaster.prototype.handleWikiChange = function(changes) {
 	var perTab = this.applyPerTabFilter(titles);
 	titles.forEach(function(title) {
 		var change = changes[title];
+		var clientId = self.consumeOriginatorClientId(title);
+		// Per-tab tiddlers (StoryList, HistoryList, $:/state/* by default)
+		// are gated by mode, regardless of SyncFilter. This lets presentation
+		// mode broadcast the presenter's UI state (which is in $:/state/*
+		// and would otherwise be excluded from sync).
+		// Non-per-tab tiddlers: changes respect the wiki's SyncFilter, but
+		// deletes can't (the tiddler is gone, so [is[tiddler]] excludes it).
+		// Always broadcast non-per-tab deletes except for the prefixes
+		// SyncFilter would have excluded anyway.
+		if(perTab[title]) {
+			if(clientId && !self.shouldBroadcastPerTab(clientId)) return;
+		} else if(change.deleted) {
+			if(title.indexOf("$:/temp/") === 0) return;
+			if(title.indexOf("$:/status/") === 0) return;
+		} else {
+			if(!allowed[title]) return;
+		}
 		if(change.deleted) {
-			if(self.shouldSkipDelete(title)) return;
-			var clientId = self.consumeOriginatorClientId(title);
-			// Per-tab tiddler from a browser: don't broadcast (each tab keeps
-			// its own story river / history). MCP tools and fs-watcher have no
-			// clientId and pass through.
-			if(perTab[title] && clientId) return;
 			self.broadcast("tiddler-delete", {
 				title: title,
 				clientId: clientId
 			});
 		} else {
-			if(!allowed[title]) return;
-			var clientId = self.consumeOriginatorClientId(title);
-			if(perTab[title] && clientId) return;
 			var tiddler = self.wiki.getTiddler(title);
 			if(!tiddler) return;
 			var fields = self.serializeTiddler(tiddler);
@@ -173,6 +198,42 @@ SSEBroadcaster.prototype.handleWikiChange = function(changes) {
 			self.broadcast("tiddler-change", payload);
 		}
 	});
+};
+
+// Look up the username an EventSource client supplied at connect time.
+SSEBroadcaster.prototype.findUsernameFor = function(clientId) {
+	var found = null;
+	this.clients.forEach(function(c) {
+		if(c.clientId === clientId) found = c.username || null;
+	});
+	return found;
+};
+
+// Presenter election (last-claim-wins). Called from /presenter/claim and
+// /presenter/release route handlers, and from addClient on disconnect.
+// Username may come from the claim header (preferred -- always fresh) or
+// from the connection-time lookup (fallback).
+SSEBroadcaster.prototype.claimPresenter = function(clientId, username) {
+	if(!clientId) return false;
+	var resolvedUsername = username || this.findUsernameFor(clientId) || null;
+	// No-op only if both clientId AND username already match (so a re-claim
+	// after the user types their UserName promotes the friendly name).
+	if(this.presenterClientId === clientId && this.presenterUsername === resolvedUsername) return false;
+	this.presenterClientId = clientId;
+	this.presenterUsername = resolvedUsername;
+	this.broadcast("presenter-changed", { clientId: clientId, username: resolvedUsername });
+	return true;
+};
+
+SSEBroadcaster.prototype.releasePresenter = function(clientId) {
+	// Only the current presenter can release the role (or null clears it
+	// unconditionally for disconnect-driven release).
+	if(clientId !== null && clientId !== this.presenterClientId) return false;
+	if(this.presenterClientId === null) return false;
+	this.presenterClientId = null;
+	this.presenterUsername = null;
+	this.broadcast("presenter-changed", { clientId: null, username: null });
+	return true;
 };
 
 SSEBroadcaster.prototype.broadcast = function(eventName, payload) {
@@ -216,7 +277,7 @@ SSEBroadcaster.prototype.sendHeartbeat = function() {
 	});
 };
 
-SSEBroadcaster.prototype.addClient = function(request, response) {
+SSEBroadcaster.prototype.addClient = function(request, response, clientId, username) {
 	var self = this;
 	response.writeHead(200, {
 		"Content-Type": "text/event-stream; charset=utf-8",
@@ -224,16 +285,24 @@ SSEBroadcaster.prototype.addClient = function(request, response) {
 		"Connection": "keep-alive",
 		"X-Accel-Buffering": "no"
 	});
-	var client = { res: response };
+	var client = { res: response, clientId: clientId || null, username: username || null };
 	this.clients.add(client);
 	request.on("close", function() {
 		self.clients.delete(client);
+		// If the disconnecting tab held the presenter role, clear it so a
+		// remaining tab can claim. Last-wins on the next claim.
+		if(client.clientId && client.clientId === self.presenterClientId) {
+			self.releasePresenter(null);
+		}
 	});
 	// Initial flush + hello
 	response.write(":\n\n");
 	response.write(formatEventNoId("hello", {
 		serverInstanceId: this.serverInstanceId,
-		inlineThreshold: this.getInlineThreshold()
+		inlineThreshold: this.getInlineThreshold(),
+		mode: this.getMode(),
+		presenterClientId: this.presenterClientId,
+		presenterUsername: this.presenterUsername
 	}));
 	// Replay if Last-Event-ID was sent
 	var rawLastId = request.headers["last-event-id"];

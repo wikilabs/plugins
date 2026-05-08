@@ -6,10 +6,10 @@ tags: $:/tags/ControlPanel/WikiLabs
 
 Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:/HistoryList`, `$:/state/*` by default) propagate between connected browser tabs. MCP-tool changes and filesystem-watcher edits always broadcast to all tabs, regardless of mode.
 
-|! Mode |! Description |
-|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="default" default="default"> ''Default''</$radio>|Per-tab view state stays per-tab. Browser-originated `$:/StoryList` changes do not cross-sync. |
-|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="presentation"> ''Presentation''</$radio>|One tab is the //presenter// and its view-state changes broadcast to all other tabs. Last-claim-wins. ''Not yet wired in this version.'' |
-|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="main"> ''Main''</$radio>|Like presentation, but a tab can claim the //i-am-main// admin role and gate who is allowed to present. ''Not yet wired in this version.'' |
+|! |!Mode |!Description |
+|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="default" default="default"/> |''Default'' |Per-tab view state stays per-tab. Browser-originated `$:/StoryList` changes do not cross-sync. |
+|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="presentation"/> |''Presentation'' |One tab is the //presenter// and its view-state changes broadcast to all other tabs. Last-claim-wins. |
+|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="main"/> |''Main'' |Like presentation, but a tab can claim the //i-am-main// admin role and gate who is allowed to present. ''Not yet wired in this version.'' |
 
 ! Server status
 
@@ -17,6 +17,18 @@ Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:
 |SSE active | <$text text={{{ [[$:/status/wikilabs/tw-mcp/sse-server-active]get[text]] :else[[no]] }}}/> |
 |Current mode | <$text text={{{ [[$:/config/wikilabs/tw-mcp/mode]get[text]] :else[[default]] }}}/> |
 |Per-tab tiddlers filter | <$text text={{{ [[$:/config/wikilabs/tw-mcp/per-tab-tiddlers]get[text]] :else[[default]] }}}/> |
+
+<$list filter="[[$:/config/wikilabs/tw-mcp/mode]get[text]!match[default]]" variable="_ignore">
+
+! Presenter
+
+''Current presenter:'' <$list filter="[[$:/state/wikilabs/tw-mcp/presenter-clientId]get[text]] +[!is[blank]]" variable="cid" emptyMessage="(none)"><$list filter="[[$:/state/wikilabs/tw-mcp/presenter-username]get[text]] +[!is[blank]]" variable="uname">"''<$text text=<<uname>>/>''" </$list>(<<cid>>)</$list> <$list filter="[[$:/state/wikilabs/tw-mcp/presenter-clientId]get[text]] +[match{$:/state/wikilabs/tw-mcp/my-clientId}]" variable="_ignore">''(this tab)''</$list>
+
+<$button message="tm-mcp-claim-presenter">Claim presenter</$button> <$button message="tm-mcp-release-presenter">Release presenter</$button>
+
+In presentation mode the presenter's `$:/StoryList` and other per-tab tiddlers broadcast to all other tabs. Last-claim-wins. Closing the presenter's browser releases the role.
+
+</$list>
 
 ! Per-tab tiddlers
 

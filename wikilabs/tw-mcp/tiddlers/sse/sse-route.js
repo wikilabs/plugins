@@ -27,5 +27,11 @@ exports.handler = function(request, response, state) {
 		response.end("SSE not enabled - start the server with --mcp sse\n");
 		return;
 	}
-	$tw.mcp.sse.addClient(request, response);
+	// EventSource can't set custom headers, so the client passes its
+	// per-tab clientId as a query parameter. The server tracks it on the
+	// connection so the disconnect handler can release the presenter role
+	// if the leaving tab held it.
+	var clientId = state.queryParameters && state.queryParameters.clientId || null;
+	var username = state.queryParameters && state.queryParameters.username || null;
+	$tw.mcp.sse.addClient(request, response, clientId, username);
 };
