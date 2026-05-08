@@ -23,6 +23,11 @@ var HEARTBEAT_MS = 25000;
 var INLINE_THRESHOLD_TIDDLER = "$:/config/wikilabs/tw-mcp/sse-inline-threshold";
 var SYNC_FILTER_TIDDLER = "$:/config/SyncFilter";
 var DEFAULT_SYNC_FILTER = "[all[tiddlers]] -[[$:/isEncrypted]] -[prefix[$:/temp/]] -[prefix[$:/status/]] -[has[plugin-type]]";
+// Per-tab view-state tiddlers: changes from a browser (clientId set) are NOT
+// broadcast, so each tab keeps its own story river and history. MCP tools and
+// filesystem-watcher edits have no clientId and broadcast normally.
+var PER_TAB_TIDDLERS_TIDDLER = "$:/config/wikilabs/tw-mcp/per-tab-tiddlers";
+var DEFAULT_PER_TAB_FILTER = "[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]";
 
 var KNOWN_TIDDLYWEB_FIELDS = ["bag","created","creator","modified","modifier","permissions","recipe","revision","tags","text","title","type","uri"];
 
@@ -86,6 +91,28 @@ SSEBroadcaster.prototype.applySyncFilter = function(titles) {
 	return allowed;
 };
 
+// Returns a hashmap of titles that count as "per-tab view state" (StoryList,
+// HistoryList, $:/state/* by default; user-extendable via the config tiddler).
+// Recompiles the filter per call so edits to the config tiddler take effect
+// without restart -- compile is microsecond-fast for short filters.
+SSEBroadcaster.prototype.applyPerTabFilter = function(titles) {
+	var self = this;
+	var filterText = this.wiki.getTiddlerText(PER_TAB_TIDDLERS_TIDDLER, DEFAULT_PER_TAB_FILTER);
+	var filterFn = this.wiki.compileFilter(filterText);
+	var source = function(callback) {
+		titles.forEach(function(title) {
+			var t = self.wiki.tiddlerExists(title) && self.wiki.getTiddler(title);
+			callback(t, title);
+		});
+	};
+	var hits = filterFn.call(this.wiki, source);
+	var set = Object.create(null);
+	for(var i = 0; i < hits.length; i++) {
+		set[hits[i]] = true;
+	}
+	return set;
+};
+
 SSEBroadcaster.prototype.shouldSkipDelete = function(title) {
 	return title.indexOf("$:/temp/") === 0
 		|| title.indexOf("$:/state/") === 0
@@ -113,16 +140,24 @@ SSEBroadcaster.prototype.handleWikiChange = function(changes) {
 	var self = this;
 	var titles = Object.keys(changes);
 	var allowed = this.applySyncFilter(titles);
+	var perTab = this.applyPerTabFilter(titles);
 	titles.forEach(function(title) {
 		var change = changes[title];
 		if(change.deleted) {
 			if(self.shouldSkipDelete(title)) return;
+			var clientId = self.consumeOriginatorClientId(title);
+			// Per-tab tiddler from a browser: don't broadcast (each tab keeps
+			// its own story river / history). MCP tools and fs-watcher have no
+			// clientId and pass through.
+			if(perTab[title] && clientId) return;
 			self.broadcast("tiddler-delete", {
 				title: title,
-				clientId: self.consumeOriginatorClientId(title)
+				clientId: clientId
 			});
 		} else {
 			if(!allowed[title]) return;
+			var clientId = self.consumeOriginatorClientId(title);
+			if(perTab[title] && clientId) return;
 			var tiddler = self.wiki.getTiddler(title);
 			if(!tiddler) return;
 			var fields = self.serializeTiddler(tiddler);
@@ -130,7 +165,7 @@ SSEBroadcaster.prototype.handleWikiChange = function(changes) {
 			var payload = {
 				title: title,
 				revision: self.wiki.getChangeCount(title).toString(),
-				clientId: self.consumeOriginatorClientId(title)
+				clientId: clientId
 			};
 			if(json.length <= self.getInlineThreshold()) {
 				payload.fields = fields;
