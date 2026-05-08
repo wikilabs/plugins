@@ -32,6 +32,16 @@ exports.handler = function(request, response, state) {
 		response.end("X-MCP-Client-Id header required\n");
 		return;
 	}
+	// Main mode with an admin set: only the admin can grant presenter via
+	// /presenter/grant. Self-claim from any other tab is forbidden. With
+	// no admin, main behaves as last-wins (same as presentation).
+	if($tw.mcp.sse.getMode() === "main"
+		&& $tw.mcp.sse.mainClientId
+		&& $tw.mcp.sse.mainClientId !== clientId) {
+		response.writeHead(403, {"Content-Type": "text/plain"});
+		response.end("Main mode: only the admin can grant presenter\n");
+		return;
+	}
 	var username = request.headers["x-mcp-username"] || null;
 	$tw.mcp.sse.claimPresenter(clientId, username);
 	response.writeHead(204);

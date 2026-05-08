@@ -1,41 +1,105 @@
-title: $:/plugins/wikilabs/tw-mcp/ui/ControlPanel/MCP-Server
-caption: MCP Server
+title: $:/plugins/wikilabs/tw-mcp/ui/ControlPanel/MCP-SSE
+caption: MCP SSE
 tags: $:/tags/ControlPanel/WikiLabs
+
+\procedure presenterButtons()
+<$button message="tm-mcp-claim-presenter" disabled=<<claimDisabled>>>Claim presenter</$button> <$button message="tm-mcp-release-presenter" disabled=<<releaseDisabled>>>Release presenter</$button>
+\end
+
+<$let
+	mode={{{ [[$:/config/wikilabs/tw-mcp/mode]get[text]] :else[[default]] }}}
+	mainCid={{{ [[$:/state/wikilabs/tw-mcp/main-clientId]get[text]] }}}
+	mainName={{{ [[$:/state/wikilabs/tw-mcp/main-username]get[text]] }}}
+	myCid={{{ [[$:/state/wikilabs/tw-mcp/my-clientId]get[text]] }}}
+	presenterCid={{{ [[$:/state/wikilabs/tw-mcp/presenter-clientId]get[text]] }}}
+	presenterName={{{ [[$:/state/wikilabs/tw-mcp/presenter-username]get[text]] }}}
+	locked={{{ [<mode>!match[main]then[no]] :else[<mainCid>is[blank]then[no]] :else[<mainCid>match<myCid>then[no]else[yes]] }}}
+	claimDisabled={{{ [<mode>!match[main]then[no]] :else[<mainCid>is[blank]then[no]else[yes]] }}}
+	releaseDisabled={{{ [<mode>!match[main]then[no]] :else[<mainCid>is[blank]then[no]] :else[<mainCid>match<myCid>then[no]] :else[<presenterCid>match<myCid>then[no]else[yes]] }}}
+>
 
 ! Broadcast mode
 
 Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:/HistoryList`, `$:/state/*` by default) propagate between connected browser tabs. MCP-tool changes and filesystem-watcher edits always broadcast to all tabs, regardless of mode.
 
-|! |!Mode |!Description |
-|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="default" default="default"/> |''Default'' |Per-tab view state stays per-tab. Browser-originated `$:/StoryList` changes do not cross-sync. |
-|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="presentation"/> |''Presentation'' |One tab is the //presenter// and its view-state changes broadcast to all other tabs. Last-claim-wins. |
-|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="main"/> |''Main'' |Like presentation, but a tab can claim the //i-am-main// admin role and gate who is allowed to present. ''Not yet wired in this version.'' |
+<% if [<locked>match[yes]] %>
 
-! Server status
+//Settings are locked while another tab holds main. Current mode: ''<$text text=<<mode>>/>''.//
+
+<% endif %>
+
+<% if [<locked>match[no]] %>
+<table>
+<thead><tr><th></th><th>Mode</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="default" default="default"/></td><td>''Default''</td><td>Per-tab view state stays per-tab. Browser-originated `$:/StoryList` changes do not cross-sync.</td></tr>
+<tr><td><$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="presentation"/></td><td>''Presentation''</td><td>One tab is the //presenter// and its view-state changes broadcast to all other tabs. Last-claim-wins.</td></tr>
+<tr><td><$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="main"/></td><td>''Main''</td><td>Like presentation, but a tab can claim the //i-am-main// admin role and gate who is allowed to present. Without an admin, falls back to last-wins.</td></tr>
+</tbody>
+</table>
+<% endif %>
+
+! SSE status
 
 |! Field | ! Value |
 |SSE active | <$text text={{{ [[$:/status/wikilabs/tw-mcp/sse-server-active]get[text]] :else[[no]] }}}/> |
-|Current mode | <$text text={{{ [[$:/config/wikilabs/tw-mcp/mode]get[text]] :else[[default]] }}}/> |
+|Current mode | <$text text=<<mode>>/> |
 |Per-tab tiddlers filter | <$text text={{{ [[$:/config/wikilabs/tw-mcp/per-tab-tiddlers]get[text]] :else[[default]] }}}/> |
 
-<$list filter="[[$:/config/wikilabs/tw-mcp/mode]get[text]!match[default]]" variable="_ignore">
+<% if [<mode>!match[default]] %>
 
 ! Presenter
 
-''Current presenter:'' <$list filter="[[$:/state/wikilabs/tw-mcp/presenter-clientId]get[text]] +[!is[blank]]" variable="cid" emptyMessage="(none)"><$list filter="[[$:/state/wikilabs/tw-mcp/presenter-username]get[text]] +[!is[blank]]" variable="uname">"''<$text text=<<uname>>/>''" </$list>(<<cid>>)</$list> <$list filter="[[$:/state/wikilabs/tw-mcp/presenter-clientId]get[text]] +[match{$:/state/wikilabs/tw-mcp/my-clientId}]" variable="_ignore">''(this tab)''</$list>
+''Current presenter:''<% if [<presenterCid>!is[blank]] %> <% if [<presenterName>!is[blank]] %>"''<<presenterName>>''" <% endif %>(<<presenterCid>>)<% else %> (none)<% endif %><% if [<presenterCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
 
-<$button message="tm-mcp-claim-presenter">Claim presenter</$button> <$button message="tm-mcp-release-presenter">Release presenter</$button>
+<<presenterButtons>>
 
 In presentation mode the presenter's `$:/StoryList` and other per-tab tiddlers broadcast to all other tabs. Last-claim-wins. Closing the presenter's browser releases the role.
 
+<% if [<mode>match[main]] %>
+
+! Main (admin)
+
+''Current main:''<% if [<mainCid>!is[blank]] %> <% if [<mainName>!is[blank]] %>"''<<mainName>>''" <% endif %>(<<mainCid>>)<% else %> (none)<% endif %><% if [<mainCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
+
+<% if [<mainCid>is[blank]] %><$button>
+<$action-sendmessage $message="tm-mcp-claim-main"/>
+<$action-sendmessage $message="tm-mcp-refresh-clients"/>
+Become Main
+</$button> <% endif %><% if [<mainCid>!is[blank]match<myCid>] %><$button message="tm-mcp-release-main">Release Main</$button><% endif %>
+
+When an admin is set, the admin alone can change SSE settings (mode, per-tab filter) and grant presenter status. Without an admin, main mode falls back to last-wins, like presentation.
+
+<% if [<mainCid>!is[blank]match<myCid>] %>
+
+!! Connected clients
+
+<$button message="tm-mcp-refresh-clients">Refresh client list</$button>
+
+<$list filter="[list[$:/state/wikilabs/tw-mcp/clients-list!!list]]" variable="cid" emptyMessage="(no clients seen yet -- click Refresh)">
+<$let
+	usernameField={{{ [[username-]addsuffix<cid>] }}}
+	uname={{{ [[$:/state/wikilabs/tw-mcp/clients-list]get<usernameField>] }}}
+>
+
+* <% if [<uname>!is[blank]] %>"''<<uname>>''" <% endif %>(<<cid>>)<% if [<cid>match<presenterCid>] %> ''(presenter)''<% endif %><% if [<cid>match<myCid>] %> ''(this tab)''<% endif %><% if [<cid>!match<presenterCid>] %> <$button message="tm-mcp-grant-presenter" param=<<cid>>>Grant presenter</$button><% endif %>
+</$let>
 </$list>
+
+<% endif %>
+
+<% endif %>
+
+<% endif %>
 
 ! Per-tab tiddlers
 
-Edit `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` to extend or override which titles are treated as per-tab view state. The value is a TW filter; default:
+<% if [<locked>match[yes]] %>//Locked: only the admin can edit `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` while main mode is active.//<% else %>Edit `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` to extend or override which titles are treated as per-tab view state.<% endif %> The value is a TW filter; default:
 
 ```
 [[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]
 ```
 
 Changes take effect on the next wiki change without restart.
+
+</$let>

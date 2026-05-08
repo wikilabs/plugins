@@ -43,6 +43,18 @@ exports.handler = function(request, response, state) {
 		delete fields._is_skinny;
 	}
 	var clientId = request.headers["x-mcp-client-id"];
+	// Main mode lockdown: when an admin is set, only the admin can mutate
+	// SSE settings. Other tabs see 403 so the syncer surfaces an error
+	// instead of letting the local change drift from the server.
+	if(clientId && $tw.mcp && $tw.mcp.sse
+		&& title.indexOf("$:/config/wikilabs/tw-mcp/") === 0
+		&& $tw.mcp.sse.getMode() === "main"
+		&& $tw.mcp.sse.mainClientId
+		&& $tw.mcp.sse.mainClientId !== clientId) {
+		response.writeHead(403, {"Content-Type": "text/plain"});
+		response.end("Main mode: only the admin can change SSE settings\n");
+		return;
+	}
 	if(clientId && $tw.mcp && $tw.mcp.sse) {
 		$tw.mcp.sse.recordOriginator(title, clientId);
 	}

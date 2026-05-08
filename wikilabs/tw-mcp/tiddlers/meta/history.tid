@@ -1,27 +1,25 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.12.0 - 2026.05.08
+
+* ''Main mode'': a tab claims the exclusive //i-am-main// admin role. While held, only the admin changes settings or grants presenter; without admin, falls back to last-wins.
+* ControlPanel renamed //MCP SSE//. New //Main// section + admin-only //Connected clients// sub-panel with //Grant presenter// buttons. Per-tab UserName via sessionStorage.
+
 V 0.11.0 - 2026.05.08
 
-* ''Presentation mode'': set `$:/config/wikilabs/tw-mcp/mode` to `presentation` and one tab becomes the //presenter// whose per-tab tiddlers (story river, history, state) broadcast to all other tabs. Last-claim-wins; closing the presenter's browser releases the role.
-* ControlPanel //Presenter// section: claim/release buttons, status line showing `"Username" (clientId)`.
+* ''Presentation mode'': one tab becomes the //presenter//; its per-tab tiddlers (story river, history, state) broadcast to all other tabs (last-claim-wins, released on browser close). ControlPanel //Presenter// section with claim/release buttons.
 
 V 0.10.2 - 2026.05.08
 
-* New ControlPanel tab //MCP Server// under //WikiLabs// with a Default/Presentation/Main mode radio writing `$:/config/wikilabs/tw-mcp/mode`. Phase 2 is UI scaffolding only -- presentation/main behave as default until phase 3.
+* New ControlPanel //MCP Server// tab with Default/Presentation/Main mode radio (`$:/config/wikilabs/tw-mcp/mode`). UI scaffolding only -- modes activate in v0.11.0+.
 
 V 0.10.1 - 2026.05.08
 
-* SSE: browser-originated changes to per-tab view-state tiddlers (`$:/StoryList`, `$:/HistoryList`, `$:/state/*`) no longer cross-sync between tabs. MCP-tool and filesystem changes still broadcast.
-* Config: `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` (TW filter) extends/overrides the suppression list, hot-reloaded.
+* SSE: per-tab view-state tiddlers (`$:/StoryList`, `$:/HistoryList`, `$:/state/*`) no longer cross-sync between browser tabs; MCP and filesystem changes still broadcast. Suppression list editable via `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` (TW filter, hot-reloaded).
 
 V 0.10.0 - 2026.05.08
 
-''SSE broadcast sync (server + client).'' New `--mcp sse` keyword starts the HTTP server and enables a `GET /events` Server-Sent Events endpoint for real-time per-tiddler push sync, replacing tiddlyweb's 60-second full-list polling. Browser-side: a startup module wraps the stock tiddlyweb adaptor at runtime with an SSE-aware subclass — no separate plugin install needed. Echo suppression via `X-MCP-Client-Id` header. Last-Event-ID replay via in-memory ring buffer. Full docs in [[MCP SSE Sync]].
-
-* Server: new `sse-broadcaster.js`, `sse-route.js` (priority 500), `sse-put-tiddler.js` and `sse-delete-tiddler.js` (priority 200, header-stash overrides). `mcp.js` parses the `sse` keyword, initialises the broadcaster after `startMCPServer`, and writes the marker `$:/status/wikilabs/tw-mcp/sse-server-active = yes`.
-* Client: new `sse-adaptor.js` factory and `sse-bootstrap.js` startup module. Bootstrap runs `before:["startup"]` and replaces tiddlyweb's `adaptorClass` with a subclass that inherits `getSkinnyTiddlers` / `loadTiddler` / `login` / `logout` unchanged and only overrides `saveTiddler` / `deleteTiddler` (to add the clientId header) and `getStatus` (to open the `EventSource`).
-* Default `$:/config/SyncPollingInterval` set to 600000 (10-minute fallback).
-* Without `--mcp sse` the marker tiddler is absent and the bootstrap is a no-op — tiddlyweb's polling adaptor stays in charge.
+''SSE broadcast sync (server + client).'' New `--mcp sse` keyword adds a `GET /events` Server-Sent Events endpoint for real-time per-tiddler push sync, replacing tiddlyweb's 60-second polling. The browser-side startup module wraps the stock tiddlyweb adaptor at runtime -- no separate plugin install. Echo suppression via `X-MCP-Client-Id`; Last-Event-ID replay via ring buffer. Default `$:/config/SyncPollingInterval` set to 600000 (10-minute fallback). Without `--mcp sse`, polling stays in charge. Full docs in [[MCP SSE Sync]].
 
 V 0.9.4 - 2026.05.04
 

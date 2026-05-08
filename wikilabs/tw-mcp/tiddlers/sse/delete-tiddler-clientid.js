@@ -25,6 +25,15 @@ exports.info = {
 exports.handler = function(request, response, state) {
 	var title = $tw.utils.decodeURIComponentSafe(state.params[0]);
 	var clientId = request.headers["x-mcp-client-id"];
+	if(clientId && $tw.mcp && $tw.mcp.sse
+		&& title.indexOf("$:/config/wikilabs/tw-mcp/") === 0
+		&& $tw.mcp.sse.getMode() === "main"
+		&& $tw.mcp.sse.mainClientId
+		&& $tw.mcp.sse.mainClientId !== clientId) {
+		response.writeHead(403, {"Content-Type": "text/plain"});
+		response.end("Main mode: only the admin can change SSE settings\n");
+		return;
+	}
 	if(clientId && $tw.mcp && $tw.mcp.sse) {
 		$tw.mcp.sse.recordOriginator(title, clientId);
 	}

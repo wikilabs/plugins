@@ -36,8 +36,16 @@ upstream fixes flow through automatically.
 
 var STATE_PRESENTER = "$:/state/wikilabs/tw-mcp/presenter-clientId";
 var STATE_PRESENTER_USERNAME = "$:/state/wikilabs/tw-mcp/presenter-username";
+var STATE_MAIN = "$:/state/wikilabs/tw-mcp/main-clientId";
+var STATE_MAIN_USERNAME = "$:/state/wikilabs/tw-mcp/main-username";
+var STATE_CLIENTS_LIST = "$:/state/wikilabs/tw-mcp/clients-list";
 var STATE_MY_CLIENT_ID = "$:/state/wikilabs/tw-mcp/my-clientId";
 var USERNAME_TIDDLER = "$:/status/UserName";
+// sessionStorage key for per-tab username persistence. sessionStorage is
+// scoped to a single browser tab, so each tab keeps its own UserName
+// across page reloads without bleeding into siblings (which is what
+// localStorage / browserStorage would do).
+var USERNAME_SESSION_KEY = "wikilabs-tw-mcp-username";
 var PER_TAB_TIDDLERS_TIDDLER = "$:/config/wikilabs/tw-mcp/per-tab-tiddlers";
 var DEFAULT_PER_TAB_FILTER = "[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]";
 var SYNC_FILTER_TIDDLER = "$:/config/SyncFilter";
@@ -77,6 +85,18 @@ exports.makeSSEAdaptor = function(BaseClass) {
 			$tw.rootWidget.addEventListener("tm-mcp-release-presenter", function() {
 				self.postPresenterAction("release");
 			});
+			$tw.rootWidget.addEventListener("tm-mcp-claim-main", function() {
+				self.postMainAction("claim");
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-release-main", function() {
+				self.postMainAction("release");
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-grant-presenter", function(event) {
+				self.postPresenterGrant(event.param);
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-refresh-clients", function() {
+				self.refreshClientsList();
+			});
 		}
 		// Watch for per-tab tiddler changes the syncer would skip (most
 		// notably $:/state/*) and push them directly when we're the
@@ -84,6 +104,16 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		// followers because TW's SyncFilter excludes $:/state/* entirely.
 		this.wiki.addEventListener("change", function(changes) {
 			self.pushPerTabIfPresenter(changes);
+			if(changes[USERNAME_TIDDLER]) {
+				try {
+					var val = self.wiki.getTiddlerText(USERNAME_TIDDLER, "") || "";
+					// Only persist non-empty values. TW writes "" at boot
+					// before our getStatus override has a chance to restore
+					// from sessionStorage; saving that "" would clobber the
+					// previously saved name.
+					if(val) sessionStorage.setItem(USERNAME_SESSION_KEY, val);
+				} catch(e) {}
+			}
 		});
 	}
 	TiddlyWebSSEAdaptor.prototype = Object.create(BaseClass.prototype);
@@ -149,6 +179,21 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		var self = this;
 		baseGetStatus.call(this, function(err, isLoggedIn, username, isReadOnly, isAnonymous) {
 			if(!err) {
+				// Per-tab UserName: if the server returned no username (the
+				// usual anonymous case), substitute whatever this tab last
+				// had in sessionStorage. Stamp the wiki up front so the
+				// SSE stream URL picks it up, and also pass it through to
+				// the syncer's callback so its own $:/status/UserName write
+				// matches (instead of clobbering with "").
+				if(!username) {
+					try {
+						var saved = sessionStorage.getItem(USERNAME_SESSION_KEY);
+						if(saved) {
+							username = saved;
+							self.wiki.addTiddler({title: USERNAME_TIDDLER, text: saved});
+						}
+					} catch(e) {}
+				}
 				self.connectEventStream();
 			}
 			if(callback) {
@@ -181,6 +226,7 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		es.addEventListener("tiddler-delete", function(ev) { self.handleTiddlerDelete(ev); });
 		es.addEventListener("cache-miss", function(ev) { self.handleCacheMiss(ev); });
 		es.addEventListener("presenter-changed", function(ev) { self.handlePresenterChanged(ev); });
+		es.addEventListener("main-changed", function(ev) { self.handleMainChanged(ev); });
 		es.addEventListener("error", function() {
 			self.logger.log("SSE stream error; will auto-reconnect");
 		});
@@ -198,10 +244,15 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		// can show who is presenting (UUID + friendly username).
 		this.wiki.addTiddler({title: STATE_PRESENTER, text: data.presenterClientId || ""});
 		this.wiki.addTiddler({title: STATE_PRESENTER_USERNAME, text: data.presenterUsername || ""});
-		// Auto-claim: in presentation/main mode, if no current presenter, this
-		// tab takes the role. First-tab-wins by virtue of arriving first;
-		// later tabs see a populated presenterClientId and don't claim.
-		if((data.mode === "presentation" || data.mode === "main") && !data.presenterClientId) {
+		this.wiki.addTiddler({title: STATE_MAIN, text: data.mainClientId || ""});
+		this.wiki.addTiddler({title: STATE_MAIN_USERNAME, text: data.mainUsername || ""});
+		// Auto-claim: in presentation mode, or in main mode without an admin,
+		// the first connecting tab takes the presenter role. In main mode WITH
+		// an admin, /presenter/claim returns 403, so don't try -- the admin
+		// must grant explicitly.
+		var canAutoClaim = (data.mode === "presentation")
+			|| (data.mode === "main" && !data.mainClientId);
+		if(canAutoClaim && !data.presenterClientId) {
 			this.postPresenterAction("claim");
 		}
 	};
@@ -211,6 +262,13 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		if(!data) return;
 		this.wiki.addTiddler({title: STATE_PRESENTER, text: data.clientId || ""});
 		this.wiki.addTiddler({title: STATE_PRESENTER_USERNAME, text: data.username || ""});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.handleMainChanged = function(ev) {
+		var data = parseSSEData(ev);
+		if(!data) return;
+		this.wiki.addTiddler({title: STATE_MAIN, text: data.clientId || ""});
+		this.wiki.addTiddler({title: STATE_MAIN_USERNAME, text: data.username || ""});
 	};
 
 	// Returns a Set of titles in `changedTitles` that match the given filter.
@@ -305,6 +363,78 @@ exports.makeSSEAdaptor = function(BaseClass) {
 				if(err) {
 					self.logger.log("presenter/" + action + " failed:", err);
 				}
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.postMainAction = function(action) {
+		var self = this;
+		var headers = {
+			"X-MCP-Client-Id": this.clientId,
+			"X-Requested-With": "TiddlyWiki"
+		};
+		var username = this.wiki.getTiddlerText(USERNAME_TIDDLER, "") || "";
+		if(username) {
+			headers["X-MCP-Username"] = username;
+		}
+		$tw.utils.httpRequest({
+			url: this.host + "main/" + action,
+			type: "POST",
+			headers: headers,
+			callback: function(err) {
+				if(err) {
+					self.logger.log("main/" + action + " failed:", err);
+				}
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.postPresenterGrant = function(targetClientId) {
+		if(!targetClientId) return;
+		var self = this;
+		$tw.utils.httpRequest({
+			url: this.host + "presenter/grant",
+			type: "POST",
+			headers: {
+				"X-MCP-Client-Id": this.clientId,
+				"Content-type": "application/json",
+				"X-Requested-With": "TiddlyWiki"
+			},
+			data: JSON.stringify({ clientId: targetClientId }),
+			callback: function(err) {
+				if(err) {
+					self.logger.log("presenter/grant failed:", err);
+				}
+			}
+		});
+	};
+
+	// Polled by the admin sub-panel's Refresh button. Writes the live client
+	// set to a list-field tiddler the panel renders against.
+	TiddlyWebSSEAdaptor.prototype.refreshClientsList = function() {
+		var self = this;
+		$tw.utils.httpRequest({
+			url: this.host + "clients",
+			callback: function(err, data) {
+				if(err) {
+					self.logger.log("clients fetch failed:", err);
+					return;
+				}
+				var arr;
+				try {
+					arr = JSON.parse(data);
+				} catch(e) {
+					self.logger.log("clients parse failed:", e);
+					return;
+				}
+				var ids = [];
+				var fields = { title: STATE_CLIENTS_LIST };
+				arr.forEach(function(c) {
+					ids.push(c.clientId);
+					fields["username-" + c.clientId] = c.username || "";
+				});
+				fields.list = ids;
+				self.wiki.addTiddler(fields);
 			}
 		});
 	};

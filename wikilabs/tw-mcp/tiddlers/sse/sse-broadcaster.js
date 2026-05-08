@@ -43,6 +43,8 @@ function SSEBroadcaster(wiki) {
 	this.pendingOriginators = Object.create(null);
 	this.presenterClientId = null;
 	this.presenterUsername = null;
+	this.mainClientId = null;
+	this.mainUsername = null;
 	var filterText = wiki.getTiddlerText(SYNC_FILTER_TIDDLER) || DEFAULT_SYNC_FILTER;
 	this.filterFn = wiki.compileFilter(filterText);
 	wiki.addEventListener("change", function(changes) {
@@ -156,6 +158,12 @@ SSEBroadcaster.prototype.shouldBroadcastPerTab = function(clientId) {
 SSEBroadcaster.prototype.handleWikiChange = function(changes) {
 	var self = this;
 	var titles = Object.keys(changes);
+	// The i-am-main role only has meaning in main mode. If the wiki's mode
+	// tiddler flips to anything else, clear it so a later switch back to
+	// main starts unowned and any tab can claim.
+	if(changes[MODE_TIDDLER] && this.mainClientId && this.getMode() !== "main") {
+		this.releaseMain(null);
+	}
 	var allowed = this.applySyncFilter(titles);
 	var perTab = this.applyPerTabFilter(titles);
 	titles.forEach(function(title) {
@@ -209,12 +217,24 @@ SSEBroadcaster.prototype.findUsernameFor = function(clientId) {
 	return found;
 };
 
+// Backfill the username on any matching EventSource client. Used when a
+// claim arrives with X-MCP-Username for a tab whose SSE connection was
+// opened before the user typed their name -- without this, getClients()
+// keeps returning the connection-time empty value.
+SSEBroadcaster.prototype.updateClientUsername = function(clientId, username) {
+	if(!clientId || !username) return;
+	this.clients.forEach(function(c) {
+		if(c.clientId === clientId) c.username = username;
+	});
+};
+
 // Presenter election (last-claim-wins). Called from /presenter/claim and
 // /presenter/release route handlers, and from addClient on disconnect.
 // Username may come from the claim header (preferred -- always fresh) or
 // from the connection-time lookup (fallback).
 SSEBroadcaster.prototype.claimPresenter = function(clientId, username) {
 	if(!clientId) return false;
+	this.updateClientUsername(clientId, username);
 	var resolvedUsername = username || this.findUsernameFor(clientId) || null;
 	// No-op only if both clientId AND username already match (so a re-claim
 	// after the user types their UserName promotes the friendly name).
@@ -234,6 +254,52 @@ SSEBroadcaster.prototype.releasePresenter = function(clientId) {
 	this.presenterUsername = null;
 	this.broadcast("presenter-changed", { clientId: null, username: null });
 	return true;
+};
+
+// The admin role is exclusive: once a tab holds main, no other tab can
+// take over. Same-tab re-claims update the friendly name (e.g. after the
+// user types a UserName). Release/disconnect/mode-flip are the only ways
+// the role changes hands.
+SSEBroadcaster.prototype.claimMain = function(clientId, username) {
+	if(!clientId) return false;
+	if(this.mainClientId && this.mainClientId !== clientId) return false;
+	this.updateClientUsername(clientId, username);
+	var resolvedUsername = username || this.findUsernameFor(clientId) || null;
+	if(this.mainClientId === clientId && this.mainUsername === resolvedUsername) return false;
+	this.mainClientId = clientId;
+	this.mainUsername = resolvedUsername;
+	this.broadcast("main-changed", { clientId: clientId, username: resolvedUsername });
+	return true;
+};
+
+SSEBroadcaster.prototype.releaseMain = function(clientId) {
+	if(clientId !== null && clientId !== this.mainClientId) return false;
+	if(this.mainClientId === null) return false;
+	this.mainClientId = null;
+	this.mainUsername = null;
+	this.broadcast("main-changed", { clientId: null, username: null });
+	return true;
+};
+
+// Admin-gated presenter grant. Returns false if caller is not the current
+// admin (handler converts to 403). On success delegates to claimPresenter
+// so the existing last-wins broadcast machinery applies.
+SSEBroadcaster.prototype.grantPresenter = function(adminClientId, targetClientId) {
+	if(!this.mainClientId || adminClientId !== this.mainClientId) return false;
+	if(!targetClientId) return false;
+	var targetUsername = this.findUsernameFor(targetClientId);
+	return this.claimPresenter(targetClientId, targetUsername);
+};
+
+// Snapshot of currently-connected clients for the admin UI's polling.
+// Skips probe connections that opened /events without a clientId query
+// param (those have no useful identity for granting).
+SSEBroadcaster.prototype.getClients = function() {
+	var out = [];
+	this.clients.forEach(function(c) {
+		if(c.clientId) out.push({ clientId: c.clientId, username: c.username || null });
+	});
+	return out;
 };
 
 SSEBroadcaster.prototype.broadcast = function(eventName, payload) {
@@ -294,6 +360,9 @@ SSEBroadcaster.prototype.addClient = function(request, response, clientId, usern
 		if(client.clientId && client.clientId === self.presenterClientId) {
 			self.releasePresenter(null);
 		}
+		if(client.clientId && client.clientId === self.mainClientId) {
+			self.releaseMain(null);
+		}
 	});
 	// Initial flush + hello
 	response.write(":\n\n");
@@ -302,7 +371,9 @@ SSEBroadcaster.prototype.addClient = function(request, response, clientId, usern
 		inlineThreshold: this.getInlineThreshold(),
 		mode: this.getMode(),
 		presenterClientId: this.presenterClientId,
-		presenterUsername: this.presenterUsername
+		presenterUsername: this.presenterUsername,
+		mainClientId: this.mainClientId,
+		mainUsername: this.mainUsername
 	}));
 	// Replay if Last-Event-ID was sent
 	var rawLastId = request.headers["last-event-id"];
