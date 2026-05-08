@@ -50,7 +50,7 @@ Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:
 
 ! Presenter
 
-''Current presenter:''<% if [<presenterCid>!is[blank]] %> <% if [<presenterName>!is[blank]] %>"''<<presenterName>>''" <% endif %>(<<presenterCid>>)<% else %> (none)<% endif %><% if [<presenterCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
+''Current presenter:''<% if [<presenterCid>!is[blank]] %> <% if [<presenterName>!is[blank]] %>"''<$text text=<<presenterName>>/>''" <% endif %>(<$text text=<<presenterCid>>/>)<% else %> (none)<% endif %><% if [<presenterCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
 
 <<presenterButtons>>
 
@@ -60,7 +60,7 @@ In presentation mode the presenter's `$:/StoryList` and other per-tab tiddlers b
 
 ! Main (admin)
 
-''Current main:''<% if [<mainCid>!is[blank]] %> <% if [<mainName>!is[blank]] %>"''<<mainName>>''" <% endif %>(<<mainCid>>)<% else %> (none)<% endif %><% if [<mainCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
+''Current main:''<% if [<mainCid>!is[blank]] %> <% if [<mainName>!is[blank]] %>"''<$text text=<<mainName>>/>''" <% endif %>(<$text text=<<mainCid>>/>)<% else %> (none)<% endif %><% if [<mainCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
 
 <% if [<mainCid>is[blank]] %><$button>
 <$action-sendmessage $message="tm-mcp-claim-main"/>
