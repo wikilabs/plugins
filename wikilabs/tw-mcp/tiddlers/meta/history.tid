@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.10.2 - 2026.05.08
+
+* New ControlPanel tab //MCP Server// under //WikiLabs// with a Default/Presentation/Main mode radio writing `$:/config/wikilabs/tw-mcp/mode`. Phase 2 is UI scaffolding only -- presentation/main behave as default until phase 3.
+
 V 0.10.1 - 2026.05.08
 
 * SSE: browser-originated changes to per-tab view-state tiddlers (`$:/StoryList`, `$:/HistoryList`, `$:/state/*`) no longer cross-sync between tabs. MCP-tool and filesystem changes still broadcast.

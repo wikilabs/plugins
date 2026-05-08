@@ -1,0 +1,29 @@
+title: $:/plugins/wikilabs/tw-mcp/ui/ControlPanel/MCP-Server
+caption: MCP Server
+tags: $:/tags/ControlPanel/WikiLabs
+
+! Broadcast mode
+
+Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:/HistoryList`, `$:/state/*` by default) propagate between connected browser tabs. MCP-tool changes and filesystem-watcher edits always broadcast to all tabs, regardless of mode.
+
+|! Mode |! Description |
+|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="default" default="default"> ''Default''</$radio>|Per-tab view state stays per-tab. Browser-originated `$:/StoryList` changes do not cross-sync. |
+|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="presentation"> ''Presentation''</$radio>|One tab is the //presenter// and its view-state changes broadcast to all other tabs. Last-claim-wins. ''Not yet wired in this version.'' |
+|<$radio tiddler="$:/config/wikilabs/tw-mcp/mode" value="main"> ''Main''</$radio>|Like presentation, but a tab can claim the //i-am-main// admin role and gate who is allowed to present. ''Not yet wired in this version.'' |
+
+! Server status
+
+|! Field | ! Value |
+|SSE active | <$text text={{{ [[$:/status/wikilabs/tw-mcp/sse-server-active]get[text]] :else[[no]] }}}/> |
+|Current mode | <$text text={{{ [[$:/config/wikilabs/tw-mcp/mode]get[text]] :else[[default]] }}}/> |
+|Per-tab tiddlers filter | <$text text={{{ [[$:/config/wikilabs/tw-mcp/per-tab-tiddlers]get[text]] :else[[default]] }}}/> |
+
+! Per-tab tiddlers
+
+Edit `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` to extend or override which titles are treated as per-tab view state. The value is a TW filter; default:
+
+```
+[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]
+```
+
+Changes take effect on the next wiki change without restart.
