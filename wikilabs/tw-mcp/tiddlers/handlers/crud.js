@@ -101,6 +101,8 @@ module.exports = {
 	"put_tiddler": function(args) {
 		var denied = shared.checkWritable("put_tiddler");
 		if(denied) return denied;
+		var titleErr = shared.checkTitle(args.title, "put_tiddler");
+		if(titleErr) return titleErr;
 		var title = args.title,
 			existingTiddler = $tw.wiki.getTiddler(title),
 			creationFields = $tw.wiki.getCreationFields(),
@@ -120,6 +122,8 @@ module.exports = {
 	"edit_tiddler": function(args) {
 		var denied = shared.checkWritable("edit_tiddler");
 		if(denied) return denied;
+		var titleErr = shared.checkTitle(args.title, "edit_tiddler");
+		if(titleErr) return titleErr;
 		var hashline = require("$:/core/modules/commands/inspect/hashline.js");
 		var tiddler = $tw.wiki.getTiddler(args.title);
 		if(!tiddler) {
@@ -174,6 +178,8 @@ module.exports = {
 	"resave_tiddler": function(args) {
 		var denied = shared.checkWritable("resave_tiddler");
 		if(denied) return denied;
+		var titleErr = shared.checkTitle(args.title, "resave_tiddler");
+		if(titleErr) return titleErr;
 		var title = args.title;
 		var tiddler = $tw.wiki.getTiddler(title);
 		if(!tiddler) {
@@ -251,6 +257,8 @@ module.exports = {
 	"delete_tiddler": function(args) {
 		var denied = shared.checkWritable("delete_tiddler");
 		if(denied) return denied;
+		var titleErr = shared.checkTitle(args.title, "delete_tiddler");
+		if(titleErr) return titleErr;
 		var checkPathAllowed = shared.getCheckPathAllowed();
 		if(!$tw.wiki.tiddlerExists(args.title)) {
 			return shared.errorResult("Tiddler not found: " + args.title);

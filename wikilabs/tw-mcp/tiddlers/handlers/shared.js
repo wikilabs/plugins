@@ -46,6 +46,21 @@ function getCheckPathAllowed() {
 
 var MAX_FILTER_LENGTH = 10000;
 var MAX_TEXT_LENGTH = 500000;
+// Tiddler titles are stored in $tw.wiki's title index, broadcast in SSE event
+// payloads, and serialised as filesystem paths. Without a cap, a malicious MCP
+// client could OOM the process with multi-megabyte titles. 1024 is generous --
+// real titles are rarely over ~100 chars.
+var MAX_TITLE_LENGTH = 1024;
+
+// Validate a tiddler title supplied by the MCP client. Only fires on string
+// inputs that exceed the cap -- non-string / undefined / empty are left for
+// the handler's own missing-arg logic to surface.
+function checkTitle(title, toolName) {
+	if(typeof title === "string" && title.length > MAX_TITLE_LENGTH) {
+		return errorResult("Tool '" + toolName + "': title too long (" + title.length + " chars, max " + MAX_TITLE_LENGTH + ")");
+	}
+	return null;
+}
 
 // Build namespace tree from sorted titles.
 function buildTree(titles, maxDepth, _indent) {
@@ -347,6 +362,8 @@ exports.inspectValue = inspectValue;
 exports.computeMaxDepth = computeMaxDepth;
 exports.MAX_FILTER_LENGTH = MAX_FILTER_LENGTH;
 exports.MAX_TEXT_LENGTH = MAX_TEXT_LENGTH;
+exports.MAX_TITLE_LENGTH = MAX_TITLE_LENGTH;
+exports.checkTitle = checkTitle;
 exports.textResult = textResult;
 exports.errorResult = errorResult;
 exports.persistTiddler = persistTiddler;

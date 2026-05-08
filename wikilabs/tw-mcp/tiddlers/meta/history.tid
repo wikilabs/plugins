@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.2 - 2026.05.08
+
+* ''Hardening'': MCP write tools (`put_tiddler`, `edit_tiddler`, `resave_tiddler`, `delete_tiddler`, `upload_file`) now reject `title` arguments longer than 1024 chars to prevent OOM via the title index, SSE event payload, and filesystem-path stages.
+
 V 0.13.1 - 2026.05.08
 
 * ''Security'': fix two missed wikitext-injection spots in the //MCP SSE// ControlPanel — the //Current presenter// and //Current main// status lines now render `presenterName` and `mainName` via `<$text>` (same fix v0.12.1 applied to the //Connected clients// sub-panel).

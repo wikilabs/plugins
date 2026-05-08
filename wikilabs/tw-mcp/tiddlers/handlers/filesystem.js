@@ -202,6 +202,8 @@ module.exports = {
 	"upload_file": function(args) {
 		var denied = shared.checkWritable("upload_file");
 		if(denied) return denied;
+		var titleErr = shared.checkTitle(args.title, "upload_file");
+		if(titleErr) return titleErr;
 		var checkPathAllowed = shared.getCheckPathAllowed();
 		var filename = args.filename;
 		if(filename.indexOf("/") !== -1 || filename.indexOf("\\") !== -1 || filename.indexOf("..") !== -1) {
