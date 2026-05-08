@@ -32,6 +32,11 @@ exports.handler = function(request, response, state) {
 		response.end("X-MCP-Client-Id header missing or malformed\n");
 		return;
 	}
+	if(!$tw.mcp.sse.isClientConnected(clientId)) {
+		response.writeHead(401, {"Content-Type": "text/plain"});
+		response.end("clientId not bound to an active connection\n");
+		return;
+	}
 	// Main mode with an admin set: only the admin can grant presenter via
 	// /presenter/grant. Self-claim from any other tab is forbidden. With
 	// no admin, main behaves as last-wins (same as presentation).

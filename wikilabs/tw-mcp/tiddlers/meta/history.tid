@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.0 - 2026.05.08
+
+* ''Connection-bound `clientId`'' (closes audit H1). Server issues the `clientId` at `/events` connect and returns it via `hello.assignedClientId`; caller-supplied `?clientId=` is ignored. Role routes return `401` unless `X-MCP-Client-Id` is bound to a live connection; `GET /clients` is now admin-only (`403` otherwise).
+
 V 0.12.2 - 2026.05.08
 
 * ''Hardening'': cap concurrent SSE connections at 50; `/presenter/grant` rejects targets that aren't currently connected and caps request body at 1KB.

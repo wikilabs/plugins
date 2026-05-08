@@ -214,14 +214,14 @@ exports.makeSSEAdaptor = function(BaseClass) {
 			this.logger.log("EventSource not available; SSE disabled, falling back to polling");
 			return;
 		}
-		// EventSource cannot set custom headers, so clientId+username ride in
-		// the query string. The server tracks both on the connection: clientId
-		// for presenter-role cleanup on disconnect, username so presenter UIs
-		// can show a friendly name instead of just a UUID.
+		// EventSource cannot set custom headers, so the username rides in the
+		// query string. The server issues the clientId itself (returned via
+		// the hello payload's assignedClientId field) -- any caller-supplied
+		// clientId is ignored, so we don't bother sending one.
 		var username = this.wiki.getTiddlerText(USERNAME_TIDDLER, "") || "";
-		var url = this.host + "events?clientId=" + encodeURIComponent(this.clientId);
+		var url = this.host + "events";
 		if(username) {
-			url += "&username=" + encodeURIComponent(username);
+			url += "?username=" + encodeURIComponent(username);
 		}
 		this.logger.log("Opening SSE stream:", url);
 		var es = new EventSource(url, {withCredentials: true});
@@ -245,6 +245,13 @@ exports.makeSSEAdaptor = function(BaseClass) {
 			this.forceFullSync();
 		}
 		this.lastServerInstanceId = data.serverInstanceId;
+		// Adopt the server-issued clientId. Role-gated routes 401 any header
+		// value not bound to an active connection, so this MUST come before
+		// any postPresenterAction / postMainAction call below.
+		if(data.assignedClientId) {
+			this.clientId = data.assignedClientId;
+			this.wiki.addTiddler({title: STATE_MY_CLIENT_ID, text: this.clientId});
+		}
 		// Mirror server's presenter state into local state tiddlers so the UI
 		// can show who is presenting (UUID + friendly username).
 		this.wiki.addTiddler({title: STATE_PRESENTER, text: data.presenterClientId || ""});

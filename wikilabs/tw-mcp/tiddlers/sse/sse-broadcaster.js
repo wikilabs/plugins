@@ -382,29 +382,34 @@ SSEBroadcaster.prototype.sendHeartbeat = function() {
 	});
 };
 
-SSEBroadcaster.prototype.addClient = function(request, response, clientId, username) {
+SSEBroadcaster.prototype.addClient = function(request, response, username) {
 	var self = this;
 	if(this.clients.size >= MAX_CONNECTIONS) {
 		response.writeHead(503, {"Content-Type": "text/plain"});
 		response.end("Too many SSE connections\n");
 		return;
 	}
+	// Server-issued clientId. Browsers cannot supply their own (a `?clientId=`
+	// query param is ignored at the route layer); the assigned id is returned
+	// in the hello payload so the adaptor can adopt it. Role routes 401 any
+	// X-MCP-Client-Id that isn't bound to a live connection here.
+	var clientId = require("crypto").randomUUID();
 	response.writeHead(200, {
 		"Content-Type": "text/event-stream; charset=utf-8",
 		"Cache-Control": "no-cache, no-transform",
 		"Connection": "keep-alive",
 		"X-Accel-Buffering": "no"
 	});
-	var client = { res: response, clientId: clientId || null, username: username || null };
+	var client = { res: response, clientId: clientId, username: username || null };
 	this.clients.add(client);
 	request.on("close", function() {
 		self.clients.delete(client);
 		// If the disconnecting tab held the presenter role, clear it so a
 		// remaining tab can claim. Last-wins on the next claim.
-		if(client.clientId && client.clientId === self.presenterClientId) {
+		if(client.clientId === self.presenterClientId) {
 			self.releasePresenter(null);
 		}
-		if(client.clientId && client.clientId === self.mainClientId) {
+		if(client.clientId === self.mainClientId) {
 			self.releaseMain(null);
 		}
 	});
@@ -417,7 +422,8 @@ SSEBroadcaster.prototype.addClient = function(request, response, clientId, usern
 		presenterClientId: this.presenterClientId,
 		presenterUsername: this.presenterUsername,
 		mainClientId: this.mainClientId,
-		mainUsername: this.mainUsername
+		mainUsername: this.mainUsername,
+		assignedClientId: clientId
 	}));
 	// Replay if Last-Event-ID was sent
 	var rawLastId = request.headers["last-event-id"];

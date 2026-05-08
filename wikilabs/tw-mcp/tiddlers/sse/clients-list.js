@@ -7,6 +7,11 @@ GET /clients  --  snapshot of currently-connected SSE clients. Used by
 the admin UI in main mode to populate the grant-presenter picker.
 Returns JSON array of {clientId, username}. Polled, not pushed.
 
+Admin-only: caller's X-MCP-Client-Id must be bound to an active
+EventSource connection AND must equal the current main. Otherwise
+the connected-client list would leak the very identifiers the audit
+H1 finding warned about.
+
 \*/
 
 "use strict";
@@ -23,6 +28,22 @@ exports.handler = function(request, response, state) {
 	if(!$tw.mcp || !$tw.mcp.sse) {
 		response.writeHead(503, {"Content-Type": "text/plain"});
 		response.end("SSE not enabled\n");
+		return;
+	}
+	var clientId = request.headers["x-mcp-client-id"];
+	if(!clientId || !$tw.mcp.sse.isValidClientId(clientId)) {
+		response.writeHead(400, {"Content-Type": "text/plain"});
+		response.end("X-MCP-Client-Id header missing or malformed\n");
+		return;
+	}
+	if(!$tw.mcp.sse.isClientConnected(clientId)) {
+		response.writeHead(401, {"Content-Type": "text/plain"});
+		response.end("clientId not bound to an active connection\n");
+		return;
+	}
+	if(!$tw.mcp.sse.mainClientId || clientId !== $tw.mcp.sse.mainClientId) {
+		response.writeHead(403, {"Content-Type": "text/plain"});
+		response.end("Only the current main may list connected clients\n");
 		return;
 	}
 	var clients = $tw.mcp.sse.getClients();

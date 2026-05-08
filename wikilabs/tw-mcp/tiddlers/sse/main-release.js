@@ -31,6 +31,11 @@ exports.handler = function(request, response, state) {
 		response.end("X-MCP-Client-Id header missing or malformed\n");
 		return;
 	}
+	if(!$tw.mcp.sse.isClientConnected(clientId)) {
+		response.writeHead(401, {"Content-Type": "text/plain"});
+		response.end("clientId not bound to an active connection\n");
+		return;
+	}
 	$tw.mcp.sse.releaseMain(clientId);
 	response.writeHead(204);
 	response.end();

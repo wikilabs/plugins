@@ -32,6 +32,11 @@ exports.handler = function(request, response, state) {
 		response.end("X-MCP-Client-Id header missing or malformed\n");
 		return;
 	}
+	if(!$tw.mcp.sse.isClientConnected(clientId)) {
+		response.writeHead(401, {"Content-Type": "text/plain"});
+		response.end("clientId not bound to an active connection\n");
+		return;
+	}
 	// Main is exclusive. Reject takeover attempts with 409 so the UI can
 	// distinguish "already held" from generic refusal.
 	if($tw.mcp.sse.mainClientId && $tw.mcp.sse.mainClientId !== clientId) {
