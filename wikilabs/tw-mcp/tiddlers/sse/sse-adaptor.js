@@ -89,16 +89,16 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		var self = this;
 		if($tw.rootWidget) {
 			$tw.rootWidget.addEventListener("tm-mcp-claim-presenter", function() {
-				self.postPresenterAction("claim");
+				self.postRoleAction("presenter", "claim");
 			});
 			$tw.rootWidget.addEventListener("tm-mcp-release-presenter", function() {
-				self.postPresenterAction("release");
+				self.postRoleAction("presenter", "release");
 			});
 			$tw.rootWidget.addEventListener("tm-mcp-claim-main", function() {
-				self.postMainAction("claim");
+				self.postRoleAction("main", "claim");
 			});
 			$tw.rootWidget.addEventListener("tm-mcp-release-main", function() {
-				self.postMainAction("release");
+				self.postRoleAction("main", "release");
 			});
 			$tw.rootWidget.addEventListener("tm-mcp-grant-presenter", function(event) {
 				self.postPresenterGrant(event.param);
@@ -251,7 +251,7 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		this.lastServerInstanceId = data.serverInstanceId;
 		// Adopt the server-issued clientId. Role-gated routes 401 any header
 		// value not bound to an active connection, so this MUST come before
-		// any postPresenterAction / postMainAction call below.
+		// any postRoleAction call below.
 		if(data.assignedClientId) {
 			this.clientId = data.assignedClientId;
 			this.wiki.addTiddler({title: STATE_MY_CLIENT_ID, text: this.clientId});
@@ -269,7 +269,7 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		var canAutoClaim = (data.mode === "presentation")
 			|| (data.mode === "main" && !data.mainClientId);
 		if(canAutoClaim && !data.presenterClientId) {
-			this.postPresenterAction("claim");
+			this.postRoleAction("presenter", "claim");
 		}
 	};
 
@@ -358,33 +358,14 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		});
 	};
 
-	TiddlyWebSSEAdaptor.prototype.postPresenterAction = function(action) {
+	// Unified POST for the presenter/* and main/* role routes. The role and
+	// action together build the URL ("presenter/claim", "main/release", ...).
+	// $:/status/UserName is read fresh every time so the server attaches the
+	// current friendly name to the resulting *-changed event -- the user may
+	// have set it AFTER the EventSource opened.
+	TiddlyWebSSEAdaptor.prototype.postRoleAction = function(role, action) {
 		var self = this;
-		var headers = {
-			"X-MCP-Client-Id": this.clientId,
-			"X-Requested-With": "TiddlyWiki"
-		};
-		// Send the current $:/status/UserName so the server can attach a
-		// friendly name to the presenter event. The user may have set this
-		// AFTER EventSource opened, so we read it fresh on every claim.
-		var username = this.wiki.getTiddlerText(USERNAME_TIDDLER, "") || "";
-		if(username) {
-			headers["X-MCP-Username"] = username;
-		}
-		$tw.utils.httpRequest({
-			url: this.host + "presenter/" + action,
-			type: "POST",
-			headers: headers,
-			callback: function(err) {
-				if(err) {
-					self.logger.log("presenter/" + action + " failed:", err);
-				}
-			}
-		});
-	};
-
-	TiddlyWebSSEAdaptor.prototype.postMainAction = function(action) {
-		var self = this;
+		var path = role + "/" + action;
 		var headers = {
 			"X-MCP-Client-Id": this.clientId,
 			"X-Requested-With": "TiddlyWiki"
@@ -394,12 +375,12 @@ exports.makeSSEAdaptor = function(BaseClass) {
 			headers["X-MCP-Username"] = username;
 		}
 		$tw.utils.httpRequest({
-			url: this.host + "main/" + action,
+			url: this.host + path,
 			type: "POST",
 			headers: headers,
 			callback: function(err) {
 				if(err) {
-					self.logger.log("main/" + action + " failed:", err);
+					self.logger.log(path + " failed:", err);
 				}
 			}
 		});

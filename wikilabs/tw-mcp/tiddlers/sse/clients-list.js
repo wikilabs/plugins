@@ -30,17 +30,8 @@ exports.handler = function(request, response, state) {
 		response.end("SSE not enabled\n");
 		return;
 	}
-	var clientId = request.headers["x-mcp-client-id"];
-	if(!clientId || !$tw.mcp.sse.isValidClientId(clientId)) {
-		response.writeHead(400, {"Content-Type": "text/plain"});
-		response.end("X-MCP-Client-Id header missing or malformed\n");
-		return;
-	}
-	if(!$tw.mcp.sse.isClientConnected(clientId)) {
-		response.writeHead(401, {"Content-Type": "text/plain"});
-		response.end("clientId not bound to an active connection\n");
-		return;
-	}
+	var clientId = $tw.mcp.sse.assertCaller(request, response);
+	if(!clientId) return;
 	if(!$tw.mcp.sse.mainClientId || clientId !== $tw.mcp.sse.mainClientId) {
 		response.writeHead(403, {"Content-Type": "text/plain"});
 		response.end("Only the current main may list connected clients\n");

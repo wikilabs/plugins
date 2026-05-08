@@ -61,7 +61,9 @@ exports.capUsername = capUsername;
 function SSEBroadcaster(wiki) {
 	var self = this;
 	this.wiki = wiki;
-	this.clients = new Set();
+	// Map<clientId, {res, username}>. Keyed by the server-issued clientId so
+	// findUsernameFor / isClientConnected / updateClientUsername are O(1).
+	this.clients = new Map();
 	this.ring = [];
 	this.ringSize = DEFAULT_RING_SIZE;
 	this.nextId = 1;
@@ -240,11 +242,8 @@ SSEBroadcaster.prototype.handleWikiChange = function(changes) {
 
 // Look up the username an EventSource client supplied at connect time.
 SSEBroadcaster.prototype.findUsernameFor = function(clientId) {
-	var found = null;
-	this.clients.forEach(function(c) {
-		if(c.clientId === clientId) found = c.username || null;
-	});
-	return found;
+	var c = this.clients.get(clientId);
+	return c ? (c.username || null) : null;
 };
 
 // Backfill the username on any matching EventSource client. Used when a
@@ -253,9 +252,8 @@ SSEBroadcaster.prototype.findUsernameFor = function(clientId) {
 // keeps returning the connection-time empty value.
 SSEBroadcaster.prototype.updateClientUsername = function(clientId, username) {
 	if(!clientId || !username) return;
-	this.clients.forEach(function(c) {
-		if(c.clientId === clientId) c.username = username;
-	});
+	var c = this.clients.get(clientId);
+	if(c) c.username = username;
 };
 
 // Presenter election (last-claim-wins). Called from /presenter/claim, from
@@ -313,12 +311,38 @@ SSEBroadcaster.prototype.releaseMain = function(clientId) {
 };
 
 SSEBroadcaster.prototype.isClientConnected = function(clientId) {
+	return !!clientId && this.clients.has(clientId);
+};
+
+// True iff a PUT/DELETE on `title` from `clientId` should be 403'd because
+// main-mode lockdown applies (admin set, caller is not the admin, target
+// is under $:/config/wikilabs/tw-mcp/). Used by the put/delete handlers
+// that wrap the core routes.
+SSEBroadcaster.prototype.isConfigLockdownViolation = function(title, clientId) {
 	if(!clientId) return false;
-	var found = false;
-	this.clients.forEach(function(c) {
-		if(c.clientId === clientId) found = true;
-	});
-	return found;
+	if(title.indexOf("$:/config/wikilabs/tw-mcp/") !== 0) return false;
+	if(this.getMode() !== "main") return false;
+	if(!this.mainClientId) return false;
+	return this.mainClientId !== clientId;
+};
+
+// Validate the X-MCP-Client-Id header for a role-gated route. Writes a
+// 400 (missing/malformed) or 401 (not bound to a live connection) response
+// directly when validation fails, so the caller can return immediately on
+// a falsy result. Returns the clientId on success.
+SSEBroadcaster.prototype.assertCaller = function(request, response) {
+	var clientId = request.headers["x-mcp-client-id"];
+	if(!clientId || !this.isValidClientId(clientId)) {
+		response.writeHead(400, {"Content-Type": "text/plain"});
+		response.end("X-MCP-Client-Id header missing or malformed\n");
+		return null;
+	}
+	if(!this.isClientConnected(clientId)) {
+		response.writeHead(401, {"Content-Type": "text/plain"});
+		response.end("X-MCP-Client-Id not bound to an active connection\n");
+		return null;
+	}
+	return clientId;
 };
 
 // Admin-gated presenter grant. Returns false if caller is not the current
@@ -334,11 +358,10 @@ SSEBroadcaster.prototype.grantPresenter = function(adminClientId, targetClientId
 };
 
 // Snapshot of currently-connected clients for the admin UI's polling.
-// Every entry has a server-issued clientId (addClient guarantees it).
 SSEBroadcaster.prototype.getClients = function() {
 	var out = [];
-	this.clients.forEach(function(c) {
-		out.push({ clientId: c.clientId, username: c.username || null });
+	this.clients.forEach(function(c, clientId) {
+		out.push({ clientId: clientId, username: c.username || null });
 	});
 	return out;
 };
@@ -354,9 +377,9 @@ SSEBroadcaster.prototype.broadcast = function(eventName, payload) {
 		this.ring.shift();
 	}
 	var formatted = formatEvent(event);
-	this.clients.forEach(function(client) {
+	this.clients.forEach(function(c) {
 		try {
-			client.res.write(formatted);
+			c.res.write(formatted);
 		} catch(e) {
 			// stale write; close handler will reap the client
 		}
@@ -377,9 +400,9 @@ function formatEventNoId(eventName, payload) {
 }
 
 SSEBroadcaster.prototype.sendHeartbeat = function() {
-	this.clients.forEach(function(client) {
+	this.clients.forEach(function(c) {
 		try {
-			client.res.write(": keep-alive\n\n");
+			c.res.write(": keep-alive\n\n");
 		} catch(e) {}
 	});
 };
@@ -402,16 +425,15 @@ SSEBroadcaster.prototype.addClient = function(request, response, username) {
 		"Connection": "keep-alive",
 		"X-Accel-Buffering": "no"
 	});
-	var client = { res: response, clientId: clientId, username: username || null };
-	this.clients.add(client);
+	this.clients.set(clientId, { res: response, username: username || null });
 	request.on("close", function() {
-		self.clients.delete(client);
+		self.clients.delete(clientId);
 		// If the disconnecting tab held the presenter role, clear it so a
 		// remaining tab can claim. Last-wins on the next claim.
-		if(client.clientId === self.presenterClientId) {
+		if(clientId === self.presenterClientId) {
 			self.releasePresenter(null);
 		}
-		if(client.clientId === self.mainClientId) {
+		if(clientId === self.mainClientId) {
 			self.releaseMain(null);
 		}
 	});

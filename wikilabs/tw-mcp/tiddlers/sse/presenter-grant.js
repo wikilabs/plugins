@@ -28,17 +28,8 @@ exports.handler = function(request, response, state) {
 		response.end("SSE not enabled\n");
 		return;
 	}
-	var adminClientId = request.headers["x-mcp-client-id"];
-	if(!adminClientId || !$tw.mcp.sse.isValidClientId(adminClientId)) {
-		response.writeHead(400, {"Content-Type": "text/plain"});
-		response.end("X-MCP-Client-Id header missing or malformed\n");
-		return;
-	}
-	if(!$tw.mcp.sse.isClientConnected(adminClientId)) {
-		response.writeHead(401, {"Content-Type": "text/plain"});
-		response.end("clientId not bound to an active connection\n");
-		return;
-	}
+	var adminClientId = $tw.mcp.sse.assertCaller(request, response);
+	if(!adminClientId) return;
 	var body = state.data || "";
 	if(body.length > 1024) {
 		response.writeHead(413, {"Content-Type": "text/plain"});
