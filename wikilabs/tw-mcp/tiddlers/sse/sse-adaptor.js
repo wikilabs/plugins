@@ -77,14 +77,16 @@ function parseSSEData(ev) {
 exports.makeSSEAdaptor = function(BaseClass) {
 	function TiddlyWebSSEAdaptor(options) {
 		BaseClass.call(this, options);
+		// Pre-hello placeholder; handleHello overwrites with the server-issued
+		// clientId. STATE_MY_CLIENT_ID is left unstamped here -- the UI's
+		// "(this tab)" match only ever resolves against server-issued ids
+		// (which is what presenter-changed events carry), so a placeholder
+		// stamp would never match anything anyway.
 		this.clientId = generateClientId();
 		this.eventSource = null;
 		this.lastServerInstanceId = null;
 		// Re-stamp the logger so console output identifies the actual class
 		this.logger = new $tw.utils.Logger("TiddlyWebSSEAdaptor");
-		// Stash my clientId in a state tiddler so the ControlPanel UI can
-		// show "(you)" by comparing to $:/state/.../presenter-clientId.
-		this.wiki.addTiddler({title: STATE_MY_CLIENT_ID, text: this.clientId});
 		// Hook UI buttons. The ControlPanel emits these messages.
 		var self = this;
 		if($tw.rootWidget) {

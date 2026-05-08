@@ -103,8 +103,11 @@ SSEBroadcaster.prototype.getInlineThreshold = function() {
 	return (n > 0 && n < 1024 * 1024) ? n : DEFAULT_INLINE_THRESHOLD;
 };
 
-// Echo-suppression hooks. PUT/DELETE handlers (task 51z) call recordOriginator
-// before addTiddler/deleteTiddler so the change event carries the clientId.
+// Echo-suppression hooks. PUT/DELETE handlers call recordOriginator before
+// addTiddler/deleteTiddler so the change event carries the clientId.
+// Single-pending-originator-per-title is fine because Node's event loop is
+// single-threaded -- the synchronous addTiddler that follows fires the wiki
+// "change" event before the next request enters the handler.
 SSEBroadcaster.prototype.recordOriginator = function(title, clientId) {
 	if(clientId) {
 		this.pendingOriginators[title] = clientId;
@@ -407,6 +410,50 @@ SSEBroadcaster.prototype.sendHeartbeat = function() {
 	});
 };
 
+SSEBroadcaster.prototype.writeHello = function(response, clientId) {
+	try {
+		response.write(":\n\n");
+		response.write(formatEventNoId("hello", {
+			serverInstanceId: this.serverInstanceId,
+			inlineThreshold: this.getInlineThreshold(),
+			mode: this.getMode(),
+			presenterClientId: this.presenterClientId,
+			presenterUsername: this.presenterUsername,
+			mainClientId: this.mainClientId,
+			mainUsername: this.mainUsername,
+			assignedClientId: clientId
+		}));
+	} catch(e) {
+		// stale write; close handler will reap the client
+	}
+};
+
+// Replay any events the client missed if it sent Last-Event-ID. Within the
+// ring window the missed events go out in order; outside the window the
+// client gets `cache-miss` and is expected to do a full sync.
+SSEBroadcaster.prototype.replayFromLastEventId = function(request, response) {
+	var rawLastId = request.headers["last-event-id"];
+	var lastEventId = parseInt(rawLastId || "", 10);
+	if(isNaN(lastEventId) || lastEventId <= 0 || this.ring.length === 0) return;
+	try {
+		var oldestRingId = this.ring[0].id;
+		if(oldestRingId > lastEventId + 1) {
+			response.write(formatEventNoId("cache-miss", {
+				lastEventId: lastEventId,
+				message: "Reconnect window expired - perform full sync"
+			}));
+			return;
+		}
+		for(var i = 0; i < this.ring.length; i++) {
+			if(this.ring[i].id > lastEventId) {
+				response.write(formatEvent(this.ring[i]));
+			}
+		}
+	} catch(e) {
+		// stale write; close handler will reap the client
+	}
+};
+
 SSEBroadcaster.prototype.addClient = function(request, response, username) {
 	var self = this;
 	if(this.clients.size >= MAX_CONNECTIONS) {
@@ -426,6 +473,9 @@ SSEBroadcaster.prototype.addClient = function(request, response, username) {
 		"X-Accel-Buffering": "no"
 	});
 	this.clients.set(clientId, { res: response, username: username || null });
+	// "close" fires for both graceful (browser tab refresh, EventSource.close())
+	// and abnormal (network drop) terminations. Idempotent role releases mean
+	// it's safe even if the event somehow fires twice.
 	request.on("close", function() {
 		self.clients.delete(clientId);
 		// If the disconnecting tab held the presenter role, clear it so a
@@ -437,36 +487,8 @@ SSEBroadcaster.prototype.addClient = function(request, response, username) {
 			self.releaseMain(null);
 		}
 	});
-	// Initial flush + hello
-	response.write(":\n\n");
-	response.write(formatEventNoId("hello", {
-		serverInstanceId: this.serverInstanceId,
-		inlineThreshold: this.getInlineThreshold(),
-		mode: this.getMode(),
-		presenterClientId: this.presenterClientId,
-		presenterUsername: this.presenterUsername,
-		mainClientId: this.mainClientId,
-		mainUsername: this.mainUsername,
-		assignedClientId: clientId
-	}));
-	// Replay if Last-Event-ID was sent
-	var rawLastId = request.headers["last-event-id"];
-	var lastEventId = parseInt(rawLastId || "", 10);
-	if(!isNaN(lastEventId) && lastEventId > 0 && this.ring.length > 0) {
-		var oldestRingId = this.ring[0].id;
-		if(oldestRingId > lastEventId + 1) {
-			response.write(formatEventNoId("cache-miss", {
-				lastEventId: lastEventId,
-				message: "Reconnect window expired - perform full sync"
-			}));
-		} else {
-			for(var i = 0; i < this.ring.length; i++) {
-				if(this.ring[i].id > lastEventId) {
-					response.write(formatEvent(this.ring[i]));
-				}
-			}
-		}
-	}
+	this.writeHello(response, clientId);
+	this.replayFromLastEventId(request, response);
 };
 
 exports.SSEBroadcaster = SSEBroadcaster;

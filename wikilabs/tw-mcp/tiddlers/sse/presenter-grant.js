@@ -12,6 +12,11 @@ clientId rides in X-MCP-Client-Id and must equal the current main, else
 
 "use strict";
 
+// Body should be a tiny `{"clientId":"<uuid>"}` (~50 bytes). 1KB is a
+// generous ceiling that closes audit L3 without rejecting any legitimate
+// payload.
+var MAX_GRANT_BODY_BYTES = 1024;
+
 exports.methods = ["POST"];
 
 exports.path = /^\/presenter\/grant$/;
@@ -31,7 +36,7 @@ exports.handler = function(request, response, state) {
 	var adminClientId = $tw.mcp.sse.assertCaller(request, response);
 	if(!adminClientId) return;
 	var body = state.data || "";
-	if(body.length > 1024) {
+	if(body.length > MAX_GRANT_BODY_BYTES) {
 		response.writeHead(413, {"Content-Type": "text/plain"});
 		response.end("Request body too large\n");
 		return;
