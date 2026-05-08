@@ -184,7 +184,7 @@ var writeTools = [
 		inputSchema: {
 			type: "object",
 			properties: {
-				title: { type: "string" },
+				title: { type: "string", maxLength: 1024, description: "Tiddler title (max 1024 chars)" },
 				fields: { type: "object", description: "Tiddler fields (text, tags, type, etc.)", additionalProperties: true },
 				overwrite: { type: "boolean", default: false }
 			},
@@ -197,7 +197,7 @@ var writeTools = [
 		inputSchema: {
 			type: "object",
 			properties: {
-				title: { type: "string" },
+				title: { type: "string", maxLength: 1024, description: "Tiddler title (max 1024 chars)" },
 				edits: {
 					type: "array",
 					description: "Text line edits using hashline anchors (optional if only changing fields)",
@@ -224,7 +224,7 @@ var writeTools = [
 		inputSchema: {
 			type: "object",
 			properties: {
-				title: { type: "string" }
+				title: { type: "string", maxLength: 1024, description: "Tiddler title (max 1024 chars)" }
 			},
 			required: ["title"]
 		}
@@ -246,7 +246,7 @@ var writeTools = [
 		inputSchema: {
 			type: "object",
 			properties: {
-				title: { type: "string", description: "Tiddler title" },
+				title: { type: "string", maxLength: 1024, description: "Tiddler title (max 1024 chars)" },
 				preserve_timestamps: { type: "boolean", default: true, description: "Keep modified/modifier unchanged (default). Set false to stamp current time and user." },
 				strip_redundant: { type: "boolean", default: true, description: "Drop 'revision' and drop 'type' when it equals text/vnd.tiddlywiki (default)." },
 				dry_run: { type: "boolean", default: false, description: "Report old/new path and fields that would be stripped; do not write." }
@@ -285,7 +285,7 @@ var writeTools = [
 		inputSchema: {
 			type: "object",
 			properties: {
-				path: { type: "string", description: "Path to the .html single-file wiki to import" }
+				path: { type: "string", description: "Path to the .html single-file wiki to import. Paths with `.`-prefixed directory or filename segments (e.g. `.ssh/`, `.config/`, `.env`) are refused as a defence-in-depth against reading hidden config." }
 			},
 			required: ["path"]
 		}
@@ -310,7 +310,7 @@ var writeTools = [
 				filename: { type: "string", description: "Filename (no path separators)" },
 				data: { type: "string", description: "Base64 content" },
 				type: { type: "string", description: "MIME type" },
-				title: { type: "string", description: "Tiddler title (defaults to filename)" },
+				title: { type: "string", maxLength: 1024, description: "Tiddler title (max 1024 chars; defaults to filename)" },
 				tags: { type: "string" },
 				subfolder: { type: "string", description: "Subfolder in files/" }
 			},
