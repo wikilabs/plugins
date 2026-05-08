@@ -10,6 +10,7 @@ Usage (readonly by default):
   tiddlywiki ./wiki --mcp [label=<name>] [allowed-paths=<paths>]
   tiddlywiki ./wiki --mcp rw [label=<name>] [allowed-paths=<paths>]
   tiddlywiki ./wiki --mcp rw listen [port=<n>] [host=<h>] [label=<name>] ...
+  tiddlywiki ./wiki --mcp rw sse    [port=<n>] [host=<h>] [label=<name>] ...
 
 Single-file wiki workflow (runtime tools):
   Start a normal --mcp rw listen server against an empty wiki folder, then
@@ -19,6 +20,13 @@ Single-file wiki workflow (runtime tools):
 When "listen" is specified, an HTTP server is started in the same process
 before the MCP server, so browser edits and MCP tool calls share one $tw.wiki.
 All --listen parameters (port, host, credentials, tls-*, etc.) are accepted.
+
+When "sse" is specified, "listen" is implied AND the Server-Sent Events
+endpoint at GET /events is enabled. Browsers that load this plugin will
+receive per-tiddler change notifications instead of polling for the full
+tiddler list every 60s — see $:/plugins/wikilabs/tw-mcp/sse/ for the
+client-side adaptor and bootstrap.
+If both "sse" and "listen" are given, sse wins (no error).
 
 \*/
 
@@ -41,6 +49,7 @@ var Command = function(params, commander, callback) {
 Command.prototype.execute = function() {
 	var options = { readonly: true }; // readonly by default
 	var listenMode = false;
+	var sseMode = false;
 	var listenParams = {};
 	for(var i = 0; i < this.params.length; i++) {
 		var param = this.params[i];
@@ -50,6 +59,9 @@ Command.prototype.execute = function() {
 			options.readonly = false;
 		} else if(param === "listen") {
 			listenMode = true;
+		} else if(param === "sse") {
+			listenMode = true;
+			sseMode = true;
 		} else if(param.indexOf("allowed-paths=") === 0) {
 			options.allowedPaths = param.slice("allowed-paths=".length).split(",");
 		} else if(param.indexOf("label=") === 0) {
@@ -95,6 +107,24 @@ Command.prototype.execute = function() {
 		}
 	}
 	startMCPServer(options);
+	// SSE init must run after startMCPServer because that resets $tw.mcp.
+	// Only enable when this process owns the HTTP server (i.e. listenMode succeeded
+	// and we did not fall through to "Primary already serves HTTP" — guarded by $tw.httpServer).
+	if(sseMode && $tw.httpServer) {
+		var sseLib = require("$:/core/modules/server/sse-broadcaster.js");
+		sseLib.initialize(this.commander.wiki);
+		// Signal browser-side bootstrap that --mcp sse is active so it can
+		// take over the syncadaptor; without this, the SSE adaptor stays
+		// dormant and tiddlyweb's polling adaptor is used.
+		// Marker lives under $:/status/ so the default SyncFilter excludes it
+		// from disk persistence (otherwise a subsequent start without --mcp sse
+		// would still see the stale "yes" loaded from .tid)
+		this.commander.wiki.addTiddler({
+			title: "$:/status/wikilabs/tw-mcp/sse-server-active",
+			text: "yes"
+		});
+		console.error("SSE enabled at GET /events");
+	}
 	return null;
 };
 
