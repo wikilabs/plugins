@@ -51,11 +51,15 @@ var DEFAULT_PER_TAB_FILTER = "[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/sta
 var SYNC_FILTER_TIDDLER = "$:/config/SyncFilter";
 
 function generateClientId() {
+	// Pre-hello placeholder. The server issues the real clientId at /events
+	// connect and returns it via hello.assignedClientId; the adaptor adopts
+	// it in handleHello. Until then, this UUID stands in for X-MCP-Client-Id
+	// headers on any save/delete that fires before hello arrives --
+	// echo-suppression matches against this.clientId regardless of who
+	// minted it.
 	// crypto.randomUUID is universal across modern browsers (Chrome 92+,
-	// Firefox 95+, Safari 15.4+) and Node.js 14.17+. Available on every
-	// origin including plain http (only crypto.subtle is gated by secure
-	// context). If somehow missing, fail loudly -- the server's clientId
-	// regex is UUID-strict, so a non-UUID would just be 400'd anyway.
+	// Firefox 95+, Safari 15.4+) on every origin including plain http
+	// (only crypto.subtle is gated by secure context).
 	if(typeof crypto === "undefined" || !crypto.randomUUID) {
 		throw new Error("crypto.randomUUID() unavailable; tw-mcp/sse requires a modern browser");
 	}

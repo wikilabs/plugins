@@ -33,15 +33,16 @@ var MAX_CONNECTIONS = 50;
 
 var KNOWN_TIDDLYWEB_FIELDS = ["bag","created","creator","modified","modifier","permissions","recipe","revision","tags","text","title","type","uri"];
 
-// Input caps. clientIds are produced by crypto.randomUUID() in the browser
-// adaptor -- always 36 chars in the shape `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
-// where x is hex. The regex is strict on length and charset so a single
-// non-hex byte rejects the request; combined with the `<$text>` wrap in the
-// ControlPanel it is defence-in-depth against wikitext injection through any
-// route that echoes the clientId back to admins. Usernames are display-only
-// and can contain anything (spaces, emoji, accents) -- only the length is
-// capped so a malicious EventSource can't blow up event payloads or
-// /clients output.
+// Input caps. clientIds are UUIDs in the shape
+// `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` (36 chars, hex). The server issues
+// them itself at /events connect (see addClient); role routes accept them
+// only via X-MCP-Client-Id, validated against this regex. Strict length +
+// charset rejects a single non-hex byte; combined with the `<$text>` wrap
+// in the ControlPanel it is defence-in-depth against wikitext injection
+// through any route that echoes the clientId back to admins. Usernames are
+// display-only and can contain anything (spaces, emoji, accents) -- only
+// the length is capped so a malicious EventSource can't blow up event
+// payloads or /clients output.
 var MAX_USERNAME_LENGTH = 64;
 var CLIENT_ID_PATTERN = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
@@ -173,8 +174,9 @@ SSEBroadcaster.prototype.serializeTiddler = function(tiddler) {
 // broadcast. Returns true when the change should pass through.
 //   default mode -- never (each tab is independent)
 //   presentation -- only when originator is the current presenter
-//   main         -- like presentation if an admin is set; phase 4 wires that.
-//                   For now main behaves like presentation last-wins.
+//   main         -- same: only the current presenter broadcasts. The admin
+//                   chose that presenter via /presenter/grant; this code
+//                   path just honours whoever holds the role now.
 SSEBroadcaster.prototype.shouldBroadcastPerTab = function(clientId) {
 	var mode = this.getMode();
 	if(mode === "presentation" || mode === "main") {
@@ -256,10 +258,11 @@ SSEBroadcaster.prototype.updateClientUsername = function(clientId, username) {
 	});
 };
 
-// Presenter election (last-claim-wins). Called from /presenter/claim and
-// /presenter/release route handlers, and from addClient on disconnect.
-// Username may come from the claim header (preferred -- always fresh) or
-// from the connection-time lookup (fallback).
+// Presenter election (last-claim-wins). Called from /presenter/claim, from
+// grantPresenter (which is the /presenter/grant path), and from /main/claim
+// when its initial claim auto-takes presenter. Username may come from the
+// claim header (preferred -- always fresh) or from the connection-time
+// lookup (fallback).
 SSEBroadcaster.prototype.claimPresenter = function(clientId, username) {
 	if(!clientId) return false;
 	this.updateClientUsername(clientId, username);
@@ -331,12 +334,11 @@ SSEBroadcaster.prototype.grantPresenter = function(adminClientId, targetClientId
 };
 
 // Snapshot of currently-connected clients for the admin UI's polling.
-// Skips probe connections that opened /events without a clientId query
-// param (those have no useful identity for granting).
+// Every entry has a server-issued clientId (addClient guarantees it).
 SSEBroadcaster.prototype.getClients = function() {
 	var out = [];
 	this.clients.forEach(function(c) {
-		if(c.clientId) out.push({ clientId: c.clientId, username: c.username || null });
+		out.push({ clientId: c.clientId, username: c.username || null });
 	});
 	return out;
 };
