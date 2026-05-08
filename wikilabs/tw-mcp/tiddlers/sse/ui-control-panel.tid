@@ -82,7 +82,7 @@ When an admin is set, the admin alone can change SSE settings (mode, per-tab fil
 	uname={{{ [[$:/state/wikilabs/tw-mcp/clients-list]get<usernameField>] }}}
 >
 
-* <% if [<uname>!is[blank]] %>"''<<uname>>''" <% endif %>(<<cid>>)<% if [<cid>match<presenterCid>] %> ''(presenter)''<% endif %><% if [<cid>match<myCid>] %> ''(this tab)''<% endif %><% if [<cid>!match<presenterCid>] %> <$button message="tm-mcp-grant-presenter" param=<<cid>>>Grant presenter</$button><% endif %>
+* <% if [<uname>!is[blank]] %>"''<$text text=<<uname>>/>''" <% endif %>(<$text text=<<cid>>/>)<% if [<cid>match<presenterCid>] %> ''(presenter)''<% endif %><% if [<cid>match<myCid>] %> ''(this tab)''<% endif %><% if [<cid>!match<presenterCid>] %> <$button message="tm-mcp-grant-presenter" param=<<cid>>>Grant presenter</$button><% endif %>
 </$let>
 </$list>
 

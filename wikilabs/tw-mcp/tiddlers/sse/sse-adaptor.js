@@ -51,10 +51,15 @@ var DEFAULT_PER_TAB_FILTER = "[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/sta
 var SYNC_FILTER_TIDDLER = "$:/config/SyncFilter";
 
 function generateClientId() {
-	if(typeof crypto !== "undefined" && crypto.randomUUID) {
-		return crypto.randomUUID();
+	// crypto.randomUUID is universal across modern browsers (Chrome 92+,
+	// Firefox 95+, Safari 15.4+) and Node.js 14.17+. Available on every
+	// origin including plain http (only crypto.subtle is gated by secure
+	// context). If somehow missing, fail loudly -- the server's clientId
+	// regex is UUID-strict, so a non-UUID would just be 400'd anyway.
+	if(typeof crypto === "undefined" || !crypto.randomUUID) {
+		throw new Error("crypto.randomUUID() unavailable; tw-mcp/sse requires a modern browser");
 	}
-	return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+	return crypto.randomUUID();
 }
 
 function parseSSEData(ev) {

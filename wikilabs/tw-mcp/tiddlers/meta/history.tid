@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.12.1 - 2026.05.08
+
+* ''Security'': fix widget injection in the //Connected clients// admin sub-panel — `clientId` and `username` now rendered via `<$text>`. Server validates `clientId` as a strict UUID and caps username at 64 chars.
+
 V 0.12.0 - 2026.05.08
 
 * ''Main mode'': a tab claims the exclusive //i-am-main// admin role. While held, only the admin changes settings or grants presenter; without admin, falls back to last-wins.

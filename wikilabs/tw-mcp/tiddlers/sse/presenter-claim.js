@@ -27,9 +27,9 @@ exports.handler = function(request, response, state) {
 		return;
 	}
 	var clientId = request.headers["x-mcp-client-id"];
-	if(!clientId) {
+	if(!clientId || !$tw.mcp.sse.isValidClientId(clientId)) {
 		response.writeHead(400, {"Content-Type": "text/plain"});
-		response.end("X-MCP-Client-Id header required\n");
+		response.end("X-MCP-Client-Id header missing or malformed\n");
 		return;
 	}
 	// Main mode with an admin set: only the admin can grant presenter via
@@ -42,7 +42,7 @@ exports.handler = function(request, response, state) {
 		response.end("Main mode: only the admin can grant presenter\n");
 		return;
 	}
-	var username = request.headers["x-mcp-username"] || null;
+	var username = $tw.mcp.sse.capUsername(request.headers["x-mcp-username"] || null);
 	$tw.mcp.sse.claimPresenter(clientId, username);
 	response.writeHead(204);
 	response.end();

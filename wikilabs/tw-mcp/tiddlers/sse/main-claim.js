@@ -27,9 +27,9 @@ exports.handler = function(request, response, state) {
 		return;
 	}
 	var clientId = request.headers["x-mcp-client-id"];
-	if(!clientId) {
+	if(!clientId || !$tw.mcp.sse.isValidClientId(clientId)) {
 		response.writeHead(400, {"Content-Type": "text/plain"});
-		response.end("X-MCP-Client-Id header required\n");
+		response.end("X-MCP-Client-Id header missing or malformed\n");
 		return;
 	}
 	// Main is exclusive. Reject takeover attempts with 409 so the UI can
@@ -39,7 +39,7 @@ exports.handler = function(request, response, state) {
 		response.end("Main role already held by another tab\n");
 		return;
 	}
-	var username = request.headers["x-mcp-username"] || null;
+	var username = $tw.mcp.sse.capUsername(request.headers["x-mcp-username"] || null);
 	// Becoming main also takes presenter -- the admin starts the session
 	// in control. Only on the initial claim (mainClientId was null); a
 	// re-claim with updated username won't yank presenter back from

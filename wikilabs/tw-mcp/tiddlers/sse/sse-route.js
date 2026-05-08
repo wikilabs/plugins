@@ -30,8 +30,11 @@ exports.handler = function(request, response, state) {
 	// EventSource can't set custom headers, so the client passes its
 	// per-tab clientId as a query parameter. The server tracks it on the
 	// connection so the disconnect handler can release the presenter role
-	// if the leaving tab held it.
-	var clientId = state.queryParameters && state.queryParameters.clientId || null;
-	var username = state.queryParameters && state.queryParameters.username || null;
+	// if the leaving tab held it. Reject malformed clientIds outright (the
+	// connection still opens as an anonymous probe -- it just can't claim
+	// any role). Usernames are length-capped but otherwise unrestricted.
+	var rawClientId = state.queryParameters && state.queryParameters.clientId || null;
+	var clientId = $tw.mcp.sse.isValidClientId(rawClientId) ? rawClientId : null;
+	var username = $tw.mcp.sse.capUsername(state.queryParameters && state.queryParameters.username || null);
 	$tw.mcp.sse.addClient(request, response, clientId, username);
 };

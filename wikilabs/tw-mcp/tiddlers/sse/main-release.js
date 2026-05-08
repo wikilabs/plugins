@@ -26,9 +26,9 @@ exports.handler = function(request, response, state) {
 		return;
 	}
 	var clientId = request.headers["x-mcp-client-id"];
-	if(!clientId) {
+	if(!clientId || !$tw.mcp.sse.isValidClientId(clientId)) {
 		response.writeHead(400, {"Content-Type": "text/plain"});
-		response.end("X-MCP-Client-Id header required\n");
+		response.end("X-MCP-Client-Id header missing or malformed\n");
 		return;
 	}
 	$tw.mcp.sse.releaseMain(clientId);

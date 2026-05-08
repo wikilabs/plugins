@@ -29,9 +29,9 @@ exports.handler = function(request, response, state) {
 		return;
 	}
 	var adminClientId = request.headers["x-mcp-client-id"];
-	if(!adminClientId) {
+	if(!adminClientId || !$tw.mcp.sse.isValidClientId(adminClientId)) {
 		response.writeHead(400, {"Content-Type": "text/plain"});
-		response.end("X-MCP-Client-Id header required\n");
+		response.end("X-MCP-Client-Id header missing or malformed\n");
 		return;
 	}
 	var body = state.data || "";
@@ -42,9 +42,9 @@ exports.handler = function(request, response, state) {
 		return;
 	}
 	var targetClientId = parsed && parsed.clientId;
-	if(!targetClientId) {
+	if(!targetClientId || !$tw.mcp.sse.isValidClientId(targetClientId)) {
 		response.writeHead(400, {"Content-Type": "text/plain"});
-		response.end("Body must include clientId\n");
+		response.end("Body clientId missing or malformed\n");
 		return;
 	}
 	var ok = $tw.mcp.sse.grantPresenter(adminClientId, targetClientId);

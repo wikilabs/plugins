@@ -32,6 +32,30 @@ var MODE_TIDDLER = "$:/config/wikilabs/tw-mcp/mode";
 
 var KNOWN_TIDDLYWEB_FIELDS = ["bag","created","creator","modified","modifier","permissions","recipe","revision","tags","text","title","type","uri"];
 
+// Input caps. clientIds are produced by crypto.randomUUID() in the browser
+// adaptor -- always 36 chars in the shape `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+// where x is hex. The regex is strict on length and charset so a single
+// non-hex byte rejects the request; combined with the `<$text>` wrap in the
+// ControlPanel it is defence-in-depth against wikitext injection through any
+// route that echoes the clientId back to admins. Usernames are display-only
+// and can contain anything (spaces, emoji, accents) -- only the length is
+// capped so a malicious EventSource can't blow up event payloads or
+// /clients output.
+var MAX_USERNAME_LENGTH = 64;
+var CLIENT_ID_PATTERN = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+function isValidClientId(s) {
+	return typeof s === "string" && CLIENT_ID_PATTERN.test(s);
+}
+
+function capUsername(s) {
+	if(typeof s !== "string") return null;
+	return s.length > MAX_USERNAME_LENGTH ? s.substring(0, MAX_USERNAME_LENGTH) : s;
+}
+
+exports.isValidClientId = isValidClientId;
+exports.capUsername = capUsername;
+
 function SSEBroadcaster(wiki) {
 	var self = this;
 	this.wiki = wiki;
@@ -54,6 +78,9 @@ function SSEBroadcaster(wiki) {
 		self.sendHeartbeat();
 	}, HEARTBEAT_MS);
 }
+
+SSEBroadcaster.prototype.isValidClientId = isValidClientId;
+SSEBroadcaster.prototype.capUsername = capUsername;
 
 SSEBroadcaster.prototype.getMode = function() {
 	var raw = (this.wiki.getTiddlerText(MODE_TIDDLER, "default") || "default").trim();
