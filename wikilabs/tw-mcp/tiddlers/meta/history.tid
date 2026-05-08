@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.12.2 - 2026.05.08
+
+* ''Hardening'': cap concurrent SSE connections at 50; `/presenter/grant` rejects targets that aren't currently connected and caps request body at 1KB.
+
 V 0.12.1 - 2026.05.08
 
 * ''Security'': fix widget injection in the //Connected clients// admin sub-panel — `clientId` and `username` now rendered via `<$text>`. Server validates `clientId` as a strict UUID and caps username at 64 chars.

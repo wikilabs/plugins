@@ -29,6 +29,7 @@ var DEFAULT_SYNC_FILTER = "[all[tiddlers]] -[[$:/isEncrypted]] -[prefix[$:/temp/
 var PER_TAB_TIDDLERS_TIDDLER = "$:/config/wikilabs/tw-mcp/per-tab-tiddlers";
 var DEFAULT_PER_TAB_FILTER = "[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]";
 var MODE_TIDDLER = "$:/config/wikilabs/tw-mcp/mode";
+var MAX_CONNECTIONS = 50;
 
 var KNOWN_TIDDLYWEB_FIELDS = ["bag","created","creator","modified","modifier","permissions","recipe","revision","tags","text","title","type","uri"];
 
@@ -308,12 +309,23 @@ SSEBroadcaster.prototype.releaseMain = function(clientId) {
 	return true;
 };
 
+SSEBroadcaster.prototype.isClientConnected = function(clientId) {
+	if(!clientId) return false;
+	var found = false;
+	this.clients.forEach(function(c) {
+		if(c.clientId === clientId) found = true;
+	});
+	return found;
+};
+
 // Admin-gated presenter grant. Returns false if caller is not the current
-// admin (handler converts to 403). On success delegates to claimPresenter
-// so the existing last-wins broadcast machinery applies.
+// admin (handler converts to 403), or if the target isn't currently
+// connected -- granting to a stale/typo'd UUID would otherwise leave the
+// presenter role stuck on a non-existent client.
 SSEBroadcaster.prototype.grantPresenter = function(adminClientId, targetClientId) {
 	if(!this.mainClientId || adminClientId !== this.mainClientId) return false;
 	if(!targetClientId) return false;
+	if(!this.isClientConnected(targetClientId)) return false;
 	var targetUsername = this.findUsernameFor(targetClientId);
 	return this.claimPresenter(targetClientId, targetUsername);
 };
@@ -372,6 +384,11 @@ SSEBroadcaster.prototype.sendHeartbeat = function() {
 
 SSEBroadcaster.prototype.addClient = function(request, response, clientId, username) {
 	var self = this;
+	if(this.clients.size >= MAX_CONNECTIONS) {
+		response.writeHead(503, {"Content-Type": "text/plain"});
+		response.end("Too many SSE connections\n");
+		return;
+	}
 	response.writeHead(200, {
 		"Content-Type": "text/event-stream; charset=utf-8",
 		"Cache-Control": "no-cache, no-transform",

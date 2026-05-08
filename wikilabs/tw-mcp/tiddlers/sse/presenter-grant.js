@@ -35,6 +35,11 @@ exports.handler = function(request, response, state) {
 		return;
 	}
 	var body = state.data || "";
+	if(body.length > 1024) {
+		response.writeHead(413, {"Content-Type": "text/plain"});
+		response.end("Request body too large\n");
+		return;
+	}
 	var parsed = null;
 	try { parsed = JSON.parse(body); } catch(e) {
 		response.writeHead(400, {"Content-Type": "text/plain"});
@@ -50,7 +55,7 @@ exports.handler = function(request, response, state) {
 	var ok = $tw.mcp.sse.grantPresenter(adminClientId, targetClientId);
 	if(!ok) {
 		response.writeHead(403, {"Content-Type": "text/plain"});
-		response.end("Only the current main may grant presenter\n");
+		response.end("Grant rejected: caller is not main, or target is not connected\n");
 		return;
 	}
 	response.writeHead(204);
