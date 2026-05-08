@@ -28,6 +28,20 @@ var TIDDLERS_TO_IGNORE = [
 
 var MIN_GROUP_COUNT = 3;
 
+// import_html_wiki accepts paths from anywhere on disk by design (the user
+// typically points it at a downloaded `index.html`), so we cannot gate it on
+// `allowedPaths` like upload_file does. As a defence-in-depth, refuse any
+// resolved path whose directory or file segments start with `.` -- those are
+// conventional homes for secrets (.ssh, .aws, .config, .npmrc, .env, ...)
+// with no legitimate role as a single-file wiki source.
+function hasDotComponent(p) {
+	var parts = p.split(/[\/\\]/);
+	for(var i = 0; i < parts.length; i++) {
+		if(parts[i].length > 0 && parts[i].charAt(0) === ".") return true;
+	}
+	return false;
+}
+
 // Plugins/themes/languages loaded by the running wiki via tiddlywiki.info
 // must NOT be treated as custom plugins from the imported HTML, and must
 // NOT be written to disk by extract (they will load from the local plugin
@@ -148,6 +162,12 @@ function importHandler(args) {
 		return shared.errorResult("Missing required argument 'path' (path to single-file HTML wiki).");
 	}
 	var filePath = path.resolve(args.path);
+	// Reject hidden-directory / dot-file paths BEFORE the existence check so
+	// an attacker can't probe for which dot-files are present (existence vs
+	// refusal would otherwise be distinguishable).
+	if(hasDotComponent(filePath)) {
+		return shared.errorResult("Refused: path contains a hidden (dot-prefixed) directory or file. (" + filePath + ")");
+	}
 	if(!fs.existsSync(filePath)) {
 		return shared.errorResult("File not found: " + filePath);
 	}
