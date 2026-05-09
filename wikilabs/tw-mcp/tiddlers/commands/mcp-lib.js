@@ -193,7 +193,7 @@ function dispatchMessage(line, send) {
 					"- get_tiddler before overwriting.\n" +
 					"\n## System tiddlers\n" +
 					"- Default-exclude '$:/' — prepend '!is[system]' to filters unless user asks for system/shadow tiddlers.\n" +
-					"- Shadow fallback: if 2-3 searches return empty, retry with '[all[tiddlers+shadows]]'. Many important tiddlers are shadows.\n" +
+					"- Shadow fallback: if 2-3 searches return empty, retry with '[all[shadows+tiddlers]]'. Many important tiddlers are shadows.\n" +
 					"- Don't fetch '$:/core/modules/...' unless user names one.\n" +
 					"\n## Token use\n" +
 					"- Tool results are pre-formatted; pass through, don't reformat.\n" +
