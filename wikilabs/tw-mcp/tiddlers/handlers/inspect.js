@@ -343,6 +343,26 @@ module.exports = {
 					ptr = (ptr.children && ptr.children.length === 1) ? ptr.children[0] : null;
 				}
 			};
+			// TW core only emits th-dom-rendering-element natively; the link and
+			// codeblock equivalents come from devtools' renderLink/render patches.
+			// Patch them ourselves so inspect_pos works regardless of whether the
+			// devtools plugin is loaded.
+			var LinkWidget = require("$:/core/modules/widgets/link.js").link;
+			var origRenderLink = LinkWidget.prototype.renderLink;
+			LinkWidget.prototype.renderLink = function(parent, nextSibling) {
+				origRenderLink.call(this, parent, nextSibling);
+				if(this.domNodes.length > 0) {
+					$tw.hooks.invokeHook("th-dom-rendering-link", this.domNodes[this.domNodes.length - 1], this);
+				}
+			};
+			var CodeBlockWidget = require("$:/core/modules/widgets/codeblock.js").codeblock;
+			var origCodeBlockRender = CodeBlockWidget.prototype.render;
+			CodeBlockWidget.prototype.render = function(parent, nextSibling) {
+				origCodeBlockRender.call(this, parent, nextSibling);
+				if(this.domNodes.length > 0) {
+					$tw.hooks.invokeHook("th-dom-rendering-codeblock", this.domNodes[this.domNodes.length - 1], this);
+				}
+			};
 			var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;
 			var origExecute = TranscludeWidget.prototype.execute;
 			var bodyOffsetCache = {};
@@ -386,6 +406,8 @@ module.exports = {
 				TranscludeWidget.prototype.execute = origExecute;
 				Widget.prototype.setVariable = origSetVariable;
 				ImportVariablesWidget.prototype.execute = origImportExecute;
+				LinkWidget.prototype.renderLink = origRenderLink;
+				CodeBlockWidget.prototype.render = origCodeBlockRender;
 			}
 		} catch(e) {
 			return shared.errorResult( "inspect_pos error: " + e.message );
