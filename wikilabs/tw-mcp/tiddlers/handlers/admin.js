@@ -80,6 +80,12 @@ module.exports = {
 					$tw.config.pluginsEnvVar
 				);
 				$tw.loadPlugin(PLUGIN_NAME, paths);
+				// loadPlugin's addTiddler queues a change event that would make
+				// the syncadapter persist the plugin into the edition's
+				// tiddlers/ folder. Drop it before the next-tick dispatch.
+				if($tw.wiki.changedTiddlers) {
+					delete $tw.wiki.changedTiddlers[PLUGIN_TITLE];
+				}
 				$tw.wiki.readPluginInfo();
 				$tw.wiki.registerPluginTiddlers(null);
 				$tw.wiki.unpackPluginTiddlers();
