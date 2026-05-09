@@ -1,5 +1,5 @@
 /*\
-title: $:/plugins/wikilabs/devtools/startup.js
+title: $:/plugins/wikilabs/devtools/sourcepos.js
 type: application/javascript
 module-type: startup
 
@@ -17,8 +17,8 @@ and monkey-patches the transclude widget to set sourceContext for tiddler attrib
 var sourcePosUtils = require("$:/plugins/wikilabs/devtools/utils.js");
 
 exports.name = "sourcepos";
-exports.before = ["startup"];
-exports.after = ["load-modules"];
+exports.after = ["startup"];
+exports.before = ["render"];
 exports.synchronous = true;
 
 // Caches (reset on each tracking toggle to avoid stale data)
