@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.5 - 2026.05.09
+
+* `inspect_pos` attributes macro-produced DOM nodes back to their defining tiddler in the title-map header and adds `v="<name>"` naming the procedure/macro/variable that produced each node.
+
+* MCP tool descriptions tightened — surface silent-failure traps and hidden constraints in `tools/list`.
+
 V 0.13.4 - 2026.05.09
 
 * SSE inline-threshold default raised from 4 KiB to 32 KiB — doc-sized tiddlers now ride inside the SSE event instead of triggering a syncer fetch (~1 ms vs ~250 ms apply latency).

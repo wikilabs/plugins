@@ -55,6 +55,11 @@ function compactPositions(container) {
 					}
 				}
 			}
+			var via = child.getAttribute && child.getAttribute("data-via");
+			if(via) {
+				child.removeAttribute("data-via");
+				if(!isSvg) child.setAttribute("v", via);
+			}
 			walk(child, isSvg);
 		}
 	};
@@ -213,7 +218,11 @@ module.exports = {
 				var w = widget;
 				while(w) {
 					if(w.sourceContext !== undefined) {
-						return { title: w.sourceContext, offset: w.sourceContextOffset || 0 };
+						return {
+							title: w.sourceContext,
+							offset: w.sourceContextOffset || 0,
+							via: w.sourceContextVariable
+						};
 					}
 					w = w.parentWidget;
 				}
@@ -249,12 +258,58 @@ module.exports = {
 				if($tw.wiki.trackSourcePositions) {
 					var info = posBuildInfo(widget);
 					if(info) domNode.setAttribute("data-pos", info);
+					var srcInfo = posGetSourceInfo(widget);
+					if(srcInfo && srcInfo.via) {
+						domNode.setAttribute("data-via", srcInfo.via);
+					}
 				}
 				return domNode;
 			};
 			$tw.hooks.addHook("th-dom-rendering-element", posHook);
 			$tw.hooks.addHook("th-dom-rendering-link", posHook);
 			$tw.hooks.addHook("th-dom-rendering-codeblock", posHook);
+			// Tag each variable with its defining tiddler so transcluded macros
+			// can be attributed back to their source.
+			var Widget = require("$:/core/modules/widgets/widget.js").widget;
+			var origSetVariable = Widget.prototype.setVariable;
+			Widget.prototype.setVariable = function(name, value, params, isMacroDefinition, options) {
+				origSetVariable.call(this, name, value, params, isMacroDefinition, options);
+				if(options && options.sourceTitle && this.variables[name]) {
+					this.variables[name].sourceTitle = options.sourceTitle;
+				}
+			};
+			var ImportVariablesWidget = require("$:/core/modules/widgets/importvariables.js").importvariables;
+			var origImportExecute = ImportVariablesWidget.prototype.execute;
+			ImportVariablesWidget.prototype.execute = function(tiddlerList) {
+				origImportExecute.call(this, tiddlerList);
+				var varSourceMap = Object.create(null);
+				var self = this;
+				$tw.utils.each(this.tiddlerList, function(title) {
+					var parser = self.wiki.parseTiddler(title, {parseAsInline: true, configTrimWhiteSpace: false});
+					if(parser) {
+						var node = parser.tree[0];
+						while(node && ["setvariable","set","parameters","void"].indexOf(node.type) !== -1) {
+							if(node.attributes && node.attributes.name) {
+								varSourceMap[node.attributes.name.value] = title;
+							}
+							node = node.children && node.children[0];
+						}
+					}
+				});
+				var ptr = this;
+				while(ptr) {
+					if(ptr.variables) {
+						var ownKeys = Object.keys(ptr.variables);
+						for(var ki = 0; ki < ownKeys.length; ki++) {
+							var v = ptr.variables[ownKeys[ki]];
+							if(v && !v.sourceTitle && varSourceMap[ownKeys[ki]]) {
+								v.sourceTitle = varSourceMap[ownKeys[ki]];
+							}
+						}
+					}
+					ptr = (ptr.children && ptr.children.length === 1) ? ptr.children[0] : null;
+				}
+			};
 			var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;
 			var origExecute = TranscludeWidget.prototype.execute;
 			var bodyOffsetCache = {};
@@ -274,6 +329,7 @@ module.exports = {
 						var srcVar = varInfo && varInfo.srcVariable;
 						this.sourceContext = (srcVar && srcVar.sourceTitle) || this.transcludeVariable;
 						this.sourceContextOffset = 0;
+						this.sourceContextVariable = this.transcludeVariable;
 						if(srcVar && srcVar.sourceTitle && srcVar.value) {
 							this.sourceContextOffset = findBodyOffset(srcVar.sourceTitle, srcVar.value);
 						}
@@ -295,6 +351,8 @@ module.exports = {
 				$tw.hooks.removeHook("th-dom-rendering-link", posHook);
 				$tw.hooks.removeHook("th-dom-rendering-codeblock", posHook);
 				TranscludeWidget.prototype.execute = origExecute;
+				Widget.prototype.setVariable = origSetVariable;
+				ImportVariablesWidget.prototype.execute = origImportExecute;
 			}
 		} catch(e) {
 			return shared.errorResult( "inspect_pos error: " + e.message );

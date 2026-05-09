@@ -12,7 +12,7 @@ MCP tool definitions (input schemas) for TiddlyWiki MCP server.
 var readTools = [
 	{
 		name: "get_tiddler",
-		description: "Get a tiddler's fields by title. Returns metadata only by default; set detailed=true to include the text field with hashline anchors (ready for edit_tiddler). Use format='tid' for plain text without hashes.",
+		description: "Get tiddler fields. Default: metadata only. detailed:true adds text field as hashlines ('LINE#HASH: text' per line; pass anchors to edit_tiddler). format='tid': plain text. Plugin tiddlers return fields + shadow-tiddler tree (format/detailed ignored).",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -25,7 +25,7 @@ var readTools = [
 	},
 	{
 		name: "run_filter",
-		description: "Execute a TiddlyWiki filter expression. Returns matching titles.",
+		description: "Execute TW filter expression. Returns titles, capped at 500 (output prefixed '(N total, showing first 500)' if truncated). Empty: '(no results)'. Filter max 10000 chars.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -36,7 +36,7 @@ var readTools = [
 	},
 	{
 		name: "render_tiddler",
-		description: "Render a tiddler to plain text or HTML.",
+		description: "Render tiddler to text/HTML. mode='raw' (default): type parser. mode='viewtemplate': $:/tags/ViewTemplateBodyFilter cascade — output depends on type/tags, may include framing widgets (e.g. code-mirror frame) for non-wikitext types instead of body content.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -49,7 +49,7 @@ var readTools = [
 	},
 	{
 		name: "render_field",
-		description: "Render a tiddler field or data index as wikitext.",
+		description: "Render tiddler field or data tiddler index as wikitext. Errors on missing/empty (not silent empty).",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -79,7 +79,7 @@ var readTools = [
 	},
 	{
 		name: "inspect_tree",
-		description: "Analyze rendered widget tree: type counts, links, transclusions, depth-limited JSON.",
+		description: "Analyze rendered widget tree. Output: type counts, unique link targets, depth-limited JSON (depth=3). Text nodes shown as 's:N' (length only); include:['text'] inlines real text. Children capped at 10/parent ('+N more'). exclude drops attributes.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -95,7 +95,7 @@ var readTools = [
 	},
 	{
 		name: "inspect_pos",
-		description: "Render wikitext to HTML with p= position attributes and title index header. Use with inspect_scope.",
+		description: "Render wikitext to HTML with source-position attrs + title index header. Header: [0=Title 1=Title ...]. Each node may carry p=\"idx:line\" or p=\"idx:start-end\" (idx→header, lines in defining tiddler) and v=\"name\" (transcluded procedure/macro/variable that produced this node, when applicable). Pair with inspect_scope.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -117,7 +117,7 @@ var readTools = [
 	},
 	{
 		name: "list_tiddlers",
-		description: "List tiddler titles grouped by namespace. Filter by tag, plugin, or overwritten shadows.",
+		description: "List tiddler titles as '/'-namespace tree with common-prefix header (NOT flat list). Filter flags mutually exclusive, priority: plugin > overwrittenShadows > tag > includeSystem (only highest applies). limit caps result.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -132,7 +132,7 @@ var readTools = [
 	},
 	{
 		name: "reload_tiddlers",
-		description: "Re-read tiddlers from disk + report changes since last call. For non-JS plugin subtiddler edits (doc/wikitext/CSS inside a plugin), scope='shadows' refreshes content but does NOT re-execute any plugin JS. After editing JS in the tw-mcp plugin, use reload_mcp_modules instead (it also handles the disk re-read).",
+		description: "Re-read tiddlers from disk; reports diff vs last call (first call may show large initial set). scope='shadows': refreshes non-JS plugin subtiddlers (doc/wikitext/CSS) — does NOT re-execute plugin JS. For JS in tw-mcp plugin use reload_mcp_modules.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -143,7 +143,7 @@ var readTools = [
 	},
 	{
 		name: "inspect_tw",
-		description: "Navigate $tw object. Returns keys with types/values at the given path.",
+		description: "Read-only $tw navigation. path: dot-path (e.g. 'wiki.boot.wikiPath'); blocks __proto__/constructor/prototype. Objects → keys+types+values, depth auto-reduces above 10KB. Functions without call → signature + source (truncated; fullSource:true for full). Functions with call → invoked, gated by read-only safe-list ($tw.wiki.* getters/filters, $tw.utils.*, heartbeats; full list in error). Writes go through put_tiddler/edit_tiddler/delete_tiddler. Auto-resolve: object path + call[0]=methodName rewrites to path.method(...rest) before safe-list.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -158,7 +158,7 @@ var readTools = [
 	},
 	{
 		name: "inspect_scope",
-		description: "Variable scope at a source position. Shows local vars and used globals. Use p= positions from inspect_pos.",
+		description: "Variable scope at a source position. tiddler+charPos OR text+charPos. charPos = char offset into wikitext text field, NOT line number — p= from inspect_pos is lines including header, must be converted via source text. Output: per-var line w/ kind prefix (widget/fn/proc/macro/def/var), name, params, value (≤70 chars), source. Sections: local scope, used globals (parse-tree refs + transitive macro body expansion), other globals (all:true). match: requires named vars to equal given values — disambiguates sibling widgets sharing parseTreeNode.start (repeating lists). renderContext: 'isolated' (default), 'viewtemplate' (tiddler-render context), 'root' (PageTemplate context).",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -180,7 +180,7 @@ var readTools = [
 var writeTools = [
 	{
 		name: "put_tiddler",
-		description: "Create or update a tiddler. Persists to disk. Set overwrite=true to replace existing.",
+		description: "Create or update tiddler, persists to disk. overwrite=true replaces existing. WITHOUT overwrite: existing-title silently creates duplicate with uniquified title (e.g. 'MyTiddler 1') — does NOT error. Check response title; use overwrite=true or edit_tiddler when updating.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -193,7 +193,7 @@ var writeTools = [
 	},
 	{
 		name: "edit_tiddler",
-		description: "Edit a tiddler's text and/or fields. Text edits use hashline references — only changed lines are sent. Field edits use set_fields/delete_fields. All in one call.",
+		description: "Edit tiddler text and/or fields. Text edits via LINE#HASH anchors (e.g. '5#AB'); anchors come from get_tiddler. Stale anchors → HashlineMismatchError lists fresh anchors for retry. Fields via set_fields/delete_fields. One call covers both.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -220,7 +220,7 @@ var writeTools = [
 	},
 	{
 		name: "delete_tiddler",
-		description: "Delete a tiddler and its .tid file.",
+		description: "Delete tiddler + .tid file. Shadow-only tiddlers (plugin-provided): removed from store only, no file touched, reappear on reload. Path gated by allowed-paths.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -231,7 +231,7 @@ var writeTools = [
 	},
 	{
 		name: "reload_mcp_modules",
-		description: "Hot-reload the tw-mcp plugin after editing its source. Re-reads the plugin folder from disk and refreshes ALL subtiddlers (JS AND non-JS — doc tiddlers, wikitext, CSS), then re-executes each JS module. Non-JS changes take effect immediately; JS module changes take effect on the next tool call. Excludes mcp.js, mcp-lib.js, shared.js, filesystem.js — these hold live state (dispatcher, sockets, init context, change listener) and still require a full server restart.",
+		description: "Hot-reload tw-mcp plugin. Re-reads plugin folder, refreshes ALL subtiddlers (JS + non-JS doc/wikitext/CSS), re-executes JS modules. Non-JS applies immediately; JS modules apply on next tool call. Excludes mcp.js/mcp-lib.js/shared.js/filesystem.js (hold live state — need server restart).",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -256,7 +256,7 @@ var writeTools = [
 	},
 	{
 		name: "save_wiki_folder",
-		description: "Export wiki as a folder structure.",
+		description: "Export wiki to folder. filter selects tiddlers (default '[all[tiddlers]]'). explodePlugins='yes' (default): plugins as exploded subtiddler folders; 'no': single .json bundles. Path gated by allowed-paths.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -269,7 +269,7 @@ var writeTools = [
 	},
 	{
 		name: "build_wiki",
-		description: "Render wiki as a single HTML file.",
+		description: "Render wiki as single HTML. Silently overwrites output, creates parent dirs. template = renderable tiddler (default '$:/core/save/all'); invalid template → empty output, not error. Verify result.",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -303,7 +303,7 @@ var writeTools = [
 	},
 	{
 		name: "upload_file",
-		description: "Upload base64 file to files/ and create a canonical tiddler.",
+		description: "Upload base64 file to files/, create canonical tiddler. tags = TW-format STRING (e.g. 'foo [[bar baz]]'), NOT array. Writes binary file + .tid sidecar with _canonical_uri.",
 		inputSchema: {
 			type: "object",
 			properties: {
