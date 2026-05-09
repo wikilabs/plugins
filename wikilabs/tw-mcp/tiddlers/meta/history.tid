@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.7 - 2026.05.10
+
+* `inspect_pos` adds `c="A|B|C"` (caller chain) and `ctx="Title"` (currentTiddler when it differs from the source-context tiddler) on each rendered node.
+
+* MCP `initialize` instructions block tightened to compact LLM form.
+
 V 0.13.6 - 2026.05.10
 
 * ''Bugfix'': `reload_mcp_modules` no longer persists the plugin bundle to the edition's `tiddlers/` folder.

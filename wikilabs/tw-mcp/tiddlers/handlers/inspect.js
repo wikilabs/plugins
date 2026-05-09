@@ -26,10 +26,8 @@ function compactPositions(container) {
 			var child = node.children[i];
 			if(!child.tag) continue;
 			var isSvg = inSvg || SVG_TAGS[child.tag];
-			// Strip devtools attributes (added by startup.js hooks if devtools plugin is loaded)
+			// Strip the raw character range — line numbers in p= are sufficient
 			child.removeAttribute("data-range");
-			child.removeAttribute("data-ctx");
-			child.removeAttribute("data-caller");
 			var pos = child.getAttribute && child.getAttribute("data-pos");
 			if(pos) {
 				if(isSvg) {
@@ -59,6 +57,16 @@ function compactPositions(container) {
 			if(via) {
 				child.removeAttribute("data-via");
 				if(!isSvg) child.setAttribute("v", via);
+			}
+			var ctx = child.getAttribute && child.getAttribute("data-ctx");
+			if(ctx) {
+				child.removeAttribute("data-ctx");
+				if(!isSvg) child.setAttribute("ctx", ctx);
+			}
+			var caller = child.getAttribute && child.getAttribute("data-caller");
+			if(caller) {
+				child.removeAttribute("data-caller");
+				if(!isSvg) child.setAttribute("c", caller);
 			}
 			walk(child, isSvg);
 		}
@@ -254,6 +262,20 @@ module.exports = {
 				var headerOffset = getTidHeaderLines(info.title);
 				return shared.formatSourcePos(startLine + headerOffset, endLine + headerOffset, info.title);
 			};
+			// Walk parent widgets and collect the chain of distinct sourceContexts
+			// above the immediate one (which is already shown in data-pos). The
+			// closest enclosing caller comes first, the outermost last.
+			var posBuildCallerChain = function(widget) {
+				var chain = [], lastCtx = null, w = widget;
+				while(w) {
+					if(w.sourceContext !== undefined && w.sourceContext !== lastCtx) {
+						if(lastCtx !== null) chain.push(w.sourceContext);
+						lastCtx = w.sourceContext;
+					}
+					w = w.parentWidget;
+				}
+				return chain;
+			};
 			var posHook = function(domNode, widget) {
 				if($tw.wiki.trackSourcePositions) {
 					var info = posBuildInfo(widget);
@@ -261,6 +283,17 @@ module.exports = {
 					var srcInfo = posGetSourceInfo(widget);
 					if(srcInfo && srcInfo.via) {
 						domNode.setAttribute("data-via", srcInfo.via);
+					}
+					// currentTiddler context — only when it differs from the
+					// source-context tiddler (e.g. inside a list iterating over
+					// items, where each repetition has the same source position)
+					var ct = widget.getVariable("currentTiddler");
+					if(ct && srcInfo && ct !== srcInfo.title) {
+						domNode.setAttribute("data-ctx", ct);
+					}
+					var callers = posBuildCallerChain(widget);
+					if(callers.length > 0) {
+						domNode.setAttribute("data-caller", callers.join("|"));
 					}
 				}
 				return domNode;

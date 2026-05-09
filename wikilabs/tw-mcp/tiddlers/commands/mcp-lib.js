@@ -182,40 +182,37 @@ function dispatchMessage(line, send) {
 					version: getServerVersion()
 				},
 				instructions: "TiddlyWiki MCP server." +
-					(readonlyMode ? " READONLY mode — write tools are disabled." : "") +
+					(readonlyMode ? " READONLY mode — writes disabled." : "") +
 					($tw.wiki.getTiddler("$:/temp/mcp/html-import") && $tw.wiki.getTiddler("$:/temp/mcp/html-import").fields.status === "pending" ?
 						"\n\n## HTML import pending\n" +
-						"A previous import_html_wiki call staged a single-file wiki at $:/temp/mcp/html-import; it has not been written to disk yet. Read that tiddler for the analysis, let the user review/edit $:/config/FileSystemPaths in the browser, then call extract_html_wiki to commit."
+						"$:/temp/mcp/html-import staged but not on disk. Read it for analysis, let user review/edit $:/config/FileSystemPaths, then call extract_html_wiki."
 						: "") +
-					"\n\n## Single-file HTML wiki import\n" +
-					"- To import a single-file HTML wiki: call import_html_wiki(path) against an empty wiki folder, then extract_html_wiki() once the user approves the proposed FileSystemPaths.\n" +
-					"\n## Safety (CRITICAL)\n" +
-					"- NEVER modify, create, or delete tiddlers unless the user EXPLICITLY asks (create, edit, update, delete, rename, tag, untag). Words like 'list', 'show', 'find', 'search' are read-only — never write.\n" +
-					"- Before bulk operations, list affected tiddlers and ask for confirmation.\n" +
-					"- Always use get_tiddler to check existence before overwriting.\n" +
+					"\n\n## Safety\n" +
+					"- Never write tiddlers without explicit user request (create/edit/update/delete/rename/tag/untag). 'list','show','find','search' = read-only.\n" +
+					"- Bulk ops: list affected tiddlers and confirm first.\n" +
+					"- get_tiddler before overwriting.\n" +
 					"\n## System tiddlers\n" +
-					"- Exclude system tiddlers ('$:/') by default. Add '!is[system]' as the FIRST filter operator unless the user explicitly requests system/shadow tiddlers.\n" +
-					"- Never fetch '$:/core/modules/...' source tiddlers unless the user specifically names one.\n" +
-					"- Shadow tiddler fallback: if 2-3 searches fail, widen with '[all[tiddlers+shadows]]'. Many important tiddlers are shadows.\n" +
-					"\n## Token efficiency\n" +
-					"- Tool results are pre-formatted. Present them DIRECTLY — do not reformat or restructure.\n" +
-					"- Prefer MCP tools for rendering/filters/wiki info. Prefer file access (Read/Grep/Glob) for code search.\n" +
-					"\n## Tool selection (IMPORTANT)\n" +
-					"- get_tiddler(detailed=true) returns text with hashline anchors by default. Use edit_tiddler with these anchors for edits.\n" +
-					"- User trigger words determine your tool choice:\n" +
-					"  - WRITE words (create, edit, update, change, fix, delete, rename, tag, untag) → read with get_tiddler(detailed=true), then use edit_tiddler for small edits or put_tiddler for new/full rewrites.\n" +
-					"  - READ words (show, list, find, search, what, how many, which) → use get_tiddler(detailed=true). Use format='tid' only if the user needs plain text without hashes.\n" +
-					"  - RENDER words (render, preview, what does X look like) → use render_tiddler (whole tiddler), render_field (single field), or render_text (raw wikitext). get_tiddler returns source, NOT rendered output.\n" +
-					"- NEVER use put_tiddler to change a few lines in an existing tiddler. put_tiddler resends the full text and wastes tokens.\n" +
-					"- Use put_tiddler ONLY for: creating new tiddlers, or full rewrites where most of the text changes.\n" +
-					"- Omit the type field in put_tiddler/edit_tiddler when it is text/vnd.tiddlywiki (that is the default).\n" +
+					"- Default-exclude '$:/' — prepend '!is[system]' to filters unless user asks for system/shadow tiddlers.\n" +
+					"- Shadow fallback: if 2-3 searches return empty, retry with '[all[tiddlers+shadows]]'. Many important tiddlers are shadows.\n" +
+					"- Don't fetch '$:/core/modules/...' unless user names one.\n" +
+					"\n## Token use\n" +
+					"- Tool results are pre-formatted; pass through, don't reformat.\n" +
+					"- Render/filter/wiki-info → MCP. Code search → Read/Grep/Glob.\n" +
+					"\n## Tool choice (trigger words)\n" +
+					"- WRITE (create/edit/update/change/fix/delete/rename/tag/untag): get_tiddler(detailed=true) → edit_tiddler for small edits (LINE#HASH anchors), put_tiddler for new tiddlers or full rewrites.\n" +
+					"- READ (show/list/find/search/what/how many/which): get_tiddler(detailed=true); format='tid' only when plain text needed.\n" +
+					"- RENDER (render/preview/'what does X look like'): render_tiddler (whole), render_field (one field), render_text (raw wikitext). get_tiddler returns SOURCE, not rendered output.\n" +
+					"- put_tiddler resends full text — never use for small edits.\n" +
+					"- Omit type when it's text/vnd.tiddlywiki (default).\n" +
 					"\n## Filters\n" +
-					"- Narrowing first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers]prefix[$:/config/]]'." +
-					"\n\n## Hot reload (no server restart needed)\n" +
-					"- Edition tiddlers on disk changed → reload_tiddlers (scope='tiddlers').\n" +
-					"- Non-JS plugin subtiddler changed (doc/wikitext/CSS) → reload_mcp_modules for the tw-mcp plugin; for OTHER plugins, have the user re-add the plugin tiddler so TW's auto-reload fires.\n" +
-					"- tw-mcp JS handler edited → reload_mcp_modules (re-reads plugin from disk + re-executes JS).\n" +
-					"- mcp.js / mcp-lib.js / shared.js / filesystem.js edits → full server restart required."
+					"- Narrow first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers]prefix[$:/config/]]'.\n" +
+					"\n## Single-file HTML wiki import\n" +
+					"- import_html_wiki(path) into an empty wiki folder, then extract_html_wiki() once user approves FileSystemPaths.\n" +
+					"\n## Hot reload (no server restart)\n" +
+					"- Edition tiddlers on disk → reload_tiddlers (scope='tiddlers').\n" +
+					"- Non-JS plugin subtiddler in tw-mcp → reload_mcp_modules. Other plugins: user re-adds plugin tiddler so TW auto-reloads.\n" +
+					"- tw-mcp JS handler → reload_mcp_modules (disk re-read + JS re-exec).\n" +
+					"- mcp.js / mcp-lib.js / shared.js / filesystem.js → full server restart."
 			}));
 			if(suppressNextInitLog) {
 				suppressNextInitLog = false;

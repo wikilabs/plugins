@@ -95,7 +95,7 @@ var readTools = [
 	},
 	{
 		name: "inspect_pos",
-		description: "Render wikitext to HTML with source-position attrs + title index header. Header: [0=Title 1=Title ...]. Each node may carry p=\"idx:line\" or p=\"idx:start-end\" (idx→header, lines in defining tiddler) and v=\"name\" (transcluded procedure/macro/variable that produced this node, when applicable). Pair with inspect_scope.",
+		description: "Render wikitext to HTML with source-position attrs + title index header. Header: [0=Title 1=Title ...]. Each node may carry p=\"idx:line\" or p=\"idx:start-end\" (idx→header, lines in defining tiddler), v=\"name\" (transcluded procedure/macro/variable that produced this node), c=\"A|B|C\" (caller chain — closest enclosing transclude first, outermost last), and ctx=\"Title\" (currentTiddler when it differs from the source-context tiddler — distinguishes repeated list items). Pair with inspect_scope.",
 		inputSchema: {
 			type: "object",
 			properties: {
