@@ -18,7 +18,12 @@ The /events route handler reads $tw.mcp.sse to attach clients.
 "use strict";
 
 var DEFAULT_RING_SIZE = 500;
-var DEFAULT_INLINE_THRESHOLD = 4096;
+// Default inline threshold: above this size the SSE event carries only
+// `title` + `revision` and the browser must fetch the body via the syncer
+// (a ~250 ms wake-up cycle vs sub-ms for inlined content). 32 KiB covers
+// the vast majority of doc tiddlers. Configurable per wiki via
+// `$:/config/wikilabs/tw-mcp/sse-inline-threshold`.
+var DEFAULT_INLINE_THRESHOLD = 32768;
 var HEARTBEAT_MS = 25000;
 var INLINE_THRESHOLD_TIDDLER = "$:/config/wikilabs/tw-mcp/sse-inline-threshold";
 var SYNC_FILTER_TIDDLER = "$:/config/SyncFilter";
@@ -86,6 +91,12 @@ function SSEBroadcaster(wiki) {
 SSEBroadcaster.prototype.isValidClientId = isValidClientId;
 SSEBroadcaster.prototype.capUsername = capUsername;
 
+SSEBroadcaster.prototype.getInlineThreshold = function() {
+	var raw = this.wiki.getTiddlerText(INLINE_THRESHOLD_TIDDLER);
+	var n = parseInt(raw, 10);
+	return (n > 0 && n < 1024 * 1024) ? n : DEFAULT_INLINE_THRESHOLD;
+};
+
 SSEBroadcaster.prototype.getMode = function() {
 	var raw = (this.wiki.getTiddlerText(MODE_TIDDLER, "default") || "default").trim();
 	if(raw === "presentation" || raw === "main") return raw;
@@ -96,12 +107,6 @@ function generateInstanceId() {
 	var crypto = require("crypto");
 	return Date.now().toString(36) + "-" + crypto.randomBytes(4).toString("hex");
 }
-
-SSEBroadcaster.prototype.getInlineThreshold = function() {
-	var raw = this.wiki.getTiddlerText(INLINE_THRESHOLD_TIDDLER);
-	var n = parseInt(raw, 10);
-	return (n > 0 && n < 1024 * 1024) ? n : DEFAULT_INLINE_THRESHOLD;
-};
 
 // Echo-suppression hooks. PUT/DELETE handlers call recordOriginator before
 // addTiddler/deleteTiddler so the change event carries the clientId.

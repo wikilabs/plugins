@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.4 - 2026.05.09
+
+* SSE inline-threshold default raised from 4 KiB to 32 KiB — doc-sized tiddlers now ride inside the SSE event instead of triggering a syncer fetch (~1 ms vs ~250 ms apply latency).
+
 V 0.13.3 - 2026.05.09
 
 * ''Hardening'': `import_html_wiki` refuses paths with a `.`-prefixed directory or filename segment (`.ssh`, `.aws`, `.env`, …). Other on-disk locations still accepted.
