@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.12 - 2026.05.11
+
+* `reload_tiddlers` output reworked for LLM clarity: rename detection, OTP / scope / change-log labels explicit, disk totals replace `Before/After`, change log no longer lags by one call.
+
 V 0.13.11 - 2026.05.11
 
 * ''Bugfix'': `put_tiddler` / `edit_tiddler` / `resave_tiddler` no longer destroy binary tiddler bodies (SVG, PNG, etc) on save.

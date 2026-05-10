@@ -43,6 +43,13 @@ function wikiInfoHasRetain(info, basePath, seen) {
 // Change log: accumulates $tw.wiki changes between reload_tiddlers calls
 var changeLog = {};
 var changeLogActive = false;
+// Per-reload title set. The change listener runs on $tw.utils.nextTick
+// AFTER reload_tiddlers returns, so events from the reload's own
+// addTiddler / deleteTiddler calls would otherwise land in changeLog and
+// show up as bogus entries on the next call. While reloadOwnedTitles is
+// non-null, the listener skips titles in this set. Cleared via setImmediate
+// (which fires after nextTick) so the events have a chance to be filtered.
+var reloadOwnedTitles = null;
 
 function startChangeLog() {
 	if(changeLogActive) {
@@ -54,6 +61,9 @@ function startChangeLog() {
 		for(var i = 0; i < titles.length; i++) {
 			var title = titles[i];
 			if(title.indexOf("$:/") === 0) {
+				continue;
+			}
+			if(reloadOwnedTitles && reloadOwnedTitles[title]) {
 				continue;
 			}
 			if(changes[title].deleted) {
@@ -71,9 +81,11 @@ module.exports = {
 	"reload_tiddlers": function(args) {
 		var scope = (args && args.scope) || "tiddlers";
 		var messages = [];
+		var dualScope = (scope === "all");
 
 		// Reload edition tiddlers
 		if(scope === "tiddlers" || scope === "all") {
+			if(dualScope) messages.push("=== scope: tiddlers ===");
 			if(!$tw.boot.wikiTiddlersPath) {
 				return shared.errorResult("No wiki tiddlers path available. Cannot reload from filesystem.");
 			}
@@ -82,10 +94,17 @@ module.exports = {
 			// flag in an includeWikis setup, so walk the include tree.
 			var outerBase = path.resolve($tw.boot.wikiPath || ".");
 			var effectiveRetain = wikiInfoHasRetain($tw.boot.wikiInfo, outerBase);
-			var countBefore = $tw.wiki.allTitles().length;
 			var added = 0, updated = 0, skippedSystem = 0, unchanged = 0;
 			var diskTiddlers = Object.create(null);
 			var diskFileInfo = Object.create(null);
+			// Texts captured for in-call rename detection. Pair added/deleted
+			// titles whose `text` field matches exactly: that case is a
+			// rename (most often via bash mv plus reload).
+			var addedTexts = Object.create(null);
+			var deletedTexts = Object.create(null);
+			// Activate listener-suppression for this reload's own touches.
+			var ownedTitles = Object.create(null);
+			reloadOwnedTitles = ownedTitles;
 			$tw.utils.each($tw.loadTiddlersFromPath(resolvedWikiPath), function(tiddlerFile) {
 				$tw.utils.each(tiddlerFile.tiddlers, function(tiddlerFields) {
 					var title = tiddlerFields.title;
@@ -127,13 +146,16 @@ module.exports = {
 						}
 					}
 					if(changed) {
+						ownedTitles[title] = true;
 						$tw.wiki.addTiddler(newTiddler);
 						updated++;
 					} else {
 						unchanged++;
 					}
 				} else {
+					ownedTitles[title] = true;
 					$tw.wiki.addTiddler(new $tw.Tiddler(tiddlerFields));
+					addedTexts[title] = tiddlerFields.text || "";
 					added++;
 				}
 			}
@@ -144,9 +166,29 @@ module.exports = {
 				if($tw.boot.files[t] && $tw.boot.files[t].filepath) {
 					var filePath = $tw.boot.files[t].filepath;
 					if(filePath.indexOf(resolvedWikiPath) === 0 && !diskTiddlers[t]) {
+						var existing = $tw.wiki.getTiddler(t);
+						deletedTexts[t] = (existing && existing.fields.text) || "";
+						ownedTitles[t] = true;
 						$tw.wiki.deleteTiddler(t);
 						delete $tw.boot.files[t];
 						deleted++;
+					}
+				}
+			}
+			// Pair add/delete titles with identical text into renames. Each
+			// pair represents ONE physical disk file, so decrement the raw
+			// add/delete counters: a rename is counted in `renamed` only,
+			// not in both `added` and `deleted`.
+			var renames = [];
+			for(var delTitle in deletedTexts) {
+				for(var addTitle in addedTexts) {
+					if(deletedTexts[delTitle] === addedTexts[addTitle]) {
+						renames.push({from: delTitle, to: addTitle});
+						delete addedTexts[addTitle];
+						delete deletedTexts[delTitle];
+						added--;
+						deleted--;
+						break;
 					}
 				}
 			}
@@ -155,7 +197,7 @@ module.exports = {
 			// When none do, leave OTP alone: it may still hold edge-case entries
 			// from tiddlywiki.files imports that the boot-time generator created
 			// independently of this flag.
-			var otpRefreshed = false, otpCount = 0;
+			var otpRefreshed = false, otpSkipped = false, otpCount = 0;
 			if(effectiveRetain) {
 				var otpOutput = {};
 				for(var btitle in $tw.boot.files) {
@@ -173,14 +215,28 @@ module.exports = {
 					$tw.wiki.addTiddler({title: "$:/config/OriginalTiddlerPaths", type: "application/json", text: JSON.stringify(otpOutput)});
 				}
 				otpRefreshed = true;
+			} else {
+				otpSkipped = true;
 			}
-			var countAfter = $tw.wiki.allTitles().length;
-			messages.push("Tiddlers reloaded from: " + resolvedWikiPath);
-			messages.push("Before: " + countBefore + ", After: " + countAfter + " (added: " + added + ", updated: " + updated + ", unchanged: " + unchanged + ", skipped-system: " + skippedSystem + ", deleted: " + deleted + ")");
+			// Disk-side diff summary. Renames are counted separately from
+			// added/deleted so the row sums match the disk-tiddler total.
+			var diskTotal = added + updated + unchanged + skippedSystem + deleted + renames.length;
+			messages.push("Source: " + resolvedWikiPath);
+			messages.push("Disk tiddlers: " + diskTotal + " (added: " + added + ", updated: " + updated + ", unchanged: " + unchanged + ", deleted: " + deleted + ", renamed: " + renames.length + ")");
+			if(skippedSystem > 0) {
+				messages.push("System tiddlers on disk: " + skippedSystem + " (left untouched by design)");
+			}
+			if(renames.length > 0) {
+				for(var ri = 0; ri < renames.length; ri++) {
+					messages.push("  ~ " + renames[ri].from + " -> " + renames[ri].to + " (rename: text identical)");
+				}
+			}
 			if(otpRefreshed) {
-				messages.push("OTP refreshed (" + otpCount + " entries)");
+				messages.push("OTP: refreshed (" + otpCount + " entries)");
+			} else if(otpSkipped) {
+				messages.push("OTP: skipped (retain-original-tiddler-path off)");
 			}
-			// Report changes since last reload
+			// Report changes since last reload via the event-driven change log.
 			var logTitles = Object.keys(changeLog);
 			if(logTitles.length > 0) {
 				var logAdded = 0, logUpdated = 0, logDeleted = 0;
@@ -189,23 +245,35 @@ module.exports = {
 				for(var li = 0; li < logTitles.length; li++) {
 					var lt = logTitles[li];
 					var action = changeLog[lt];
-					if(action === "added") { logAdded++; logLines.push("  + " + lt); }
-					else if(action === "updated") { logUpdated++; logLines.push("  ~ " + lt); }
-					else if(action === "deleted") { logDeleted++; logLines.push("  - " + lt); }
+					if(action === "added") { logAdded++; logLines.push("  + " + lt + " (added)"); }
+					else if(action === "updated") { logUpdated++; logLines.push("  ~ " + lt + " (updated)"); }
+					else if(action === "deleted") { logDeleted++; logLines.push("  - " + lt + " (deleted)"); }
 				}
-				messages.push("\nSince last reload: " + logAdded + " added, " + logUpdated + " updated, " + logDeleted + " deleted");
+				messages.push("\nChange log: " + (logAdded + logUpdated + logDeleted) + " changes since last reload (" + logAdded + " added, " + logUpdated + " updated, " + logDeleted + " deleted)");
 				messages.push(logLines.join("\n"));
 				changeLog = {};
 			} else if(changeLogActive) {
-				messages.push("\nSince last reload: no changes");
+				messages.push("\nChange log: no changes since last reload");
 			} else {
-				messages.push("\nChange tracking started.");
+				messages.push("\nChange log: empty (first reload after server start; future calls will diff from here)");
 			}
 			startChangeLog();
+			// Release listener-suppression once the change events from this
+			// reload's own touches have fired. nextTick fires before
+			// setTimeout(0), so the listener sees `reloadOwnedTitles` set and
+			// skips those titles; the timer then clears the pointer (but
+			// only if a newer reload has not already replaced it).
+			setTimeout(function() {
+				if(reloadOwnedTitles === ownedTitles) {
+					reloadOwnedTitles = null;
+				}
+			}, 0);
 		}
 
 		// Reload shadow tiddlers from plugins
 		if(scope === "shadows" || scope === "all") {
+			if(dualScope) messages.push("\n=== scope: shadows ===");
+			else messages.push("");  // separator when shadows-only
 			try {
 				var shadowsBefore = $tw.wiki.allShadowTitles().length;
 				var results = $tw.wiki.readPluginInfo();
@@ -213,15 +281,14 @@ module.exports = {
 				$tw.wiki.registerPluginTiddlers(null);
 				$tw.wiki.unpackPluginTiddlers();
 				var shadowsAfter = $tw.wiki.allShadowTitles().length;
-				messages.push("\nShadow tiddlers refreshed");
-				messages.push("Shadows: " + shadowsBefore + " -> " + shadowsAfter);
+				messages.push("Shadow tiddlers: " + shadowsBefore + " -> " + shadowsAfter + " (re-registered from in-memory plugin JSON; plugin folders NOT re-read)");
 				if(modified.length > 0) {
 					messages.push("Modified plugins: " + modified.join(", "));
 				} else {
-					messages.push("No plugin changes detected on disk");
+					messages.push("No plugin changes detected");
 				}
 			} catch(e) {
-				messages.push("\nShadow reload error: " + e.message);
+				messages.push("Shadow reload error: " + e.message);
 			}
 		}
 
