@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.9 - 2026.05.10
+
+* `inspect_tree`: text ≤10 chars verbatim, longer as `…N`; `include:['text']` caps at 2000 chars with head+tail sample.
+
 V 0.13.8 - 2026.05.10
 
 * ''Bugfix'': `inspect_pos` now annotates link and codeblock nodes even when the devtools plugin is not loaded — patches `LinkWidget.renderLink` and `CodeBlockWidget.render` itself for the duration of the render.

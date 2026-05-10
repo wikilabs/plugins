@@ -131,7 +131,15 @@ module.exports = {
 					rn.tag = wn.parseTreeNode.tag;
 				} else if(type === "text") {
 					var txt = wn.parseTreeNode.text;
-					rn.text = wIncludeSet.text ? txt : "s:" + txt.length;
+					if(wIncludeSet.text) {
+						// Cap inlined text at 2000 chars to prevent runaway output;
+						// beyond that, show length + first/last 100 chars sample
+						rn.text = txt.length > 2000
+							? "…" + txt.length + ":" + txt.slice(0, 100) + "…" + txt.slice(-100)
+							: txt;
+					} else {
+						rn.text = txt.length <= 10 ? txt : "…" + txt.length;
+					}
 				}
 				if(wn.attributes && Object.keys(wn.attributes).length > 0) {
 					rn.attributes = {};
