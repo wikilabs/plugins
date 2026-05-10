@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.11 - 2026.05.11
+
+* ''Bugfix'': `put_tiddler` / `edit_tiddler` / `resave_tiddler` no longer destroy binary tiddler bodies (SVG, PNG, etc) on save.
+
 V 0.13.10 - 2026.05.10
 
 * `reload_tiddlers` refreshes `$:/config/OriginalTiddlerPaths` when `retain-original-tiddler-path` is set (walks `includeWikis`). Syncer is pointed at `$:/config/wikilabs/tw-mcp/SyncFilter` so OTP is never persisted to disk.

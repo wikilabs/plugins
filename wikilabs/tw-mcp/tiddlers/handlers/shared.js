@@ -277,6 +277,26 @@ function errorResult(msg) {
 
 // --- File persistence helper (used by put_tiddler and edit_tiddler) ---
 
+function verifyOnDisk(fileInfo, title) {
+	try {
+		if(fileInfo.hasMetaFile) {
+			// Binary tiddler: title header is in the .meta sidecar; the body
+			// file holds binary content (eg SVG XML, PNG bytes) and only needs
+			// to exist non-empty.
+			var metaContent = fs.readFileSync(fileInfo.filepath + ".meta", "utf8");
+			if(metaContent.length === 0 || metaContent.indexOf("title: " + title) === -1) {
+				return false;
+			}
+			return fs.existsSync(fileInfo.filepath) && fs.statSync(fileInfo.filepath).size > 0;
+		}
+		// Self-contained .tid: title header is in the body file.
+		var content = fs.readFileSync(fileInfo.filepath, "utf8");
+		return content.length > 0 && content.indexOf("title: " + title) !== -1;
+	} catch(e) {
+		return false;
+	}
+}
+
 function persistTiddler(tiddler, title, action) {
 	var checkPathAllowed = getCheckPathAllowed();
 	if($tw.boot.wikiTiddlersPath) {
@@ -315,30 +335,25 @@ function persistTiddler(tiddler, title, action) {
 			$tw.utils.saveTiddlerToFileSync(tiddler, fileInfo);
 			// Verify: read back the file and confirm the title header is present.
 			// Catches both 0-byte writes and content that gets truncated by a racing
-			// async syncadaptor save before we report success.
-			var verified = false;
-			var content;
-			try {
-				content = fs.readFileSync(fileInfo.filepath, "utf8");
-				verified = content.length > 0 && content.indexOf("title: " + title) !== -1;
-			} catch(e) {
-				content = null;
-			}
+			// async syncadaptor save before we report success. For binary tiddlers
+			// (hasMetaFile=true) the title header lives in the `.meta` sidecar; the
+			// body file holds binary content and only needs to exist non-empty.
+			var verified = verifyOnDisk(fileInfo, title);
 			if(!verified) {
 				// One retry: write again. The syncer only fires once per addTiddler,
 				// so a second sync write is not racing with another async save.
 				try { $tw.utils.saveTiddlerToFileSync(tiddler, fileInfo); } catch(e) {}
-				try {
-					content = fs.readFileSync(fileInfo.filepath, "utf8");
-					verified = content.length > 0 && content.indexOf("title: " + title) !== -1;
-				} catch(e) {}
+				verified = verifyOnDisk(fileInfo, title);
 			}
 			if(!verified) {
-				// Roll back: remove the tiddler and the bad file.
+				// Roll back: remove the tiddler and the bad file(s).
 				try { fs.unlinkSync(fileInfo.filepath); } catch(e) {}
+				if(fileInfo.hasMetaFile) {
+					try { fs.unlinkSync(fileInfo.filepath + ".meta"); } catch(e) {}
+				}
 				$tw.wiki.deleteTiddler(title);
 				delete $tw.boot.files[title];
-				return errorResult("Tiddler " + action + " failed: file at " + fileInfo.filepath + " did not contain expected content after save (size=" + (content ? content.length : "missing") + "). Store and filesystem rolled back.");
+				return errorResult("Tiddler " + action + " failed: verification failed for " + fileInfo.filepath + ". Store and filesystem rolled back.");
 			}
 			return textResult("Tiddler " + action + ": " + title + " -> " + fileInfo.filepath);
 		} catch(e) {
