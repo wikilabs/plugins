@@ -132,7 +132,7 @@ var readTools = [
 	},
 	{
 		name: "reload_tiddlers",
-		description: "Re-read tiddlers from disk; reports diff vs last call (first call may show large initial set). scope='shadows': refreshes non-JS plugin subtiddlers (doc/wikitext/CSS) — does NOT re-execute plugin JS. For JS in tw-mcp plugin use reload_mcp_modules.",
+		description: "Re-read tiddlers from disk; reports diff vs last call (first call may show large initial set). scope='shadows': refreshes non-JS plugin subtiddlers (doc/wikitext/CSS) — does NOT re-execute plugin JS. For JS in tw-mcp plugin use reload_mcp_modules. Refreshes $:/config/OriginalTiddlerPaths when retain-original-tiddler-path is set.",
 		inputSchema: {
 			type: "object",
 			properties: {

@@ -14,6 +14,32 @@ var fs = require("fs"),
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
+// Recursively check whether any wiki in the includeWikis tree has
+// `retain-original-tiddler-path: true`. Each includeWikis entry is
+// a path string or `{path: "..."}` object, resolved relative to the
+// referring wiki's directory. Returns true on first hit.
+function wikiInfoHasRetain(info, basePath, seen) {
+	if(!info || !basePath) return false;
+	if(info.config && info.config["retain-original-tiddler-path"]) return true;
+	if(!info.includeWikis || !info.includeWikis.length) return false;
+	seen = seen || Object.create(null);
+	for(var i = 0; i < info.includeWikis.length; i++) {
+		var inc = info.includeWikis[i];
+		var incPath = (typeof inc === "string") ? inc : (inc && inc.path);
+		if(!incPath) continue;
+		try {
+			var resolvedDir = path.resolve(basePath, incPath);
+			if(seen[resolvedDir]) continue;
+			seen[resolvedDir] = true;
+			var infoPath = path.resolve(resolvedDir, "tiddlywiki.info");
+			if(!fs.existsSync(infoPath)) continue;
+			var subInfo = JSON.parse(fs.readFileSync(infoPath, "utf8"));
+			if(wikiInfoHasRetain(subInfo, resolvedDir, seen)) return true;
+		} catch(e) { /* ignore: continue to next include */ }
+	}
+	return false;
+}
+
 // Change log: accumulates $tw.wiki changes between reload_tiddlers calls
 var changeLog = {};
 var changeLogActive = false;
@@ -52,8 +78,10 @@ module.exports = {
 				return shared.errorResult("No wiki tiddlers path available. Cannot reload from filesystem.");
 			}
 			var resolvedWikiPath = $tw.boot.wikiTiddlersPath;
-			var wikiInfo = $tw.boot.wikiInfo || {};
-			var config = wikiInfo.config || {};
+			// Effective retain: the outer config does not always carry the
+			// flag in an includeWikis setup, so walk the include tree.
+			var outerBase = path.resolve($tw.boot.wikiPath || ".");
+			var effectiveRetain = wikiInfoHasRetain($tw.boot.wikiInfo, outerBase);
 			var countBefore = $tw.wiki.allTitles().length;
 			var added = 0, updated = 0, skippedSystem = 0, unchanged = 0;
 			var diskTiddlers = Object.create(null);
@@ -68,7 +96,7 @@ module.exports = {
 							filepath: tiddlerFile.filepath,
 							type: tiddlerFile.type,
 							hasMetaFile: tiddlerFile.hasMetaFile,
-							isEditableFile: config["retain-original-tiddler-path"] || tiddlerFile.isEditableFile || tiddlerFile.filepath.indexOf($tw.boot.wikiTiddlersPath) !== 0
+							isEditableFile: effectiveRetain || tiddlerFile.isEditableFile || tiddlerFile.filepath.indexOf($tw.boot.wikiTiddlersPath) !== 0
 						};
 					}
 				});
@@ -122,9 +150,36 @@ module.exports = {
 					}
 				}
 			}
+			// Rebuild $:/config/OriginalTiddlerPaths from $tw.boot.files when
+			// any wiki in the includeWikis tree sets retain-original-tiddler-path.
+			// When none do, leave OTP alone: it may still hold edge-case entries
+			// from tiddlywiki.files imports that the boot-time generator created
+			// independently of this flag.
+			var otpRefreshed = false, otpCount = 0;
+			if(effectiveRetain) {
+				var otpOutput = {};
+				for(var btitle in $tw.boot.files) {
+					var bfi = $tw.boot.files[btitle];
+					if(bfi && bfi.isEditableFile && bfi.filepath) {
+						var rel = path.relative($tw.boot.wikiTiddlersPath, bfi.filepath);
+						otpOutput[btitle] = (path.sep === "/") ? rel : rel.split(path.sep).join("/");
+						otpCount++;
+					}
+				}
+				if(otpCount > 0) {
+					// OTP is kept out of the syncer's filter by
+					// sync-filter-bootstrap.js, so addTiddler does not
+					// trigger a file write.
+					$tw.wiki.addTiddler({title: "$:/config/OriginalTiddlerPaths", type: "application/json", text: JSON.stringify(otpOutput)});
+				}
+				otpRefreshed = true;
+			}
 			var countAfter = $tw.wiki.allTitles().length;
 			messages.push("Tiddlers reloaded from: " + resolvedWikiPath);
 			messages.push("Before: " + countBefore + ", After: " + countAfter + " (added: " + added + ", updated: " + updated + ", unchanged: " + unchanged + ", skipped-system: " + skippedSystem + ", deleted: " + deleted + ")");
+			if(otpRefreshed) {
+				messages.push("OTP refreshed (" + otpCount + " entries)");
+			}
 			// Report changes since last reload
 			var logTitles = Object.keys(changeLog);
 			if(logTitles.length > 0) {

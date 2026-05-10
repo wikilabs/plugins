@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.10 - 2026.05.10
+
+* `reload_tiddlers` refreshes `$:/config/OriginalTiddlerPaths` when `retain-original-tiddler-path` is set (walks `includeWikis`). Syncer is pointed at `$:/config/wikilabs/tw-mcp/SyncFilter` so OTP is never persisted to disk.
+
 V 0.13.9 - 2026.05.10
 
 * `inspect_tree`: text ≤10 chars verbatim, longer as `…N`; `include:['text']` caps at 2000 chars with head+tail sample.
