@@ -299,70 +299,93 @@ function verifyOnDisk(fileInfo, title) {
 
 function persistTiddler(tiddler, title, action) {
 	var checkPathAllowed = getCheckPathAllowed();
-	if($tw.boot.wikiTiddlersPath) {
-		try {
-			// Read FileSystemPaths / FileSystemExtensions — use getTiddlerText
-			// so shadow tiddlers from the filesystem plugin are picked up too.
-			var fspText = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "");
-			var fseText = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "");
-			var pathFilters = fspText ? fspText.split("\n") : undefined;
-			var extFilters = fseText ? fseText.split("\n") : undefined;
-			// Compute filepath BEFORE addTiddler, passing overwrite:true so the
-			// uniquifier doesn't pick a _1/_2 suffix for an existing target file.
-			var baseFileInfo = $tw.boot.files[title] ? $tw.boot.files[title] : {};
-			baseFileInfo.overwrite = true;
-			// Temporarily seed the tiddler into a fresh filter source so pathFilters
-			// can evaluate against the tiddler's fields (tags, etc.) even before it
-			// is added to $tw.wiki. generateTiddlerFileInfo only needs the wiki for
-			// filter evaluation; addTiddler itself is done below.
-			var fileInfo = $tw.utils.generateTiddlerFileInfo(tiddler, {
-				directory: $tw.boot.wikiTiddlersPath,
-				pathFilters: pathFilters,
-				extFilters: extFilters,
-				wiki: $tw.wiki,
-				fileInfo: baseFileInfo
-			});
-			var pathDenied = checkPathAllowed(fileInfo.filepath);
-			if(pathDenied) {
-				return pathDenied;
-			}
-			// Pre-seed $tw.boot.files so the syncadaptor, when it fires on addTiddler,
-			// sees our resolved fileInfo and doesn't pick a different path.
-			$tw.boot.files[title] = fileInfo;
-			// Add to the in-memory wiki.
-			$tw.wiki.addTiddler(tiddler);
-			// Synchronous write — deterministic result, independent of the syncer.
-			$tw.utils.saveTiddlerToFileSync(tiddler, fileInfo);
-			// Verify: read back the file and confirm the title header is present.
-			// Catches both 0-byte writes and content that gets truncated by a racing
-			// async syncadaptor save before we report success. For binary tiddlers
-			// (hasMetaFile=true) the title header lives in the `.meta` sidecar; the
-			// body file holds binary content and only needs to exist non-empty.
-			var verified = verifyOnDisk(fileInfo, title);
-			if(!verified) {
-				// One retry: write again. The syncer only fires once per addTiddler,
-				// so a second sync write is not racing with another async save.
-				try { $tw.utils.saveTiddlerToFileSync(tiddler, fileInfo); } catch(e) {}
-				verified = verifyOnDisk(fileInfo, title);
-			}
-			if(!verified) {
-				// Roll back: remove the tiddler and the bad file(s).
-				try { fs.unlinkSync(fileInfo.filepath); } catch(e) {}
-				if(fileInfo.hasMetaFile) {
-					try { fs.unlinkSync(fileInfo.filepath + ".meta"); } catch(e) {}
-				}
-				$tw.wiki.deleteTiddler(title);
-				delete $tw.boot.files[title];
-				return errorResult("Tiddler " + action + " failed: verification failed for " + fileInfo.filepath + ". Store and filesystem rolled back.");
-			}
-			return textResult("Tiddler " + action + ": " + title + " -> " + fileInfo.filepath);
-		} catch(e) {
-			return errorResult("Tiddler " + action + " in store but failed to save to disk: " + e.message);
+	if(!$tw.boot.wikiTiddlersPath) {
+		// No wiki tiddlers path — still add to in-memory store.
+		$tw.wiki.addTiddler(tiddler);
+		return textResult("Tiddler " + action + " in store only (no wiki tiddlers path): " + title);
+	}
+	// Capture pre-call state for rollback. Snapshot boot.files entry by
+	// shallow copy because the in-place mutation later would otherwise
+	// destroy the original.
+	var oldTiddler = $tw.wiki.getTiddler(title);
+	var oldFileInfoSrc = $tw.boot.files[title];
+	var oldFileInfo = oldFileInfoSrc ? $tw.utils.extend({}, oldFileInfoSrc) : null;
+	function rollbackWikiState() {
+		if(oldTiddler) {
+			$tw.wiki.addTiddler(oldTiddler);
+		} else {
+			$tw.wiki.deleteTiddler(title);
+		}
+		if(oldFileInfo) {
+			$tw.boot.files[title] = oldFileInfo;
+		} else {
+			delete $tw.boot.files[title];
 		}
 	}
-	// No wiki tiddlers path — still add to in-memory store.
-	$tw.wiki.addTiddler(tiddler);
-	return textResult("Tiddler " + action + " in store only (no wiki tiddlers path): " + title);
+	try {
+		// Read FileSystemPaths / FileSystemExtensions — use getTiddlerText
+		// so shadow tiddlers from the filesystem plugin are picked up too.
+		var fspText = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "");
+		var fseText = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "");
+		var pathFilters = fspText ? fspText.split("\n") : undefined;
+		var extFilters = fseText ? fseText.split("\n") : undefined;
+		// Add to wiki FIRST so FSP filters can evaluate against this
+		// tiddler's tags / fields. Computing fileInfo with the tiddler
+		// not yet in the wiki makes [tag[X]] rules return empty for
+		// this title; the tiddler then lands at the default path and
+		// the syncer's nextTick (after addTiddler) recomputes with the
+		// tag visible and writes a SECOND copy at the tag-determined
+		// path. Net result: duplicate files for the same tiddler when
+		// FSP uses tag-based rules.
+		$tw.wiki.addTiddler(tiddler);
+		// Compute filepath. overwrite:true so the uniquifier doesn't pick
+		// a _1/_2 suffix for an existing target file.
+		var baseFileInfo = oldFileInfo ? $tw.utils.extend({}, oldFileInfo) : {};
+		baseFileInfo.overwrite = true;
+		var fileInfo = $tw.utils.generateTiddlerFileInfo(tiddler, {
+			directory: $tw.boot.wikiTiddlersPath,
+			pathFilters: pathFilters,
+			extFilters: extFilters,
+			wiki: $tw.wiki,
+			fileInfo: baseFileInfo
+		});
+		var pathDenied = checkPathAllowed(fileInfo.filepath);
+		if(pathDenied) {
+			rollbackWikiState();
+			return pathDenied;
+		}
+		// Pre-seed $tw.boot.files so the syncadaptor, when its nextTick
+		// fires after addTiddler, sees our resolved fileInfo and writes
+		// to the same path (idempotent overwrite).
+		$tw.boot.files[title] = fileInfo;
+		// Synchronous write — deterministic result, independent of the syncer.
+		$tw.utils.saveTiddlerToFileSync(tiddler, fileInfo);
+		// Verify: read back the file and confirm the title header is present.
+		// Catches both 0-byte writes and content that gets truncated by a racing
+		// async syncadaptor save before we report success. For binary tiddlers
+		// (hasMetaFile=true) the title header lives in the `.meta` sidecar; the
+		// body file holds binary content and only needs to exist non-empty.
+		var verified = verifyOnDisk(fileInfo, title);
+		if(!verified) {
+			// One retry: write again. The syncer only fires once per addTiddler,
+			// so a second sync write is not racing with another async save.
+			try { $tw.utils.saveTiddlerToFileSync(tiddler, fileInfo); } catch(e) {}
+			verified = verifyOnDisk(fileInfo, title);
+		}
+		if(!verified) {
+			// Roll back: remove the new file(s) and restore wiki state.
+			try { fs.unlinkSync(fileInfo.filepath); } catch(e) {}
+			if(fileInfo.hasMetaFile) {
+				try { fs.unlinkSync(fileInfo.filepath + ".meta"); } catch(e) {}
+			}
+			rollbackWikiState();
+			return errorResult("Tiddler " + action + " failed: verification failed for " + fileInfo.filepath + ". Store and filesystem rolled back.");
+		}
+		return textResult("Tiddler " + action + ": " + title + " -> " + fileInfo.filepath);
+	} catch(e) {
+		rollbackWikiState();
+		return errorResult("Tiddler " + action + " in store but failed to save to disk: " + e.message);
+	}
 }
 
 exports.init = init;

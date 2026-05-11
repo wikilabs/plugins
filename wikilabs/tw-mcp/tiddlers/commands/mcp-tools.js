@@ -230,6 +230,20 @@ var writeTools = [
 		}
 	},
 	{
+		name: "rename_tiddler",
+		description: "Rename a tiddler: updates title field + moves on-disk file via FSP rules + removes the old file (and .meta sidecar if present). Cross-references inside other tiddlers are NOT touched (use replace_in_tiddlers). preserve_timestamps=true (default) keeps the original `modified` field; set false to bump it. WITHOUT overwrite: errors if `to` exists. Refuses bundled plugin/theme/language tiddlers and .multids entries.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				from: { type: "string", maxLength: 1024, description: "Current tiddler title" },
+				to: { type: "string", maxLength: 1024, description: "New tiddler title" },
+				overwrite: { type: "boolean", default: false, description: "If true, replace an existing tiddler at `to`" },
+				preserve_timestamps: { type: "boolean", default: true, description: "If true (default), keep the original `modified` field. Set false to set `modified` to now." }
+			},
+			required: ["from", "to"]
+		}
+	},
+	{
 		name: "reload_mcp_modules",
 		description: "Hot-reload tw-mcp plugin. Re-reads plugin folder, refreshes ALL subtiddlers (JS + non-JS doc/wikitext/CSS), re-executes JS modules. Non-JS applies immediately; JS modules apply on next tool call. Excludes mcp.js/mcp-lib.js/shared.js/filesystem.js (hold live state — need server restart).",
 		inputSchema: {
