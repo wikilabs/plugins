@@ -14,6 +14,24 @@ var fs = require("fs"),
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
+// Add a tiddler to the wiki without triggering a syncer save. Uses TW
+// core's `Syncer.storeTiddler` (line 254 of core/modules/syncer.js)
+// which does the addTiddler AND updates `tiddlerInfo[title].changeCount`
+// to match the bumped wiki value, so the syncer's later
+// `wiki.getChangeCount > tiddlerInfo.changeCount` check returns false.
+// Used for tiddlers we just READ from disk (reload_tiddlers) and for
+// derived runtime tiddlers (OTP) — both should never be written back
+// to disk by the syncer. Takes a plain fields object (Tiddler-like).
+// Falls back to a plain addTiddler when no syncer is active
+// (eg headless `--build`).
+function addToWikiSilently(tiddlerFields) {
+	if($tw.syncer) {
+		$tw.syncer.storeTiddler(tiddlerFields);
+	} else {
+		$tw.wiki.addTiddler(tiddlerFields);
+	}
+}
+
 // Recursively check whether any wiki in the includeWikis tree has
 // `retain-original-tiddler-path: true`. Each includeWikis entry is
 // a path string or `{path: "..."}` object, resolved relative to the
@@ -147,14 +165,14 @@ module.exports = {
 					}
 					if(changed) {
 						ownedTitles[title] = true;
-						$tw.wiki.addTiddler(newTiddler);
+						addToWikiSilently(tiddlerFields);
 						updated++;
 					} else {
 						unchanged++;
 					}
 				} else {
 					ownedTitles[title] = true;
-					$tw.wiki.addTiddler(new $tw.Tiddler(tiddlerFields));
+					addToWikiSilently(tiddlerFields);
 					addedTexts[title] = tiddlerFields.text || "";
 					added++;
 				}
@@ -209,10 +227,7 @@ module.exports = {
 					}
 				}
 				if(otpCount > 0) {
-					// OTP is kept out of the syncer's filter by
-					// sync-filter-bootstrap.js, so addTiddler does not
-					// trigger a file write.
-					$tw.wiki.addTiddler({title: "$:/config/OriginalTiddlerPaths", type: "application/json", text: JSON.stringify(otpOutput)});
+					addToWikiSilently({title: "$:/config/OriginalTiddlerPaths", type: "application/json", text: JSON.stringify(otpOutput)});
 				}
 				otpRefreshed = true;
 			} else {

@@ -1,3 +1,0 @@
-title: $:/config/wikilabs/tw-mcp/SyncFilter
-
-[subfilter{$:/config/SyncFilter}] :except[[$:/config/OriginalTiddlerPaths]]
