@@ -401,11 +401,13 @@ function extractHandler(args) {
 	if(!fileSystemPathsText) {
 		return shared.errorResult("No FileSystemPaths rules available.");
 	}
-	// Update the FileSystemPaths config tiddler (in case args override was used)
-	$tw.wiki.addTiddler(new $tw.Tiddler({
+	// Update the FileSystemPaths config tiddler (in case args override was used).
+	// Use storeTiddler: the explicit save loop below writes this tiddler to disk
+	// itself, so the syncer must not also queue an async save for it.
+	shared.addToWikiSilently(new $tw.Tiddler({
 		title: "$:/config/FileSystemPaths",
 		text: fileSystemPathsText
-	}));
+	}).fields);
 	// Parse path filters
 	var pathFilters = fileSystemPathsText.split("\n").filter(function(l) { return l.trim(); });
 	var extFilters;

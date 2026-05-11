@@ -388,6 +388,19 @@ function persistTiddler(tiddler, title, action) {
 	}
 }
 
+// Add a tiddler without triggering a syncer save. `Syncer.storeTiddler`
+// syncs `tiddlerInfo[title].changeCount` with the post-add wiki value
+// so the comparator skips it. Use when we persist the .tid ourselves
+// (upload_file, extract_html_wiki) or for derived / disk-sourced
+// tiddlers (OTP refresh, reload_tiddlers). Takes plain fields.
+function addToWikiSilently(tiddlerFields) {
+	if($tw.syncer) {
+		$tw.syncer.storeTiddler(tiddlerFields);
+	} else {
+		$tw.wiki.addTiddler(tiddlerFields);
+	}
+}
+
 exports.init = init;
 exports.checkWritable = checkWritable;
 exports.isReadonly = isReadonly;
@@ -405,4 +418,5 @@ exports.checkTitle = checkTitle;
 exports.textResult = textResult;
 exports.errorResult = errorResult;
 exports.persistTiddler = persistTiddler;
+exports.addToWikiSilently = addToWikiSilently;
 exports.SOURCE_POS_SEPARATOR = SOURCE_POS_SEPARATOR;

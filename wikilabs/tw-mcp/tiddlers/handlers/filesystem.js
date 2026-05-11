@@ -14,23 +14,7 @@ var fs = require("fs"),
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
-// Add a tiddler to the wiki without triggering a syncer save. Uses TW
-// core's `Syncer.storeTiddler` (line 254 of core/modules/syncer.js)
-// which does the addTiddler AND updates `tiddlerInfo[title].changeCount`
-// to match the bumped wiki value, so the syncer's later
-// `wiki.getChangeCount > tiddlerInfo.changeCount` check returns false.
-// Used for tiddlers we just READ from disk (reload_tiddlers) and for
-// derived runtime tiddlers (OTP) — both should never be written back
-// to disk by the syncer. Takes a plain fields object (Tiddler-like).
-// Falls back to a plain addTiddler when no syncer is active
-// (eg headless `--build`).
-function addToWikiSilently(tiddlerFields) {
-	if($tw.syncer) {
-		$tw.syncer.storeTiddler(tiddlerFields);
-	} else {
-		$tw.wiki.addTiddler(tiddlerFields);
-	}
-}
+var addToWikiSilently = shared.addToWikiSilently;
 
 // Recursively check whether any wiki in the includeWikis tree has
 // `retain-original-tiddler-path: true`. Each includeWikis entry is
