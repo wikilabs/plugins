@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.14 - 2026.05.11
+
+* ''Bugfix'': `reload_mcp_modules` no longer persists the plugin bundle to disk.
+
 V 0.13.13 - 2026.05.11
 
 * New tool `rename_tiddler` (from, to, overwrite=false, preserve_timestamps=true). Atomic rename: title + on-disk file via FSP. Cross-refs untouched (use `replace_in_tiddlers` later).

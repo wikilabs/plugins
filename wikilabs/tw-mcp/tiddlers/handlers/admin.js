@@ -79,12 +79,26 @@ module.exports = {
 					$tw.config.pluginsPath,
 					$tw.config.pluginsEnvVar
 				);
-				$tw.loadPlugin(PLUGIN_NAME, paths);
-				// loadPlugin's addTiddler queues a change event that would make
-				// the syncadapter persist the plugin into the edition's
-				// tiddlers/ folder. Drop it before the next-tick dispatch.
-				if($tw.wiki.changedTiddlers) {
-					delete $tw.wiki.changedTiddlers[PLUGIN_TITLE];
+				// Replicate $tw.loadPlugin without its bare addTiddler. Use
+				// the syncer's storeTiddler instead, which adds the tiddler
+				// AND updates the syncer's tiddlerInfo.changeCount to match
+				// the bumped wiki.changeCount. The syncer's later sync check
+				// (`wiki.getChangeCount > tiddlerInfo.changeCount`) is then
+				// false, so the bundle is never persisted to the edition's
+				// tiddlers/ folder. Fallback to addTiddler if no syncer is
+				// active (eg headless `--build`).
+				var pluginPath = $tw.findLibraryItem(PLUGIN_NAME, paths);
+				if(!pluginPath) {
+					return shared.errorResult("Plugin folder not found: " + PLUGIN_NAME);
+				}
+				var pluginFields = $tw.loadPluginFolder(pluginPath);
+				if(!pluginFields) {
+					return shared.errorResult("Failed to load plugin from folder: " + pluginPath);
+				}
+				if($tw.syncer) {
+					$tw.syncer.storeTiddler(pluginFields);
+				} else {
+					$tw.wiki.addTiddler(pluginFields);
 				}
 				$tw.wiki.readPluginInfo();
 				$tw.wiki.registerPluginTiddlers(null);
