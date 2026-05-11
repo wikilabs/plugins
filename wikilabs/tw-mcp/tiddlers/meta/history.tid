@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.16 - 2026.05.11
+
+* `upload_file` uses `storeTiddler` to suppress the redundant async write the syncer would otherwise do.
+
 V 0.13.15 - 2026.05.11
 
 * `reload_tiddlers` no longer triggers redundant disk writes for tiddlers it just read from disk; OTP refresh uses the same path. The SyncFilter wrap setup is removed.

@@ -381,7 +381,7 @@ module.exports = {
 			tiddlerFields.tags = args.tags;
 		}
 		var tiddler = new $tw.Tiddler(creationFields, tiddlerFields, modificationFields);
-		$tw.wiki.addTiddler(tiddler);
+		addToWikiSilently(tiddler.fields);
 		try {
 			var tiddlerFileInfo = $tw.utils.generateTiddlerFileInfo(tiddler, {
 				directory: $tw.boot.wikiTiddlersPath,
