@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.20 - 2026.05.12
+
+* ''Bugfix'': `reload_tiddlers` now refreshes `$tw.boot.files` for system (`$:/`) tiddlers too. Previously skipped, leaving a window where a `$:/X` file on disk plus an empty `boot.files` entry made TW core's syncer uniquify the filename (`$__X_1.tid`) on the next save.
+
 V 0.13.19 - 2026.05.11
 
 * `reload_mcp_modules` now invalidates `$tw.Wiki.prototype.filterOperators` and `filterRunPrefixes` when those module-types reload, so filter-operator changes (eg `search-lines`) hot-reload without a full server restart.

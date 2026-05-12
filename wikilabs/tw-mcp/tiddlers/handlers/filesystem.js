@@ -123,14 +123,19 @@ module.exports = {
 				});
 			});
 			for(var title in diskTiddlers) {
+				// Refresh boot.files unconditionally -- system tiddlers (`$:/`)
+				// still get their on-disk location tracked even though we skip
+				// adding them to the wiki below. Without this, a system tiddler
+				// file on disk + boot.files entry empty leaves TW core's syncer
+				// to uniquify (`_1`) on the next save.
+				if(diskFileInfo[title]) {
+					$tw.boot.files[title] = diskFileInfo[title];
+				}
 				if(title.indexOf("$:/") === 0) {
 					skippedSystem++;
 					continue;
 				}
 				var tiddlerFields = diskTiddlers[title];
-				if(diskFileInfo[title]) {
-					$tw.boot.files[title] = diskFileInfo[title];
-				}
 				var existing = $tw.wiki.getTiddler(title);
 				if(existing) {
 					var changed = false;
