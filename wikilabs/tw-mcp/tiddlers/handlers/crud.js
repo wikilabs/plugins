@@ -12,6 +12,60 @@ MCP tool handlers for tiddler CRUD operations.
 var fs = require("fs");
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
+// Title-first fields block for `.tid`-style output. Overrides TW's default
+// alphabetical sort so the title is on line 1 — easier for LLMs (and humans)
+// to identify each block at a glance. options.exclude is an array of field
+// names to drop entirely; options.skipSet is a map of field names to skip
+// (used by get_tiddlers' verbose filter).
+function formatFieldsBlock(tiddler, options) {
+	options = options || {};
+	var exclude = options.exclude || [];
+	var skipSet = options.skipSet || {};
+	var strings = tiddler.getFieldStrings({exclude: exclude});
+	var names = Object.keys(strings).sort();
+	var lines = [];
+	if(strings.title !== undefined) {
+		lines.push("title: " + strings.title);
+	}
+	for(var i = 0; i < names.length; i++) {
+		var n = names[i];
+		if(n === "title") continue;
+		if(skipSet[n]) continue;
+		lines.push(n + ": " + strings[n]);
+	}
+	return lines.join("\n");
+}
+
+// Title-first plain JS object for JSON output. JS engines preserve insertion
+// order for non-integer string keys, so the serialised JSON has title first.
+// options.includeText controls whether the text field is included.
+// options.skipSet is a map of field names to skip (used by get_tiddlers).
+function extractFieldsObject(tiddler, options) {
+	options = options || {};
+	var includeText = !!options.includeText;
+	var skipSet = options.skipSet || {};
+	var fields = {};
+	if(tiddler.fields.title !== undefined) {
+		fields.title = tiddler.fields.title;
+	}
+	var names = Object.keys(tiddler.fields).sort();
+	for(var i = 0; i < names.length; i++) {
+		var field = names[i];
+		if(field === "title") continue;
+		if(field === "text" && !includeText) continue;
+		if(skipSet[field]) continue;
+		var value = tiddler.fields[field];
+		if(Array.isArray(value)) {
+			fields[field] = value.slice();
+		} else if($tw.utils.isDate(value)) {
+			fields[field] = $tw.utils.stringifyDate(value);
+		} else {
+			fields[field] = value;
+		}
+	}
+	return fields;
+}
+
 module.exports = {
 	"get_tiddler": function(args) {
 		var tiddler = $tw.wiki.getTiddler(args.title);
@@ -21,11 +75,6 @@ module.exports = {
 		if(tiddler.fields["plugin-type"]) {
 			var pluginInfo = $tw.wiki.getPluginInfo(args.title);
 			var shadowTitles = pluginInfo && pluginInfo.tiddlers ? Object.keys(pluginInfo.tiddlers).sort() : [];
-			var fieldStrings = [];
-			for(var f in tiddler.fields) {
-				if(f === "text") continue;
-				fieldStrings.push(f + ": " + tiddler.getFieldString(f));
-			}
 			var readmeTitle = args.title + "/readme";
 			var readmeIdx = shadowTitles.indexOf(readmeTitle);
 			if(readmeIdx > 0) {
@@ -34,7 +83,7 @@ module.exports = {
 			}
 			var ns = shared.buildTree(shadowTitles);
 			var header = ns.prefix ? ns.prefix + " ... " + shadowTitles.length + " shadow tiddlers\n" : "";
-			var output = fieldStrings.join("\n") + "\n\n" + header + ns.tree;
+			var output = formatFieldsBlock(tiddler, {exclude: ["text"]}) + "\n\n" + header + ns.tree;
 			return shared.textResult(output);
 		}
 		var includeText = !!args.detailed || !!args.lines;
@@ -48,46 +97,20 @@ module.exports = {
 			hasUnsafeFields = hasUnsafeFields || /:|#/mg.test(fieldName);
 		});
 		if(args.format === "json") {
-			// Pure JSON — no hashes, includes text if detailed
-			var fields = {};
-			for(var field in tiddler.fields) {
-				if(field === "text" && !includeText) continue;
-				var value = tiddler.fields[field];
-				if(Array.isArray(value)) {
-					fields[field] = value.slice();
-				} else if($tw.utils.isDate(value)) {
-					fields[field] = $tw.utils.stringifyDate(value);
-				} else {
-					fields[field] = value;
-				}
-			}
-			return shared.textResult(JSON.stringify(fields, null, $tw.config.preferences.jsonSpaces));
+			return shared.textResult(JSON.stringify(extractFieldsObject(tiddler, {includeText: includeText}), null, $tw.config.preferences.jsonSpaces));
 		} else if(args.format === "tid") {
-			// Plain tid — no hashes
-			var output = tiddler.getFieldStringBlock({exclude: ["text"]});
+			var output = formatFieldsBlock(tiddler, {exclude: ["text"]});
 			if(includeText && tiddler.fields.text !== undefined) {
 				output += "\n\n" + tiddler.fields.text;
 			}
 			return shared.textResult(output);
 		} else {
-			// Default (hashline): tid headers for safe fields, JSON for unsafe, hashlined text
+			// Default (hashline): title-first tid headers for safe fields, JSON for unsafe, hashlined text
 			var header;
 			if(hasUnsafeFields) {
-				var fields = {};
-				for(var field in tiddler.fields) {
-					if(field === "text") continue;
-					var value = tiddler.fields[field];
-					if(Array.isArray(value)) {
-						fields[field] = value.slice();
-					} else if($tw.utils.isDate(value)) {
-						fields[field] = $tw.utils.stringifyDate(value);
-					} else {
-						fields[field] = value;
-					}
-				}
-				header = JSON.stringify(fields, null, $tw.config.preferences.jsonSpaces);
+				header = JSON.stringify(extractFieldsObject(tiddler, {includeText: false}), null, $tw.config.preferences.jsonSpaces);
 			} else {
-				header = tiddler.getFieldStringBlock({exclude: ["text"]});
+				header = formatFieldsBlock(tiddler, {exclude: ["text"]});
 			}
 			var output = header;
 			if(includeText && tiddler.fields.text !== undefined) {
@@ -111,42 +134,7 @@ module.exports = {
 		var maxTiddlers = args.max_tiddlers || 50;
 		var maxBytes = args.max_bytes || 50000;
 		var SKIP_FIELDS = {created: 1, modified: 1, creator: 1, modifier: 1, revision: 1};
-		function shouldSkipField(name) {
-			return !verbose && SKIP_FIELDS[name];
-		}
-		function extractFields(tiddler, includeText) {
-			var fields = {};
-			for(var field in tiddler.fields) {
-				if(field === "text" && !includeText) continue;
-				if(shouldSkipField(field)) continue;
-				var value = tiddler.fields[field];
-				if(Array.isArray(value)) {
-					fields[field] = value.slice();
-				} else if($tw.utils.isDate(value)) {
-					fields[field] = $tw.utils.stringifyDate(value);
-				} else {
-					fields[field] = value;
-				}
-			}
-			return fields;
-		}
-		// title-first fields block (overrides TW's alphabetical sort), with
-		// optional bookkeeping filter applied.
-		function formatFieldsBlock(tiddler) {
-			var strings = tiddler.getFieldStrings({exclude: ["text"]});
-			var names = Object.keys(strings).sort();
-			var lines = [];
-			if(strings.title !== undefined) {
-				lines.push("title: " + strings.title);
-			}
-			for(var i = 0; i < names.length; i++) {
-				var n = names[i];
-				if(n === "title") continue;
-				if(shouldSkipField(n)) continue;
-				lines.push(n + ": " + strings[n]);
-			}
-			return lines.join("\n");
-		}
+		var skipSet = verbose ? {} : SKIP_FIELDS;
 		function renderText(tiddler, includeText) {
 			var hasUnsafe = false;
 			$tw.utils.each(tiddler.getFieldStrings(), function(value, fieldName) {
@@ -158,9 +146,9 @@ module.exports = {
 			});
 			var out;
 			if(hasUnsafe && format !== "tid") {
-				out = JSON.stringify(extractFields(tiddler, false), null, $tw.config.preferences.jsonSpaces);
+				out = JSON.stringify(extractFieldsObject(tiddler, {skipSet: skipSet}), null, $tw.config.preferences.jsonSpaces);
 			} else {
-				out = formatFieldsBlock(tiddler);
+				out = formatFieldsBlock(tiddler, {exclude: ["text"], skipSet: skipSet});
 			}
 			if(includeText && tiddler.fields.text !== undefined) {
 				if(format === "hashline") {
@@ -194,7 +182,7 @@ module.exports = {
 			var entry;
 			var entryBytes;
 			if(format === "json") {
-				entry = { fields: extractFields(tiddler, realDetailed) };
+				entry = { fields: extractFieldsObject(tiddler, {includeText: realDetailed, skipSet: skipSet}) };
 				entryBytes = JSON.stringify(entry.fields).length + 8;
 			} else {
 				entry = { content: renderText(tiddler, realDetailed) };
