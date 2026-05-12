@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.22 - 2026.05.12
+
+* New `replace_in_tiddlers` MCP tool: bulk find+replace across many tiddlers in one call. Multiple `{pattern, replacement}` rules per call, per-rule `regexp`/`case_sensitive`/`words` flags, replacement supports JS backrefs (`$1..$9`, `$&`). Default fields scan `text`, `caption`, `list`, `tags` (array fields serialised via `stringifyList`, parsed back on write). `dry_run=true` by default; output groups by title with `- before` / `+ after` lines per change.
+
 V 0.13.21 - 2026.05.12
 
 * `search-lines` operator now scans array-valued fields (`tags`, `list`) by serialising them through `$tw.utils.stringifyList` first, so the on-disk `.tid` form is what gets matched (multi-word entries wrapped in `[[...]]`).

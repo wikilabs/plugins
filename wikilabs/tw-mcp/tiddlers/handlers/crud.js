@@ -315,6 +315,182 @@ module.exports = {
 			"new: " + (newPath || "(no file)"));
 	},
 
+	"replace_in_tiddlers": function(args) {
+		var denied = shared.checkWritable("replace_in_tiddlers");
+		if(denied) return denied;
+		if(!args.rules || !Array.isArray(args.rules) || args.rules.length === 0) {
+			return shared.errorResult("replace_in_tiddlers: 'rules' must be a non-empty array of {pattern, replacement} objects");
+		}
+		var fields = (args.fields && args.fields.length > 0) ? args.fields : ["text", "caption", "list", "tags"];
+		var scope = args.filter || (args.include_system ? "[all[tiddlers]]" : "[all[tiddlers]!is[system]]");
+		var dryRun = args.dry_run !== false;
+		var maxTiddlers = args.max_tiddlers || 100;
+		var maxReplacementsTotal = args.max_replacements_total || 1000;
+		var compiledRules = [];
+		for(var i = 0; i < args.rules.length; i++) {
+			var rule = args.rules[i];
+			if(typeof rule.pattern !== "string" || rule.pattern.length === 0) {
+				return shared.errorResult("replace_in_tiddlers: rule " + i + " missing or empty 'pattern'");
+			}
+			if(typeof rule.replacement !== "string") {
+				return shared.errorResult("replace_in_tiddlers: rule " + i + " 'replacement' must be a string");
+			}
+			if(rule.pattern.length > shared.MAX_FILTER_LENGTH) {
+				return shared.errorResult("replace_in_tiddlers: rule " + i + " pattern too long (max " + shared.MAX_FILTER_LENGTH + ")");
+			}
+			var caseSensitive = !!rule.case_sensitive;
+			var regexp = !!rule.regexp;
+			var words = !!rule.words;
+			var matcher;
+			try {
+				var src = regexp ? rule.pattern : rule.pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+				if(words) {
+					src = "\\b(?:" + src + ")\\b";
+				}
+				matcher = new RegExp(src, "g" + (caseSensitive ? "" : "i"));
+			} catch(e) {
+				return shared.errorResult("replace_in_tiddlers: rule " + i + " invalid regex: " + e.message);
+			}
+			compiledRules.push({matcher: matcher, replacement: rule.replacement});
+		}
+		var sourceTitles;
+		try {
+			sourceTitles = $tw.wiki.filterTiddlers(scope);
+		} catch(e) {
+			return shared.errorResult("Filter error: " + e.message);
+		}
+		// Scan: per tiddler, per listed field, per line. Replacements within
+		// a line are sequential across rules (rule2 sees rule1's output) so
+		// chained renames work like sed -e ... -e ....
+		var modified = [];
+		var totalReplacements = 0;
+		var truncated = false;
+		for(var ti = 0; ti < sourceTitles.length && !truncated; ti++) {
+			var title = sourceTitles[ti];
+			var tiddler = $tw.wiki.getTiddler(title);
+			if(!tiddler) continue;
+			var perFieldChanges = [];
+			var newFieldValues = {};
+			var tiddlerReplacements = 0;
+			for(var fi = 0; fi < fields.length; fi++) {
+				var field = fields[fi];
+				var rawValue = tiddler.fields[field];
+				var isArrayField = Array.isArray(rawValue);
+				var value;
+				if(isArrayField) {
+					value = $tw.utils.stringifyList(rawValue);
+				} else if(typeof rawValue === "string") {
+					value = rawValue;
+				} else {
+					continue;
+				}
+				var lines = value.split(/\r?\n/);
+				var lineDiffs = [];
+				var newLines = [];
+				var fieldChanged = false;
+				for(var li = 0; li < lines.length; li++) {
+					var before = lines[li];
+					var after = before;
+					var lineReplacements = 0;
+					for(var ri = 0; ri < compiledRules.length; ri++) {
+						var cr = compiledRules[ri];
+						var matches = after.match(cr.matcher);
+						if(matches) {
+							lineReplacements += matches.length;
+							after = after.replace(cr.matcher, cr.replacement);
+						}
+					}
+					if(after !== before) {
+						lineDiffs.push({lineNum: li + 1, before: before, after: after, count: lineReplacements});
+						tiddlerReplacements += lineReplacements;
+						fieldChanged = true;
+					}
+					newLines.push(after);
+				}
+				if(fieldChanged) {
+					var newValue = newLines.join("\n");
+					newFieldValues[field] = isArrayField ? $tw.utils.parseStringArray(newValue) : newValue;
+					perFieldChanges.push({field: field, isArrayField: isArrayField, lineDiffs: lineDiffs});
+				}
+			}
+			if(perFieldChanges.length === 0) continue;
+			if(totalReplacements + tiddlerReplacements > maxReplacementsTotal) {
+				truncated = true;
+				break;
+			}
+			modified.push({
+				title: title,
+				newFieldValues: newFieldValues,
+				perFieldChanges: perFieldChanges,
+				tiddlerReplacements: tiddlerReplacements
+			});
+			totalReplacements += tiddlerReplacements;
+			if(modified.length >= maxTiddlers) {
+				truncated = true;
+				break;
+			}
+		}
+		if(modified.length === 0) {
+			return shared.textResult("(no matches)");
+		}
+		if(dryRun) {
+			var hashline = require("$:/core/modules/commands/inspect/hashline.js");
+			var blocks = [];
+			for(var mi = 0; mi < modified.length; mi++) {
+				var m = modified[mi];
+				var lines = [m.title];
+				for(var ci = 0; ci < m.perFieldChanges.length; ci++) {
+					var ch = m.perFieldChanges[ci];
+					for(var di = 0; di < ch.lineDiffs.length; di++) {
+						var ld = ch.lineDiffs[di];
+						var prefix = (ch.field === "text")
+							? hashline.formatLineTag(ld.lineNum, ld.before)
+							: ch.field + ":L" + ld.lineNum;
+						lines.push("  - " + prefix + ": " + ld.before);
+						lines.push("  + " + prefix + ": " + ld.after);
+					}
+				}
+				blocks.push(lines.join("\n"));
+			}
+			var output = blocks.join("\n\n");
+			output += "\n\nDRY RUN: " + totalReplacements + " replacement" + (totalReplacements !== 1 ? "s" : "") +
+				" across " + modified.length + " tiddler" + (modified.length !== 1 ? "s" : "");
+			if(truncated) {
+				output += "\n(truncated; raise max_tiddlers or max_replacements_total to see more)";
+			}
+			output += "\nCall again with dry_run=false to apply.";
+			return shared.textResult(output);
+		}
+		// Apply: build a new tiddler per modified entry and persist.
+		var persisted = 0;
+		var failures = [];
+		var modificationFields = $tw.wiki.getModificationFields();
+		for(var mi = 0; mi < modified.length; mi++) {
+			var m = modified[mi];
+			var existing = $tw.wiki.getTiddler(m.title);
+			if(!existing) {
+				failures.push(m.title + ": tiddler vanished before persist");
+				continue;
+			}
+			var newTiddler = new $tw.Tiddler(existing.fields, m.newFieldValues, modificationFields, {title: m.title});
+			var result = shared.persistTiddler(newTiddler, m.title, "replaced");
+			if(result && result.isError) {
+				failures.push(m.title + ": " + result.content[0].text);
+			} else {
+				persisted++;
+			}
+		}
+		var summary = persisted + " tiddler" + (persisted !== 1 ? "s" : "") + " modified, " +
+			totalReplacements + " replacement" + (totalReplacements !== 1 ? "s" : "");
+		if(failures.length > 0) {
+			summary += "\n\nFailures (" + failures.length + "):\n  " + failures.join("\n  ");
+		}
+		if(truncated) {
+			summary += "\n(truncated; re-run with narrower filter or higher caps for remaining matches)";
+		}
+		return shared.textResult(summary);
+	},
+
 	"delete_tiddler": function(args) {
 		var denied = shared.checkWritable("delete_tiddler");
 		if(denied) return denied;

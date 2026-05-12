@@ -268,6 +268,37 @@ var writeTools = [
 		}
 	},
 	{
+		name: "replace_in_tiddlers",
+		description: "Bulk per-line find+replace across tiddlers. Dry-run output (dry_run=true default): title header, '  - <n>#<hash>: before' then '  + <n>#<hash>: after' per change (text field anchor; other fields 'field:L<n>'). Footer 'DRY RUN: N replacements across M tiddlers' + 'Call again with dry_run=false to apply'. Apply output: '<N> tiddlers modified, <M> replacements' + failure list. Empty: '(no matches)'. Defaults: fields=['text','caption','list','tags'] (tags/list serialised via stringifyList, parsed back on write), case-insensitive literal. Rules applied sequentially per line. Regex compiled with g flag (all matches per line); replacement supports JS backrefs $1..$9, $&, $$. Caps: max_tiddlers=100, max_replacements_total=1000.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				rules: {
+					type: "array",
+					description: "Array of {pattern, replacement, regexp?, case_sensitive?, words?} objects",
+					items: {
+						type: "object",
+						properties: {
+							pattern: { type: "string", description: "Find pattern (literal by default; regex when regexp=true)" },
+							replacement: { type: "string", description: "Replacement string. When regexp=true supports $1..$9, $&, $$." },
+							regexp: { type: "boolean", default: false },
+							case_sensitive: { type: "boolean", default: false },
+							words: { type: "boolean", default: false, description: "Wrap pattern with \\b boundaries" }
+						},
+						required: ["pattern", "replacement"]
+					}
+				},
+				filter: { type: "string", description: "TW filter scope; default '[all[tiddlers]!is[system]]' or '[all[tiddlers]]' when include_system" },
+				include_system: { type: "boolean", default: false },
+				fields: { type: "array", items: { type: "string" }, description: "Fields to scan; default ['text','caption','list','tags']" },
+				dry_run: { type: "boolean", default: true, description: "Preview only; nothing written. Set false to apply." },
+				max_tiddlers: { type: "number", default: 100 },
+				max_replacements_total: { type: "number", default: 1000 }
+			},
+			required: ["rules"]
+		}
+	},
+	{
 		name: "reload_mcp_modules",
 		description: "Hot-reload tw-mcp plugin. Re-reads plugin folder, refreshes ALL subtiddlers (JS + non-JS doc/wikitext/CSS), re-executes JS modules. Non-JS applies immediately; JS modules apply on next tool call. Excludes mcp.js/mcp-lib.js/shared.js/filesystem.js (hold live state — need server restart).",
 		inputSchema: {
