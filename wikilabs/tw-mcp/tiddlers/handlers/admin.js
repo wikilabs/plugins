@@ -31,7 +31,17 @@ var PRESERVE_IDENTITY = {
 	"$:/core/modules/commands/inspect/mcp-handlers.js": true
 };
 
-function reloadInPlace(title) {
+// Map module-type to the $tw.Wiki.prototype cache TW builds lazily from
+// $tw.modules.applyMethods. After a re-execute the cache holds stale
+// function references; deleting the property forces the next
+// getFilterOperators/getFilterRunPrefixes to rebuild from the now-fresh
+// $tw.modules.types map.
+var CACHE_INVALIDATE_MAP = {
+	"filteroperator": "filterOperators",
+	"filterrunprefix": "filterRunPrefixes"
+};
+
+function reloadInPlace(title, moduleType) {
 	var info = $tw.modules.titles[title];
 	if(!info) return { error: "not registered in $tw.modules" };
 	var text = $tw.wiki.getTiddlerText(title);
@@ -57,6 +67,13 @@ function reloadInPlace(title) {
 			oldExports[k] = newExports[k];
 		}
 		info.exports = oldExports;
+		newExports = oldExports;
+	}
+	// $tw.modules.types[<type>][<title>] holds the per-type exports map that
+	// applyMethods walks. $tw.modules.execute updates info.exports but does NOT
+	// touch the types map, so re-point it explicitly.
+	if(moduleType && $tw.modules.types[moduleType]) {
+		$tw.modules.types[moduleType][title] = newExports;
 	}
 	return { ok: true };
 }
@@ -124,16 +141,33 @@ module.exports = {
 		moduleTitles.sort();
 
 		// Phase 3: reload each module, except excluded.
+		var touchedTypes = Object.create(null);
 		moduleTitles.forEach(function(title) {
 			if(EXCLUDE_FROM_RELOAD[title]) {
 				skipped.push(title + " (" + EXCLUDE_FROM_RELOAD[title] + ")");
 				return;
 			}
-			var result = reloadInPlace(title);
+			var moduleType = pluginInfo.tiddlers[title]["module-type"];
+			var result = reloadInPlace(title, moduleType);
 			if(result.ok) {
 				reloaded.push(title + (PRESERVE_IDENTITY[title] ? " [identity]" : ""));
+				if(moduleType && CACHE_INVALIDATE_MAP[moduleType]) {
+					touchedTypes[moduleType] = true;
+				}
 			} else {
 				errors.push(title + ": " + result.error);
+			}
+		});
+
+		// Phase 4: invalidate Wiki.prototype caches whose source module-types
+		// were touched. The next getFilterOperators / getFilterRunPrefixes
+		// call rebuilds from the now-fresh $tw.modules.types map.
+		var invalidatedCaches = [];
+		Object.keys(touchedTypes).forEach(function(mt) {
+			var protoKey = CACHE_INVALIDATE_MAP[mt];
+			if(Object.prototype.hasOwnProperty.call($tw.Wiki.prototype, protoKey)) {
+				delete $tw.Wiki.prototype[protoKey];
+				invalidatedCaches.push(protoKey + " (" + mt + ")");
 			}
 		});
 
@@ -142,6 +176,11 @@ module.exports = {
 			"",
 			"Reloaded " + reloaded.length + " module(s):"
 		]).concat(reloaded.map(function(s) { return "  " + s; }));
+		if(invalidatedCaches.length > 0) {
+			out.push("");
+			out.push("Invalidated " + invalidatedCaches.length + " Wiki.prototype cache(s):");
+			invalidatedCaches.forEach(function(s) { out.push("  " + s); });
+		}
 		if(skipped.length > 0) {
 			out.push("");
 			out.push("Skipped " + skipped.length + " (excluded; restart required):");
