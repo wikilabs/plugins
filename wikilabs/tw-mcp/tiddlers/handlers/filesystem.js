@@ -16,6 +16,11 @@ var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
 var addToWikiSilently = shared.addToWikiSilently;
 
+var MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+// Base64 inflates payload by ~4/3. Cap the encoded length so we reject
+// oversized payloads before allocating the decoded buffer.
+var MAX_UPLOAD_BASE64_LENGTH = Math.ceil(MAX_UPLOAD_BYTES / 3) * 4;
+
 // Recursively check whether any wiki in the includeWikis tree has
 // `retain-original-tiddler-path: true`. Each includeWikis entry is
 // a path string or `{path: "..."}` object, resolved relative to the
@@ -343,6 +348,12 @@ module.exports = {
 		if(denied) return denied;
 		var titleErr = shared.checkTitle(args.title, "upload_file");
 		if(titleErr) return titleErr;
+		if(typeof args.data !== "string") {
+			return shared.errorResult("upload_file: data must be a base64-encoded string");
+		}
+		if(args.data.length > MAX_UPLOAD_BASE64_LENGTH) {
+			return shared.errorResult("upload_file: data exceeds " + MAX_UPLOAD_BYTES + " bytes (50 MB)");
+		}
 		var checkPathAllowed = shared.getCheckPathAllowed();
 		var filename = args.filename;
 		if(filename.indexOf("/") !== -1 || filename.indexOf("\\") !== -1 || filename.indexOf("..") !== -1) {
