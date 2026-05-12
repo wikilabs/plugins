@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.23 - 2026.05.12
+
+* New `get_tiddlers` MCP tool: batch fetch by titles array. Text output is CompoundTiddlers (`text/vnd.tiddlywiki-multiple`); JSON is `{tiddlers, missing?, truncated?}`. Defaults `detailed=true`, bookkeeping fields skipped (set `verbose=true` to include).
+
 V 0.13.22 - 2026.05.12
 
 * New `replace_in_tiddlers` MCP tool: bulk find+replace across many tiddlers in one call. Multiple `{pattern, replacement}` rules per call, per-rule `regexp`/`case_sensitive`/`words` flags, replacement supports JS backrefs (`$1..$9`, `$&`). Default fields scan `text`, `caption`, `list`, `tags` (array fields serialised via `stringifyList`, parsed back on write). `dry_run=true` by default; output groups by title with `- before` / `+ after` lines per change.

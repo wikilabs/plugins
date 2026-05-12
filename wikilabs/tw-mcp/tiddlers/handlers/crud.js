@@ -98,6 +98,139 @@ module.exports = {
 		}
 	},
 
+	"get_tiddlers": function(args) {
+		if(!args.titles || !Array.isArray(args.titles) || args.titles.length === 0) {
+			return shared.errorResult("get_tiddlers: 'titles' must be a non-empty array");
+		}
+		// detailed defaults to TRUE: the batch use case is reading multiple
+		// tiddlers' content; metadata-only batch is rare.
+		var detailed = args.detailed !== false;
+		// verbose=false (default) skips bookkeeping fields. Set true to include them.
+		var verbose = !!args.verbose;
+		var format = args.format || "hashline";
+		var maxTiddlers = args.max_tiddlers || 50;
+		var maxBytes = args.max_bytes || 50000;
+		var SKIP_FIELDS = {created: 1, modified: 1, creator: 1, modifier: 1, revision: 1};
+		function shouldSkipField(name) {
+			return !verbose && SKIP_FIELDS[name];
+		}
+		function extractFields(tiddler, includeText) {
+			var fields = {};
+			for(var field in tiddler.fields) {
+				if(field === "text" && !includeText) continue;
+				if(shouldSkipField(field)) continue;
+				var value = tiddler.fields[field];
+				if(Array.isArray(value)) {
+					fields[field] = value.slice();
+				} else if($tw.utils.isDate(value)) {
+					fields[field] = $tw.utils.stringifyDate(value);
+				} else {
+					fields[field] = value;
+				}
+			}
+			return fields;
+		}
+		// title-first fields block (overrides TW's alphabetical sort), with
+		// optional bookkeeping filter applied.
+		function formatFieldsBlock(tiddler) {
+			var strings = tiddler.getFieldStrings({exclude: ["text"]});
+			var names = Object.keys(strings).sort();
+			var lines = [];
+			if(strings.title !== undefined) {
+				lines.push("title: " + strings.title);
+			}
+			for(var i = 0; i < names.length; i++) {
+				var n = names[i];
+				if(n === "title") continue;
+				if(shouldSkipField(n)) continue;
+				lines.push(n + ": " + strings[n]);
+			}
+			return lines.join("\n");
+		}
+		function renderText(tiddler, includeText) {
+			var hasUnsafe = false;
+			$tw.utils.each(tiddler.getFieldStrings(), function(value, fieldName) {
+				if(fieldName !== "text") {
+					hasUnsafe = hasUnsafe || /[\x00-\x1F]/mg.test(value);
+					hasUnsafe = hasUnsafe || ($tw.utils.trim(value) !== value);
+				}
+				hasUnsafe = hasUnsafe || /:|#/mg.test(fieldName);
+			});
+			var out;
+			if(hasUnsafe && format !== "tid") {
+				out = JSON.stringify(extractFields(tiddler, false), null, $tw.config.preferences.jsonSpaces);
+			} else {
+				out = formatFieldsBlock(tiddler);
+			}
+			if(includeText && tiddler.fields.text !== undefined) {
+				if(format === "hashline") {
+					var hashlineLib = require("$:/core/modules/commands/inspect/hashline.js");
+					out += "\n\n" + hashlineLib.formatHashLines(tiddler.fields.text);
+				} else {
+					out += "\n\n" + tiddler.fields.text;
+				}
+			}
+			return out;
+		}
+		var entries = [];
+		var missing = [];
+		var totalBytes = 0;
+		var truncated = 0;
+		var inputTitles = args.titles;
+		for(var i = 0; i < inputTitles.length; i++) {
+			var title = inputTitles[i];
+			if(entries.length >= maxTiddlers) {
+				truncated = inputTitles.length - i;
+				break;
+			}
+			var tiddler = $tw.wiki.getTiddler(title);
+			if(!tiddler) {
+				missing.push(title);
+				continue;
+			}
+			var isPlugin = !!tiddler.fields["plugin-type"];
+			// Plugins: fields-only (no shadow tree, no bundle text) regardless of detailed.
+			var realDetailed = detailed && !isPlugin;
+			var entry;
+			var entryBytes;
+			if(format === "json") {
+				entry = { fields: extractFields(tiddler, realDetailed) };
+				entryBytes = JSON.stringify(entry.fields).length + 8;
+			} else {
+				entry = { content: renderText(tiddler, realDetailed) };
+				entryBytes = entry.content.length + 4;
+			}
+			if(entries.length > 0 && totalBytes + entryBytes > maxBytes) {
+				truncated = inputTitles.length - i;
+				break;
+			}
+			totalBytes += entryBytes;
+			entries.push(entry);
+		}
+		if(format === "json") {
+			var result = { tiddlers: entries.map(function(e) { return e.fields; }) };
+			if(missing.length > 0) result.missing = missing;
+			if(truncated > 0) result.truncated = truncated;
+			return shared.textResult(JSON.stringify(result, null, $tw.config.preferences.jsonSpaces));
+		}
+		// CompoundTiddlers (text/vnd.tiddlywiki-multiple): blocks separated by `\n+\n`.
+		// Missing titles surface in a trailing `Missing: ...` line so the LLM can
+		// retry/correct without misreading a stub block as real content.
+		var blocks = entries.map(function(e) { return e.content.replace(/\n+$/, ""); });
+		var output = blocks.join("\n+\n");
+		var trailers = [];
+		if(missing.length > 0) {
+			trailers.push("Missing: " + missing.join(", "));
+		}
+		if(truncated > 0) {
+			trailers.push("(" + truncated + " entries truncated; raise max_tiddlers or max_bytes)");
+		}
+		if(trailers.length > 0) {
+			output += (output ? "\n\n" : "") + trailers.join("\n");
+		}
+		return shared.textResult(output);
+	},
+
 	"put_tiddler": function(args) {
 		var denied = shared.checkWritable("put_tiddler");
 		if(denied) return denied;
