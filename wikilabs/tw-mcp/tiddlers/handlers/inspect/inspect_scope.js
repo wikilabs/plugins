@@ -188,7 +188,7 @@ module.exports = {
 								params: v.params || undefined,
 								sourceTitle: v.sourceTitle || undefined,
 								isMacro: v.isMacroDefinition || false,
-								isProcedure: !!v.isProcedure || (v.configTrimWhiteSpace === true),
+								isProcedure: !!v.isProcedureDefinition,
 								isFunction: !!v.isFunctionDefinition,
 								isWidget: !!v.isWidgetDefinition
 							});

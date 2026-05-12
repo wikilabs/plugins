@@ -19,12 +19,14 @@ module.exports = {
 		}
 		var inputType = args.type || "text/vnd.tiddlywiki";
 		var outputType = args.output || "text/plain";
+		// TW core's getParser silently falls back to text/vnd.tiddlywiki for
+		// any unrecognised type. Without this surfacing, a caller passing
+		// `type: "application/json"` (or any other unhandled MIME) would get
+		// wikitext output with no signal that their type arg was ignored.
+		var fallbackNote = shared.parserFallbackWarning(args.type);
 		try {
 			if(outputType === "parsetree") {
 				var parser = $tw.wiki.parseText(inputType, args.text, { parseAsInline: false });
-				if(!parser) {
-					return shared.errorResult( "No parser for type: " + inputType );
-				}
 				var excludeSet = shared.toSet(args.exclude);
 				var includeSet = shared.toSet(args.include);
 				var compactValue = function(val) {
@@ -47,19 +49,19 @@ module.exports = {
 				};
 				var compactTree = parser.tree.map(compactValue);
 				var header = "";
+				if(fallbackNote) header += fallbackNote + "\n";
 				if(excludeSet.start || excludeSet.end) {
 					var removed = [];
 					if(excludeSet.start) removed.push("start");
 					if(excludeSet.end) removed.push("end");
-					header = "(excluded: " + removed.join(", ") + ")\n";
+					header += "(excluded: " + removed.join(", ") + ")\n";
 				}
 				return shared.textResult( header + shared.jsonStringify(compactTree) );
 			}
 			var rendered = shared.parseAndRender(args.text, inputType, args.context);
-			if(!rendered) {
-				return shared.errorResult( "No parser for type: " + inputType );
-			}
-			return shared.textResult( shared.containerToText(rendered.container, outputType) );
+			var output = shared.containerToText(rendered.container, outputType);
+			if(fallbackNote) output = fallbackNote + "\n\n" + output;
+			return shared.textResult( output );
 		} catch(e) {
 			return shared.errorResult( "Render error: " + e.message );
 		}

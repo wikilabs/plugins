@@ -12,6 +12,20 @@ Shared utilities and state for MCP tool handlers.
 var fs = require("fs"),
 	path = require("path");
 
+// TW core's $tw.utils.getParser always returns *some* parser: if the
+// requested MIME type has no registered parser, it falls back to
+// text/vnd.tiddlywiki. That makes the fallback invisible to MCP callers
+// who passed an explicit `type` arg expecting it to be honoured. This
+// helper returns a short caller-facing note (or null) so handlers can
+// prepend it to their output and surface the fallback explicitly.
+function parserFallbackWarning(userType) {
+	if(!userType) return null;
+	if($tw.Wiki.parsers[userType]) return null;
+	var ext = $tw.utils.getFileExtensionInfo(userType);
+	if(ext && $tw.Wiki.parsers[ext.type]) return null;
+	return "Note: type '" + userType + "' is not registered; rendered as text/vnd.tiddlywiki.";
+}
+
 // Source position format — must match $:/plugins/tiddlywiki/sourcepos/utils.js
 var SOURCE_POS_SEPARATOR = " @ ";
 function formatSourcePos(startLine, endLine, title) {
@@ -122,7 +136,20 @@ function buildTree(titles, maxDepth, _indent) {
 function formatTitleTree(titles, label, count) {
 	var ns = buildTree(titles);
 	var n = (count !== undefined) ? count : titles.length;
-	var header = ns.prefix ? ns.prefix + " ... " + n + " " + (label || "tiddlers") + "\n" : "";
+	var lbl = label || "tiddlers";
+	// Header is emitted when:
+	//   - there's a common prefix to lead with, OR
+	//   - the caller passed an explicit count (signals "show this number"), OR
+	//   - the caller passed a non-default label (signals "tell the user what
+	//     these entries are").
+	// Without this, list_tiddlers' count-summary branch silently dropped the
+	// grand total, and get_tiddler's plugin shadow tree dropped its label.
+	var header = "";
+	if(ns.prefix) {
+		header = ns.prefix + " ... " + n + " " + lbl + "\n";
+	} else if(count !== undefined || (label && label !== "tiddlers")) {
+		header = n + " " + lbl + "\n";
+	}
 	return header + ns.tree;
 }
 
@@ -591,3 +618,4 @@ exports.buildTiddlerWithTimestamps = buildTiddlerWithTimestamps;
 exports.persistTiddler = persistTiddler;
 exports.addToWikiSilently = addToWikiSilently;
 exports.SOURCE_POS_SEPARATOR = SOURCE_POS_SEPARATOR;
+exports.parserFallbackWarning = parserFallbackWarning;

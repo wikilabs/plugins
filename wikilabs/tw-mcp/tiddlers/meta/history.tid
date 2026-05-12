@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.32 - 2026.05.12
+
+* `render_text` now warns the caller when their `type` argument isn't a recognised parser type, instead of silently treating the input as wikitext.
+* `list_tiddlers` now shows a total count when many results are returned, and `get_tiddler` labels a plugin's subtiddler list as "shadow tiddlers".
+* `inspect_scope` now correctly classifies `\procedure` variables as `proc` (they were previously shown as `def`).
+
 V 0.13.31 - 2026.05.12
 
 * Excluded the `sidecar/` directory from the plugin's loaded tiddler set, removing a stray `tw-upload.js` entry from the subtiddler list.
