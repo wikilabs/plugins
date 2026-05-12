@@ -20,7 +20,7 @@ module.exports = {
 			if(mode === "viewtemplate") {
 				var cascadeFilter = "[all[shadows+tiddlers]tag[$:/tags/ViewTemplateBodyFilter]!is[draft]get[text]]";
 				var templateTitle = $tw.wiki.filterTiddlers(
-					"[[" + args.title.replace(/[\[\]]/g, "") + "]] :cascade" + cascadeFilter
+					"[[" + shared.sanitiseFilterOperand(args.title) + "]] :cascade" + cascadeFilter
 				)[0] || "$:/core/ui/ViewTemplate/body/default";
 				var wikitext = "\\whitespace trim\n<$tiddler tiddler=\"\"\"" + args.title + "\"\"\">\n<$transclude $tiddler=\"\"\"" + templateTitle + "\"\"\"/>\n</$tiddler>";
 				var rendered = shared.parseAndRender(wikitext, "text/vnd.tiddlywiki", args.title);
@@ -36,15 +36,7 @@ module.exports = {
 				container = $tw.fakeDocument.createElement("div");
 				widgetNode.render(container, null);
 			}
-			var text;
-			if(outputType === "text/html") {
-				text = container.innerHTML;
-			} else if(outputType === "text/plain-formatted") {
-				text = container.formattedTextContent;
-			} else {
-				text = container.textContent;
-			}
-			return shared.textResult( text );
+			return shared.textResult( shared.containerToText(container, outputType) );
 		} catch(e) {
 			return shared.errorResult( "Render error: " + e.message );
 		}
@@ -74,15 +66,7 @@ module.exports = {
 			if(!rendered) {
 				return shared.errorResult( "Render error: no parser" );
 			}
-			var text;
-			if(outputType === "text/html") {
-				text = rendered.container.innerHTML;
-			} else if(outputType === "text/plain-formatted") {
-				text = rendered.container.formattedTextContent;
-			} else {
-				text = rendered.container.textContent;
-			}
-			return shared.textResult( text );
+			return shared.textResult( shared.containerToText(rendered.container, outputType) );
 		} catch(e) {
 			return shared.errorResult( "render_field error: " + e.message );
 		}
@@ -100,18 +84,8 @@ module.exports = {
 				if(!parser) {
 					return shared.errorResult( "No parser for type: " + inputType );
 				}
-				var excludeSet = {};
-				if(args.exclude) {
-					for(var ei = 0; ei < args.exclude.length; ei++) {
-						excludeSet[args.exclude[ei]] = true;
-					}
-				}
-				var includeSet = {};
-				if(args.include) {
-					for(var ii = 0; ii < args.include.length; ii++) {
-						includeSet[args.include[ii]] = true;
-					}
-				}
+				var excludeSet = shared.toSet(args.exclude);
+				var includeSet = shared.toSet(args.include);
 				var compactValue = function(val) {
 					if(val === null || val === undefined || typeof val !== "object") return val;
 					if(Array.isArray(val)) return val.map(compactValue);
@@ -144,15 +118,7 @@ module.exports = {
 			if(!rendered) {
 				return shared.errorResult( "No parser for type: " + inputType );
 			}
-			var text;
-			if(outputType === "text/html") {
-				text = rendered.container.innerHTML;
-			} else if(outputType === "text/plain-formatted") {
-				text = rendered.container.formattedTextContent;
-			} else {
-				text = rendered.container.textContent;
-			}
-			return shared.textResult( text );
+			return shared.textResult( shared.containerToText(rendered.container, outputType) );
 		} catch(e) {
 			return shared.errorResult( "Render error: " + e.message );
 		}

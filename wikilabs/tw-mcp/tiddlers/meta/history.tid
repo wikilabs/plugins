@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.26 - 2026.05.12
+
+* More internal code cleanup, no user-visible change. Small correctness improvement: the title/tag/plugin sanitisation now also strips `|`, matching the TiddlyWiki core rule that forbids `|` in tiddler titles.
+
 V 0.13.25 - 2026.05.12
 
 * Internal code cleanup (no user-visible change). Five small pieces of logic that were duplicated across the MCP read, write, search, and find-and-replace tools are now single shared helpers. The plugin behaves identically; future fixes and tweaks to these shared behaviours land in one place instead of needing to be repeated in several handlers.

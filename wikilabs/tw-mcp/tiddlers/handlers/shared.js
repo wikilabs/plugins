@@ -116,7 +116,11 @@ function buildTree(titles, maxDepth, _indent) {
 }
 
 // Shared parse+render helper
-function parseAndRender(text, inputType, context, extraVariables) {
+// Parse text and build the import-variables-wrapped tree + widget options.
+// Returns { parser, wrappedTree, widgetOptions } or null if parsing fails.
+// Used directly by inspect_pos (which needs to mutate the widget between
+// makeWidget and render); for the common case prefer parseAndRender.
+function buildWrappedTree(text, inputType, context, extraVariables) {
 	var parser = $tw.wiki.parseText(inputType || "text/vnd.tiddlywiki", text, { parseAsInline: false });
 	if(!parser) return null;
 	var importFilter = $tw.wiki.getTiddlerText("$:/core/config/GlobalImportFilter");
@@ -142,10 +146,22 @@ function parseAndRender(text, inputType, context, extraVariables) {
 	if(Object.keys(vars).length > 0) {
 		widgetOptions.variables = vars;
 	}
-	var widgetNode = $tw.wiki.makeWidget(wrappedTree, widgetOptions);
+	return { parser: parser, wrappedTree: wrappedTree, widgetOptions: widgetOptions };
+}
+
+function parseAndRender(text, inputType, context, extraVariables) {
+	var built = buildWrappedTree(text, inputType, context, extraVariables);
+	if(!built) return null;
+	var widgetNode = $tw.wiki.makeWidget(built.wrappedTree, built.widgetOptions);
 	var container = $tw.fakeDocument.createElement("div");
 	widgetNode.render(container, null);
-	return { parser: parser, wrappedTree: wrappedTree, widgetOptions: widgetOptions, widgetNode: widgetNode, container: container };
+	return {
+		parser: built.parser,
+		wrappedTree: built.wrappedTree,
+		widgetOptions: built.widgetOptions,
+		widgetNode: widgetNode,
+		container: container
+	};
 }
 
 // Inspect helpers
@@ -289,6 +305,38 @@ function scopedTitles(args) {
 	} catch(e) {
 		return { errorResult: errorResult("Filter error: " + e.message) };
 	}
+}
+
+// Strip characters that would break filter-operand embedding when an arg
+// is interpolated into a TW filter expression like `[tag[...]]`. The strip
+// list covers the TW-core forbidden title chars (`|`, `[`, `]`, `{`, `}`)
+// plus `<` / `>` for paranoia. Used by list_tiddlers (plugin, tag args)
+// and render_tiddler (title arg).
+function sanitiseFilterOperand(value) {
+	if(typeof value !== "string") return value;
+	return value.replace(/[|\[\]{}<>]/g, "");
+}
+
+// Serialise a rendered container element according to the requested output
+// type. Mirrors the type enum used by render_tiddler, render_field, and
+// render_text. text/html uses the fakedom's safe innerHTML serialiser.
+function containerToText(container, outputType) {
+	if(outputType === "text/html") return container.innerHTML;
+	if(outputType === "text/plain-formatted") return container.formattedTextContent;
+	return container.textContent;
+}
+
+// Convert an array of strings into a {key: true} lookup map. Returns an
+// empty object when arr is falsy. Used by inspect_tree, inspect_tw, and
+// render_text for exclude/include args.
+function toSet(arr) {
+	var set = {};
+	if(arr) {
+		for(var i = 0; i < arr.length; i++) {
+			set[arr[i]] = true;
+		}
+	}
+	return set;
 }
 
 // Guard against operating on bundled plugin / theme / language tiddlers.
@@ -475,6 +523,7 @@ exports.isReadonly = isReadonly;
 exports.getCheckPathAllowed = getCheckPathAllowed;
 exports.buildTree = buildTree;
 exports.parseAndRender = parseAndRender;
+exports.buildWrappedTree = buildWrappedTree;
 exports.formatSourcePos = formatSourcePos;
 exports.formatFnSource = formatFnSource;
 exports.inspectValue = inspectValue;
@@ -489,6 +538,9 @@ exports.scopedTitles = scopedTitles;
 exports.compileSearchRegex = compileSearchRegex;
 exports.loadFspFseFilters = loadFspFseFilters;
 exports.checkNotBundled = checkNotBundled;
+exports.toSet = toSet;
+exports.containerToText = containerToText;
+exports.sanitiseFilterOperand = sanitiseFilterOperand;
 exports.persistTiddler = persistTiddler;
 exports.addToWikiSilently = addToWikiSilently;
 exports.SOURCE_POS_SEPARATOR = SOURCE_POS_SEPARATOR;

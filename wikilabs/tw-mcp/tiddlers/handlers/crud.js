@@ -54,6 +54,71 @@ function formatFieldsBlock(tiddler, options) {
 	return lines.join("\n");
 }
 
+// Format the dry-run preview block for replace_in_tiddlers. Consumes the
+// `modified` accumulator built by the scan pass: an array of
+// {title, perFieldChanges:[{field, lineDiffs:[{lineNum,before,after}]}]}.
+function formatReplaceDryRun(modified, totalReplacements, truncated) {
+	var hashline = require("$:/core/modules/commands/inspect/hashline.js");
+	var blocks = [];
+	for(var mi = 0; mi < modified.length; mi++) {
+		var m = modified[mi];
+		var lines = [m.title];
+		for(var ci = 0; ci < m.perFieldChanges.length; ci++) {
+			var ch = m.perFieldChanges[ci];
+			for(var di = 0; di < ch.lineDiffs.length; di++) {
+				var ld = ch.lineDiffs[di];
+				var prefix = (ch.field === "text")
+					? hashline.formatLineTag(ld.lineNum, ld.before)
+					: ch.field + ":L" + ld.lineNum;
+				lines.push("  - " + prefix + ": " + ld.before);
+				lines.push("  + " + prefix + ": " + ld.after);
+			}
+		}
+		blocks.push(lines.join("\n"));
+	}
+	var output = blocks.join("\n\n");
+	output += "\n\nDRY RUN: " + totalReplacements + " replacement" + (totalReplacements !== 1 ? "s" : "") +
+		" across " + modified.length + " tiddler" + (modified.length !== 1 ? "s" : "");
+	if(truncated) {
+		output += "\n(truncated; raise max_tiddlers or max_replacements_total to see more)";
+	}
+	output += "\nCall again with dry_run=false to apply.";
+	return output;
+}
+
+// Apply the accumulated replacements to disk + wiki, build the apply-mode
+// summary. Each modified entry becomes a new Tiddler with merged field
+// values; persist failures land in the trailer.
+function applyReplacements(modified, totalReplacements, truncated) {
+	var persisted = 0;
+	var failures = [];
+	var modificationFields = $tw.wiki.getModificationFields();
+	for(var mi = 0; mi < modified.length; mi++) {
+		var m = modified[mi];
+		var existing = $tw.wiki.getTiddler(m.title);
+		if(!existing) {
+			failures.push(m.title + ": tiddler vanished before persist");
+			continue;
+		}
+		var newTiddler = new $tw.Tiddler(existing.fields, m.newFieldValues, modificationFields, {title: m.title});
+		var result = shared.persistTiddler(newTiddler, m.title, "replaced");
+		if(result && result.isError) {
+			failures.push(m.title + ": " + result.content[0].text);
+		} else {
+			persisted++;
+		}
+	}
+	var summary = persisted + " tiddler" + (persisted !== 1 ? "s" : "") + " modified, " +
+		totalReplacements + " replacement" + (totalReplacements !== 1 ? "s" : "");
+	if(failures.length > 0) {
+		summary += "\n\nFailures (" + failures.length + "):\n  " + failures.join("\n  ");
+	}
+	if(truncated) {
+		summary += "\n(truncated; re-run with narrower filter or higher caps for remaining matches)";
+	}
+	return summary;
+}
+
 // Title-first plain JS object for JSON output. JS engines preserve insertion
 // order for non-integer string keys, so the serialised JSON has title first.
 // options.includeText controls whether the text field is included.
@@ -544,61 +609,9 @@ module.exports = {
 			return shared.textResult("(no matches)");
 		}
 		if(dryRun) {
-			var hashline = require("$:/core/modules/commands/inspect/hashline.js");
-			var blocks = [];
-			for(var mi = 0; mi < modified.length; mi++) {
-				var m = modified[mi];
-				var lines = [m.title];
-				for(var ci = 0; ci < m.perFieldChanges.length; ci++) {
-					var ch = m.perFieldChanges[ci];
-					for(var di = 0; di < ch.lineDiffs.length; di++) {
-						var ld = ch.lineDiffs[di];
-						var prefix = (ch.field === "text")
-							? hashline.formatLineTag(ld.lineNum, ld.before)
-							: ch.field + ":L" + ld.lineNum;
-						lines.push("  - " + prefix + ": " + ld.before);
-						lines.push("  + " + prefix + ": " + ld.after);
-					}
-				}
-				blocks.push(lines.join("\n"));
-			}
-			var output = blocks.join("\n\n");
-			output += "\n\nDRY RUN: " + totalReplacements + " replacement" + (totalReplacements !== 1 ? "s" : "") +
-				" across " + modified.length + " tiddler" + (modified.length !== 1 ? "s" : "");
-			if(truncated) {
-				output += "\n(truncated; raise max_tiddlers or max_replacements_total to see more)";
-			}
-			output += "\nCall again with dry_run=false to apply.";
-			return shared.textResult(output);
+			return shared.textResult(formatReplaceDryRun(modified, totalReplacements, truncated));
 		}
-		// Apply: build a new tiddler per modified entry and persist.
-		var persisted = 0;
-		var failures = [];
-		var modificationFields = $tw.wiki.getModificationFields();
-		for(var mi = 0; mi < modified.length; mi++) {
-			var m = modified[mi];
-			var existing = $tw.wiki.getTiddler(m.title);
-			if(!existing) {
-				failures.push(m.title + ": tiddler vanished before persist");
-				continue;
-			}
-			var newTiddler = new $tw.Tiddler(existing.fields, m.newFieldValues, modificationFields, {title: m.title});
-			var result = shared.persistTiddler(newTiddler, m.title, "replaced");
-			if(result && result.isError) {
-				failures.push(m.title + ": " + result.content[0].text);
-			} else {
-				persisted++;
-			}
-		}
-		var summary = persisted + " tiddler" + (persisted !== 1 ? "s" : "") + " modified, " +
-			totalReplacements + " replacement" + (totalReplacements !== 1 ? "s" : "");
-		if(failures.length > 0) {
-			summary += "\n\nFailures (" + failures.length + "):\n  " + failures.join("\n  ");
-		}
-		if(truncated) {
-			summary += "\n(truncated; re-run with narrower filter or higher caps for remaining matches)";
-		}
-		return shared.textResult(summary);
+		return shared.textResult(applyReplacements(modified, totalReplacements, truncated));
 	},
 
 	"delete_tiddler": function(args) {

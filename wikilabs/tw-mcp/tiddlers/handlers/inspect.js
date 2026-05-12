@@ -83,6 +83,350 @@ function compactPositions(container) {
 	return header + container.innerHTML;
 }
 
+// --- inspect_pos helpers (hoisted to module scope) -----------------------
+//
+// All inspect_pos machinery lives here so the handler stays orchestration.
+// Pure helpers (charToLine, posGetSourceInfo, posBuildCallerChain) are
+// stateless. createPosTracker() bundles the line/header/body-offset caches
+// plus the hook + posBuildInfo function that share them. patchPosWidgets()
+// wires up the widget-prototype monkey-patches and returns a restore()
+// callback for the handler's finally block.
+
+function charToLine(offsets, charPos) {
+	var lo = 0, hi = offsets.length - 1;
+	while(lo < hi) {
+		var mid = (lo + hi + 1) >> 1;
+		if(offsets[mid] <= charPos) lo = mid; else hi = mid - 1;
+	}
+	return lo + 1;
+}
+
+function posGetSourceInfo(widget) {
+	var w = widget;
+	while(w) {
+		if(w.sourceContext !== undefined) {
+			return {
+				title: w.sourceContext,
+				offset: w.sourceContextOffset || 0,
+				via: w.sourceContextVariable
+			};
+		}
+		w = w.parentWidget;
+	}
+	return null;
+}
+
+// Walk parent widgets and collect the chain of distinct sourceContexts
+// above the immediate one. Closest enclosing caller first, outermost last.
+function posBuildCallerChain(widget) {
+	var chain = [], lastCtx = null, w = widget;
+	while(w) {
+		if(w.sourceContext !== undefined && w.sourceContext !== lastCtx) {
+			if(lastCtx !== null) chain.push(w.sourceContext);
+			lastCtx = w.sourceContext;
+		}
+		w = w.parentWidget;
+	}
+	return chain;
+}
+
+function createPosTracker() {
+	var lineCache = {};
+	var headerCache = {};
+	var bodyOffsetCache = {};
+	function getLineOffsets(title) {
+		if(lineCache[title]) return lineCache[title];
+		var text = $tw.wiki.getTiddlerText(title, "");
+		var offsets = [0];
+		for(var ci = 0; ci < text.length; ci++) {
+			if(text.charAt(ci) === "\n") offsets.push(ci + 1);
+		}
+		lineCache[title] = offsets;
+		return offsets;
+	}
+	function getTidHeaderLines(title) {
+		if(headerCache[title] !== undefined) return headerCache[title];
+		var tiddler = $tw.wiki.getTiddler(title);
+		if(!tiddler) { headerCache[title] = 0; return 0; }
+		var exclude = {"text": true, "bag": true, "revision": true};
+		var fieldCount = 0;
+		for(var f in tiddler.fields) {
+			if(!exclude[f]) fieldCount++;
+		}
+		headerCache[title] = fieldCount + 1;
+		return headerCache[title];
+	}
+	function findBodyOffset(title, bodyText) {
+		var key = title + "\0" + bodyText.length;
+		if(bodyOffsetCache[key] !== undefined) return bodyOffsetCache[key];
+		var fullText = $tw.wiki.getTiddlerText(title, "");
+		var idx = fullText.indexOf(bodyText);
+		bodyOffsetCache[key] = idx >= 0 ? idx : 0;
+		return bodyOffsetCache[key];
+	}
+	function posBuildInfo(widget) {
+		var ptn = widget.parseTreeNode;
+		if(!ptn || ptn.start === undefined) return null;
+		var info = posGetSourceInfo(widget);
+		if(!info) return null;
+		var offsets = getLineOffsets(info.title);
+		var absStart = ptn.start + info.offset;
+		var absEnd = (ptn.end || ptn.start) + info.offset;
+		var startLine = charToLine(offsets, absStart);
+		var endLine = charToLine(offsets, absEnd);
+		var headerOffset = getTidHeaderLines(info.title);
+		return shared.formatSourcePos(startLine + headerOffset, endLine + headerOffset, info.title);
+	}
+	function posHook(domNode, widget) {
+		if(!$tw.wiki.trackSourcePositions) return domNode;
+		var info = posBuildInfo(widget);
+		if(info) domNode.setAttribute("data-pos", info);
+		var srcInfo = posGetSourceInfo(widget);
+		if(srcInfo && srcInfo.via) {
+			domNode.setAttribute("data-via", srcInfo.via);
+		}
+		// currentTiddler context — only when it differs from the
+		// source-context tiddler (e.g. inside a list iterating over items,
+		// where each repetition has the same source position).
+		var ct = widget.getVariable("currentTiddler");
+		if(ct && srcInfo && ct !== srcInfo.title) {
+			domNode.setAttribute("data-ctx", ct);
+		}
+		var callers = posBuildCallerChain(widget);
+		if(callers.length > 0) {
+			domNode.setAttribute("data-caller", callers.join("|"));
+		}
+		return domNode;
+	}
+	return { posHook: posHook, findBodyOffset: findBodyOffset };
+}
+
+// Monkey-patch widget prototypes so source-context flows through transclusion
+// boundaries and variable definitions remember their defining tiddler. Returns
+// a restore() callback that the caller MUST invoke in finally (otherwise
+// subsequent renders carry the patches forever).
+// tracker is the createPosTracker() result; only its findBodyOffset is read.
+function patchPosWidgets(tracker) {
+	var Widget = require("$:/core/modules/widgets/widget.js").widget;
+	var ImportVariablesWidget = require("$:/core/modules/widgets/importvariables.js").importvariables;
+	var LinkWidget = require("$:/core/modules/widgets/link.js").link;
+	var CodeBlockWidget = require("$:/core/modules/widgets/codeblock.js").codeblock;
+	var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;
+	// Tag each variable with its defining tiddler so transcluded macros can
+	// be attributed back to their source.
+	var origSetVariable = Widget.prototype.setVariable;
+	Widget.prototype.setVariable = function(name, value, params, isMacroDefinition, options) {
+		origSetVariable.call(this, name, value, params, isMacroDefinition, options);
+		if(options && options.sourceTitle && this.variables[name]) {
+			this.variables[name].sourceTitle = options.sourceTitle;
+		}
+	};
+	var origImportExecute = ImportVariablesWidget.prototype.execute;
+	ImportVariablesWidget.prototype.execute = function(tiddlerList) {
+		origImportExecute.call(this, tiddlerList);
+		var varSourceMap = Object.create(null);
+		var self = this;
+		$tw.utils.each(this.tiddlerList, function(title) {
+			var parser = self.wiki.parseTiddler(title, {parseAsInline: true, configTrimWhiteSpace: false});
+			if(parser) {
+				var node = parser.tree[0];
+				while(node && ["setvariable","set","parameters","void"].indexOf(node.type) !== -1) {
+					if(node.attributes && node.attributes.name) {
+						varSourceMap[node.attributes.name.value] = title;
+					}
+					node = node.children && node.children[0];
+				}
+			}
+		});
+		var ptr = this;
+		while(ptr) {
+			if(ptr.variables) {
+				var ownKeys = Object.keys(ptr.variables);
+				for(var ki = 0; ki < ownKeys.length; ki++) {
+					var v = ptr.variables[ownKeys[ki]];
+					if(v && !v.sourceTitle && varSourceMap[ownKeys[ki]]) {
+						v.sourceTitle = varSourceMap[ownKeys[ki]];
+					}
+				}
+			}
+			ptr = (ptr.children && ptr.children.length === 1) ? ptr.children[0] : null;
+		}
+	};
+	// TW core only emits th-dom-rendering-element natively; the link and
+	// codeblock equivalents come from devtools' renderLink/render patches.
+	// Patch them ourselves so inspect_pos works regardless of whether the
+	// devtools plugin is loaded.
+	var origRenderLink = LinkWidget.prototype.renderLink;
+	LinkWidget.prototype.renderLink = function(parent, nextSibling) {
+		origRenderLink.call(this, parent, nextSibling);
+		if(this.domNodes.length > 0) {
+			$tw.hooks.invokeHook("th-dom-rendering-link", this.domNodes[this.domNodes.length - 1], this);
+		}
+	};
+	var origCodeBlockRender = CodeBlockWidget.prototype.render;
+	CodeBlockWidget.prototype.render = function(parent, nextSibling) {
+		origCodeBlockRender.call(this, parent, nextSibling);
+		if(this.domNodes.length > 0) {
+			$tw.hooks.invokeHook("th-dom-rendering-codeblock", this.domNodes[this.domNodes.length - 1], this);
+		}
+	};
+	var origExecute = TranscludeWidget.prototype.execute;
+	TranscludeWidget.prototype.execute = function() {
+		origExecute.call(this);
+		if($tw.wiki.trackSourcePositions) {
+			if(this.transcludeVariable) {
+				var varInfo = this.getVariableInfo(this.transcludeVariable);
+				var srcVar = varInfo && varInfo.srcVariable;
+				this.sourceContext = (srcVar && srcVar.sourceTitle) || this.transcludeVariable;
+				this.sourceContextOffset = 0;
+				this.sourceContextVariable = this.transcludeVariable;
+				if(srcVar && srcVar.sourceTitle && srcVar.value) {
+					this.sourceContextOffset = tracker.findBodyOffset(srcVar.sourceTitle, srcVar.value);
+				}
+			} else if(this.transcludeTitle) {
+				this.sourceContext = this.transcludeTitle;
+				this.sourceContextOffset = 0;
+			}
+		}
+	};
+	return function restore() {
+		Widget.prototype.setVariable = origSetVariable;
+		ImportVariablesWidget.prototype.execute = origImportExecute;
+		LinkWidget.prototype.renderLink = origRenderLink;
+		CodeBlockWidget.prototype.render = origCodeBlockRender;
+		TranscludeWidget.prototype.execute = origExecute;
+	};
+}
+
+// --- inspect_scope helpers (hoisted to module scope) ---------------------
+//
+// inspect_scope is split into: render-context-vars setup, walk to find best
+// widget, collect+classify vars (still inline), and format-output. Each
+// helper is pure (no shared mutable state outside its return value).
+
+// Build the extraVars object that parseAndRender passes through to widgetOptions
+// when renderContext is "viewtemplate" or "root". "isolated" returns null.
+function buildRenderContextVars(renderContext, contextTiddler) {
+	if(renderContext !== "viewtemplate" && renderContext !== "root") return null;
+	var extraVars = {};
+	extraVars["storyTiddler"] = contextTiddler || "";
+	extraVars["tiddlerInfoState"] = "$:/state/popup/tiddler-info--" + (contextTiddler || "");
+	extraVars["folded-state"] = "$:/state/folded/" + (contextTiddler || "");
+	if(renderContext === "root") {
+		extraVars["tv-story-list"] = "$:/StoryList";
+		extraVars["tv-history-list"] = "$:/HistoryList";
+		extraVars["tv-config-toolbar-icons"] = $tw.wiki.getTiddlerText("$:/config/Toolbar/Icons", "yes");
+		extraVars["tv-config-toolbar-text"] = $tw.wiki.getTiddlerText("$:/config/Toolbar/Text", "no");
+		extraVars["tv-config-toolbar-class"] = $tw.wiki.getTiddlerText("$:/config/Toolbar/ButtonClass", "tc-btn-invisible");
+		extraVars["tv-enable-drag-and-drop"] = $tw.wiki.getTiddlerText("$:/config/DragAndDrop/Enable", "yes");
+		extraVars["tv-show-missing-links"] = $tw.wiki.getTiddlerText("$:/config/MissingLinks", "yes");
+		extraVars["storyviewTitle"] = $tw.wiki.getTiddlerText("$:/view", "classic");
+		extraVars["languageTitle"] = $tw.wiki.getTiddlerText("$:/language", "en-GB");
+	}
+	return extraVars;
+}
+
+// Find the widget whose parseTreeNode.start is closest to targetCharPos.
+// matchCriteria optionally pins to a specific variable-value combination
+// (used to disambiguate sibling widgets in repeated list iterations).
+// Returns {widget, distance} or null if no widget has a start position.
+function findBestWidget(widgetNode, targetCharPos, matchCriteria) {
+	function widgetMatchesVars(wn) {
+		if(!matchCriteria) return true;
+		var keys = Object.keys(matchCriteria);
+		for(var mi = 0; mi < keys.length; mi++) {
+			var varName = keys[mi];
+			var expected = matchCriteria[varName];
+			var resolved = null;
+			var pw = wn;
+			while(pw) {
+				if(pw.variables && pw.variables[varName]) {
+					var v = pw.variables[varName];
+					resolved = v.value !== undefined ? v.value : (v.text !== undefined ? v.text : null);
+					break;
+				}
+				pw = pw.parentWidget;
+			}
+			if(resolved !== expected) return false;
+		}
+		return true;
+	}
+	var best = null, bestDistance = Infinity;
+	function walk(wn) {
+		if(wn.parseTreeNode && wn.parseTreeNode.start !== undefined) {
+			var dist = Math.abs(wn.parseTreeNode.start - targetCharPos);
+			if(dist < bestDistance && widgetMatchesVars(wn)) {
+				bestDistance = dist;
+				best = wn;
+			}
+			if(wn.parseTreeNode.start === targetCharPos && widgetMatchesVars(wn)) {
+				best = wn;
+				bestDistance = 0;
+			}
+		}
+		if(wn.children) {
+			for(var ci = 0; ci < wn.children.length; ci++) {
+				walk(wn.children[ci]);
+			}
+		}
+	}
+	walk(widgetNode);
+	return best ? { widget: best, distance: bestDistance } : null;
+}
+
+// Format the inspect_scope output: scope header + local-scope / used-globals /
+// other-globals (or hidden-count) sections. opts: {showAll, hasFilter}.
+function formatScopeOutput(localVars, usedImported, unusedImported, targetCharPos, widgetType, bestDistance, opts) {
+	var lines = [];
+	var total = localVars.length + usedImported.length + unusedImported.length;
+	lines.push("Scope at char " + targetCharPos + " (widget: " + widgetType + ", distance: " + bestDistance + ", " + total + " vars)");
+	function formatEntry(entry) {
+		var prefix;
+		if(entry.isWidget) {
+			prefix = "widget ";
+		} else if(entry.isFunction) {
+			prefix = "fn ";
+		} else if(entry.isProcedure) {
+			prefix = "proc ";
+		} else if(entry.isMacro) {
+			prefix = "macro ";
+		} else if(entry.params) {
+			prefix = "def ";
+		} else {
+			prefix = "var ";
+		}
+		var paramStr = entry.params ? "(" + entry.params.map(function(p) { return p.name + (p["default"] ? ":" + p["default"] : ""); }).join(", ") + ")" : "";
+		var src = entry.sourceTitle ? " @" + entry.sourceTitle : "";
+		if(!entry.params && entry.value !== undefined) {
+			var val = String(entry.value);
+			if(val.length > 70) val = val.substring(0, 70) + "~";
+			return prefix + entry.name + " = " + val.replace(/\n/g, "\\n") + src;
+		} else {
+			return prefix + entry.name + paramStr + src;
+		}
+	}
+	if(localVars.length > 0) {
+		lines.push("");
+		lines.push("— local scope");
+		for(var li = 0; li < localVars.length; li++) lines.push(formatEntry(localVars[li]));
+	}
+	if(usedImported.length > 0) {
+		lines.push("");
+		lines.push("— used globals");
+		for(var gi = 0; gi < usedImported.length; gi++) lines.push(formatEntry(usedImported[gi]));
+	}
+	if(opts.showAll && unusedImported.length > 0) {
+		lines.push("");
+		lines.push("— other globals");
+		for(var oi = 0; oi < unusedImported.length; oi++) lines.push(formatEntry(unusedImported[oi]));
+	}
+	if(!opts.showAll && unusedImported.length > 0) {
+		lines.push("");
+		lines.push("+" + unusedImported.length + " globals (use all:true to see all, or filter to narrow)");
+	}
+	return lines.join("\n");
+}
+
 module.exports = {
 	"inspect_tree": function(args) {
 		if(args.text && args.text.length > shared.MAX_TEXT_LENGTH) {
@@ -94,18 +438,8 @@ module.exports = {
 				return shared.errorResult( "No parser for text" );
 			}
 			var widgetNode = rendered.widgetNode;
-			var wExcludeSet = {};
-			if(args.exclude) {
-				for(var we = 0; we < args.exclude.length; we++) {
-					wExcludeSet[args.exclude[we]] = true;
-				}
-			}
-			var wIncludeSet = {};
-			if(args.include) {
-				for(var wi = 0; wi < args.include.length; wi++) {
-					wIncludeSet[args.include[wi]] = true;
-				}
-			}
+			var wExcludeSet = shared.toSet(args.exclude);
+			var wIncludeSet = shared.toSet(args.include);
 			var maxDepth = args.depth || 3;
 			var maxChildren = 10;
 			var typeCounts = {};
@@ -193,229 +527,28 @@ module.exports = {
 		}
 		var inputType = args.type || "text/vnd.tiddlywiki";
 		try {
-			var parser = $tw.wiki.parseText(inputType, args.text, { parseAsInline: false });
-			if(!parser) {
+			var built = shared.buildWrappedTree(args.text, inputType, args.context);
+			if(!built) {
 				return shared.errorResult( "No parser for type: " + inputType );
 			}
-			var importFilter = $tw.wiki.getTiddlerText("$:/core/config/GlobalImportFilter");
-			var wrappedTree = {tree: [{
-				type: "importvariables",
-				attributes: {
-					filter: { name: "filter", type: "string", value: importFilter }
-				},
-				isBlock: false,
-				children: parser.tree
-			}]};
-			var widgetOptions = { document: $tw.fakeDocument };
-			if(args.context) {
-				widgetOptions.variables = { currentTiddler: args.context };
-			}
 			$tw.wiki.trackSourcePositions = true;
-			var lineCache = {};
-			var getLineOffsets = function(title) {
-				if(lineCache[title]) return lineCache[title];
-				var text = $tw.wiki.getTiddlerText(title, "");
-				var offsets = [0];
-				for(var ci = 0; ci < text.length; ci++) {
-					if(text.charAt(ci) === "\n") offsets.push(ci + 1);
-				}
-				lineCache[title] = offsets;
-				return offsets;
-			};
-			var charToLine = function(offsets, charPos) {
-				var lo = 0, hi = offsets.length - 1;
-				while(lo < hi) {
-					var mid = (lo + hi + 1) >> 1;
-					if(offsets[mid] <= charPos) lo = mid; else hi = mid - 1;
-				}
-				return lo + 1;
-			};
-			var posGetSourceInfo = function(widget) {
-				var w = widget;
-				while(w) {
-					if(w.sourceContext !== undefined) {
-						return {
-							title: w.sourceContext,
-							offset: w.sourceContextOffset || 0,
-							via: w.sourceContextVariable
-						};
-					}
-					w = w.parentWidget;
-				}
-				return null;
-			};
-			var headerCache = {};
-			var getTidHeaderLines = function(title) {
-				if(headerCache[title] !== undefined) return headerCache[title];
-				var tiddler = $tw.wiki.getTiddler(title);
-				if(!tiddler) { headerCache[title] = 0; return 0; }
-				var exclude = {"text": true, "bag": true, "revision": true};
-				var fieldCount = 0;
-				for(var f in tiddler.fields) {
-					if(!exclude[f]) fieldCount++;
-				}
-				headerCache[title] = fieldCount + 1;
-				return headerCache[title];
-			};
-			var posBuildInfo = function(widget) {
-				var ptn = widget.parseTreeNode;
-				if(!ptn || ptn.start === undefined) return null;
-				var info = posGetSourceInfo(widget);
-				if(!info) return null;
-				var offsets = getLineOffsets(info.title);
-				var absStart = ptn.start + info.offset;
-				var absEnd = (ptn.end || ptn.start) + info.offset;
-				var startLine = charToLine(offsets, absStart);
-				var endLine = charToLine(offsets, absEnd);
-				var headerOffset = getTidHeaderLines(info.title);
-				return shared.formatSourcePos(startLine + headerOffset, endLine + headerOffset, info.title);
-			};
-			// Walk parent widgets and collect the chain of distinct sourceContexts
-			// above the immediate one (which is already shown in data-pos). The
-			// closest enclosing caller comes first, the outermost last.
-			var posBuildCallerChain = function(widget) {
-				var chain = [], lastCtx = null, w = widget;
-				while(w) {
-					if(w.sourceContext !== undefined && w.sourceContext !== lastCtx) {
-						if(lastCtx !== null) chain.push(w.sourceContext);
-						lastCtx = w.sourceContext;
-					}
-					w = w.parentWidget;
-				}
-				return chain;
-			};
-			var posHook = function(domNode, widget) {
-				if($tw.wiki.trackSourcePositions) {
-					var info = posBuildInfo(widget);
-					if(info) domNode.setAttribute("data-pos", info);
-					var srcInfo = posGetSourceInfo(widget);
-					if(srcInfo && srcInfo.via) {
-						domNode.setAttribute("data-via", srcInfo.via);
-					}
-					// currentTiddler context — only when it differs from the
-					// source-context tiddler (e.g. inside a list iterating over
-					// items, where each repetition has the same source position)
-					var ct = widget.getVariable("currentTiddler");
-					if(ct && srcInfo && ct !== srcInfo.title) {
-						domNode.setAttribute("data-ctx", ct);
-					}
-					var callers = posBuildCallerChain(widget);
-					if(callers.length > 0) {
-						domNode.setAttribute("data-caller", callers.join("|"));
-					}
-				}
-				return domNode;
-			};
-			$tw.hooks.addHook("th-dom-rendering-element", posHook);
-			$tw.hooks.addHook("th-dom-rendering-link", posHook);
-			$tw.hooks.addHook("th-dom-rendering-codeblock", posHook);
-			// Tag each variable with its defining tiddler so transcluded macros
-			// can be attributed back to their source.
-			var Widget = require("$:/core/modules/widgets/widget.js").widget;
-			var origSetVariable = Widget.prototype.setVariable;
-			Widget.prototype.setVariable = function(name, value, params, isMacroDefinition, options) {
-				origSetVariable.call(this, name, value, params, isMacroDefinition, options);
-				if(options && options.sourceTitle && this.variables[name]) {
-					this.variables[name].sourceTitle = options.sourceTitle;
-				}
-			};
-			var ImportVariablesWidget = require("$:/core/modules/widgets/importvariables.js").importvariables;
-			var origImportExecute = ImportVariablesWidget.prototype.execute;
-			ImportVariablesWidget.prototype.execute = function(tiddlerList) {
-				origImportExecute.call(this, tiddlerList);
-				var varSourceMap = Object.create(null);
-				var self = this;
-				$tw.utils.each(this.tiddlerList, function(title) {
-					var parser = self.wiki.parseTiddler(title, {parseAsInline: true, configTrimWhiteSpace: false});
-					if(parser) {
-						var node = parser.tree[0];
-						while(node && ["setvariable","set","parameters","void"].indexOf(node.type) !== -1) {
-							if(node.attributes && node.attributes.name) {
-								varSourceMap[node.attributes.name.value] = title;
-							}
-							node = node.children && node.children[0];
-						}
-					}
-				});
-				var ptr = this;
-				while(ptr) {
-					if(ptr.variables) {
-						var ownKeys = Object.keys(ptr.variables);
-						for(var ki = 0; ki < ownKeys.length; ki++) {
-							var v = ptr.variables[ownKeys[ki]];
-							if(v && !v.sourceTitle && varSourceMap[ownKeys[ki]]) {
-								v.sourceTitle = varSourceMap[ownKeys[ki]];
-							}
-						}
-					}
-					ptr = (ptr.children && ptr.children.length === 1) ? ptr.children[0] : null;
-				}
-			};
-			// TW core only emits th-dom-rendering-element natively; the link and
-			// codeblock equivalents come from devtools' renderLink/render patches.
-			// Patch them ourselves so inspect_pos works regardless of whether the
-			// devtools plugin is loaded.
-			var LinkWidget = require("$:/core/modules/widgets/link.js").link;
-			var origRenderLink = LinkWidget.prototype.renderLink;
-			LinkWidget.prototype.renderLink = function(parent, nextSibling) {
-				origRenderLink.call(this, parent, nextSibling);
-				if(this.domNodes.length > 0) {
-					$tw.hooks.invokeHook("th-dom-rendering-link", this.domNodes[this.domNodes.length - 1], this);
-				}
-			};
-			var CodeBlockWidget = require("$:/core/modules/widgets/codeblock.js").codeblock;
-			var origCodeBlockRender = CodeBlockWidget.prototype.render;
-			CodeBlockWidget.prototype.render = function(parent, nextSibling) {
-				origCodeBlockRender.call(this, parent, nextSibling);
-				if(this.domNodes.length > 0) {
-					$tw.hooks.invokeHook("th-dom-rendering-codeblock", this.domNodes[this.domNodes.length - 1], this);
-				}
-			};
-			var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;
-			var origExecute = TranscludeWidget.prototype.execute;
-			var bodyOffsetCache = {};
-			var findBodyOffset = function(title, bodyText) {
-				var key = title + "\0" + bodyText.length;
-				if(bodyOffsetCache[key] !== undefined) return bodyOffsetCache[key];
-				var fullText = $tw.wiki.getTiddlerText(title, "");
-				var idx = fullText.indexOf(bodyText);
-				bodyOffsetCache[key] = idx >= 0 ? idx : 0;
-				return bodyOffsetCache[key];
-			};
-			TranscludeWidget.prototype.execute = function() {
-				origExecute.call(this);
-				if($tw.wiki.trackSourcePositions) {
-					if(this.transcludeVariable) {
-						var varInfo = this.getVariableInfo(this.transcludeVariable);
-						var srcVar = varInfo && varInfo.srcVariable;
-						this.sourceContext = (srcVar && srcVar.sourceTitle) || this.transcludeVariable;
-						this.sourceContextOffset = 0;
-						this.sourceContextVariable = this.transcludeVariable;
-						if(srcVar && srcVar.sourceTitle && srcVar.value) {
-							this.sourceContextOffset = findBodyOffset(srcVar.sourceTitle, srcVar.value);
-						}
-					} else if(this.transcludeTitle) {
-						this.sourceContext = this.transcludeTitle;
-						this.sourceContextOffset = 0;
-					}
-				}
-			};
+			var tracker = createPosTracker();
+			$tw.hooks.addHook("th-dom-rendering-element", tracker.posHook);
+			$tw.hooks.addHook("th-dom-rendering-link", tracker.posHook);
+			$tw.hooks.addHook("th-dom-rendering-codeblock", tracker.posHook);
+			var restorePatches = patchPosWidgets(tracker);
 			try {
-				var posWidget = $tw.wiki.makeWidget(wrappedTree, widgetOptions);
+				var posWidget = $tw.wiki.makeWidget(built.wrappedTree, built.widgetOptions);
 				posWidget.sourceContext = args.context || "(inline)";
 				var posContainer = $tw.fakeDocument.createElement("div");
 				posWidget.render(posContainer, null);
 				return shared.textResult( compactPositions(posContainer) );
 			} finally {
 				$tw.wiki.trackSourcePositions = false;
-				$tw.hooks.removeHook("th-dom-rendering-element", posHook);
-				$tw.hooks.removeHook("th-dom-rendering-link", posHook);
-				$tw.hooks.removeHook("th-dom-rendering-codeblock", posHook);
-				TranscludeWidget.prototype.execute = origExecute;
-				Widget.prototype.setVariable = origSetVariable;
-				ImportVariablesWidget.prototype.execute = origImportExecute;
-				LinkWidget.prototype.renderLink = origRenderLink;
-				CodeBlockWidget.prototype.render = origCodeBlockRender;
+				$tw.hooks.removeHook("th-dom-rendering-element", tracker.posHook);
+				$tw.hooks.removeHook("th-dom-rendering-link", tracker.posHook);
+				$tw.hooks.removeHook("th-dom-rendering-codeblock", tracker.posHook);
+				restorePatches();
 			}
 		} catch(e) {
 			return shared.errorResult( "inspect_pos error: " + e.message );
@@ -425,13 +558,7 @@ module.exports = {
 	"inspect_tw": function(args) {
 		var targetPath = (args.path || "").trim();
 		var requestedDepth = args.depth || 1;
-		var excludeSet = null;
-		if(args.exclude && args.exclude.length > 0) {
-			excludeSet = {};
-			for(var e = 0; e < args.exclude.length; e++) {
-				excludeSet[args.exclude[e]] = true;
-			}
-		}
+		var excludeSet = (args.exclude && args.exclude.length > 0) ? shared.toSet(args.exclude) : null;
 		var target = $tw;
 		var blockedSegments = {"__proto__": true, "constructor": true, "prototype": true};
 		if(targetPath) {
@@ -568,77 +695,19 @@ module.exports = {
 			}
 			var targetCharPos = args.charPos || 0;
 			var contextTiddler = args.context || args.tiddler;
-			var extraVars = null;
-			var renderContext = args.renderContext || "isolated";
-			if(renderContext === "viewtemplate" || renderContext === "root") {
-				extraVars = {};
-				extraVars["storyTiddler"] = contextTiddler || "";
-				extraVars["tiddlerInfoState"] = "$:/state/popup/tiddler-info--" + (contextTiddler || "");
-				extraVars["folded-state"] = "$:/state/folded/" + (contextTiddler || "");
-			}
-			if(renderContext === "root") {
-				extraVars = extraVars || {};
-				extraVars["tv-story-list"] = "$:/StoryList";
-				extraVars["tv-history-list"] = "$:/HistoryList";
-				extraVars["tv-config-toolbar-icons"] = $tw.wiki.getTiddlerText("$:/config/Toolbar/Icons", "yes");
-				extraVars["tv-config-toolbar-text"] = $tw.wiki.getTiddlerText("$:/config/Toolbar/Text", "no");
-				extraVars["tv-config-toolbar-class"] = $tw.wiki.getTiddlerText("$:/config/Toolbar/ButtonClass", "tc-btn-invisible");
-				extraVars["tv-enable-drag-and-drop"] = $tw.wiki.getTiddlerText("$:/config/DragAndDrop/Enable", "yes");
-				extraVars["tv-show-missing-links"] = $tw.wiki.getTiddlerText("$:/config/MissingLinks", "yes");
-				extraVars["storyviewTitle"] = $tw.wiki.getTiddlerText("$:/view", "classic");
-				extraVars["languageTitle"] = $tw.wiki.getTiddlerText("$:/language", "en-GB");
-			}
+			var extraVars = buildRenderContextVars(args.renderContext || "isolated", contextTiddler);
 			var rendered = shared.parseAndRender(textToRender, "text/vnd.tiddlywiki", contextTiddler, extraVars);
 			if(!rendered) {
 				return shared.errorResult( "No parser for text" );
 			}
-			var widgetNode = rendered.widgetNode;
 			var matchCriteria = args.match || null;
-			var widgetMatchesVars = function(wn) {
-				if(!matchCriteria) return true;
-				var keys = Object.keys(matchCriteria);
-				for(var mi = 0; mi < keys.length; mi++) {
-					var varName = keys[mi];
-					var expected = matchCriteria[varName];
-					var resolved = null;
-					var pw = wn;
-					while(pw) {
-						if(pw.variables && pw.variables[varName]) {
-							var v = pw.variables[varName];
-							resolved = v.value !== undefined ? v.value : (v.text !== undefined ? v.text : null);
-							break;
-						}
-						pw = pw.parentWidget;
-					}
-					if(resolved !== expected) return false;
-				}
-				return true;
-			};
-			var bestWidget = null;
-			var bestDistance = Infinity;
-			var walkTree = function(wn) {
-				if(wn.parseTreeNode && wn.parseTreeNode.start !== undefined) {
-					var dist = Math.abs(wn.parseTreeNode.start - targetCharPos);
-					if(dist < bestDistance && widgetMatchesVars(wn)) {
-						bestDistance = dist;
-						bestWidget = wn;
-					}
-					if(wn.parseTreeNode.start === targetCharPos && widgetMatchesVars(wn)) {
-						bestWidget = wn;
-						bestDistance = 0;
-					}
-				}
-				if(wn.children) {
-					for(var ci = 0; ci < wn.children.length; ci++) {
-						walkTree(wn.children[ci]);
-					}
-				}
-			};
-			walkTree(widgetNode);
-			if(!bestWidget) {
+			var found = findBestWidget(rendered.widgetNode, targetCharPos, matchCriteria);
+			if(!found) {
 				var matchInfo = matchCriteria ? " with match " + JSON.stringify(matchCriteria) : "";
 				return shared.errorResult( "No widget found near char position " + targetCharPos + matchInfo );
 			}
+			var bestWidget = found.widget;
+			var bestDistance = found.distance;
 			var seen = {};
 			var varList = [];
 			var w = bestWidget;
@@ -747,62 +816,8 @@ module.exports = {
 				usedImported = usedImported.filter(function(v) { return v.name.toLowerCase().indexOf(filter) !== -1; });
 				unusedImported = unusedImported.filter(function(v) { return v.name.toLowerCase().indexOf(filter) !== -1; });
 			}
-			var showAll = !!args.all;
-			var total = localVars.length + usedImported.length + unusedImported.length;
-			var lines = [];
 			var widgetType = bestWidget.parseTreeNode ? bestWidget.parseTreeNode.type : "unknown";
-			lines.push("Scope at char " + targetCharPos + " (widget: " + widgetType + ", distance: " + bestDistance + ", " + total + " vars)");
-			var formatEntry = function(entry) {
-				var prefix;
-				if(entry.isWidget) {
-					prefix = "widget ";
-				} else if(entry.isFunction) {
-					prefix = "fn ";
-				} else if(entry.isProcedure) {
-					prefix = "proc ";
-				} else if(entry.isMacro) {
-					prefix = "macro ";
-				} else if(entry.params) {
-					prefix = "def ";
-				} else {
-					prefix = "var ";
-				}
-				var paramStr = entry.params ? "(" + entry.params.map(function(p) { return p.name + (p["default"] ? ":" + p["default"] : ""); }).join(", ") + ")" : "";
-				var src = entry.sourceTitle ? " @" + entry.sourceTitle : "";
-				if(!entry.params && entry.value !== undefined) {
-					var val = String(entry.value);
-					if(val.length > 70) val = val.substring(0, 70) + "~";
-					return prefix + entry.name + " = " + val.replace(/\n/g, "\\n") + src;
-				} else {
-					return prefix + entry.name + paramStr + src;
-				}
-			};
-			if(localVars.length > 0) {
-				lines.push("");
-				lines.push("— local scope");
-				for(var li = 0; li < localVars.length; li++) {
-					lines.push(formatEntry(localVars[li]));
-				}
-			}
-			if(usedImported.length > 0) {
-				lines.push("");
-				lines.push("— used globals");
-				for(var gi = 0; gi < usedImported.length; gi++) {
-					lines.push(formatEntry(usedImported[gi]));
-				}
-			}
-			if(showAll && unusedImported.length > 0) {
-				lines.push("");
-				lines.push("— other globals");
-				for(var oi = 0; oi < unusedImported.length; oi++) {
-					lines.push(formatEntry(unusedImported[oi]));
-				}
-			}
-			if(!showAll && unusedImported.length > 0) {
-				lines.push("");
-				lines.push("+" + unusedImported.length + " globals (use all:true to see all, or filter to narrow)");
-			}
-			return shared.textResult( lines.join("\n") );
+			return shared.textResult( formatScopeOutput(localVars, usedImported, unusedImported, targetCharPos, widgetType, bestDistance, { showAll: !!args.all }) );
 		} catch(e) {
 			return shared.errorResult( "inspect_scope error: " + e.message );
 		}

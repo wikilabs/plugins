@@ -141,13 +141,11 @@ module.exports = {
 	"list_tiddlers": function(args) {
 		var filter;
 		if(args.plugin) {
-			var safePlugin = args.plugin.replace(/[\[\]{}<>]/g, "");
-			filter = "[[" + safePlugin + "]plugintiddlers[]sort[title]]";
+			filter = "[[" + shared.sanitiseFilterOperand(args.plugin) + "]plugintiddlers[]sort[title]]";
 		} else if(args.overwrittenShadows) {
 			filter = "[is[tiddler]is[shadow]sort[title]]";
 		} else if(args.tag) {
-			var safeTag = args.tag.replace(/[\[\]{}<>\/]/g, "");
-			filter = "[tag[" + safeTag + "]]";
+			filter = "[tag[" + shared.sanitiseFilterOperand(args.tag) + "]]";
 		} else if(args.includeSystem) {
 			filter = "[all[tiddlers]sort[title]]";
 		} else {
