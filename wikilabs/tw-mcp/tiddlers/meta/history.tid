@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.31 - 2026.05.12
+
+* Excluded the `sidecar/` directory from the plugin's loaded tiddler set, removing a stray `tw-upload.js` entry from the subtiddler list.
+
 V 0.13.30 - 2026.05.12
 
 * Internal code restructure (no user-visible change). The four `inspect_*` tool handlers now live in separate files under `handlers/inspect/`, one file per tool, instead of being bundled into a single 700-line module.
