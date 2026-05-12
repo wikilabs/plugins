@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.18 - 2026.05.11
+
+* New `search_lines` MCP tool + `search-lines` filter operator: per-line search with hashline anchors paste-ready for `edit_tiddler`. Regex/words/invert flags, grep-style context via MCP args or `[search-lines[X],[B],[A]]` operator operands (mirrors core `range`).
+
 V 0.13.17 - 2026.05.11
 
 * `extract_html_wiki` uses `storeTiddler` for its `$:/config/FileSystemPaths` write; `addToWikiSilently` moves to `shared.js`.

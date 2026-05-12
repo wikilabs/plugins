@@ -116,6 +116,30 @@ var readTools = [
 		}
 	},
 	{
+		name: "search_lines",
+		description: "Per-line text search. Output per match: title header, indented '<n>#<hash>: text' for text field (anchor → edit_tiddler `pos`) or 'field:L<n>: text' for other fields. With context>0, context lines prefixed '- ' (also anchored); '--' separates non-adjacent context blocks. Footer: 'N lines matched in M tiddlers'; '(truncated...)' suffix when caps hit. Empty: '(no matches)'. Caps count matches only (context is free). Defaults: fields=['text'], case-insensitive literal, context=0. Asymmetric via context_before / context_after. Filter form: [search-lines:fields:flags[pattern],[before],[after]] (range-style operands); `]`-bearing regex via `{Title}` or `<var>`.",
+		inputSchema: {
+			type: "object",
+			properties: {
+				pattern: { type: "string", description: "Search pattern (literal by default; regex when regexp=true)" },
+				fields: { type: "array", items: { type: "string" }, description: "Fields to scan; default ['text']. Multiline fields produce per-line matches; single-line fields at most one (lineNumber=1)." },
+				regexp: { type: "boolean", default: false },
+				case_sensitive: { type: "boolean", default: false },
+				words: { type: "boolean", default: false, description: "Whole-word match (wraps pattern with \\b boundaries)" },
+				invert: { type: "boolean", default: false, description: "Return lines that do NOT match (per-line invert, not per-tiddler)" },
+				filter: { type: "string", description: "TW filter scope; default '[all[tiddlers]!is[system]]' or '[all[tiddlers]]' when include_system" },
+				include_system: { type: "boolean", default: false },
+				max_lines_per_tiddler: { type: "number", default: 10 },
+				max_lines_total: { type: "number", default: 200 },
+				snippet_cap: { type: "number", default: 200, description: "Per-line display cap; longer lines windowed around the match. Hash always derives from the full line." },
+				context: { type: "number", default: 0, description: "Context lines before AND after each match (grep -C). Caps count matches only -- context lines are free." },
+				context_before: { type: "number", description: "Override context for BEFORE only (grep -B). Defaults to value of context." },
+				context_after: { type: "number", description: "Override context for AFTER only (grep -A). Defaults to value of context." }
+			},
+			required: ["pattern"]
+		}
+	},
+	{
 		name: "list_tiddlers",
 		description: "List tiddler titles as '/'-namespace tree with common-prefix header (NOT flat list). Filter flags mutually exclusive, priority: plugin > overwrittenShadows > tag > includeSystem (only highest applies). limit caps result.",
 		inputSchema: {
