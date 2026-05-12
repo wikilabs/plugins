@@ -12,6 +12,7 @@ used globals / other globals.
 "use strict";
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
+var inspectShared = require("$:/core/modules/commands/inspect/handlers/inspect/_shared.js");
 
 // --- inspect_scope helpers (hoisted to module scope) ---------------------
 //
@@ -159,7 +160,21 @@ module.exports = {
 			var targetCharPos = args.charPos || 0;
 			var contextTiddler = args.context || args.tiddler;
 			var extraVars = buildRenderContextVars(args.renderContext || "isolated", contextTiddler);
-			var rendered = shared.parseAndRender(textToRender, "text/vnd.tiddlywiki", contextTiddler, extraVars);
+			// Apply the source-title-tracking patches before rendering so the
+			// importvariables widget stamps `sourceTitle` on each imported
+			// variable instance. The mutations persist after restore (they
+			// live on the variable-info objects), so we can restore the
+			// patches before walking the widget tree. Without this, every
+			// variable would land in "local scope" because none would have
+			// sourceTitle set, and "— used globals" / "— other globals"
+			// sections never fire.
+			var restoreSourceTitle = inspectShared.patchSourceTitleTracking();
+			var rendered;
+			try {
+				rendered = shared.parseAndRender(textToRender, "text/vnd.tiddlywiki", contextTiddler, extraVars);
+			} finally {
+				restoreSourceTitle();
+			}
 			if(!rendered) {
 				return shared.errorResult( "No parser for text" );
 			}

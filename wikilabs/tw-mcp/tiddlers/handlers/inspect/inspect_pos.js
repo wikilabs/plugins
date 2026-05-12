@@ -12,6 +12,7 @@ includes all pos tracking + widget-prototype patching machinery.
 "use strict";
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
+var inspectShared = require("$:/core/modules/commands/inspect/handlers/inspect/_shared.js");
 
 // Post-process inspect_pos DOM: replace verbose data-pos attributes
 // with compact p="idx:lines" format. Returns title index header + innerHTML.
@@ -204,56 +205,15 @@ function createPosTracker() {
 }
 
 // Monkey-patch widget prototypes so source-context flows through transclusion
-// boundaries and variable definitions remember their defining tiddler. Returns
-// a restore() callback that the caller MUST invoke in finally (otherwise
-// subsequent renders carry the patches forever).
+// boundaries. Returns a restore() callback the caller MUST invoke in finally.
 // tracker is the createPosTracker() result; only its findBodyOffset is read.
+// The variable-source-tracking half (Widget.setVariable + ImportVariablesWidget)
+// is in inspect/_shared.js so inspect_scope can apply it standalone.
 function patchPosWidgets(tracker) {
-	var Widget = require("$:/core/modules/widgets/widget.js").widget;
-	var ImportVariablesWidget = require("$:/core/modules/widgets/importvariables.js").importvariables;
 	var LinkWidget = require("$:/core/modules/widgets/link.js").link;
 	var CodeBlockWidget = require("$:/core/modules/widgets/codeblock.js").codeblock;
 	var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;
-	// Tag each variable with its defining tiddler so transcluded macros can
-	// be attributed back to their source.
-	var origSetVariable = Widget.prototype.setVariable;
-	Widget.prototype.setVariable = function(name, value, params, isMacroDefinition, options) {
-		origSetVariable.call(this, name, value, params, isMacroDefinition, options);
-		if(options && options.sourceTitle && this.variables[name]) {
-			this.variables[name].sourceTitle = options.sourceTitle;
-		}
-	};
-	var origImportExecute = ImportVariablesWidget.prototype.execute;
-	ImportVariablesWidget.prototype.execute = function(tiddlerList) {
-		origImportExecute.call(this, tiddlerList);
-		var varSourceMap = Object.create(null);
-		var self = this;
-		$tw.utils.each(this.tiddlerList, function(title) {
-			var parser = self.wiki.parseTiddler(title, {parseAsInline: true, configTrimWhiteSpace: false});
-			if(parser) {
-				var node = parser.tree[0];
-				while(node && ["setvariable","set","parameters","void"].indexOf(node.type) !== -1) {
-					if(node.attributes && node.attributes.name) {
-						varSourceMap[node.attributes.name.value] = title;
-					}
-					node = node.children && node.children[0];
-				}
-			}
-		});
-		var ptr = this;
-		while(ptr) {
-			if(ptr.variables) {
-				var ownKeys = Object.keys(ptr.variables);
-				for(var ki = 0; ki < ownKeys.length; ki++) {
-					var v = ptr.variables[ownKeys[ki]];
-					if(v && !v.sourceTitle && varSourceMap[ownKeys[ki]]) {
-						v.sourceTitle = varSourceMap[ownKeys[ki]];
-					}
-				}
-			}
-			ptr = (ptr.children && ptr.children.length === 1) ? ptr.children[0] : null;
-		}
-	};
+	var restoreSourceTitle = inspectShared.patchSourceTitleTracking();
 	// TW core only emits th-dom-rendering-element natively; the link and
 	// codeblock equivalents come from devtools' renderLink/render patches.
 	// Patch them ourselves so inspect_pos works regardless of whether the
@@ -292,8 +252,7 @@ function patchPosWidgets(tracker) {
 		}
 	};
 	return function restore() {
-		Widget.prototype.setVariable = origSetVariable;
-		ImportVariablesWidget.prototype.execute = origImportExecute;
+		restoreSourceTitle();
 		LinkWidget.prototype.renderLink = origRenderLink;
 		CodeBlockWidget.prototype.render = origCodeBlockRender;
 		TranscludeWidget.prototype.execute = origExecute;
