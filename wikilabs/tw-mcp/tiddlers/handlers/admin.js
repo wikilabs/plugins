@@ -42,10 +42,17 @@ var CACHE_INVALIDATE_MAP = {
 };
 
 function reloadInPlace(title, moduleType) {
-	var info = $tw.modules.titles[title];
-	if(!info) return { error: "not registered in $tw.modules" };
 	var text = $tw.wiki.getTiddlerText(title);
 	if(!text) return { error: "no text in wiki store" };
+	var info = $tw.modules.titles[title];
+	if(!info) {
+		// Module added since boot — register it now so it can be executed.
+		$tw.modules.titles[title] = info = {
+			moduleType: moduleType,
+			definition: text,
+			exports: undefined
+		};
+	}
 	var oldExports = info.exports;
 	info.definition = text;
 	info.exports = undefined;

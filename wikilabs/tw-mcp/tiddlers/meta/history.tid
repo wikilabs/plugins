@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.30 - 2026.05.12
+
+* Internal code restructure (no user-visible change). The four `inspect_*` tool handlers now live in separate files under `handlers/inspect/`, one file per tool, instead of being bundled into a single 700-line module.
+* The eight CRUD tool handlers (`get_tiddler`, `get_tiddlers`, `put_tiddler`, `edit_tiddler`, `resave_tiddler`, `rename_tiddler`, `replace_in_tiddlers`, `delete_tiddler`) now live in separate files under `handlers/crud/`, with the five module-level helpers in a per-group `_shared.js`.
+* The four `query` tool handlers (`run_filter`, `get_wiki_info`, `list_tiddlers`, `search_lines`) and three `render` tool handlers (`render_tiddler`, `render_field`, `render_text`) now live in separate per-tool files under `handlers/query/` and `handlers/render/`. All MCP tool handlers are now one-tool-per-file.
+
 V 0.13.27 - 2026.05.12
 
 * Final pass of internal code cleanup, no user-visible change. As a small robustness improvement, the change log used by `reload_tiddlers` is now capped at 1000 entries (oldest dropped on overflow) so it can't grow unbounded between reloads.
