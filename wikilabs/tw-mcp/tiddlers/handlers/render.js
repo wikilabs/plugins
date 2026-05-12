@@ -112,7 +112,7 @@ module.exports = {
 					if(excludeSet.end) removed.push("end");
 					header = "(excluded: " + removed.join(", ") + ")\n";
 				}
-				return shared.textResult( header + JSON.stringify(compactTree, null, $tw.config.preferences.jsonSpaces) );
+				return shared.textResult( header + shared.jsonStringify(compactTree) );
 			}
 			var rendered = shared.parseAndRender(args.text, inputType, args.context);
 			if(!rendered) {

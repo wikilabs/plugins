@@ -115,6 +115,17 @@ function buildTree(titles, maxDepth, _indent) {
 	return { prefix: commonPrefix, tree: lines.join("\n") };
 }
 
+// Build a title tree and prepend a "<prefix> ... N <label>" summary line
+// when the result has a common prefix. label defaults to "tiddlers"; count
+// defaults to titles.length. Wraps buildTree() for the common case where
+// callers want a single string they can interpolate directly.
+function formatTitleTree(titles, label, count) {
+	var ns = buildTree(titles);
+	var n = (count !== undefined) ? count : titles.length;
+	var header = ns.prefix ? ns.prefix + " ... " + n + " " + (label || "tiddlers") + "\n" : "";
+	return header + ns.tree;
+}
+
 // Shared parse+render helper
 // Parse text and build the import-variables-wrapped tree + widget options.
 // Returns { parser, wrappedTree, widgetOptions } or null if parsing fails.
@@ -326,6 +337,25 @@ function containerToText(container, outputType) {
 	return container.textContent;
 }
 
+// Build a `$tw.Tiddler` from existing fields, optionally re-stamping
+// modified/modifier. When preserveTimestamps is true the source fields'
+// created/modified are kept; otherwise they're refreshed to "now". `extra`
+// is an optional object merged after the modification fields (used by
+// rename_tiddler to set the new title).
+function buildTiddlerWithTimestamps(fields, extra, preserveTimestamps) {
+	if(preserveTimestamps) {
+		return extra ? new $tw.Tiddler(fields, extra) : new $tw.Tiddler(fields);
+	}
+	var modFields = $tw.wiki.getModificationFields();
+	return extra ? new $tw.Tiddler(fields, modFields, extra) : new $tw.Tiddler(fields, modFields);
+}
+
+// Stringify a value with the project-standard indent (`jsonSpaces` preference).
+// Centralised so a future switch to compact JSON (token thrift) is one edit.
+function jsonStringify(value) {
+	return JSON.stringify(value, null, $tw.config.preferences.jsonSpaces);
+}
+
 // Convert an array of strings into a {key: true} lookup map. Returns an
 // empty object when arr is falsy. Used by inspect_tree, inspect_tw, and
 // render_text for exclude/include args.
@@ -339,12 +369,24 @@ function toSet(arr) {
 	return set;
 }
 
+// Is the tiddler a plugin/theme/language/etc bundle? Returns true if any
+// `plugin-type` field value is present.
+function isPluginTiddler(tiddler) {
+	return !!(tiddler && tiddler.fields["plugin-type"]);
+}
+
+// Return the `plugin-type` field value (eg "plugin", "theme", "language",
+// "import") or null when the tiddler isn't a plugin bundle.
+function getPluginKind(tiddler) {
+	return (tiddler && tiddler.fields["plugin-type"]) || null;
+}
+
 // Guard against operating on bundled plugin / theme / language tiddlers.
 // These are constructed from their shadow source tiddlers and shouldn't be
 // rewritten directly. Returns an errorResult to short-circuit the caller,
 // or null when the tiddler is safe to operate on.
 function checkNotBundled(tiddler, action, title) {
-	var kind = tiddler && tiddler.fields["plugin-type"];
+	var kind = getPluginKind(tiddler);
 	if(kind === "plugin" || kind === "theme" || kind === "language") {
 		return errorResult("Refusing to " + action + " bundled " + kind + ": " + title);
 	}
@@ -522,6 +564,7 @@ exports.checkWritable = checkWritable;
 exports.isReadonly = isReadonly;
 exports.getCheckPathAllowed = getCheckPathAllowed;
 exports.buildTree = buildTree;
+exports.formatTitleTree = formatTitleTree;
 exports.parseAndRender = parseAndRender;
 exports.buildWrappedTree = buildWrappedTree;
 exports.formatSourcePos = formatSourcePos;
@@ -538,9 +581,13 @@ exports.scopedTitles = scopedTitles;
 exports.compileSearchRegex = compileSearchRegex;
 exports.loadFspFseFilters = loadFspFseFilters;
 exports.checkNotBundled = checkNotBundled;
+exports.isPluginTiddler = isPluginTiddler;
+exports.getPluginKind = getPluginKind;
 exports.toSet = toSet;
 exports.containerToText = containerToText;
 exports.sanitiseFilterOperand = sanitiseFilterOperand;
+exports.jsonStringify = jsonStringify;
+exports.buildTiddlerWithTimestamps = buildTiddlerWithTimestamps;
 exports.persistTiddler = persistTiddler;
 exports.addToWikiSilently = addToWikiSilently;
 exports.SOURCE_POS_SEPARATOR = SOURCE_POS_SEPARATOR;

@@ -42,9 +42,13 @@ function wikiInfoHasRetain(info, basePath, seen) {
 	return false;
 }
 
-// Change log: accumulates $tw.wiki changes between reload_tiddlers calls
+// Change log: accumulates $tw.wiki changes between reload_tiddlers calls.
+// Capped at CHANGE_LOG_MAX entries to bound memory if the user never calls
+// reload_tiddlers (eg an MCP-only workflow that mostly writes). On overflow
+// the oldest entry is dropped (object insertion order in modern engines).
 var changeLog = {};
 var changeLogActive = false;
+var CHANGE_LOG_MAX = 1000;
 // Per-reload title set. The change listener runs on $tw.utils.nextTick
 // AFTER reload_tiddlers returns, so events from the reload's own
 // addTiddler / deleteTiddler calls would otherwise land in changeLog and
@@ -67,6 +71,15 @@ function startChangeLog() {
 			}
 			if(reloadOwnedTitles && reloadOwnedTitles[title]) {
 				continue;
+			}
+			// Cap: when adding a new title would exceed the limit, drop the
+			// oldest (first-inserted) entry. Existing-title updates don't grow
+			// the map, so no cap check needed there.
+			if(changeLog[title] === undefined) {
+				var existingKeys = Object.keys(changeLog);
+				if(existingKeys.length >= CHANGE_LOG_MAX) {
+					delete changeLog[existingKeys[0]];
+				}
 			}
 			if(changes[title].deleted) {
 				changeLog[title] = "deleted";

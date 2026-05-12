@@ -11,9 +11,10 @@ MCP tool handlers for query operations.
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
-function windowSnippet(line, matcher, cap) {
+// `probe` is a non-global RegExp built once by the caller (the global flag
+// of the search matcher would carry lastIndex across calls and skip matches).
+function windowSnippet(line, probe, cap) {
 	if(line.length <= cap) return line;
-	var probe = new RegExp(matcher.source, matcher.flags.replace("g", ""));
 	var m = probe.exec(line);
 	if(!m) return line.slice(0, cap) + "...";
 	var matchStart = m.index;
@@ -154,18 +155,14 @@ module.exports = {
 		var results = $tw.wiki.filterTiddlers(filter);
 		var total = results.length;
 		if(total > 100 && !args.limit) {
-			var ns = shared.buildTree(results);
-			var header = ns.prefix ? ns.prefix + " ... " + total + " tiddlers\n" : "";
-			return shared.textResult(header + ns.tree);
+			return shared.textResult(shared.formatTitleTree(results, "tiddlers", total));
 		}
 		var limit = args.limit || 100;
 		var truncated = results.length > limit;
 		if(truncated) {
 			results = results.slice(0, limit);
 		}
-		var ns = shared.buildTree(results);
-		var header = ns.prefix ? ns.prefix + " ... " + results.length + " tiddlers\n" : "";
-		var output = header + ns.tree;
+		var output = shared.formatTitleTree(results);
 		if(truncated) {
 			output += "\n\n(" + total + " total, showing first " + limit + ")";
 		}
@@ -198,6 +195,10 @@ module.exports = {
 			return shared.errorResult("Invalid regex: " + compiled.error);
 		}
 		var matcher = compiled.matcher;
+		// Non-global clone for snippet probing (windowSnippet's exec must not
+		// advance the shared matcher's lastIndex). Built once instead of per
+		// match line.
+		var snippetProbe = new RegExp(matcher.source, matcher.flags.replace("g", ""));
 		var scoped = shared.scopedTitles(args);
 		if(scoped.errorResult) return scoped.errorResult;
 		var sourceTitles = scoped.titles;
@@ -269,7 +270,7 @@ module.exports = {
 		// separator between non-adjacent ranges (only when context is requested -- without
 		// context every match looks like its own 1-line range, and separators would noise).
 		function formatLine(field, lineNum, lineText, isMatch) {
-			var displayText = windowSnippet(lineText, matcher, snippetCap);
+			var displayText = windowSnippet(lineText, snippetProbe, snippetCap);
 			var prefix = (field === "text")
 				? hashline.formatLineTag(lineNum, lineText)
 				: field + ":L" + lineNum;

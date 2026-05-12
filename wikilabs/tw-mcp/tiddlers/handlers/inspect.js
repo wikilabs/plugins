@@ -515,7 +515,7 @@ module.exports = {
 				header += "Links (" + linkTargets.length + "): " + linkTargets.join(", ") + "\n";
 			}
 			header += "(showing depth=" + maxDepth + ")\n";
-			return shared.textResult( header + JSON.stringify(result, null, $tw.config.preferences.jsonSpaces) );
+			return shared.textResult( header + shared.jsonStringify(result) );
 		} catch(e) {
 			return shared.errorResult( "inspect_tree error: " + e.message );
 		}

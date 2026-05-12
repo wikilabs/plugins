@@ -155,7 +155,7 @@ module.exports = {
 		if(!tiddler) {
 			return shared.errorResult("Tiddler not found: " + args.title);
 		}
-		if(tiddler.fields["plugin-type"]) {
+		if(shared.isPluginTiddler(tiddler)) {
 			var pluginInfo = $tw.wiki.getPluginInfo(args.title);
 			var shadowTitles = pluginInfo && pluginInfo.tiddlers ? Object.keys(pluginInfo.tiddlers).sort() : [];
 			var readmeTitle = args.title + "/readme";
@@ -164,15 +164,13 @@ module.exports = {
 				shadowTitles.splice(readmeIdx, 1);
 				shadowTitles.unshift(readmeTitle);
 			}
-			var ns = shared.buildTree(shadowTitles);
-			var header = ns.prefix ? ns.prefix + " ... " + shadowTitles.length + " shadow tiddlers\n" : "";
-			var output = formatFieldsBlock(tiddler, {exclude: ["text"]}) + "\n\n" + header + ns.tree;
+			var output = formatFieldsBlock(tiddler, {exclude: ["text"]}) + "\n\n" + shared.formatTitleTree(shadowTitles, "shadow tiddlers");
 			return shared.textResult(output);
 		}
 		var includeText = !!args.detailed || !!args.lines;
 		var unsafe = hasUnsafeFields(tiddler);
 		if(args.format === "json") {
-			return shared.textResult(JSON.stringify(extractFieldsObject(tiddler, {includeText: includeText}), null, $tw.config.preferences.jsonSpaces));
+			return shared.textResult(shared.jsonStringify(extractFieldsObject(tiddler, {includeText: includeText})));
 		} else if(args.format === "tid") {
 			var output = formatFieldsBlock(tiddler, {exclude: ["text"]});
 			if(includeText && tiddler.fields.text !== undefined) {
@@ -183,7 +181,7 @@ module.exports = {
 			// Default (hashline): title-first tid headers for safe fields, JSON for unsafe, hashlined text
 			var header;
 			if(unsafe) {
-				header = JSON.stringify(extractFieldsObject(tiddler, {includeText: false}), null, $tw.config.preferences.jsonSpaces);
+				header = shared.jsonStringify(extractFieldsObject(tiddler, {includeText: false}));
 			} else {
 				header = formatFieldsBlock(tiddler, {exclude: ["text"]});
 			}
@@ -214,7 +212,7 @@ module.exports = {
 			var unsafe = hasUnsafeFields(tiddler);
 			var out;
 			if(unsafe && format !== "tid") {
-				out = JSON.stringify(extractFieldsObject(tiddler, {skipSet: skipSet}), null, $tw.config.preferences.jsonSpaces);
+				out = shared.jsonStringify(extractFieldsObject(tiddler, {skipSet: skipSet}));
 			} else {
 				out = formatFieldsBlock(tiddler, {exclude: ["text"], skipSet: skipSet});
 			}
@@ -244,7 +242,7 @@ module.exports = {
 				missing.push(title);
 				continue;
 			}
-			var isPlugin = !!tiddler.fields["plugin-type"];
+			var isPlugin = shared.isPluginTiddler(tiddler);
 			// Plugins: fields-only (no shadow tree, no bundle text) regardless of detailed.
 			var realDetailed = detailed && !isPlugin;
 			var entry;
@@ -267,7 +265,7 @@ module.exports = {
 			var result = { tiddlers: entries.map(function(e) { return e.fields; }) };
 			if(missing.length > 0) result.missing = missing;
 			if(truncated > 0) result.truncated = truncated;
-			return shared.textResult(JSON.stringify(result, null, $tw.config.preferences.jsonSpaces));
+			return shared.textResult(shared.jsonStringify(result));
 		}
 		// CompoundTiddlers (text/vnd.tiddlywiki-multiple): blocks separated by `\n+\n`.
 		// Missing titles surface in a trailing `Missing: ...` line so the LLM can
@@ -394,9 +392,7 @@ module.exports = {
 			if(fields.type === "text/vnd.tiddlywiki") { delete fields.type; stripped.push("type"); }
 		}
 		var preserveTimestamps = args.preserve_timestamps !== false;
-		var newTiddler = preserveTimestamps
-			? new $tw.Tiddler(fields)
-			: new $tw.Tiddler(fields, $tw.wiki.getModificationFields());
+		var newTiddler = shared.buildTiddlerWithTimestamps(fields, null, preserveTimestamps);
 		var oldPath = oldFileInfo.filepath;
 		if(args.dry_run) {
 			var filters = shared.loadFspFseFilters();
@@ -465,9 +461,7 @@ module.exports = {
 		// Build new tiddler with the new title. preserve_timestamps defaults
 		// to true (housekeeping rename), set false to bump `modified`.
 		var preserveTimestamps = args.preserve_timestamps !== false;
-		var newTiddler = preserveTimestamps
-			? new $tw.Tiddler(oldTiddler.fields, {title: args.to})
-			: new $tw.Tiddler(oldTiddler.fields, $tw.wiki.getModificationFields(), {title: args.to});
+		var newTiddler = shared.buildTiddlerWithTimestamps(oldTiddler.fields, {title: args.to}, preserveTimestamps);
 		// Persist the new tiddler (handles FSP path resolution, write, verify,
 		// rollback). On failure the new file/store entry is rolled back and
 		// `from` is left untouched.

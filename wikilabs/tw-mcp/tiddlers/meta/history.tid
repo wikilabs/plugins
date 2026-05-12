@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.27 - 2026.05.12
+
+* Final pass of internal code cleanup, no user-visible change. As a small robustness improvement, the change log used by `reload_tiddlers` is now capped at 1000 entries (oldest dropped on overflow) so it can't grow unbounded between reloads.
+
 V 0.13.26 - 2026.05.12
 
 * More internal code cleanup, no user-visible change. Small correctness improvement: the title/tag/plugin sanitisation now also strips `|`, matching the TiddlyWiki core rule that forbids `|` in tiddler titles.
