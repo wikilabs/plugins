@@ -20,9 +20,12 @@ Output: one string per emitted line in the form
   <title>:<field>:c<line>: <line text>   for context lines (when context > 0)
 
 Multiline fields (default split on /\r?\n/) produce one entry per emitted
-line; single-line fields at most one (lineNumber = 1). Non-string field
-values are skipped. With context, overlapping windows from adjacent
-matches are merged so each line is emitted at most once.
+line; single-line fields at most one (lineNumber = 1). Array-valued
+fields (eg `tags`, `list`) are serialised via $tw.utils.stringifyList
+before matching, so the .tid on-disk form is what gets scanned
+(multi-word entries wrapped in `[[...]]`). Other non-string field values
+are skipped. With context, overlapping windows from adjacent matches are
+merged so each line is emitted at most once.
 
 \*/
 
@@ -79,6 +82,11 @@ exports["search-lines"] = function(source, operator, options) {
 		for(var fi = 0; fi < fields.length; fi++) {
 			var field = fields[fi];
 			var value = tiddler.fields[field];
+			if(Array.isArray(value)) {
+				// Match against the .tid on-disk serialisation so callers
+				// see `[[Some tag]] Other` rather than the runtime array.
+				value = $tw.utils.stringifyList(value);
+			}
 			if(typeof value !== "string") continue;
 			var lines = value.split(/\r?\n/);
 			// Pass 1: identify match lines (1-indexed).
