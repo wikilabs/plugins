@@ -408,12 +408,13 @@ function extractHandler(args) {
 		title: "$:/config/FileSystemPaths",
 		text: fileSystemPathsText
 	}).fields);
-	// Parse path filters
-	var pathFilters = fileSystemPathsText.split("\n").filter(function(l) { return l.trim(); });
-	var extFilters;
-	if($tw.wiki.tiddlerExists("$:/config/FileSystemExtensions")) {
-		extFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "").split("\n");
-	}
+	// Parse path filters. addToWikiSilently above just synced fileSystemPathsText
+	// into $:/config/FileSystemPaths, so loadFspFseFilters reads back the same
+	// text. filterBlank:true preserves the previous behaviour of dropping
+	// whitespace-only rule lines.
+	var filters = shared.loadFspFseFilters({ filterBlank: true });
+	var pathFilters = filters.pathFilters;
+	var extFilters = filters.extFilters;
 	var tiddlersDir = $tw.boot.wikiTiddlersPath;
 	if(!tiddlersDir) {
 		return shared.errorResult("No wiki tiddlers path available.");

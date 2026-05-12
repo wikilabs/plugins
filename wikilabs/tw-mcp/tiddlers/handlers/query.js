@@ -190,23 +190,19 @@ module.exports = {
 		var contextBefore = (args.context_before !== undefined) ? Math.max(0, args.context_before | 0) : contextN;
 		var contextAfter = (args.context_after !== undefined) ? Math.max(0, args.context_after | 0) : contextN;
 		var hasContext = (contextBefore > 0 || contextAfter > 0);
-		var matcher;
-		try {
-			var src = regexp ? args.pattern : args.pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-			if(words) {
-				src = "\\b(?:" + src + ")\\b";
-			}
-			matcher = new RegExp(src, caseSensitive ? "" : "i");
-		} catch(e) {
-			return shared.errorResult("Invalid regex: " + e.message);
+		var compiled = shared.compileSearchRegex({
+			pattern: args.pattern,
+			regexp: regexp,
+			words: words,
+			caseSensitive: caseSensitive
+		});
+		if(compiled.error) {
+			return shared.errorResult("Invalid regex: " + compiled.error);
 		}
-		var scope = args.filter || (args.include_system ? "[all[tiddlers]]" : "[all[tiddlers]!is[system]]");
-		var sourceTitles;
-		try {
-			sourceTitles = $tw.wiki.filterTiddlers(scope);
-		} catch(e) {
-			return shared.errorResult("Filter error: " + e.message);
-		}
+		var matcher = compiled.matcher;
+		var scoped = shared.scopedTitles(args);
+		if(scoped.errorResult) return scoped.errorResult;
+		var sourceTitles = scoped.titles;
 		var source = function(callback) {
 			sourceTitles.forEach(function(title) {
 				callback($tw.wiki.getTiddler(title), title);

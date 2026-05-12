@@ -12,6 +12,24 @@ MCP tool handlers for tiddler CRUD operations.
 var fs = require("fs");
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
+// Mirrors TW filesystem's unsafe-field check: control chars or leading /
+// trailing whitespace anywhere in a non-text field value, or `:` / `#` in any
+// field name. When a tiddler has unsafe fields, the standard `.tid` header
+// can't represent it; we fall back to JSON.
+var UNSAFE_CONTROL_CHARS = /[\x00-\x1F]/;
+var UNSAFE_FIELDNAME_CHARS = /[:#]/;
+function hasUnsafeFields(tiddler) {
+	var unsafe = false;
+	$tw.utils.each(tiddler.getFieldStrings(), function(value, fieldName) {
+		if(fieldName !== "text") {
+			unsafe = unsafe || UNSAFE_CONTROL_CHARS.test(value);
+			unsafe = unsafe || ($tw.utils.trim(value) !== value);
+		}
+		unsafe = unsafe || UNSAFE_FIELDNAME_CHARS.test(fieldName);
+	});
+	return unsafe;
+}
+
 // Title-first fields block for `.tid`-style output. Overrides TW's default
 // alphabetical sort so the title is on line 1 — easier for LLMs (and humans)
 // to identify each block at a glance. options.exclude is an array of field
@@ -87,15 +105,7 @@ module.exports = {
 			return shared.textResult(output);
 		}
 		var includeText = !!args.detailed || !!args.lines;
-		// Detect unsafe fields (same check as TW filesystem: control chars, leading/trailing whitespace, : or # in field names)
-		var hasUnsafeFields = false;
-		$tw.utils.each(tiddler.getFieldStrings(),function(value,fieldName) {
-			if(fieldName !== "text") {
-				hasUnsafeFields = hasUnsafeFields || /[\x00-\x1F]/mg.test(value);
-				hasUnsafeFields = hasUnsafeFields || ($tw.utils.trim(value) !== value);
-			}
-			hasUnsafeFields = hasUnsafeFields || /:|#/mg.test(fieldName);
-		});
+		var unsafe = hasUnsafeFields(tiddler);
 		if(args.format === "json") {
 			return shared.textResult(JSON.stringify(extractFieldsObject(tiddler, {includeText: includeText}), null, $tw.config.preferences.jsonSpaces));
 		} else if(args.format === "tid") {
@@ -107,7 +117,7 @@ module.exports = {
 		} else {
 			// Default (hashline): title-first tid headers for safe fields, JSON for unsafe, hashlined text
 			var header;
-			if(hasUnsafeFields) {
+			if(unsafe) {
 				header = JSON.stringify(extractFieldsObject(tiddler, {includeText: false}), null, $tw.config.preferences.jsonSpaces);
 			} else {
 				header = formatFieldsBlock(tiddler, {exclude: ["text"]});
@@ -136,16 +146,9 @@ module.exports = {
 		var SKIP_FIELDS = {created: 1, modified: 1, creator: 1, modifier: 1, revision: 1};
 		var skipSet = verbose ? {} : SKIP_FIELDS;
 		function renderText(tiddler, includeText) {
-			var hasUnsafe = false;
-			$tw.utils.each(tiddler.getFieldStrings(), function(value, fieldName) {
-				if(fieldName !== "text") {
-					hasUnsafe = hasUnsafe || /[\x00-\x1F]/mg.test(value);
-					hasUnsafe = hasUnsafe || ($tw.utils.trim(value) !== value);
-				}
-				hasUnsafe = hasUnsafe || /:|#/mg.test(fieldName);
-			});
+			var unsafe = hasUnsafeFields(tiddler);
 			var out;
-			if(hasUnsafe && format !== "tid") {
+			if(unsafe && format !== "tid") {
 				out = JSON.stringify(extractFieldsObject(tiddler, {skipSet: skipSet}), null, $tw.config.preferences.jsonSpaces);
 			} else {
 				out = formatFieldsBlock(tiddler, {exclude: ["text"], skipSet: skipSet});
@@ -306,10 +309,8 @@ module.exports = {
 		if(!tiddler) {
 			return shared.errorResult("Tiddler not found: " + title);
 		}
-		var pluginType = tiddler.fields["plugin-type"];
-		if(pluginType === "plugin" || pluginType === "theme" || pluginType === "language") {
-			return shared.errorResult("Refusing to resave bundled " + pluginType + ": " + title);
-		}
+		var bundledErr = shared.checkNotBundled(tiddler, "resave", title);
+		if(bundledErr) return bundledErr;
 		var oldFileInfo = $tw.boot.files && $tw.boot.files[title];
 		if(!oldFileInfo || !oldFileInfo.filepath) {
 			return shared.errorResult("Tiddler has no file on disk (shadow-only): " + title);
@@ -333,14 +334,11 @@ module.exports = {
 			: new $tw.Tiddler(fields, $tw.wiki.getModificationFields());
 		var oldPath = oldFileInfo.filepath;
 		if(args.dry_run) {
-			var fspText = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "");
-			var fseText = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "");
-			var pathFilters = fspText ? fspText.split("\n") : undefined;
-			var extFilters = fseText ? fseText.split("\n") : undefined;
+			var filters = shared.loadFspFseFilters();
 			var previewInfo = $tw.utils.generateTiddlerFileInfo(newTiddler, {
 				directory: $tw.boot.wikiTiddlersPath,
-				pathFilters: pathFilters,
-				extFilters: extFilters,
+				pathFilters: filters.pathFilters,
+				extFilters: filters.extFilters,
 				wiki: $tw.wiki,
 				fileInfo: { overwrite: true }
 			});
@@ -389,10 +387,8 @@ module.exports = {
 		if(!oldTiddler) {
 			return shared.errorResult("Tiddler not found: " + args.from);
 		}
-		var pluginType = oldTiddler.fields["plugin-type"];
-		if(pluginType === "plugin" || pluginType === "theme" || pluginType === "language") {
-			return shared.errorResult("Refusing to rename bundled " + pluginType + ": " + args.from);
-		}
+		var bundledErr = shared.checkNotBundled(oldTiddler, "rename", args.from);
+		if(bundledErr) return bundledErr;
 		var oldFileInfo = $tw.boot.files && $tw.boot.files[args.from];
 		if(oldFileInfo && /\.multids$/i.test(oldFileInfo.filepath)) {
 			return shared.errorResult("Tiddler is bundled in a .multids file, cannot rename individually: " + args.from);
@@ -443,7 +439,6 @@ module.exports = {
 			return shared.errorResult("replace_in_tiddlers: 'rules' must be a non-empty array of {pattern, replacement} objects");
 		}
 		var fields = (args.fields && args.fields.length > 0) ? args.fields : ["text", "caption", "list", "tags"];
-		var scope = args.filter || (args.include_system ? "[all[tiddlers]]" : "[all[tiddlers]!is[system]]");
 		var dryRun = args.dry_run !== false;
 		var maxTiddlers = args.max_tiddlers || 100;
 		var maxReplacementsTotal = args.max_replacements_total || 1000;
@@ -459,27 +454,21 @@ module.exports = {
 			if(rule.pattern.length > shared.MAX_FILTER_LENGTH) {
 				return shared.errorResult("replace_in_tiddlers: rule " + i + " pattern too long (max " + shared.MAX_FILTER_LENGTH + ")");
 			}
-			var caseSensitive = !!rule.case_sensitive;
-			var regexp = !!rule.regexp;
-			var words = !!rule.words;
-			var matcher;
-			try {
-				var src = regexp ? rule.pattern : rule.pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-				if(words) {
-					src = "\\b(?:" + src + ")\\b";
-				}
-				matcher = new RegExp(src, "g" + (caseSensitive ? "" : "i"));
-			} catch(e) {
-				return shared.errorResult("replace_in_tiddlers: rule " + i + " invalid regex: " + e.message);
+			var compiled = shared.compileSearchRegex({
+				pattern: rule.pattern,
+				regexp: !!rule.regexp,
+				words: !!rule.words,
+				caseSensitive: !!rule.case_sensitive,
+				global: true
+			});
+			if(compiled.error) {
+				return shared.errorResult("replace_in_tiddlers: rule " + i + " invalid regex: " + compiled.error);
 			}
-			compiledRules.push({matcher: matcher, replacement: rule.replacement});
+			compiledRules.push({matcher: compiled.matcher, replacement: rule.replacement});
 		}
-		var sourceTitles;
-		try {
-			sourceTitles = $tw.wiki.filterTiddlers(scope);
-		} catch(e) {
-			return shared.errorResult("Filter error: " + e.message);
-		}
+		var scoped = shared.scopedTitles(args);
+		if(scoped.errorResult) return scoped.errorResult;
+		var sourceTitles = scoped.titles;
 		// Scan: per tiddler, per listed field, per line. Replacements within
 		// a line are sequential across rules (rule2 sees rule1's output) so
 		// chained renames work like sed -e ... -e ....

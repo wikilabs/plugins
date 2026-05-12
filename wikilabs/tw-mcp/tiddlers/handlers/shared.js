@@ -275,6 +275,77 @@ function errorResult(msg) {
 	return { isError: true, content: [{ type: "text", text: msg }] };
 }
 
+// Resolve a filter-scope from MCP args and run it. Both replace_in_tiddlers
+// and search_lines need the same default ('[all[tiddlers]!is[system]]' or
+// '[all[tiddlers]]' when include_system) and the same try/catch wrap.
+// Returns {titles, errorResult}. Caller pattern:
+//   var scoped = shared.scopedTitles(args);
+//   if(scoped.errorResult) return scoped.errorResult;
+//   var titles = scoped.titles;
+function scopedTitles(args) {
+	var scope = args.filter || (args.include_system ? "[all[tiddlers]]" : "[all[tiddlers]!is[system]]");
+	try {
+		return { titles: $tw.wiki.filterTiddlers(scope) };
+	} catch(e) {
+		return { errorResult: errorResult("Filter error: " + e.message) };
+	}
+}
+
+// Guard against operating on bundled plugin / theme / language tiddlers.
+// These are constructed from their shadow source tiddlers and shouldn't be
+// rewritten directly. Returns an errorResult to short-circuit the caller,
+// or null when the tiddler is safe to operate on.
+function checkNotBundled(tiddler, action, title) {
+	var kind = tiddler && tiddler.fields["plugin-type"];
+	if(kind === "plugin" || kind === "theme" || kind === "language") {
+		return errorResult("Refusing to " + action + " bundled " + kind + ": " + title);
+	}
+	return null;
+}
+
+// Read $:/config/FileSystemPaths and $:/config/FileSystemExtensions, return
+// as filter arrays. options.filterBlank drops blank/whitespace-only lines
+// from pathFilters (extFilters is never blank-filtered in current callers).
+// Returns {pathFilters, extFilters}, either may be undefined if the config
+// tiddler is missing/empty.
+function loadFspFseFilters(options) {
+	options = options || {};
+	var fspText = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "");
+	var fseText = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "");
+	var pathFilters = fspText ? fspText.split("\n") : undefined;
+	var extFilters = fseText ? fseText.split("\n") : undefined;
+	if(options.filterBlank && pathFilters) {
+		pathFilters = pathFilters.filter(function(l) { return l.trim(); });
+	}
+	return { pathFilters: pathFilters, extFilters: extFilters };
+}
+
+// Compile a search pattern (literal by default; regex when options.regexp).
+// Common across search_lines (query.js), the search-lines filter operator,
+// and replace_in_tiddlers (crud.js).
+// Options:
+//   pattern (required)
+//   regexp: treat as JS regex (default false)
+//   words: wrap matcher with \b boundaries (default false)
+//   caseSensitive: default false (case-insensitive 'i' flag)
+//   global: include 'g' flag (replace_in_tiddlers wants this for multi-match-per-line)
+// Returns {matcher} on success, {error: <message>} on bad pattern.
+function compileSearchRegex(options) {
+	var pattern = options.pattern;
+	try {
+		var src = options.regexp ? pattern : pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		if(options.words) {
+			src = "\\b(?:" + src + ")\\b";
+		}
+		var flags = "";
+		if(options.global) flags += "g";
+		if(!options.caseSensitive) flags += "i";
+		return { matcher: new RegExp(src, flags) };
+	} catch(e) {
+		return { error: e.message };
+	}
+}
+
 // --- File persistence helper (used by put_tiddler and edit_tiddler) ---
 
 function verifyOnDisk(fileInfo, title) {
@@ -323,12 +394,9 @@ function persistTiddler(tiddler, title, action) {
 		}
 	}
 	try {
-		// Read FileSystemPaths / FileSystemExtensions — use getTiddlerText
-		// so shadow tiddlers from the filesystem plugin are picked up too.
-		var fspText = $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "");
-		var fseText = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "");
-		var pathFilters = fspText ? fspText.split("\n") : undefined;
-		var extFilters = fseText ? fseText.split("\n") : undefined;
+		var filters = loadFspFseFilters();
+		var pathFilters = filters.pathFilters;
+		var extFilters = filters.extFilters;
 		// Add to wiki FIRST so FSP filters can evaluate against this
 		// tiddler's tags / fields. Computing fileInfo with the tiddler
 		// not yet in the wiki makes [tag[X]] rules return empty for
@@ -417,6 +485,10 @@ exports.MAX_TITLE_LENGTH = MAX_TITLE_LENGTH;
 exports.checkTitle = checkTitle;
 exports.textResult = textResult;
 exports.errorResult = errorResult;
+exports.scopedTitles = scopedTitles;
+exports.compileSearchRegex = compileSearchRegex;
+exports.loadFspFseFilters = loadFspFseFilters;
+exports.checkNotBundled = checkNotBundled;
 exports.persistTiddler = persistTiddler;
 exports.addToWikiSilently = addToWikiSilently;
 exports.SOURCE_POS_SEPARATOR = SOURCE_POS_SEPARATOR;

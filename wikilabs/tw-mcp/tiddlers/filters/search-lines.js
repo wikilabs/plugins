@@ -31,6 +31,8 @@ merged so each line is emitted at most once.
 
 "use strict";
 
+var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
+
 exports["search-lines"] = function(source, operator, options) {
 	var operand = operator.operand;
 	if(!operand) return [];
@@ -64,18 +66,14 @@ exports["search-lines"] = function(source, operator, options) {
 	if(contextBefore < 0) contextBefore = 0;
 	if(contextAfter < 0) contextAfter = 0;
 	var hasContext = (contextBefore > 0 || contextAfter > 0);
-	var matcher;
-	try {
-		var src = regexp ? operand : operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-		if(words) {
-			// Non-capturing group needed so alternations inside the operand
-			// (e.g. `foo|bar`) word-bound on both sides, not just the outer ends.
-			src = "\\b(?:" + src + ")\\b";
-		}
-		matcher = new RegExp(src, caseSensitive ? "" : "i");
-	} catch(e) {
-		return [];
-	}
+	var compiled = shared.compileSearchRegex({
+		pattern: operand,
+		regexp: regexp,
+		words: words,
+		caseSensitive: caseSensitive
+	});
+	if(compiled.error) return [];
+	var matcher = compiled.matcher;
 	var results = [];
 	source(function(tiddler, title) {
 		if(!tiddler) return;
