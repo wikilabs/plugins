@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.34 - 2026.05.12
+
+* `list_tiddlers` now accepts a `flat: true` argument that returns newline-separated titles instead of the namespace tree summary.
+
 V 0.13.33 - 2026.05.12
 
 * `inspect_scope` now classifies imported variables (those defined in tiddlers brought in via `importvariables`, e.g. TW's page macros) correctly. The "— used globals" and "— other globals" sections of the output now populate as documented, and each imported variable surfaces with its source tiddler (`@$:/core/macros/...`).

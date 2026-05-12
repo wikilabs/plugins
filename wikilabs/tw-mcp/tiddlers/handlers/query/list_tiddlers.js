@@ -28,11 +28,19 @@ module.exports = {
 		}
 		var results = $tw.wiki.filterTiddlers(filter);
 		var total = results.length;
+		var limit = args.limit || 100;
+		var truncated = total > limit;
+		if(args.flat) {
+			var flatList = truncated ? results.slice(0, limit) : results;
+			var flatOut = flatList.join("\n");
+			if(truncated) {
+				flatOut += "\n\n(" + total + " total, showing first " + limit + ")";
+			}
+			return shared.textResult(flatOut);
+		}
 		if(total > 100 && !args.limit) {
 			return shared.textResult(shared.formatTitleTree(results, "tiddlers", total));
 		}
-		var limit = args.limit || 100;
-		var truncated = results.length > limit;
 		if(truncated) {
 			results = results.slice(0, limit);
 		}

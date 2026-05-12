@@ -157,7 +157,7 @@ var readTools = [
 	},
 	{
 		name: "list_tiddlers",
-		description: "List tiddler titles as '/'-namespace tree with common-prefix header (NOT flat list). Filter flags mutually exclusive, priority: plugin > overwrittenShadows > tag > includeSystem (only highest applies). limit caps result.",
+		description: "Namespace tree summary of tiddler titles with common-prefix header. flat:true returns newline-separated titles instead. Filter flags mutually exclusive, priority: plugin > overwrittenShadows > tag > includeSystem (only highest applies). limit caps result (default 100, truncation footer when exceeded).",
 		inputSchema: {
 			type: "object",
 			properties: {
@@ -165,7 +165,8 @@ var readTools = [
 				plugin: { type: "string", description: "List plugin subtiddlers" },
 				overwrittenShadows: { type: "boolean", default: false },
 				limit: { type: "number", default: 100 },
-				includeSystem: { type: "boolean", default: false }
+				includeSystem: { type: "boolean", default: false },
+				flat: { type: "boolean", default: false, description: "Return raw newline-separated titles instead of namespace tree summary" }
 			},
 			required: []
 		}
