@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/multicol-dropdown/history
 
+V 1.0.4 - 2026-05-14
+
+* Scope the multi-column grid to `.tc-block-tags-dropdown` only (the tag picker), instead of every `.tc-block-dropdown`.
+
 V 1.0.3 - 2024-05-23
 
 * Add stability badges

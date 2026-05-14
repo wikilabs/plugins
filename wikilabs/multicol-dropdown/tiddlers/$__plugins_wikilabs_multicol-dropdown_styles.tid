@@ -4,26 +4,24 @@ type: text/plain
 
 /* concept used from: http://fourkitchens.com/blog/article/responsive-multi-column-lists-flexbox */
 
-.tc-block-dropdown {
+/* Scope: only the tag picker dropdown (.tc-block-tags-dropdown), which is the
+   intended target. Other .tc-block-dropdown variants (edit-type, fields,
+   advanced-search filters, keyboard shortcuts) keep core's default layout. */
+
+.tc-block-tags-dropdown {
   display: flex;
   flex-wrap: wrap;
   padding: 3px;
   background: #eee;
 }
 
-.tc-dropdown-item {
-  flex: 1 0 100%;
-  margin-left: 2px;
-  margin-top: 2px;
-}
-
-.tc-block-dropdown a{
+.tc-block-tags-dropdown a {
   flex: 1 0 calc(33% - 2px);
   margin-left: 2px;
   margin-top: 2px;
 }
 
-.tc-block-dropdown .tc-tag-button-selected {
+.tc-block-tags-dropdown .tc-tag-button-selected {
   background: <<colour primary>>;
 }
 
