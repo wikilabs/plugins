@@ -1,0 +1,14 @@
+title: $:/wikilabs/ui/TiddlerInfo/TagMap/ItemTemplate
+
+\whitespace trim
+<div class="tc-menu-list-item">
+	<$link to=<<currentTiddler>>>
+		<$view field="title"/>
+	</$link>
+	<%if [<currentTiddler>has:field[list-before]] %>
+		<span class="wltc-list-pos" title={{{ [<currentTiddler>get[list-before]!is[blank]else[list-before]] }}}>↑</span>
+	<%endif%>
+	<%if [<currentTiddler>has:field[list-after]] %>
+		<span class="wltc-list-pos" title={{{ [<currentTiddler>get[list-after]!is[blank]else[list-after]] }}}>↓</span>
+	<%endif%>
+</div>

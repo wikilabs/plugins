@@ -1,17 +1,30 @@
 title: $:/wikilabs/ui/TiddlerInfo/TagMap/Styles
 tags: $:/tags/Stylesheet
-type: text/plain
+type: text/vnd.tiddlywiki
 
 .flexbox {
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  overflow: hidden;
-  flex-direction: row;
-  flex-flow: row wrap;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
+	overflow: hidden;
+	flex-direction: row;
+	flex-flow: row wrap;
 }
 
 .flexbox .col {
-  flex: 1 1 33%;
-  margin-bottom: 1em;
+	flex: 1 1 33%;
+	margin-bottom: 1em;
 }
+
+<$let wltcBg=<<colour tag-background>> wltcColA=<<colour foreground>> wltcColB=<<colour background>>>
+	<$wikify name="wltcFg" text="""<$macrocall $name="contrastcolour" target=<<wltcBg>> fallbackTarget=<<wltcBg>> colourA=<<wltcColA>> colourB=<<wltcColB>>/>""">
+		.wltc-list-pos {
+			font-size: 0.85em;
+			margin-left: 0.5em;
+			padding: 0 0.4em;
+			border-radius: 4px;
+			background: <<wltcBg>>;
+			color: <<wltcFg>>;
+		}
+	</$wikify>
+</$let>

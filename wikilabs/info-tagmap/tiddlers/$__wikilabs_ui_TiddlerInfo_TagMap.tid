@@ -10,7 +10,7 @@ caption: Tag Map
 				<$transclude tiddler="$:/core/ui/ListItemTemplate"/>
 			</span>
 			<hr>
-			<$list filter="[all[current]tagging[]]" template="$:/core/ui/ListItemTemplate" />
+			<$list filter="[all[shadows+tiddlers]!is[draft]sort[title]tag<currentTiddler>]" template="$:/wikilabs/ui/TiddlerInfo/TagMap/ItemTemplate"/>
 		</div>
 	</$list>
 </div>

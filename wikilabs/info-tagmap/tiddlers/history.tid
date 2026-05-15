@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/info-tagmap/history
 
+V 0.3.0 - 2026-05-15
+
+* Tagged items in the Tag Map now show a ↑ / ↓ badge when they carry a `list-before` or `list-after` field. Hover the badge to see the field value.
+* Inner list switched to alphabetical sort with `list-before` / `list-after` positional fields applied via `tag[]`.
+
 V 0.2.2 - 2024-05-23
 
 * Add stability badges
