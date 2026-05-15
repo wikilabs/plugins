@@ -9,29 +9,29 @@ type: text/plain
    advanced-search filters, keyboard shortcuts) keep core's default layout. */
 
 .tc-block-tags-dropdown {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 3px;
-  background: #eee;
+	display: flex;
+	flex-wrap: wrap;
+	padding: 3px;
+	background: #eee;
 }
 
 .tc-block-tags-dropdown a {
-  flex: 1 0 calc(33% - 2px);
-  margin-left: 2px;
-  margin-top: 2px;
+	flex: 1 0 calc(33% - 2px);
+	margin-left: 2px;
+	margin-top: 2px;
 }
 
 .tc-block-tags-dropdown .tc-tag-button-selected {
-  background: <<colour primary>>;
+	background: <<colour primary>>;
 }
 
 .tc-search-results {
-  width: 100%;
+	width: 100%;
 }
 
 /* TODO this is needed, since otherwise the search results show an artefact */
 /* This is already part of the reset.css .. but it has no effect .. bug? */
 
 [hidden] {
-  display: none;
+	display: none;
 }
