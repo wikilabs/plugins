@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/info-tagmap/history
 
+V 0.4.0 - 2026-05-15
+
+* Per-column padlock protects `list-before` / `list-after` fields; click to unlock drag-and-drop sorting.
+* Badge tooltip now reads `list-before: <value>` instead of just the value.
+
 V 0.3.0 - 2026-05-15
 
 * Tagged items in the Tag Map now show a ↑ / ↓ badge when they carry a `list-before` or `list-after` field. Hover the badge to see the field value.

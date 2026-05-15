@@ -5,12 +5,36 @@ caption: Tag Map
 \whitespace trim
 <div class="flexbox">
 	<$list filter="[all[current]tags[]sort[title]]" emptyMessage="This tiddler has no tags">
-		<div class="col">
-			<span class="tc-tag-label">
-				<$transclude tiddler="$:/core/ui/ListItemTemplate"/>
-			</span>
-			<hr>
-			<$list filter="[all[shadows+tiddlers]!is[draft]sort[title]tag<currentTiddler>]" template="$:/wikilabs/ui/TiddlerInfo/TagMap/ItemTemplate"/>
-		</div>
+		<$let
+			hasPositional={{{ [all[shadows+tiddlers]!is[draft]tag<currentTiddler>has:field[list-before]] [all[shadows+tiddlers]!is[draft]tag<currentTiddler>has:field[list-after]] +[first[]] }}}
+			lockState={{{ [[$:/state/wikilabs/info-tagmap/unlocked/]addsuffix<currentTiddler>] }}}
+		>
+			<div class="col">
+				<span class="tc-tag-label">
+					<$transclude tiddler="$:/core/ui/ListItemTemplate"/>
+				</span>
+				<%if [<hasPositional>!is[blank]] %>
+					<%if [<lockState>get[text]match[yes]] %>
+						<$button set=<<lockState>> setTo="" tooltip="Lock to disable drag-and-drop sorting (preserves list-before / list-after fields)" class="tc-btn-invisible tc-small-gap-left">
+							{{$:/core/images/unlocked-padlock}}
+						</$button>
+					<%else%>
+						<$button set=<<lockState>> setTo="yes" tooltip="Unlock to enable drag-and-drop sorting (will clear list-before / list-after on the first drop)" class="tc-btn-invisible tc-small-gap-left">
+							{{$:/core/images/locked-padlock}}
+						</$button>
+					<%endif%>
+				<%endif%>
+				<hr>
+				<%if [<hasPositional>!is[blank]] %>
+					<%if [<lockState>get[text]match[yes]] %>
+						<$macrocall $name="list-tagged-draggable" tag=<<currentTiddler>> subFilter="!is[draft]" itemTemplate="$:/wikilabs/ui/TiddlerInfo/TagMap/ItemTemplate"/>
+					<%else%>
+						<$list filter="[all[shadows+tiddlers]!is[draft]sort[title]tag<currentTiddler>]" template="$:/wikilabs/ui/TiddlerInfo/TagMap/ItemTemplate"/>
+					<%endif%>
+				<%else%>
+					<$macrocall $name="list-tagged-draggable" tag=<<currentTiddler>> subFilter="!is[draft]" itemTemplate="$:/wikilabs/ui/TiddlerInfo/TagMap/ItemTemplate"/>
+				<%endif%>
+			</div>
+		</$let>
 	</$list>
 </div>
