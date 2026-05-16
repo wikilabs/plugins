@@ -485,6 +485,16 @@ function verifyOnDisk(fileInfo, title) {
 	}
 }
 
+// TW core's $:/config/SaverFilter selects what gets persisted to disk;
+// the default exclusions cover $:/HistoryList, $:/StoryList, $:/state/*
+// and $:/temp/*. Returns true when `title` is in the saveable set.
+function shouldPersistToDisk(title) {
+	var filterText = $tw.wiki.getTiddlerText("$:/config/SaverFilter");
+	if(!filterText) { return true; }
+	var allowed = $tw.wiki.filterTiddlers(filterText);
+	return allowed.indexOf(title) !== -1;
+}
+
 function persistTiddler(tiddler, title, action) {
 	var checkPathAllowed = getCheckPathAllowed();
 	if(!$tw.boot.wikiTiddlersPath) {
@@ -523,6 +533,13 @@ function persistTiddler(tiddler, title, action) {
 		// path. Net result: duplicate files for the same tiddler when
 		// FSP uses tag-based rules.
 		$tw.wiki.addTiddler(tiddler);
+		// TW core's $:/config/SaverFilter is the canonical "what to persist"
+		// list. It excludes $:/HistoryList, $:/StoryList, $:/state/*,
+		// $:/temp/* and a few others. Honor it so MCP writes don't leak
+		// per-tab UI state into the wiki's tiddler folder.
+		if(!shouldPersistToDisk(title)) {
+			return textResult("Tiddler " + action + " in store only (excluded by $:/config/SaverFilter): " + title);
+		}
 		// Compute filepath. overwrite:true so the uniquifier doesn't pick
 		// a _1/_2 suffix for an existing target file.
 		var baseFileInfo = oldFileInfo ? $tw.utils.extend({}, oldFileInfo) : {};
