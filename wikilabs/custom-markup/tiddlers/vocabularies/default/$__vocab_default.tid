@@ -1,0 +1,6 @@
+title: $:/vocab/default
+tags: $:/tags/CustomMarkup/Vocabulary
+caption: Default
+description: v1 default Custom-Markup vocabulary (4 block markers, 3 inline-pair markers).
+marker-tag: Vocab/Default
+version: 0.1.0

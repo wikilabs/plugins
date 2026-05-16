@@ -1,0 +1,10 @@
+title: vocab/default/SINGLE
+tags: $:/tags/CustomMarkup/Marker [[Vocab/Default]]
+caption: Single
+open: ›
+kind: glyph-level
+max-level: 4
+mode: block
+classes: .wltc-single
+legacy-kind: single
+description: Paragraph block with multi-level support, distinct default classes from angle.

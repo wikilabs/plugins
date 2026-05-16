@@ -76,6 +76,10 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		allowSymbol: f["allow-symbol"] !== "no",
 		allowClasses: f["allow-classes"] === "yes",
 		maxLevel: parseInt(f["max-level"] || "4", 10) || 4,
+		// legacy-kind: friendly name from the v0.x plugin (tick, degree, angle,
+		// approx, pilcrow, single, corner, braille, slash). Lets the legacy
+		// `\custom degree=foo` pragma resolve to the right marker.
+		legacyKind: f["legacy-kind"] || "",
 		caption: f.caption || title,
 		description: f.description || "",
 		symbols: Object.create(null)
@@ -91,6 +95,19 @@ CmRegistry.prototype.registerSymbol = function(openLiteral, symbol, config) {
 
 CmRegistry.prototype.findByOpen = function(literal) {
 	return this.markers[literal] || null;
+};
+
+// Look up a marker by its open literal, or by its legacy-kind name (tick,
+// degree, etc.). Used by the \custom pragma so legacy `degree=foo` syntax
+// keeps resolving after the kind-name layer was retired.
+CmRegistry.prototype.findByOpenOrLegacyKind = function(name) {
+	if(this.markers[name]) { return this.markers[name]; }
+	for(var key in this.markers) {
+		if(this.markers[key].legacyKind === name) {
+			return this.markers[key];
+		}
+	}
+	return null;
 };
 
 CmRegistry.prototype.list = function(predicate) {

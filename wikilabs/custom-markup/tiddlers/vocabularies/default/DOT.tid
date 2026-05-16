@@ -1,0 +1,9 @@
+title: vocab/default/DOT
+tags: $:/tags/CustomMarkup/Marker [[Vocab/Default]]
+caption: Dot
+open: .
+kind: glyph
+mode: block
+classes: .wltc-dot
+allow-symbol: no
+description: Paragraph block, no symbol. Class chain syntax is `..cls`. Avoids prose collisions like `.NET` or `.com` (allow-symbol off plus strict-class regex).

@@ -3,77 +3,76 @@ title: $:/plugins/wikilabs/custom-markup/wikirules/pragmas/import-custom.js
 type: application/javascript
 module-type: wikirule
 
-Wiki pragma rule to import pragmas from other tiddlers
+Wiki pragma rule to import Custom-Markup definitions from other tiddlers.
 
 ```
-\importcustom [[pragma-global]] ... filter
+\importcustom [tag[$:/tags/Pragma]]
+\importcustom [tag[Vocab/Presentation]]
 ```
+
+The filter result can mix legacy `\custom`-pragma tiddlers (parsed for
+their pragmas) and modern marker tiddlers (have `open` and `kind` fields,
+loaded directly into the registry).
 
 \*/
-(function(){
 
-/*jslint node: true, browser: true */
-/*global $tw:false, exports:false*/
 "use strict";
 
 exports.name = "importcustom";
 exports.types = {pragma: true};
 
 var idTypes = ["tick", "single", "degree", "angle", "approx", "pilcrow", "corner", "braille", "slash"];
-/*
-Instantiate parse rule
-*/
+
 exports.init = function(parser) {
 	var self = this;
 	this.parser = parser;
-	// Regexp to match
 	this.matchRegExp = /^\\importcustom[^\S\n]/mg;
-	
+
 	this.p = this.parser;
-	this.p.configTickText = this.p.configTickText  || {};
-	
+	this.p.configTickText = this.p.configTickText || {};
 	this.pc = this.p.configTickText;
-	
-	idTypes.map( function(id) {
+
+	idTypes.forEach(function(id) {
 		self.pc[id] = self.pc[id] || {};
-	})
+	});
 };
 
-/*
-Parse the most recent match
-*/
 exports.parse = function() {
-	var self = this,
-		filter,
-		tiddlerList;
-
-	// Move past the pragma invocation
+	var self = this;
 	this.parser.pos = this.matchRegExp.lastIndex;
-	// Parse line terminated by a line break
 	var reMatch = /(.*)\r?\n?|$/mg;
 	reMatch.lastIndex = this.parser.pos;
 	var match = reMatch.exec(this.parser.source);
 	this.parser.pos = reMatch.lastIndex;
-	
-	if (match) {
-		filter = match[1];
-		tiddlerList = $tw.wiki.filterTiddlers(filter);
-	}
 
-	$tw.utils.each(tiddlerList,function(title) {
+	if(!match) { return []; }
+	var filter = match[1];
+	var tiddlerList = $tw.wiki.filterTiddlers(filter);
+
+	$tw.utils.each(tiddlerList, function(title) {
+		var t = $tw.wiki.getTiddler(title);
+		if(!t) { return; }
+		// Modern path: tiddler is a marker definition (has open + kind)
+		if(t.fields.open && t.fields.kind && self.parser.cmRegistry) {
+			var config = self.parser.cmRegistry.parseMarkerTiddler(title);
+			if(config && config.open) {
+				self.parser.cmRegistry.markers[config.open] = config;
+				self.parser.cmRegistry.dirty = true;
+			}
+			return;
+		}
+		// Legacy path: parse the tiddler's text and harvest its pragmas
 		var pragmaInParser = $tw.wiki.parseText("text/vnd.tiddlywiki", $tw.wiki.getTiddlerText(title));
-		
-		idTypes.map( function(id) {
-			pragmaInParser.configTickText[id];
-			Object.keys(pragmaInParser.configTickText[id]).map(function (key) {
-				pragmaInParser.configTickText[id][key].imported = true;
-			})
-			$tw.utils.extend(self.pc[id], pragmaInParser.configTickText[id]);
-		})
+		if(!pragmaInParser || !pragmaInParser.configTickText) { return; }
+		idTypes.forEach(function(id) {
+			var imported = pragmaInParser.configTickText[id];
+			if(!imported) { return; }
+			Object.keys(imported).forEach(function(key) {
+				imported[key].imported = true;
+			});
+			$tw.utils.extend(self.pc[id], imported);
+		});
 	});
 
-	// No parse tree nodes to return
 	return [];
 };
-
-})();

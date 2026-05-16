@@ -1,0 +1,9 @@
+title: vocab/default/BRAILLE
+tags: $:/tags/CustomMarkup/Marker [[Vocab/Default]]
+caption: Braille
+open: ⠒
+close: ⠶
+kind: inline-pair
+classes: .wltc-braille
+legacy-kind: braille
+description: Inline wrap with distinct default classes. Niche; kept for legacy compatibility and visual variety.
