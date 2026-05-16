@@ -25,7 +25,7 @@ title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 
 \define idSelector()
 <$tiddler tiddler="$:/config/edit/linePrefix">
-	<$list filter="[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]!field:kind[inline-pair]!field:kind[word]sort[caption]]" variable="markerTitle">
+	<$list filter="[{$:/HistoryList!!current-tiddler}cm-active-markers[block]sort[caption]]" variable="markerTitle">
 		<$set name="open" value={{{ [<markerTitle>get[open]] }}}>
 			<$set name="markerName" value={{{ [<markerTitle>get[legacy-kind]] ~[<markerTitle>splitregexp[/]last[]lowercase[]] }}}>
 				<$wl-radio field="id" value=<<open>> actions=<<selectID>> name=<<markerName>>> <code><$text text=<<open>>/></code> </$wl-radio>|

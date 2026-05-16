@@ -1,5 +1,13 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-2 - 2026-05-16
+
+* Editor toolbar dropdowns filter by the active vocabulary for the tiddler being edited (vocabs come from the `;vocab=` parameter on the type field; defaults to Vocab/Default).
+* New `cm-active-markers` filter operator: `[<tiddler>cm-active-markers[block|inline|word]]` returns marker titles active for that tiddler.
+* Inline-pair dropdown lists `/° °/` first (SLASH gets `order: 1`; sort chain `sort[caption]!sort[order]`).
+
+------
+
 V 1.0.0-beta-1 - 2026-05-16
 
 ! Breaking changes in V1.0.0-beta-1
