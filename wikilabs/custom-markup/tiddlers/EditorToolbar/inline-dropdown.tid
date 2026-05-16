@@ -4,7 +4,7 @@ type: text/vnd.tiddlywiki
 \define getConfigName() $:/plugins/wikilabs/custom-markup/icons/inline/$(__name__)$
 
 \define selectID()
-<$action-createtiddler 
+<$action-createtiddler
 	$basetitle="$:/config/wikilabs/custom-markup/icons/inline/active"
 	$overwrite="yes" $template=<<getConfigName>>
 />
@@ -29,9 +29,15 @@ type: text/vnd.tiddlywiki
 
 \define idSelector()
 <$tiddler tiddler="$:/config/edit/inlinePrefix/xx">
-	<$wl-radio field="id" value="/°" actions=<<selectID>> name="slash"> `/°..°/` </$wl-radio>|
-	<$wl-radio field="id" value="⠒" actions=<<selectID>> name="braille"> `⠒..⠶` </$wl-radio>|
-	<$wl-radio field="id" value="❮" actions=<<selectID>> name="corner"> `❮..❯` </$wl-radio>|
+	<$list filter="[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:kind[inline-pair]sort[open]]" variable="markerTitle">
+		<$set name="open" value={{{ [<markerTitle>get[open]] }}}>
+			<$set name="close" value={{{ [<markerTitle>get[close]] }}}>
+				<$set name="markerName" value={{{ [<markerTitle>get[legacy-kind]] ~[<markerTitle>splitregexp[/]last[]lowercase[]] }}}>
+					<$wl-radio field="id" value=<<open>> actions=<<selectID>> name=<<markerName>>> <code><$text text=<<open>>/>..<$text text=<<close>>/></code> </$wl-radio>|
+				</$set>
+			</$set>
+		</$set>
+	</$list>
 </$tiddler>
 \end
 
@@ -42,7 +48,7 @@ type: text/vnd.tiddlywiki
 
 <$view tiddler=<<inlinePrefix>> field="title" mode="inline"/>
 
-</$transclude> 
+</$transclude>
 
 <$reveal tag="span" stateTitle="$:/config/edit/inlinePrefix" stateField=name type="match" text=<<inlinePrefix>> default="XXXXX">
 
@@ -76,12 +82,12 @@ Select inline glyph -- <$macrocall $name=idSelector />
 	tags="$:/tags/TextEditor/InlinePrefix"
 	type="application/x-tiddler-dictionary"
 	caption="New Inline Prefix"
-	text="prefix: 
+	text="prefix:
 suffix: "
 />
 
-<$action-deletetiddler 
-	$tiddler=<<dropdown-state>> 
+<$action-deletetiddler
+	$tiddler=<<dropdown-state>>
 />
 
 <em>
