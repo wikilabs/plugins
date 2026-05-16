@@ -1,9 +1,8 @@
 {
 	"title": "$:/plugins/wikilabs/custom-markup",
 	"name": "Custom Markup",
-	"description": "Adds a possibilty to style text content with wikitext syntax",
-	"dependents": ["$:/plugins/wikilabs/pragma-comment"],
-	"version": "0.22.1-beta",
+	"description": "Vocabularies of marker tiddlers let you build your own DSL on top of wikitext. Activate per tiddler via the type field or via \\importcustom.",
+	"version": "1.0.0-beta-1",
 	"list": "readme license history",
 	"stability": "STABILITY_1_EXPERIMENTAL"
 }

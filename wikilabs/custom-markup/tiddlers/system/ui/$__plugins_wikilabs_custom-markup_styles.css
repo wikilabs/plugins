@@ -189,3 +189,25 @@ td ul, td ol {
   margin:  .5rem 0;
   padding-left: 2rem;
 }
+
+/*------------------------------------------*/
+/* Per-glyph hooks (Vocab/Default)          */
+/* Override in your own stylesheet to color */
+/* or style specific markers.               */
+
+.wltc-degree { /* ° block paragraph */ }
+.wltc-dot { /* . prose-safe block */ }
+.wltc-angle { /* » multi-level block */ }
+.wltc-single { /* › multi-level block */ }
+.wltc-slash { /* /° ... °/ inline */ }
+.wltc-corner { /* ❮ ... ❯ inline */ }
+.wltc-braille { /* ⠒ ... ⠶ inline */ }
+
+/*------------------------------------------*/
+/* Per-glyph hooks (Vocab/Legacy-Glyphs)    */
+/* Opt in via type=text/vnd.tiddlywiki;     */
+/*           vocab=Default,Legacy-Glyphs    */
+
+.wltc-tick-legacy { /* ´ inline */ }
+.wltc-approx-legacy { /* ≈ multi-level block */ }
+.wltc-pilcrow-legacy { /* ¶ multi-level block */ }
