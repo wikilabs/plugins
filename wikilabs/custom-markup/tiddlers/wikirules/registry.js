@@ -17,6 +17,13 @@ var VOCAB_TAG = "$:/tags/CustomMarkup/Vocabulary";
 var CmRegistry = function(wiki) {
 	this.wiki = wiki;
 	this.markers = Object.create(null);
+	// `active` tracks which marker open literals are currently enabled
+	// for this parser. The regex always contains EVERY known marker, but
+	// only active ones produce element output (the parse function emits
+	// plain text for inactive matches). This decoupling is what lets
+	// pragmas (\importcustom) activate vocabularies after parser init,
+	// without falling foul of TW's rule-pruning at instantiateRules time.
+	this.active = Object.create(null);
 	this.blockRegex = null;
 	this.inlineRegex = null;
 	this.dirty = true;
@@ -34,7 +41,17 @@ CmRegistry.prototype.addFromFilter = function(filterExpr) {
 	this.dirty = true;
 };
 
-CmRegistry.prototype.addVocabulary = function(name) {
+// Load every marker tiddler in the wiki into the registry. The regex will
+// then cover all known markers; whether they actually fire is decided by
+// the `active` set (see activate()).
+CmRegistry.prototype.loadAllMarkers = function() {
+	this.addFromFilter("[all[shadows+tiddlers]tag[" + MARKER_TAG + "]]");
+};
+
+// Activate a vocabulary by name. Adds the open literal of every marker
+// tagged with that vocabulary's marker-tag to the active set. Markers
+// must already be loaded (via loadAllMarkers).
+CmRegistry.prototype.activate = function(name) {
 	var titles = this.wiki.filterTiddlers(
 		"[all[shadows+tiddlers]tag[" + VOCAB_TAG + "]field:caption[" + name + "]]"
 	);
@@ -43,8 +60,36 @@ CmRegistry.prototype.addVocabulary = function(name) {
 	if(!meta) { return false; }
 	var markerTag = meta.fields["marker-tag"];
 	if(!markerTag) { return false; }
-	this.addFromFilter("[all[shadows+tiddlers]tag[" + markerTag + "]]");
+	var markerTitles = this.wiki.filterTiddlers("[all[shadows+tiddlers]tag[" + markerTag + "]]");
+	var self = this;
+	markerTitles.forEach(function(title) {
+		var t = self.wiki.getTiddler(title);
+		if(t && t.fields.open) {
+			self.active[t.fields.open] = true;
+		}
+	});
 	return true;
+};
+
+CmRegistry.prototype.isActive = function(open) {
+	return !!this.active[open];
+};
+
+// Parse a content-type string like `text/vnd.tiddlywiki;vocab=A,B,C` and
+// activate the listed vocabularies. Without a `;vocab=` parameter, falls
+// back to `Default`.
+CmRegistry.prototype.activateFromTypeField = function(typeStr) {
+	var match = /;\s*vocab\s*=\s*([^;]+)/.exec(typeStr || "");
+	if(!match) {
+		this.activate("Default");
+		return;
+	}
+	var names = match[1].split(",");
+	var self = this;
+	names.forEach(function(raw) {
+		var name = raw.trim();
+		if(name) { self.activate(name); }
+	});
 };
 
 CmRegistry.prototype.parseMarkerTiddler = function(title) {

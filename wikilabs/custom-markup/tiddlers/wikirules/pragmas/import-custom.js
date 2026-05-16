@@ -52,13 +52,12 @@ exports.parse = function() {
 	$tw.utils.each(tiddlerList, function(title) {
 		var t = $tw.wiki.getTiddler(title);
 		if(!t) { return; }
-		// Modern path: tiddler is a marker definition (has open + kind)
+		// Modern path: tiddler is a marker definition (has open + kind).
+		// Markers are already preloaded into the registry at init time, so
+		// we just need to activate this marker's open literal so it actually
+		// fires (rather than emitting plain text).
 		if(t.fields.open && t.fields.kind && self.parser.cmRegistry) {
-			var config = self.parser.cmRegistry.parseMarkerTiddler(title);
-			if(config && config.open) {
-				self.parser.cmRegistry.markers[config.open] = config;
-				self.parser.cmRegistry.dirty = true;
-			}
+			self.parser.cmRegistry.active[t.fields.open] = true;
 			return;
 		}
 		// Legacy path: parse the tiddler's text and harvest its pragmas

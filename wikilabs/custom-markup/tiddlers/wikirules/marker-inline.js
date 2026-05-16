@@ -17,7 +17,9 @@ exports.init = function(parser) {
 	this.parser = parser;
 	if(!parser.cmRegistry) {
 		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
-		parser.cmRegistry.addFromFilter("[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]]");
+		// See marker-block.js for why all markers are loaded at init.
+		parser.cmRegistry.loadAllMarkers();
+		parser.cmRegistry.activateFromTypeField(parser.type);
 	}
 	this.matchRegExp = parser.cmRegistry.getInlineRegex() || /(?!)/g;
 };
@@ -29,6 +31,12 @@ exports.parse = function() {
 	if(!marker) {
 		this.parser.pos = this.matchRegExp.lastIndex;
 		return [];
+	}
+	// Vocabulary scoping: emit matched text as plain text if the marker's
+	// open isn't in any active vocabulary for this parser.
+	if(!registry.isActive(marker.open)) {
+		this.parser.pos = this.matchRegExp.lastIndex;
+		return [{type: "text", text: matchText}];
 	}
 	var parsed = parseMatchTail(matchText, marker);
 	this.parser.pos = this.matchRegExp.lastIndex;
