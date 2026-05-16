@@ -6,7 +6,7 @@ V 1.0.0-beta-1 - 2026-05-16
 
 * Markers are now tiddlers tagged `$:/tags/CustomMarkup/Marker`, grouped into vocabularies (`Vocab/<Name>`). Default vocabulary ships `°` `.` `»` `›` (block) and `/° °/`, `❮ ❯`, `⠒ ⠶` (inline-pair). Activate extra vocabularies per tiddler via `type=text/vnd.tiddlywiki;vocab=Default,Legacy-Glyphs` or via `\importcustom [tag[Vocab/X]]`.
 * `´` `≈` `¶` moved to opt-in `Vocab/Legacy-Glyphs`. To keep using them, add `;vocab=Default,Legacy-Glyphs` to the tiddler's type field.
-* `°` and `›` now default to blank-line termination (was single-newline). Back-to-back `°foo` `°bar` lines join into one block. Set `end-string: \n` on the marker tiddler or use `\custom degree=foo _endString="\n"` to restore the old behaviour.
+* `°` and `›` now default to blank-line termination (was single-newline). Back-to-back `°foo` `°bar` lines join into one block. Set `mode: inline` on the marker tiddler or use `\custom degree=foo _mode=inline` to restore the old single-newline behaviour.
 * Editor toolbar dropdowns iterate marker tiddlers; new vocabularies appear automatically.
 * New `word` marker kind enables Fountain-flavoured DSLs. `Vocab/Presentation` (in editions) wraps the Reveal.js plugin: `PRESENTATION` / `CUT TO:` / `ANIMATE TO:` / `FADE IN:` / `FADE OUT.`.
 * `\custom <kind>=<symbol>` pragma is preserved as an in-tiddler escape hatch and bridges into the new registry via each marker's `legacy-kind` field.
