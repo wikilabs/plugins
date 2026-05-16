@@ -4,7 +4,7 @@ caption: Single
 open: ›
 kind: glyph-level
 max-level: 4
-mode: block
+mode: inline
 classes: .wltc-single
 legacy-kind: single
 description: Paragraph block with multi-level support, distinct default classes from angle.

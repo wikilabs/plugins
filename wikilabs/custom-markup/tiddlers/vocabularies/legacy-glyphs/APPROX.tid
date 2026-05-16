@@ -4,7 +4,7 @@ caption: Approx (legacy)
 open: ≈
 kind: glyph-level
 max-level: 4
-mode: block
+mode: inline
 element: p
 classes: .wltc-approx-legacy
 legacy-kind: approx

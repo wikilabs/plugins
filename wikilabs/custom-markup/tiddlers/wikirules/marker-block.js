@@ -44,6 +44,7 @@ exports.parse = function() {
 		this.parser.pos = this.matchRegExp.lastIndex;
 		return [{type: "text", text: matchText}];
 	}
+	var textStart = this.match.index;
 	var parsed = parseMatchTail(matchText, marker);
 	this.parser.pos = this.matchRegExp.lastIndex;
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
@@ -51,8 +52,53 @@ exports.parse = function() {
 	var config = resolveConfig(marker, parsed.symbol, parsed.classes, parsed.level);
 	config.quotedArgs = parsed.quotedArgs;
 	var children = parseBody(this.parser, config);
-	return [buildNode(config, children, this.parser.source, contentStart, this.parser.pos)];
+	var textEnd = this.parser.pos;
+	var nodes = [];
+	if(config.debug && config.debug !== "no") {
+		// Strip the trailing terminator (newline or blank-line) that
+		// eatTerminator consumed, so the debug `text` codeblock matches
+		// v0.x's clean per-marker source slice.
+		var textOuter = this.parser.source.slice(textStart, textEnd).replace(/(?:\r?\n)+$/, "");
+		nodes = nodes.concat(buildDebugNodes(config.debug, config.debugString || "", textOuter));
+	}
+	if(!isDebugRenderSuppressed(config.debug)) {
+		nodes.push(buildNode(config, children, this.parser.source, contentStart, textEnd));
+	}
+	return nodes;
 };
+
+// `_debug` modes from v0.x (glyph-text.js / glyph-inline.js):
+//   pragma (default), pragmaOnly, text, textOnly, both, no.
+// `*Only` variants suppress the normal render. `both` shows both code blocks.
+function buildDebugNodes(debug, debugString, textOuter) {
+	var nodes = [];
+	switch(debug) {
+		case "both":
+			nodes.push(codeblockNode(debugString));
+			nodes.push(codeblockNode(textOuter));
+			break;
+		case "text":
+		case "textOnly":
+			nodes.push(codeblockNode(textOuter));
+			break;
+		case "pragmaOnly":
+		case "pragma":
+		default:
+			nodes.push(codeblockNode(debugString));
+	}
+	return nodes;
+}
+
+function isDebugRenderSuppressed(debug) {
+	return debug === "textOnly" || debug === "pragmaOnly";
+}
+
+function codeblockNode(text) {
+	return {
+		type: "codeblock",
+		attributes: {code: {type: "string", value: text || ""}}
+	};
+}
 
 function identifyMarker(matchText, registry) {
 	var markers = registry.list();
@@ -123,17 +169,12 @@ function resolveConfig(marker, symbol, classes, level) {
 		srcName: marker.srcName,
 		userClasses: classes
 	};
-	if(marker.symbols && marker.symbols[symbol]) {
-		// Symbol override (also fires for bare-kind pragmas registered at
-		// the empty-string key, e.g. `\custom angle _element=td`).
-		var sym = marker.symbols[symbol];
-		if(sym.element) { config.element = sym.element; }
-		if(sym.endString !== undefined) { config.endString = sym.endString; }
-		if(sym.classes) { config.classes = config.classes + sym.classes; }
-		if(sym.mode) { config.mode = sym.mode; }
-		if(sym.srcName) { config.srcName = sym.srcName; }
-		if(sym.attributes) { config.attributes = $tw.utils.extend({}, config.attributes, sym.attributes); }
-		if(sym.params) { config.params = sym.params; }
+	var sym = lookupSymbol(marker, symbol);
+	if(sym) {
+		// Follow `_use` / `_useGlobal` aliases. Errors are surfaced via
+		// the debug-codeblock path in parse().
+		sym = followUse(marker, sym);
+		applySymbolToConfig(config, sym);
 	} else if(symbol && marker.allowSymbol) {
 		// HTML-element fallback: any HTML element name overrides the default
 		var cmInline = ($tw.config.cmInlineElements || []).indexOf(symbol) !== -1;
@@ -146,13 +187,68 @@ function resolveConfig(marker, symbol, classes, level) {
 	return config;
 }
 
+function lookupSymbol(marker, symbol) {
+	if(marker.symbols && marker.symbols[symbol]) { return marker.symbols[symbol]; }
+	if(marker.globalSymbols && marker.globalSymbols[symbol]) { return marker.globalSymbols[symbol]; }
+	return null;
+}
+
+// Resolve `_use` (local-only alias) and `_useGlobal` (global-only alias)
+// chains. Mirrors v0.x's pc[id][sym]._use / _useGlobal semantics with the
+// current pragma's overrides extending the target.
+function followUse(marker, sym) {
+	if(sym.use) {
+		var localTarget = marker.symbols && marker.symbols[sym.use];
+		if(localTarget) {
+			return mergeSymbol(localTarget, sym, "use");
+		}
+		// Target not defined: surface as a debug error.
+		return $tw.utils.extend({}, sym, {
+			debug: sym.debug || "pragma",
+			debugString: "Error - \\custom " + (marker.legacyKind || marker.open) + "=" + sym.use + " is not defined!"
+		});
+	}
+	if(sym.useGlobal) {
+		var globalTarget = marker.globalSymbols && marker.globalSymbols[sym.useGlobal];
+		if(globalTarget) {
+			return mergeSymbol(globalTarget, sym, "useGlobal");
+		}
+		return $tw.utils.extend({}, sym, {
+			debug: sym.debug || "pragma",
+			debugString: "Error - global \\custom " + (marker.legacyKind || marker.open) + "=" + sym.useGlobal + " is not defined!"
+		});
+	}
+	return sym;
+}
+
+// Merge target onto sym (sym's overrides win), dropping the `use` / `useGlobal`
+// field so we don't re-follow on a subsequent resolveConfig pass.
+function mergeSymbol(target, sym, useField) {
+	var merged = $tw.utils.extend({}, target, sym);
+	delete merged[useField];
+	// Attributes from both sides should compose, not overwrite.
+	if(target.attributes && sym.attributes) {
+		merged.attributes = $tw.utils.extend({}, target.attributes, sym.attributes);
+	}
+	return merged;
+}
+
+function applySymbolToConfig(config, sym) {
+	if(sym.element) { config.element = sym.element; }
+	if(sym.endString !== undefined) { config.endString = sym.endString; }
+	if(sym.classes) { config.classes = config.classes + sym.classes; }
+	if(sym.mode) { config.mode = sym.mode; }
+	if(sym.srcName) { config.srcName = sym.srcName; }
+	if(sym.attributes) { config.attributes = $tw.utils.extend({}, config.attributes, sym.attributes); }
+	if(sym.params) { config.params = sym.params; }
+	if(sym.debug) { config.debug = sym.debug; }
+	if(sym.debugString) { config.debugString = sym.debugString; }
+}
+
 function parseBody(parser, config) {
 	if(config.mode === "block") {
-		// Wrapper element `<p>` can't legally contain block-level children,
-		// so parse body inline (terminator = blank line) and let the inline
-		// content render directly inside the paragraph. This matches v0.x's
-		// useParagraph markers (», ≈, ¶) which rendered as
-		// `<p class="...">inline content</p>` not nested paragraphs.
+		// `<p>` wrapper can't contain block children — defensive fallback if
+		// a pragma explicitly overrides to mode=block on a paragraph marker.
 		if(config.element === "p") {
 			return parser.parseInlineRun(/(\r?\n\r?\n)/mg, {eatTerminator: true});
 		}
@@ -161,9 +257,18 @@ function parseBody(parser, config) {
 		}
 		return parser.parseBlock();
 	}
-	var terminator = config.endString
-		? new RegExp("(" + $tw.utils.escapeRegExp(config.endString) + ")", "mg")
-		: /(\r?\n)/mg;
+	// mode === "inline": pick terminator by marker's paragraph-ness. v0.x's
+	// useParagraph markers (», ≈, ¶ — element default `<p>`) terminate at a
+	// blank line; the rest (´, °, › — element default `<div>`/`<span>`)
+	// terminate at single newline.
+	var terminator;
+	if(config.endString) {
+		terminator = new RegExp("(" + $tw.utils.escapeRegExp(config.endString) + ")", "mg");
+	} else if(config.marker && config.marker.element === "p") {
+		terminator = /(\r?\n\r?\n)/mg;
+	} else {
+		terminator = /(\r?\n)/mg;
+	}
 	return parser.parseInlineRun(terminator, {eatTerminator: true});
 }
 

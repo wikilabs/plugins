@@ -160,8 +160,8 @@ function normalizeLegacyConfig(legacy) {
 	for(var key in legacy) {
 		switch(key) {
 			case "symbol":
-			case "_debugString":
 				break;
+			case "_debugString": out.debugString = legacy[key]; break;
 			case "_element": out.element = legacy[key]; break;
 			case "_classes":
 				// Legacy `_classes="b-y"` is dot-less. Normalize so the
@@ -197,20 +197,19 @@ function normalizeLegacyConfig(legacy) {
 	return out;
 }
 
-// Mirror every marker's symbols from `other` into this registry. Used to
-// pull bridged global-pragma symbols into a per-tiddler parser registry.
-// Local symbols take precedence over global ones.
+// Attach `other`'s per-marker symbols as `globalSymbols` on the matching
+// markers in this registry. Kept SEPARATE from `symbols` so:
+//   - `_use=<sym>` resolves against local symbols only (v0.x semantics)
+//   - `_useGlobal=<sym>` resolves explicitly against globals
+//   - a bare `°clip` with no local definition falls back through the
+//     resolveConfig chain to globalSymbols.
 CmRegistry.prototype.mergeSymbolsFrom = function(other) {
 	var self = this;
 	Object.keys(other.markers).forEach(function(open) {
 		var oM = other.markers[open];
 		var lM = self.markers[open];
 		if(!lM || !oM.symbols) { return; }
-		Object.keys(oM.symbols).forEach(function(sym) {
-			if(!lM.symbols[sym]) {
-				lM.symbols[sym] = oM.symbols[sym];
-			}
-		});
+		lM.globalSymbols = oM.symbols;
 	});
 };
 

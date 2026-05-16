@@ -1,5 +1,13 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-6 - 2026-05-17
+
+* `_use` and `_useGlobal` pragma aliases follow through to the target.
+* `_debug=pragma|text|both|*Only|no` emits the pragma string and/or source slice as a code block.
+* `°` `›` default to single-newline body termination again; `»` `≈` `¶` to blank-line.
+
+------
+
 V 1.0.0-beta-5 - 2026-05-17
 
 * `:"<arg>"` positional arguments after the symbol/class chain now feed `_params` widget attributes (`°☐:"a"` overrides the first `_params` entry from the bridged pragma).

@@ -3,7 +3,7 @@ tags: $:/tags/CustomMarkup/Marker [[Vocab/Default]]
 caption: Degree
 open: °
 kind: glyph
-mode: block
+mode: inline
 classes: .wltc-degree
 legacy-kind: degree
 description: Single-block paragraph; default <div>. Symbol after marker is treated as either a registered config name or an HTML element name.

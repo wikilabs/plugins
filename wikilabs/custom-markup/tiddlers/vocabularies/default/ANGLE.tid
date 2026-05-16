@@ -4,7 +4,7 @@ caption: Angle
 open: »
 kind: glyph-level
 max-level: 4
-mode: block
+mode: inline
 element: p
 classes: .wltc-angle
 legacy-kind: angle
