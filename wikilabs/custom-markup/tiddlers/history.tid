@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-3 - 2026-05-16
+
+* Bare-kind pragmas (`\custom angle _element=td`) now activate the marker's default override.
+* Block-position fires always wrap in a block element; `wltc-l<N>` level class always added.
+
+------
+
 V 1.0.0-beta-2 - 2026-05-16
 
 * Editor toolbar dropdowns filter by the active vocabulary for the tiddler being edited (vocabs come from the `;vocab=` parameter on the type field; defaults to Vocab/Default).

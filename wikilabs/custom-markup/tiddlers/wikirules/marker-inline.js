@@ -90,7 +90,9 @@ function resolveConfig(marker, symbol, classes) {
 		srcName: marker.srcName,
 		userClasses: classes
 	};
-	if(symbol && marker.symbols && marker.symbols[symbol]) {
+	if(marker.symbols && marker.symbols[symbol]) {
+		// Symbol override (also fires for bare-kind pragmas registered at
+		// the empty-string key).
 		var sym = marker.symbols[symbol];
 		if(sym.element) { config.element = sym.element; }
 		if(sym.classes) { config.classes = config.classes + sym.classes; }

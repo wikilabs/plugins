@@ -100,14 +100,19 @@ function resolveConfig(marker, symbol, classes, level) {
 		symbol: symbol,
 		level: level,
 		mode: marker.mode,
-		element: marker.element || (marker.mode === "inline" ? "span" : "div"),
+		// Block-position fires (this rule) always wrap in a block element.
+		// `mode: inline` controls how the body is parsed (single line vs
+		// multi-block); it doesn't change the container element type.
+		element: marker.element || "div",
 		endString: marker.endString,
 		classes: marker.classes || "",
 		attributes: marker.attributes || {},
 		srcName: marker.srcName,
 		userClasses: classes
 	};
-	if(symbol && marker.symbols && marker.symbols[symbol]) {
+	if(marker.symbols && marker.symbols[symbol]) {
+		// Symbol override (also fires for bare-kind pragmas registered at
+		// the empty-string key, e.g. `\custom angle _element=td`).
 		var sym = marker.symbols[symbol];
 		if(sym.element) { config.element = sym.element; }
 		if(sym.endString !== undefined) { config.endString = sym.endString; }
@@ -149,7 +154,7 @@ function buildNode(config, children, source, contentStart, parserPos) {
 	if(config.userClasses && config.userClasses.length) {
 		classes = classes.concat(config.userClasses);
 	}
-	if(config.level && config.mode === "block") {
+	if(config.level) {
 		classes.push("wltc-l" + config.level);
 	}
 	classes.push("wltc");

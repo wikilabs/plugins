@@ -119,7 +119,13 @@ function bridgeToRegistry(parser, kindOrOpen, legacyConfig) {
 	}
 	var marker = parser.cmRegistry.findByOpenOrLegacyKind(kindOrOpen);
 	if(!marker) { return; }
-	var symbolKey = legacyConfig.symbol || "true";
+	// Bare-kind pragmas (`\custom angle _element=td`, with no `=symbol`)
+	// register against the empty-string key so resolveConfig can pick them
+	// up when the marker fires with no symbol. TW parses the bare kind
+	// name as an attribute with literal value "true", so we treat that the
+	// same as no symbol.
+	var rawSymbol = legacyConfig.symbol;
+	var symbolKey = (rawSymbol === undefined || rawSymbol === "true") ? "" : rawSymbol;
 	marker.symbols[symbolKey] = normalizeLegacyConfig(legacyConfig);
 }
 
