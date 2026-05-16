@@ -194,15 +194,17 @@ function lookupSymbol(marker, symbol) {
 }
 
 // Resolve `_use` (local-only alias) and `_useGlobal` (global-only alias)
-// chains. Mirrors v0.x's pc[id][sym]._use / _useGlobal semantics with the
-// current pragma's overrides extending the target.
+// chains. v0.x semantics:
+//   _use: extend target with the local pragma's overrides (local wins).
+//   _useGlobal: switch to target wholesale; only the local `_debug` value
+//     wins (forceDebug). Target's `_debugString` is shown so the debug
+//     output reveals what config is actually applied.
 function followUse(marker, sym) {
 	if(sym.use) {
 		var localTarget = marker.symbols && marker.symbols[sym.use];
 		if(localTarget) {
 			return mergeSymbol(localTarget, sym, "use");
 		}
-		// Target not defined: surface as a debug error.
 		return $tw.utils.extend({}, sym, {
 			debug: sym.debug || "pragma",
 			debugString: "Error - \\custom " + (marker.legacyKind || marker.open) + "=" + sym.use + " is not defined!"
@@ -211,7 +213,11 @@ function followUse(marker, sym) {
 	if(sym.useGlobal) {
 		var globalTarget = marker.globalSymbols && marker.globalSymbols[sym.useGlobal];
 		if(globalTarget) {
-			return mergeSymbol(globalTarget, sym, "useGlobal");
+			var merged = $tw.utils.extend({}, globalTarget);
+			delete merged.useGlobal;
+			// Local `_debug` wins (v0.x's forceDebug capture).
+			if(sym.debug) { merged.debug = sym.debug; }
+			return merged;
 		}
 		return $tw.utils.extend({}, sym, {
 			debug: sym.debug || "pragma",
@@ -247,13 +253,16 @@ function applySymbolToConfig(config, sym) {
 
 function parseBody(parser, config) {
 	if(config.mode === "block") {
-		// `<p>` wrapper can't contain block children — defensive fallback if
-		// a pragma explicitly overrides to mode=block on a paragraph marker.
+		// Explicit endString wins regardless of wrapper element. Browser
+		// auto-closes `<p>` when block children appear inside, matching
+		// v0.x's parseBlocks-with-newline-terminator behaviour.
+		if(config.endString) {
+			return parser.parseBlocks($tw.utils.escapeRegExp(unescapeEndString(config.endString)));
+		}
+		// `<p>` wrapper without explicit endString: parse body inline so the
+		// paragraph wrapper doesn't nest an inner paragraph.
 		if(config.element === "p") {
 			return parser.parseInlineRun(/(\r?\n\r?\n)/mg, {eatTerminator: true});
-		}
-		if(config.endString) {
-			return parser.parseBlocks($tw.utils.escapeRegExp(config.endString));
 		}
 		return parser.parseBlock();
 	}
@@ -263,13 +272,31 @@ function parseBody(parser, config) {
 	// terminate at single newline.
 	var terminator;
 	if(config.endString) {
-		terminator = new RegExp("(" + $tw.utils.escapeRegExp(config.endString) + ")", "mg");
+		terminator = new RegExp("(" + $tw.utils.escapeRegExp(unescapeEndString(config.endString)) + ")", "mg");
 	} else if(config.marker && config.marker.element === "p") {
 		terminator = /(\r?\n\r?\n)/mg;
 	} else {
 		terminator = /(\r?\n)/mg;
 	}
 	return parser.parseInlineRun(terminator, {eatTerminator: true});
+}
+
+// TW's parseAttribute returns `_endString="\n"` as the literal two-char
+// string `\n`. Unescape JS-style sequences so users can write `"\n"`,
+// `"\r\n"`, `"\t"` and have them mean what they look like.
+function unescapeEndString(s) {
+	if(typeof s !== "string") { return s; }
+	return s.replace(/\\([nrt\\'"])/g, function(_, c) {
+		switch(c) {
+			case "n": return "\n";
+			case "r": return "\r";
+			case "t": return "\t";
+			case "\\": return "\\";
+			case "'": return "'";
+			case '"': return '"';
+		}
+		return c;
+	});
 }
 
 function buildNode(config, children, source, contentStart, parserPos) {

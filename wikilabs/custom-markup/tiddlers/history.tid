@@ -1,5 +1,14 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-7 - 2026-05-17
+
+* `\custom <kind>=<sym> ...` now auto-activates the marker for the tiddler — author defining custom behaviour implies the marker should fire.
+* `_endString="\n"` (and `\r`, `\t`, `\\`, `\"`, `\'`) finally interprets the JS escapes instead of matching the literal `\n` characters.
+* `_useGlobal=<sym>` switches to the global target wholesale; only local `_debug` wins, so the debug codeblock shows the resolved config.
+* Trailing newline no longer leaks into widget `src` attribute or debug `text` codeblock when the terminator is eaten.
+
+------
+
 V 1.0.0-beta-6 - 2026-05-17
 
 * `_use` and `_useGlobal` pragma aliases follow through to the target.

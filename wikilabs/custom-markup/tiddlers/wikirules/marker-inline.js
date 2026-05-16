@@ -172,8 +172,15 @@ function followUse(marker, sym) {
 		});
 	}
 	if(sym.useGlobal) {
+		// _useGlobal switches to target wholesale (v0.x semantics).
+		// Only local _debug wins (forceDebug); target's _debugString shows.
 		var globalTarget = marker.globalSymbols && marker.globalSymbols[sym.useGlobal];
-		if(globalTarget) { return mergeSymbol(globalTarget, sym, "useGlobal"); }
+		if(globalTarget) {
+			var merged = $tw.utils.extend({}, globalTarget);
+			delete merged.useGlobal;
+			if(sym.debug) { merged.debug = sym.debug; }
+			return merged;
+		}
 		return $tw.utils.extend({}, sym, {
 			debug: sym.debug || "pragma",
 			debugString: "Error - global \\custom " + (marker.legacyKind || marker.open) + "=" + sym.useGlobal + " is not defined!"

@@ -151,6 +151,12 @@ CmRegistry.prototype.bridgeLegacyConfig = function(kindOrOpen, legacyConfig) {
 	// as the empty-key sentinel so resolveConfig picks them up.
 	var symbolKey = (rawSymbol === undefined || rawSymbol === "true") ? "" : rawSymbol;
 	marker.symbols[symbolKey] = normalizeLegacyConfig(legacyConfig);
+	// Author-intent activation: a `\custom <kind>=...` pragma implies the
+	// author wants the marker active in this tiddler. Without this, `´list`
+	// in a tiddler whose type field doesn't include Legacy-Glyphs would
+	// render as literal text — surprising and (when the body contains
+	// `{{!!text}}`) triggers transclusion recursion.
+	this.active[marker.open] = true;
 	return true;
 };
 
