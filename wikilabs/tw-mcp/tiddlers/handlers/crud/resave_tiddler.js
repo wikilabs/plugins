@@ -11,7 +11,7 @@ timestamps. Useful after FileSystemPaths changes.
 
 "use strict";
 
-var fs = require("fs");
+var fs = $tw.node ? require("fs") : null;
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
 module.exports = {

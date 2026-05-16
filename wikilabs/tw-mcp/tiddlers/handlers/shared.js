@@ -9,8 +9,11 @@ Shared utilities and state for MCP tool handlers.
 
 "use strict";
 
-var fs = require("fs"),
-	path = require("path");
+// fs/path are Node-only; guard the require so this module can load in the
+// browser (where it's exposed via the plugin payload but only ever called
+// from server-side MCP handlers).
+var fs = $tw.node ? require("fs") : null,
+	path = $tw.node ? require("path") : null;
 
 // TW core's $tw.utils.getParser always returns *some* parser: if the
 // requested MIME type has no registered parser, it falls back to

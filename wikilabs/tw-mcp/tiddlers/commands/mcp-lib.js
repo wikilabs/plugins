@@ -10,10 +10,12 @@ Implements JSON-RPC 2.0 over stdio transport.
 
 "use strict";
 
-var fs = require("fs"),
-	path = require("path"),
-	net = require("net"),
-	crypto = require("crypto");
+// Node-only modules — guard so this library loads cleanly in the browser
+// (where it's exposed via plugin payload but only ever called server-side).
+var fs = $tw.node ? require("fs") : null,
+	path = $tw.node ? require("path") : null,
+	net = $tw.node ? require("net") : null,
+	crypto = $tw.node ? require("crypto") : null;
 
 var tools = require("$:/core/modules/commands/inspect/mcp-tools.js");
 var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");

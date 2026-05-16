@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.36 - 2026-05-17
+
+* Guard top-level Node-only requires (`fs`, `path`, `net`, `crypto`) so the plugin no longer crashes the browser at boot.
+
 V 0.13.35 - 2026.05.12
 
 * `upload_file` now rejects payloads larger than 50 MB before allocating the decoded buffer, matching the limit already enforced by the `tw-upload` CLI helper.

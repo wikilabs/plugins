@@ -9,8 +9,8 @@ MCP tool handlers for filesystem and build operations.
 
 "use strict";
 
-var fs = require("fs"),
-	path = require("path");
+var fs = $tw.node ? require("fs") : null,
+	path = $tw.node ? require("path") : null;
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
