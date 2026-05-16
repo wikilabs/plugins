@@ -1,0 +1,180 @@
+/*\
+title: $:/plugins/wikilabs/custom-markup/wikirules/registry.js
+type: application/javascript
+module-type: utils
+
+Custom-Markup marker registry. Reads marker tiddlers from the wiki, builds
+combined regex per parse rule, exposes per-marker config lookup. Each parser
+holds its own instance, populated during wikirule init().
+
+\*/
+
+"use strict";
+
+var MARKER_TAG = "$:/tags/CustomMarkup/Marker";
+var VOCAB_TAG = "$:/tags/CustomMarkup/Vocabulary";
+
+var CmRegistry = function(wiki) {
+	this.wiki = wiki;
+	this.markers = Object.create(null);
+	this.blockRegex = null;
+	this.inlineRegex = null;
+	this.dirty = true;
+};
+
+CmRegistry.prototype.addFromFilter = function(filterExpr) {
+	var self = this;
+	var titles = this.wiki.filterTiddlers(filterExpr);
+	$tw.utils.each(titles, function(title) {
+		var config = self.parseMarkerTiddler(title);
+		if(config && config.open) {
+			self.markers[config.open] = config;
+		}
+	});
+	this.dirty = true;
+};
+
+CmRegistry.prototype.addVocabulary = function(name) {
+	var titles = this.wiki.filterTiddlers(
+		"[all[shadows+tiddlers]tag[" + VOCAB_TAG + "]field:caption[" + name + "]]"
+	);
+	if(!titles || !titles.length) { return false; }
+	var meta = this.wiki.getTiddler(titles[0]);
+	if(!meta) { return false; }
+	var markerTag = meta.fields["marker-tag"];
+	if(!markerTag) { return false; }
+	this.addFromFilter("[all[shadows+tiddlers]tag[" + markerTag + "]]");
+	return true;
+};
+
+CmRegistry.prototype.parseMarkerTiddler = function(title) {
+	var t = this.wiki.getTiddler(title);
+	if(!t) { return null; }
+	var f = t.fields;
+	if(!f.open || !f.kind) { return null; }
+	var attrs = {};
+	if(f.attributes) {
+		try {
+			attrs = (typeof f.attributes === "string")
+				? JSON.parse(f.attributes)
+				: f.attributes;
+		} catch(e) {
+			attrs = {};
+		}
+	}
+	return {
+		title: title,
+		open: f.open,
+		close: f.close || "",
+		kind: f.kind,
+		mode: f.mode || (f.kind === "inline-pair" ? "inline" : "block"),
+		element: f.element || "",
+		endString: f["end-string"] || "",
+		classes: f.classes || "",
+		attributes: attrs,
+		srcName: f["src-name"] || "src",
+		allowSymbol: f["allow-symbol"] !== "no",
+		allowClasses: f["allow-classes"] === "yes",
+		maxLevel: parseInt(f["max-level"] || "4", 10) || 4,
+		caption: f.caption || title,
+		description: f.description || "",
+		symbols: Object.create(null)
+	};
+};
+
+CmRegistry.prototype.registerSymbol = function(openLiteral, symbol, config) {
+	var marker = this.markers[openLiteral];
+	if(!marker) { return false; }
+	marker.symbols[symbol] = config;
+	return true;
+};
+
+CmRegistry.prototype.findByOpen = function(literal) {
+	return this.markers[literal] || null;
+};
+
+CmRegistry.prototype.list = function(predicate) {
+	var out = [];
+	for(var key in this.markers) {
+		if(!predicate || predicate(this.markers[key])) {
+			out.push(this.markers[key]);
+		}
+	}
+	return out;
+};
+
+CmRegistry.prototype.getBlockRegex = function() {
+	if(this.dirty || !this.blockRegex) { this.rebuildRegexes(); }
+	return this.blockRegex;
+};
+
+CmRegistry.prototype.getInlineRegex = function() {
+	if(this.dirty || !this.inlineRegex) { this.rebuildRegexes(); }
+	return this.inlineRegex;
+};
+
+CmRegistry.prototype.rebuildRegexes = function() {
+	var blockMarkers = this.list(function(m) {
+		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word";
+	});
+	var inlineMarkers = this.list(function(m) {
+		return m.kind === "inline-pair";
+	});
+
+	// Word arms longest-first so longer literals preempt shorter prefixes
+	blockMarkers.sort(function(a, b) {
+		if(a.kind === "word" && b.kind === "word") {
+			return b.open.length - a.open.length;
+		}
+		return 0;
+	});
+
+	var blockArms = [];
+	$tw.utils.each(blockMarkers, function(m) {
+		blockArms.push(buildBlockArm(m));
+	});
+	var inlineArms = [];
+	$tw.utils.each(inlineMarkers, function(m) {
+		inlineArms.push(buildInlineArm(m));
+	});
+
+	this.blockRegex = blockArms.length ? new RegExp(blockArms.join("|"), "mg") : null;
+	this.inlineRegex = inlineArms.length ? new RegExp(inlineArms.join("|"), "mg") : null;
+	this.dirty = false;
+};
+
+function buildBlockArm(m) {
+	var open = $tw.utils.escapeRegExp(m.open);
+	// Strict-class rule kicks in when allow-symbol is off (e.g. dot marker)
+	// to keep prose like ".NET" / ".com" from matching.
+	var classChain = m.allowSymbol
+		? String.raw`(?:\.[^.\r\n\s:]+)*`
+		: String.raw`(?:\.[a-z][\w-]*)*`;
+	var symbol = m.allowSymbol ? String.raw`(?:[^.:\r\n\s]+)?` : "";
+	var bound = String.raw`(?=[ \t\r\n]|$)`;
+
+	switch(m.kind) {
+		case "glyph":
+			return `(?:${open}${symbol}${classChain}${bound})`;
+		case "glyph-level":
+			var lvl = `(?:${open}){1,${m.maxLevel}}`;
+			return `(?:${lvl}${symbol}${classChain}${bound})`;
+		case "word":
+			var wordCls = m.allowClasses ? classChain : "";
+			return `(?:${open}${wordCls}${bound})`;
+		default:
+			return `(?:${open}${bound})`;
+	}
+}
+
+function buildInlineArm(m) {
+	var open = $tw.utils.escapeRegExp(m.open);
+	// Symbol/class char-class must exclude the first char of the close marker,
+	// otherwise text like `{!body!}` swallows the `!}` close into the symbol.
+	var closeFirst = m.close ? $tw.utils.escapeRegExp(m.close.charAt(0)) : "";
+	return String.raw`(?:${open}(?:[^.:\r\n\s${closeFirst}]+)?(?:\.[^.\r\n\s:${closeFirst}]+)*)`;
+}
+
+exports.CmRegistry = CmRegistry;
+exports.CM_MARKER_TAG = MARKER_TAG;
+exports.CM_VOCAB_TAG = VOCAB_TAG;
