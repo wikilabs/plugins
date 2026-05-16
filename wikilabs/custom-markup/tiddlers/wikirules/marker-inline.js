@@ -19,6 +19,7 @@ exports.init = function(parser) {
 		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
 		// See marker-block.js for why all markers are loaded at init.
 		parser.cmRegistry.loadAllMarkers();
+		parser.cmRegistry.loadGlobalPragmas();
 		parser.cmRegistry.activateFromTypeField(parser.type);
 	}
 	this.matchRegExp = parser.cmRegistry.getInlineRegex() || /(?!)/g;
@@ -43,6 +44,7 @@ exports.parse = function() {
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 	var contentStart = this.parser.pos;
 	var config = resolveConfig(marker, parsed.symbol, parsed.classes);
+	config.quotedArgs = parsed.quotedArgs;
 	var children = parseBody(this.parser, config);
 	return [buildNode(config, children, this.parser.source, contentStart, this.parser.pos)];
 };
@@ -59,7 +61,7 @@ function identifyInlinePairMarker(matchText, registry) {
 }
 
 function parseMatchTail(matchText, marker) {
-	var result = {symbol: "", classes: []};
+	var result = {symbol: "", classes: [], quotedArgs: []};
 	var pos = marker.open.length;
 	var symMatch = /^[^.:\s]*/.exec(matchText.substr(pos));
 	if(symMatch && symMatch[0].length > 0) {
@@ -71,6 +73,15 @@ function parseMatchTail(matchText, marker) {
 		if(cMatch) {
 			result.classes.push(cMatch[1]);
 			pos += cMatch[0].length;
+		} else {
+			break;
+		}
+	}
+	while(matchText.charAt(pos) === ":" && matchText.charAt(pos + 1) === '"') {
+		var qMatch = /^:"([^"]*)"/.exec(matchText.substr(pos));
+		if(qMatch) {
+			result.quotedArgs.push(qMatch[1]);
+			pos += qMatch[0].length;
 		} else {
 			break;
 		}
@@ -97,7 +108,9 @@ function resolveConfig(marker, symbol, classes) {
 		if(sym.element) { config.element = sym.element; }
 		if(sym.classes) { config.classes = config.classes + sym.classes; }
 		if(sym.mode) { config.mode = sym.mode; }
+		if(sym.srcName) { config.srcName = sym.srcName; }
 		if(sym.attributes) { config.attributes = $tw.utils.extend({}, config.attributes, sym.attributes); }
+		if(sym.params) { config.params = sym.params; }
 	} else if(symbol) {
 		// HTML-element fallback: any HTML element name overrides the default
 		var cmInline = ($tw.config.cmInlineElements || []).indexOf(symbol) !== -1;
@@ -134,7 +147,20 @@ function buildNode(config, children, source, contentStart, parserPos) {
 	if(config.attributes) {
 		for(var key in config.attributes) {
 			if(key !== "class") {
-				attrs[key] = {type: "string", value: String(config.attributes[key])};
+				attrs[key] = toAttrNode(config.attributes[key]);
+			}
+		}
+	}
+	if(config.params && config.params.length > 0) {
+		var args = config.quotedArgs || [];
+		for(var i = 0; i < config.params.length; i++) {
+			var p = config.params[i];
+			if(!p || !p.name) { continue; }
+			var override = args[i];
+			if(typeof override === "string" && override.length > 0) {
+				attrs[p.name] = {type: "string", value: override};
+			} else {
+				attrs[p.name] = toAttrNode(p);
 			}
 		}
 	}
@@ -155,4 +181,29 @@ function buildNode(config, children, source, contentStart, parserPos) {
 		attributes: attrs,
 		children: children
 	};
+}
+
+// Convert a parseAttribute token (or plain string) into a parse-tree
+// attribute node, preserving indirect / macro / filtered / substituted
+// types so `{{!!field}}`, `<<macro>>`, etc. don't get stringified.
+function toAttrNode(token) {
+	if(token === null || token === undefined) {
+		return {type: "string", value: ""};
+	}
+	if(typeof token === "string") {
+		return {type: "string", value: token};
+	}
+	switch(token.type) {
+		case "indirect":
+			return {type: "indirect", textReference: token.textReference};
+		case "macro":
+			return {type: "macro", value: token.value};
+		case "filtered":
+			return {type: "filtered", filter: token.filter};
+		case "substituted":
+			return {type: "substituted", rawValue: token.rawValue};
+		case "string":
+		default:
+			return {type: "string", value: (token.value !== undefined) ? String(token.value) : ""};
+	}
 }

@@ -60,7 +60,7 @@ exports.parse = function() {
 			self.parser.cmRegistry.active[t.fields.open] = true;
 			return;
 		}
-		// Legacy path: parse the tiddler's text and harvest its pragmas
+		// Legacy path: parse the tiddler's text and harvest its pragmas.
 		var pragmaInParser = $tw.wiki.parseText("text/vnd.tiddlywiki", $tw.wiki.getTiddlerText(title));
 		if(!pragmaInParser || !pragmaInParser.configTickText) { return; }
 		idTypes.forEach(function(id) {
@@ -68,6 +68,13 @@ exports.parse = function() {
 			if(!imported) { return; }
 			Object.keys(imported).forEach(function(key) {
 				imported[key].imported = true;
+				// Bridge each imported pragma into the registry so the
+				// new marker rules can resolve symbols defined in other
+				// tiddlers (the v0.x legacy storage in `pc[id]` is not
+				// consulted by marker-block / marker-inline).
+				if(self.parser.cmRegistry && typeof self.parser.cmRegistry.bridgeLegacyConfig === "function") {
+					self.parser.cmRegistry.bridgeLegacyConfig(id, imported[key]);
+				}
 			});
 			$tw.utils.extend(self.pc[id], imported);
 		});

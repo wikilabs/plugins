@@ -5,6 +5,7 @@ open: ¶
 kind: glyph-level
 max-level: 4
 mode: block
+element: p
 classes: .wltc-pilcrow-legacy
 legacy-kind: pilcrow
 description: Paragraph block with multi-level support (¶ through ¶¶¶¶). Replaced by `.` in Default; activate Vocab/Legacy-Glyphs for backward-compat with content that still uses `¶`.

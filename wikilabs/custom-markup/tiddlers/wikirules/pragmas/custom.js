@@ -112,63 +112,9 @@ exports.parse = function() {
 	// Bridge to new vocabulary registry. No-op if cmRegistry is absent or
 	// has no marker matching this kind/open. Lets `\custom degree=foo`
 	// register on the ° marker once Vocab/Default ships.
-	bridgeToRegistry(this.parser, id, configTickText);
+	if(this.parser.cmRegistry && typeof this.parser.cmRegistry.bridgeLegacyConfig === "function") {
+		this.parser.cmRegistry.bridgeLegacyConfig(id, configTickText);
+	}
 
 	return [];
 };
-
-function bridgeToRegistry(parser, kindOrOpen, legacyConfig) {
-	if(!parser.cmRegistry || typeof parser.cmRegistry.findByOpenOrLegacyKind !== "function") {
-		return;
-	}
-	var marker = parser.cmRegistry.findByOpenOrLegacyKind(kindOrOpen);
-	if(!marker) { return; }
-	// Bare-kind pragmas (`\custom angle _element=td`, with no `=symbol`)
-	// register against the empty-string key so resolveConfig can pick them
-	// up when the marker fires with no symbol. TW parses the bare kind
-	// name as an attribute with literal value "true", so we treat that the
-	// same as no symbol.
-	var rawSymbol = legacyConfig.symbol;
-	var symbolKey = (rawSymbol === undefined || rawSymbol === "true") ? "" : rawSymbol;
-	marker.symbols[symbolKey] = normalizeLegacyConfig(legacyConfig);
-}
-
-function normalizeLegacyConfig(legacy) {
-	var out = {};
-	var attributes = {};
-	for(var key in legacy) {
-		switch(key) {
-			case "symbol":
-			case "_debugString":
-				break;
-			case "_element": out.element = legacy[key]; break;
-			case "_classes":
-				// Legacy `_classes="b-y"` is dot-less. Normalize so the registry's
-				// dot-separated chain stays well-formed when concatenated.
-				var c = legacy[key] || "";
-				if(c && c.charAt(0) !== ".") { c = "." + c; }
-				out.classes = c;
-				break;
-			case "_endString": out.endString = legacy[key]; break;
-			case "_mode": out.mode = legacy[key]; break;
-			case "_srcName": out.srcName = legacy[key]; break;
-			case "_use": out.use = legacy[key]; break;
-			case "_useGlobal": out.useGlobal = legacy[key]; break;
-			case "_debug": out.debug = legacy[key]; break;
-			case "_params": out.params = legacy[key]; break;
-			default:
-				if(key.charAt(0) !== "_") {
-					var v = legacy[key];
-					if(v && typeof v === "object" && v.value !== undefined) {
-						attributes[key] = String(v.value);
-					} else if(typeof v === "string") {
-						attributes[key] = v;
-					}
-				}
-		}
-	}
-	if(Object.keys(attributes).length > 0) {
-		out.attributes = attributes;
-	}
-	return out;
-}

@@ -1,5 +1,15 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-5 - 2026-05-17
+
+* `:"<arg>"` positional arguments after the symbol/class chain now feed `_params` widget attributes (`°☐:"a"` overrides the first `_params` entry from the bridged pragma).
+* Indirect / macro / filtered attribute values (`field={{!!yy}}`, `UID=<<qualify>>`) survive into the registry; previously stringified to `[object Object]`.
+* Global `\custom` pragmas from `$:/config/custom-markup/pragma/PageTemplate` are loaded into every parser, restoring wiki-wide marker shortcuts (e.g. `°clip`, `°example`).
+* `»` `≈` `¶` markers wrap as `<p class="...">...</p>` again instead of `<div><p>...</p></div>`, matching the v0.x rendering.
+* Widget `src` no longer carries a trailing newline (which became `%0A` in URL-valued attributes).
+
+------
+
 V 1.0.0-beta-4 - 2026-05-16
 
 * `\custom <unknown-kind>` (anything outside the 9 legacy kinds) no longer crashes the parse rule.

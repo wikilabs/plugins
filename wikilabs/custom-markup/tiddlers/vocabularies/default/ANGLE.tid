@@ -5,6 +5,7 @@ open: »
 kind: glyph-level
 max-level: 4
 mode: block
+element: p
 classes: .wltc-angle
 legacy-kind: angle
 description: Paragraph block with multi-level support. Repeat the open up to 4 times for `wltc-l1` through `wltc-l4`.

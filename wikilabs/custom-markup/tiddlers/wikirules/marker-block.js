@@ -22,6 +22,9 @@ exports.init = function(parser) {
 		// markers). Vocabulary scoping is enforced by the active-set check
 		// in parse() below.
 		parser.cmRegistry.loadAllMarkers();
+		// Pull bridged symbols from PageTemplate's `\importcustom`-loaded
+		// pragmas (v0.x global pragma equivalent). Recursion-guarded.
+		parser.cmRegistry.loadGlobalPragmas();
 		parser.cmRegistry.activateFromTypeField(parser.type);
 	}
 	this.matchRegExp = parser.cmRegistry.getBlockRegex() || /(?!)/g;
@@ -46,6 +49,7 @@ exports.parse = function() {
 	this.parser.skipWhitespace({treatNewlinesAsNonWhitespace: true});
 	var contentStart = this.parser.pos;
 	var config = resolveConfig(marker, parsed.symbol, parsed.classes, parsed.level);
+	config.quotedArgs = parsed.quotedArgs;
 	var children = parseBody(this.parser, config);
 	return [buildNode(config, children, this.parser.source, contentStart, this.parser.pos)];
 };
@@ -67,7 +71,7 @@ function identifyMarker(matchText, registry) {
 }
 
 function parseMatchTail(matchText, marker) {
-	var result = {level: 1, symbol: "", classes: []};
+	var result = {level: 1, symbol: "", classes: [], quotedArgs: []};
 	var pos = marker.open.length;
 	if(marker.kind === "glyph-level") {
 		while(matchText.substr(pos, marker.open.length) === marker.open) {
@@ -87,6 +91,15 @@ function parseMatchTail(matchText, marker) {
 		if(cMatch) {
 			result.classes.push(cMatch[1]);
 			pos += cMatch[0].length;
+		} else {
+			break;
+		}
+	}
+	while(matchText.charAt(pos) === ":" && matchText.charAt(pos + 1) === '"') {
+		var qMatch = /^:"([^"]*)"/.exec(matchText.substr(pos));
+		if(qMatch) {
+			result.quotedArgs.push(qMatch[1]);
+			pos += qMatch[0].length;
 		} else {
 			break;
 		}
@@ -118,7 +131,9 @@ function resolveConfig(marker, symbol, classes, level) {
 		if(sym.endString !== undefined) { config.endString = sym.endString; }
 		if(sym.classes) { config.classes = config.classes + sym.classes; }
 		if(sym.mode) { config.mode = sym.mode; }
+		if(sym.srcName) { config.srcName = sym.srcName; }
 		if(sym.attributes) { config.attributes = $tw.utils.extend({}, config.attributes, sym.attributes); }
+		if(sym.params) { config.params = sym.params; }
 	} else if(symbol && marker.allowSymbol) {
 		// HTML-element fallback: any HTML element name overrides the default
 		var cmInline = ($tw.config.cmInlineElements || []).indexOf(symbol) !== -1;
@@ -133,6 +148,14 @@ function resolveConfig(marker, symbol, classes, level) {
 
 function parseBody(parser, config) {
 	if(config.mode === "block") {
+		// Wrapper element `<p>` can't legally contain block-level children,
+		// so parse body inline (terminator = blank line) and let the inline
+		// content render directly inside the paragraph. This matches v0.x's
+		// useParagraph markers (», ≈, ¶) which rendered as
+		// `<p class="...">inline content</p>` not nested paragraphs.
+		if(config.element === "p") {
+			return parser.parseInlineRun(/(\r?\n\r?\n)/mg, {eatTerminator: true});
+		}
 		if(config.endString) {
 			return parser.parseBlocks($tw.utils.escapeRegExp(config.endString));
 		}
@@ -164,7 +187,20 @@ function buildNode(config, children, source, contentStart, parserPos) {
 	if(config.attributes) {
 		for(var key in config.attributes) {
 			if(key !== "class") {
-				attrs[key] = {type: "string", value: String(config.attributes[key])};
+				attrs[key] = toAttrNode(config.attributes[key]);
+			}
+		}
+	}
+	if(config.params && config.params.length > 0) {
+		var args = config.quotedArgs || [];
+		for(var i = 0; i < config.params.length; i++) {
+			var p = config.params[i];
+			if(!p || !p.name) { continue; }
+			var override = args[i];
+			if(typeof override === "string" && override.length > 0) {
+				attrs[p.name] = {type: "string", value: override};
+			} else {
+				attrs[p.name] = toAttrNode(p);
 			}
 		}
 	}
@@ -172,6 +208,13 @@ function buildNode(config, children, source, contentStart, parserPos) {
 		var contentEnd = parserPos;
 		if(config.endString) { contentEnd -= config.endString.length; }
 		var innerText = source.substring(contentStart, contentEnd);
+		// Strip trailing line-endings consumed by the implicit terminator
+		// (eatTerminator on inline mode, or the blank-line terminator on
+		// block-with-paragraph wrapping). Otherwise widget attributes pick
+		// up stray "\n" — which becomes "%0A" in URL-valued attrs.
+		if(!config.endString) {
+			innerText = innerText.replace(/(?:\r?\n)+$/, "");
+		}
 		attrs[config.srcName || "src"] = {type: "string", value: innerText};
 		return {
 			type: config.element.substr(1),
@@ -186,4 +229,30 @@ function buildNode(config, children, source, contentStart, parserPos) {
 		attributes: attrs,
 		children: children
 	};
+}
+
+// Convert a parseAttribute token (or a plain string) into a parse-tree
+// attribute node. Preserves indirect / macro / filtered / substituted
+// types so `{{!!field}}`, `<<macro>>`, and `{{{filter}}}` survive into
+// the rendered widget instead of being stringified to "[object Object]".
+function toAttrNode(token) {
+	if(token === null || token === undefined) {
+		return {type: "string", value: ""};
+	}
+	if(typeof token === "string") {
+		return {type: "string", value: token};
+	}
+	switch(token.type) {
+		case "indirect":
+			return {type: "indirect", textReference: token.textReference};
+		case "macro":
+			return {type: "macro", value: token.value};
+		case "filtered":
+			return {type: "filtered", filter: token.filter};
+		case "substituted":
+			return {type: "substituted", rawValue: token.rawValue};
+		case "string":
+		default:
+			return {type: "string", value: (token.value !== undefined) ? String(token.value) : ""};
+	}
 }

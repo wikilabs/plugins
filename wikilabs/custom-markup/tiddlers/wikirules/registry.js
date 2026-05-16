@@ -138,6 +138,106 @@ CmRegistry.prototype.registerSymbol = function(openLiteral, symbol, config) {
 	return true;
 };
 
+// Bridge a legacy `\custom <kind>=<symbol> ...` pragma into the registry.
+// `kindOrOpen` may be the legacy kind name (tick, degree, angle, ...) or
+// the marker's open literal. `legacyConfig` is the raw configTickText shape
+// produced by custom.js (and by harvest paths in import-custom.js).
+CmRegistry.prototype.bridgeLegacyConfig = function(kindOrOpen, legacyConfig) {
+	var marker = this.findByOpenOrLegacyKind(kindOrOpen);
+	if(!marker) { return false; }
+	var rawSymbol = legacyConfig.symbol;
+	// TW parses bare-kind pragmas (`\custom angle _element=td`) as
+	// {name:"angle", value:"true"}. Treat both `undefined` and `"true"`
+	// as the empty-key sentinel so resolveConfig picks them up.
+	var symbolKey = (rawSymbol === undefined || rawSymbol === "true") ? "" : rawSymbol;
+	marker.symbols[symbolKey] = normalizeLegacyConfig(legacyConfig);
+	return true;
+};
+
+function normalizeLegacyConfig(legacy) {
+	var out = {};
+	var attributes = {};
+	for(var key in legacy) {
+		switch(key) {
+			case "symbol":
+			case "_debugString":
+				break;
+			case "_element": out.element = legacy[key]; break;
+			case "_classes":
+				// Legacy `_classes="b-y"` is dot-less. Normalize so the
+				// registry's dot-separated chain stays well-formed when
+				// concatenated.
+				var c = legacy[key] || "";
+				if(c && c.charAt(0) !== ".") { c = "." + c; }
+				out.classes = c;
+				break;
+			case "_endString": out.endString = legacy[key]; break;
+			case "_mode": out.mode = legacy[key]; break;
+			case "_srcName": out.srcName = legacy[key]; break;
+			case "_use": out.use = legacy[key]; break;
+			case "_useGlobal": out.useGlobal = legacy[key]; break;
+			case "_debug": out.debug = legacy[key]; break;
+			case "_params": out.params = legacy[key]; break;
+			default:
+				if(key.charAt(0) !== "_") {
+					var v = legacy[key];
+					if(typeof v === "string") {
+						attributes[key] = v;
+					} else if(v && typeof v === "object") {
+						// Preserve macro / indirect / filtered tokens so
+						// `<<qualify>>`, `{{!!field}}`, etc. survive.
+						attributes[key] = v;
+					}
+				}
+		}
+	}
+	if(Object.keys(attributes).length > 0) {
+		out.attributes = attributes;
+	}
+	return out;
+}
+
+// Mirror every marker's symbols from `other` into this registry. Used to
+// pull bridged global-pragma symbols into a per-tiddler parser registry.
+// Local symbols take precedence over global ones.
+CmRegistry.prototype.mergeSymbolsFrom = function(other) {
+	var self = this;
+	Object.keys(other.markers).forEach(function(open) {
+		var oM = other.markers[open];
+		var lM = self.markers[open];
+		if(!lM || !oM.symbols) { return; }
+		Object.keys(oM.symbols).forEach(function(sym) {
+			if(!lM.symbols[sym]) {
+				lM.symbols[sym] = oM.symbols[sym];
+			}
+		});
+	});
+};
+
+// Pull bridged symbols from `$:/config/custom-markup/pragma/PageTemplate`
+// into this registry. PageTemplate is conventionally
+// `\importcustom [tag[$:/tags/Pragma]]`, so this captures wiki-wide
+// pragmas (e.g. the `°clip` / `°example` macro shortcuts shipped in
+// `.example-macro` and `global-pragma-definition`). Recursion-guarded
+// via a static flag because parsing PageTemplate creates a sub-parser
+// whose own init would otherwise loop back here.
+CmRegistry.prototype.loadGlobalPragmas = function() {
+	if(CmRegistry._loadingGlobals) { return; }
+	CmRegistry._loadingGlobals = true;
+	try {
+		var template = this.wiki.getTiddler("$:/config/custom-markup/pragma/PageTemplate");
+		if(!template) { return; }
+		var text = template.fields.text || "";
+		if(!text) { return; }
+		var subParser = this.wiki.parseText("text/vnd.tiddlywiki", text);
+		if(subParser && subParser.cmRegistry) {
+			this.mergeSymbolsFrom(subParser.cmRegistry);
+		}
+	} finally {
+		CmRegistry._loadingGlobals = false;
+	}
+};
+
 CmRegistry.prototype.findByOpen = function(literal) {
 	return this.markers[literal] || null;
 };
@@ -213,14 +313,17 @@ function buildBlockArm(m) {
 		? String.raw`(?:\.[^.\r\n\s:]+)*`
 		: String.raw`(?:\.[a-z][\w-]*)*`;
 	var symbol = m.allowSymbol ? String.raw`(?:[^.:\r\n\s]+)?` : "";
+	// Positional quoted-argument chain (`:"a":"b":"c"`), feeds the
+	// pragma's `_params` positional overrides at fire time.
+	var quotedArgs = String.raw`(?::"[^"]*")*`;
 	var bound = String.raw`(?=[ \t\r\n]|$)`;
 
 	switch(m.kind) {
 		case "glyph":
-			return `(?:${open}${symbol}${classChain}${bound})`;
+			return `(?:${open}${symbol}${classChain}${quotedArgs}${bound})`;
 		case "glyph-level":
 			var lvl = `(?:${open}){1,${m.maxLevel}}`;
-			return `(?:${lvl}${symbol}${classChain}${bound})`;
+			return `(?:${lvl}${symbol}${classChain}${quotedArgs}${bound})`;
 		case "word":
 			var wordCls = m.allowClasses ? classChain : "";
 			return `(?:${open}${wordCls}${bound})`;
@@ -234,7 +337,8 @@ function buildInlineArm(m) {
 	// Symbol/class char-class must exclude the first char of the close marker,
 	// otherwise text like `{!body!}` swallows the `!}` close into the symbol.
 	var closeFirst = m.close ? $tw.utils.escapeRegExp(m.close.charAt(0)) : "";
-	return String.raw`(?:${open}(?:[^.:\r\n\s${closeFirst}]+)?(?:\.[^.\r\n\s:${closeFirst}]+)*)`;
+	var quotedArgs = String.raw`(?::"[^"]*")*`;
+	return String.raw`(?:${open}(?:[^.:\r\n\s${closeFirst}]+)?(?:\.[^.\r\n\s:${closeFirst}]+)*${quotedArgs})`;
 }
 
 exports.CmRegistry = CmRegistry;
