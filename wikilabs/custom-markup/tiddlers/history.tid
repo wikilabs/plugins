@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-4 - 2026-05-16
+
+* `\custom <unknown-kind>` (anything outside the 9 legacy kinds) no longer crashes the parse rule.
+
+------
+
 V 1.0.0-beta-3 - 2026-05-16
 
 * Bare-kind pragmas (`\custom angle _element=td`) now activate the marker's default override.

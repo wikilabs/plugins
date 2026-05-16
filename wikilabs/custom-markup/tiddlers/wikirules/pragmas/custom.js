@@ -103,6 +103,10 @@ exports.parse = function() {
 	});
 
 	configTickText._debugString = debugString;
+	// Unknown kind names (e.g. \custom X _element=p — anything outside
+	// idTypes) need an init step or the legacy pc[id][symbol] assignment
+	// would throw "Cannot set properties of undefined".
+	this.pc[id] = this.pc[id] || {};
 	this.pc[id][configTickText.symbol] = configTickText;
 
 	// Bridge to new vocabulary registry. No-op if cmRegistry is absent or
