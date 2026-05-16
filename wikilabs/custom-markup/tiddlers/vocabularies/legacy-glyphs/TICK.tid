@@ -1,0 +1,9 @@
+title: vocab/legacy-glyphs/TICK
+tags: $:/tags/CustomMarkup/Marker [[Vocab/Legacy-Glyphs]]
+caption: Tick (legacy)
+open: ´
+kind: glyph
+mode: inline
+classes: .wltc-tick-legacy
+legacy-kind: tick
+description: Inline wrap; default <span>. Single-newline terminated. Removed from Default in cm-redesign; activate Vocab/Legacy-Glyphs for backward-compat with content that still uses `´`.

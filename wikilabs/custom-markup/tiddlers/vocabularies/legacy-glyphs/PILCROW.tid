@@ -1,0 +1,10 @@
+title: vocab/legacy-glyphs/PILCROW
+tags: $:/tags/CustomMarkup/Marker [[Vocab/Legacy-Glyphs]]
+caption: Pilcrow (legacy)
+open: ¶
+kind: glyph-level
+max-level: 4
+mode: block
+classes: .wltc-pilcrow-legacy
+legacy-kind: pilcrow
+description: Paragraph block with multi-level support (¶ through ¶¶¶¶). Replaced by `.` in Default; activate Vocab/Legacy-Glyphs for backward-compat with content that still uses `¶`.
