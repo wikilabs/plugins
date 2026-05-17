@@ -264,6 +264,13 @@ function parseBody(parser, config) {
 		if(config.element === "p") {
 			return parser.parseInlineRun(/(\r?\n\r?\n)/mg, {eatTerminator: true});
 		}
+		// v0.x: non-useParagraph markers (´, °, › — marker.element != "p")
+		// with mode=block default to single-newline terminator. Each `´td`
+		// on its own line is a separate fire, not all crammed into one
+		// cell. useParagraph markers fall through to blank-line default.
+		if(config.marker && config.marker.element !== "p") {
+			return parser.parseBlock("\\r?\\n");
+		}
 		return parser.parseBlock();
 	}
 	// mode === "inline": pick terminator by marker's paragraph-ness. v0.x's

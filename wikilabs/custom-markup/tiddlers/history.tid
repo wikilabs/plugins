@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-8 - 2026-05-17
+
+* `\custom <kind>=<sym> _mode=block` on non-paragraph markers (`´`, `°`, `›`) now defaults to single-newline body termination. Tables built with `´td`-per-line work again.
+
+------
+
 V 1.0.0-beta-7 - 2026-05-17
 
 * `\custom <kind>=<sym> ...` now auto-activates the marker for the tiddler — author defining custom behaviour implies the marker should fire.
