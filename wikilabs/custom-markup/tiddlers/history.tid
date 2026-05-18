@@ -1,9 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-17 - 2026-05-19
+V 1.0.0-beta-18 - 2026-05-19
 
-* V 1.0.0-beta-17
-** `paragraph-marker` field on marker tiddlers declares paragraph terminator semantics independently of `element`. Shipped paragraph markers (ANGLE, APPROX, PILCROW) set it explicitly; `element === p` remains as fallback for back-compat.
+* V 1.0.0-beta-18
+** `paragraph-marker: yes` field on marker tiddlers opts into paragraph terminator semantics (blank-line, no nested-p body parse). Shipped paragraph markers (ANGLE, APPROX, PILCROW) declare it explicitly.
 
 V 1.0.0-beta-16 - 2026-05-18
 

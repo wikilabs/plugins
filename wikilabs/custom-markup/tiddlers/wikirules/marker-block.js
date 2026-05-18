@@ -251,15 +251,10 @@ function applySymbolToConfig(config, sym) {
 	if(sym.debugString) { config.debugString = sym.debugString; }
 }
 
-// paragraph-marker: explicit schema flag. "yes" → paragraph terminator
-// (blank line); "no" → non-paragraph (single newline). When unset, fall
-// back to element===p heuristic for back-compat with markers authored
-// before the field existed.
+// paragraph-marker: explicit schema flag. "yes" opts into paragraph
+// terminator (blank line); anything else is non-paragraph (single newline).
 function isParagraphMarker(marker) {
-	if(!marker) { return false; }
-	if(marker.paragraphMarker === "yes") { return true; }
-	if(marker.paragraphMarker === "no") { return false; }
-	return marker.element === "p";
+	return !!marker && marker.paragraphMarker === "yes";
 }
 
 function parseBody(parser, config) {

@@ -122,10 +122,8 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		allowSymbol: f["allow-symbol"] !== "no",
 		allowClasses: f["allow-classes"] === "yes",
 		maxLevel: parseInt(f["max-level"] || "4", 10) || 4,
-		// paragraph-marker: explicit signal that this marker carries paragraph
-		// terminator semantics (blank-line vs single-newline). Decouples the
-		// behavior from element=p. Raw "yes"/"no"/undefined; consumers fall
-		// back to the element===p heuristic when undefined.
+		// paragraph-marker: "yes" opts into paragraph terminator semantics
+		// (blank-line, no nested-p body parse) independently of `element`.
 		paragraphMarker: f["paragraph-marker"],
 		// legacy-kind: friendly name from the v0.x plugin (tick, degree, angle,
 		// approx, pilcrow, single, corner, braille, slash). Lets the legacy
