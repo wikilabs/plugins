@@ -1,6 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-15 - 2026-05-18
+V 1.0.0-beta-16 - 2026-05-18
+
+* V 1.0.0-beta-16
+** Dropped orphan ShortcutInfo entries for add-angle, remove-angle, toggle-tick.
 
 * V 1.0.0-beta-15
 ** Removed legacy hardcoded-glyph buttons add-tick, remove-tick, toggle-tick, add-angle, remove-angle. Use the vocab dropdowns instead.
