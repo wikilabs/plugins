@@ -7,6 +7,7 @@ kind: glyph-level
 max-level: 4
 mode: inline
 element: p
+paragraph-marker: yes
 classes: .wltc-approx-legacy
 legacy-kind: approx
 description: Paragraph block with multi-level support (≈ through ≈≈≈≈). Removed from Default in cm-redesign; activate Vocab/Legacy-Glyphs for backward-compat.

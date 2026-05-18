@@ -7,6 +7,7 @@ kind: glyph-level
 max-level: 4
 mode: inline
 element: p
+paragraph-marker: yes
 classes: .wltc-angle
 legacy-kind: angle
 order: 4

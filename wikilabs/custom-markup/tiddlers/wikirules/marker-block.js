@@ -251,6 +251,17 @@ function applySymbolToConfig(config, sym) {
 	if(sym.debugString) { config.debugString = sym.debugString; }
 }
 
+// paragraph-marker: explicit schema flag. "yes" → paragraph terminator
+// (blank line); "no" → non-paragraph (single newline). When unset, fall
+// back to element===p heuristic for back-compat with markers authored
+// before the field existed.
+function isParagraphMarker(marker) {
+	if(!marker) { return false; }
+	if(marker.paragraphMarker === "yes") { return true; }
+	if(marker.paragraphMarker === "no") { return false; }
+	return marker.element === "p";
+}
+
 function parseBody(parser, config) {
 	if(config.mode === "block") {
 		// Explicit endString wins regardless of wrapper element. Browser
@@ -260,27 +271,28 @@ function parseBody(parser, config) {
 			return parser.parseBlocks($tw.utils.escapeRegExp(unescapeEndString(config.endString)));
 		}
 		// `<p>` wrapper without explicit endString: parse body inline so the
-		// paragraph wrapper doesn't nest an inner paragraph.
+		// paragraph wrapper doesn't nest an inner paragraph. This is a DOM
+		// constraint on the rendered element, not the marker's paragraph-ness.
 		if(config.element === "p") {
 			return parser.parseInlineRun(/(\r?\n\r?\n)/mg, {eatTerminator: true});
 		}
-		// v0.x: non-useParagraph markers (´, °, › — marker.element != "p")
-		// with mode=block default to single-newline terminator. Each `´td`
-		// on its own line is a separate fire, not all crammed into one
-		// cell. useParagraph markers fall through to blank-line default.
-		if(config.marker && config.marker.element !== "p") {
+		// Non-paragraph markers (´, °, › and any marker with paragraph-marker:no
+		// or undefined+element!=p) default to single-newline terminator so each
+		// fire on its own line is a separate node. Paragraph markers fall through
+		// to blank-line default.
+		if(config.marker && !isParagraphMarker(config.marker)) {
 			return parser.parseBlock("\\r?\\n");
 		}
 		return parser.parseBlock();
 	}
 	// mode === "inline": pick terminator by marker's paragraph-ness. v0.x's
-	// useParagraph markers (», ≈, ¶ — element default `<p>`) terminate at a
-	// blank line; the rest (´, °, › — element default `<div>`/`<span>`)
-	// terminate at single newline.
+	// useParagraph markers (», ≈, ¶) terminate at a blank line; the rest (´, °, ›)
+	// terminate at single newline. The paragraph-marker field is the canonical
+	// signal; element===p is the back-compat fallback.
 	var terminator;
 	if(config.endString) {
 		terminator = new RegExp("(" + $tw.utils.escapeRegExp(unescapeEndString(config.endString)) + ")", "mg");
-	} else if(config.marker && config.marker.element === "p") {
+	} else if(config.marker && isParagraphMarker(config.marker)) {
 		terminator = /(\r?\n\r?\n)/mg;
 	} else {
 		terminator = /(\r?\n)/mg;
