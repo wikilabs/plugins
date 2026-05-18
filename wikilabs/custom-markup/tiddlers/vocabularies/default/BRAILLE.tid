@@ -1,6 +1,7 @@
 title: vocab/default/BRAILLE
 tags: $:/tags/CustomMarkup/Marker [[Vocab/Default]]
 caption: Braille
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/inline/braille
 open: ⠒
 close: ⠶
 kind: inline-pair

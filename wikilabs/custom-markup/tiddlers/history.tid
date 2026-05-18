@@ -1,5 +1,13 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-9 - 2026-05-18
+
+* `marker-icon` field on each marker tiddler; new `dot` icon.
+* Marker tiddler and `$:/tags/CustomMarkup/Marker` tag show summary views.
+* Edit-view type input widens for `;vocab=...` types.
+
+------
+
 V 1.0.0-beta-8 - 2026-05-17
 
 * `\custom <kind>=<sym> _mode=block` on non-paragraph markers (`´`, `°`, `›`) now defaults to single-newline body termination. Tables built with `´td`-per-line work again.

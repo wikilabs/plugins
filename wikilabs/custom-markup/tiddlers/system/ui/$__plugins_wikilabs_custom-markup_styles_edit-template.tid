@@ -1,0 +1,11 @@
+title: $:/plugins/wikilabs/custom-markup/styles/edit-template
+tags: $:/tags/Stylesheet
+type: text/vnd.tiddlywiki
+
+.tc-edit-type-selector-wrapper .tc-type-selector-dropdown-wrapper {
+	min-width: 40em;
+}
+
+.tc-edit-type-selector-wrapper .tc-type-selector-dropdown-wrapper input.tc-edit-typeeditor {
+	min-width: 40em;
+}

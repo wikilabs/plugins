@@ -1,0 +1,57 @@
+title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
+
+\whitespace trim
+
+<div class="wltc-marker-summary">
+
+	<$list filter="[<currentTiddler>has[marker-icon]]" variable="ignore">
+		<svg viewBox="0 0 128 128" width="64" height="64" class="wltc-marker-summary-icon">
+			<$transclude tiddler={{!!marker-icon}} index="element"/>
+		</svg>
+	</$list>
+
+	<h2>{{!!caption}}</h2>
+
+	<p>
+		<code class="wltc-marker-summary-glyph"><$text text={{!!open}}/></code><$list filter="[<currentTiddler>has[close]]" variable="ignore"> ... <code class="wltc-marker-summary-glyph"><$text text={{!!close}}/></code></$list>
+	</p>
+
+	<p>{{!!description}}</p>
+
+	<div class="wltc-marker-summary-clear"/>
+
+	<table class="tc-table-no-border wltc-marker-summary-fields">
+		<tbody>
+			<tr><th>kind</th><td>{{!!kind}}</td></tr>
+			<tr><th>mode</th><td>{{!!mode}}</td></tr>
+			<$list filter="[<currentTiddler>has[element]]" variable="ignore">
+				<tr><th>element</th><td><code>{{!!element}}</code></td></tr>
+			</$list>
+			<tr><th>classes</th><td><code>{{!!classes}}</code></td></tr>
+			<$list filter="[<currentTiddler>has[max-level]]" variable="ignore">
+				<tr><th>max-level</th><td>{{!!max-level}}</td></tr>
+			</$list>
+			<$list filter="[<currentTiddler>has[allow-symbol]]" variable="ignore">
+				<tr><th>allow-symbol</th><td>{{!!allow-symbol}}</td></tr>
+			</$list>
+			<$list filter="[<currentTiddler>has[legacy-kind]]" variable="ignore">
+				<tr><th>legacy-kind</th><td><code>{{!!legacy-kind}}</code></td></tr>
+			</$list>
+			<$list filter="[<currentTiddler>has[order]]" variable="ignore">
+				<tr><th>order</th><td>{{!!order}}</td></tr>
+			</$list>
+			<$list filter="[<currentTiddler>has[marker-icon]]" variable="ignore">
+				<tr><th>marker-icon</th><td><$link to={{!!marker-icon}}><$text text={{!!marker-icon}}/></$link></td></tr>
+			</$list>
+			<tr>
+				<th>vocabulary</th>
+				<td>
+					<$list filter="[<currentTiddler>tags[]prefix[Vocab/]]" variable="vocabTag">
+						<$text text=<<vocabTag>>/>
+					</$list>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+</div>

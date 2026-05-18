@@ -1,6 +1,7 @@
 title: vocab/legacy-glyphs/APPROX
 tags: $:/tags/CustomMarkup/Marker [[Vocab/Legacy-Glyphs]]
 caption: Approx (legacy)
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/approx
 open: ≈
 kind: glyph-level
 max-level: 4

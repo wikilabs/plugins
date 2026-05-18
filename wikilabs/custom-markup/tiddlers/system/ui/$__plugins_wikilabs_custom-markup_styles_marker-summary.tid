@@ -1,0 +1,39 @@
+title: $:/plugins/wikilabs/custom-markup/styles/marker-summary
+tags: $:/tags/Stylesheet
+type: text/vnd.tiddlywiki
+
+.wltc-marker-summary-icon {
+	float: left;
+	margin-right: 1em;
+}
+
+.wltc-marker-summary h2 {
+	margin-bottom: 0.2em;
+}
+
+.wltc-marker-summary-glyph {
+	font-size: 1.4em;
+}
+
+.wltc-marker-summary-clear {
+	clear: both;
+}
+
+.wltc-marker-summary-fields {
+	width: auto;
+}
+
+.wltc-marker-summary-fields th {
+	text-align: right;
+}
+
+.wltc-marker-summary-fields td,
+.wltc-marker-tag-summary-table th,
+.wltc-marker-tag-summary-table td {
+	text-align: left;
+}
+
+.wltc-marker-tag-summary-table th.wltc-icon-col,
+.wltc-marker-tag-summary-table td.wltc-icon-col {
+	text-align: center;
+}

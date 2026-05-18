@@ -1,6 +1,7 @@
 title: vocab/legacy-glyphs/TICK
 tags: $:/tags/CustomMarkup/Marker [[Vocab/Legacy-Glyphs]]
 caption: Tick (legacy)
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/tick
 open: ´
 kind: glyph
 mode: inline

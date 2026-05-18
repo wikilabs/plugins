@@ -1,6 +1,7 @@
 title: vocab/legacy-glyphs/PILCROW
 tags: $:/tags/CustomMarkup/Marker [[Vocab/Legacy-Glyphs]]
 caption: Pilcrow (legacy)
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/pilcrow
 open: ¶
 kind: glyph-level
 max-level: 4

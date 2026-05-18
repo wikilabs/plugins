@@ -1,6 +1,7 @@
 title: vocab/default/DEGREE
 tags: $:/tags/CustomMarkup/Marker [[Vocab/Default]]
 caption: Degree
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/degree
 open: °
 kind: glyph
 mode: inline

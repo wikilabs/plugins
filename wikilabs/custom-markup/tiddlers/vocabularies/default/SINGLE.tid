@@ -1,6 +1,7 @@
 title: vocab/default/SINGLE
 tags: $:/tags/CustomMarkup/Marker [[Vocab/Default]]
 caption: Single
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/single
 open: ›
 kind: glyph-level
 max-level: 4
