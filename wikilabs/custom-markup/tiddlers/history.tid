@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-12 - 2026-05-18
+
+* Editor toolbar add/remove glyph buttons enabled only for markers with `max-level > 1` (ANGLE, SINGLE, APPROX, PILCROW); toggle enabled for any line-prefix marker. Filter reads the marker tiddler directly.
+
+------
+
 V 1.0.0-beta-11 - 2026-05-18
 
 * Internal: use TW core's `parseTiddler` for the global-pragma cache. No behaviour change.

@@ -1,7 +1,7 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/add-glyph
 caption: add-glyph
 condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]]
-condition-disabled: [[$:/config/wikilabs/custom-markup/icons/glyphs/active]getindex[disabled]else[yes]]
+condition-disabled: [[$:/config/wikilabs/custom-markup/icons/glyphs/active]getindex[glyph]] :map[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:open<currentTiddler>get[max-level]compare:integer:gt[1]then[no]else[yes]]
 description: Add a "glyph" at the start of the selected line(s)
 icon: $:/plugins/wikilabs/custom-markup/icons/glyph-plus
 shortcuts: ((add-glyph))
