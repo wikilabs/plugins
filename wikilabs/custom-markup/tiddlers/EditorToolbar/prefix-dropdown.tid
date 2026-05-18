@@ -1,9 +1,7 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 
-\define getConfigName() $:/plugins/wikilabs/custom-markup/icons/glyphs/$(__name__)$
-
 \define selectID()
-<$action-createtiddler $basetitle="$:/config/wikilabs/custom-markup/icons/glyphs/active" $overwrite="yes" $template=<<getConfigName>> />
+<$action-createtiddler $basetitle="$:/config/wikilabs/custom-markup/icons/glyphs/active" $overwrite="yes" $template={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:open{$:/config/edit/linePrefix!!id}get[marker-icon]] }}} />
 \end
 \define selectActions()
 <$action-createtiddler $basetitle="$:/config/edit/linePrefix" $overwrite="yes"
@@ -24,15 +22,11 @@ title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 \end
 
 \define idSelector()
-<$tiddler tiddler="$:/config/edit/linePrefix">
-	<$list filter="[{$:/HistoryList!!current-tiddler}cm-active-markers[block]sort[caption]]" variable="markerTitle">
-		<$set name="open" value={{{ [<markerTitle>get[open]] }}}>
-			<$set name="markerName" value={{{ [<markerTitle>get[legacy-kind]] ~[<markerTitle>splitregexp[/]last[]lowercase[]] }}}>
-				<$wl-radio field="id" value=<<open>> actions=<<selectID>> name=<<markerName>>> <code><$text text=<<open>>/></code> </$wl-radio>|
-			</$set>
-		</$set>
+<$select tiddler="$:/config/edit/linePrefix" field="id" actions=<<selectID>>>
+	<$list filter="[{$:/HistoryList!!current-tiddler}cm-active-markers[block]sort[caption]!sort[order]]" variable="markerTitle">
+		<option value={{{ [<markerTitle>get[open]] }}}><$text text={{{ [<markerTitle>get[open]] }}}/><$entity entity="&emsp;"/><$text text={{{ [<markerTitle>get[caption]] }}}/></option>
 	</$list>
-</$tiddler>
+</$select>
 <$checkbox tiddler="$:/config/edit/linePrefix/force"
 	field=text
 	checked="yes" unchecked="no" default="no" > Use empty lines
@@ -59,7 +53,7 @@ title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 </$button>
 \end
 
-Select glyph -- <$macrocall $name=idSelector />
+Select glyph: <$macrocall $name=idSelector />
 
 ---
 

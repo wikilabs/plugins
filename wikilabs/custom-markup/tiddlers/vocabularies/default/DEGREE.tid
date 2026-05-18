@@ -7,4 +7,5 @@ kind: glyph
 mode: inline
 classes: .wltc-degree
 legacy-kind: degree
+order: 1
 description: Single-block paragraph; default <div>. Symbol after marker is treated as either a registered config name or an HTML element name.

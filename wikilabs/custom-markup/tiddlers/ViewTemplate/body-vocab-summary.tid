@@ -1,0 +1,63 @@
+title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
+
+\whitespace trim
+
+<div class="wltc-vocab-summary">
+
+	<h2>{{!!caption}}</h2>
+
+	<p>{{!!description}}</p>
+
+	<table class="tc-table-no-border wltc-marker-summary-fields">
+		<tbody>
+			<tr><th>marker-tag</th><td><code>{{!!marker-tag}}</code></td></tr>
+			<$list filter="[<currentTiddler>has[version]]" variable="ignore">
+				<tr><th>version</th><td>{{!!version}}</td></tr>
+			</$list>
+		</tbody>
+	</table>
+
+	<h3>Markers in this vocabulary</h3>
+
+	<table class="tc-table-no-border wltc-marker-tag-summary-table">
+		<thead>
+			<tr>
+				<th class="wltc-icon-col">Icon</th>
+				<th>Open</th>
+				<th>Close</th>
+				<th>Caption</th>
+				<th>Kind</th>
+				<th>Mode</th>
+				<th>Element</th>
+			</tr>
+		</thead>
+		<tbody>
+			<$list filter="[all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
+				<tr>
+					<td class="wltc-icon-col">
+						<$list filter="[<currentTiddler>has[marker-icon]]" variable="ignore">
+							<svg viewBox="0 0 128 128" width="28" height="28">
+								<$transclude tiddler={{!!marker-icon}} index="element"/>
+							</svg>
+						</$list>
+					</td>
+					<td><code><$text text={{!!open}}/></code></td>
+					<td>
+						<$list filter="[<currentTiddler>has[close]]" variable="ignore">
+							<code><$text text={{!!close}}/></code>
+						</$list>
+					</td>
+					<td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
+					<td>{{!!kind}}</td>
+					<td>{{!!mode}}</td>
+					<td>
+						<$list filter="[<currentTiddler>has[element]]" variable="ignore">
+							<code>{{!!element}}</code>
+						</$list>
+					</td>
+				</tr>
+			</$list>
+		</tbody>
+	</table>
+
+</div>

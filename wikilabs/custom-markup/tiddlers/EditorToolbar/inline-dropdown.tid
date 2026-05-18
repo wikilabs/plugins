@@ -1,12 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/EditorToolbar/inline-dropdown
 type: text/vnd.tiddlywiki
 
-\define getConfigName() $:/plugins/wikilabs/custom-markup/icons/inline/$(__name__)$
-
 \define selectID()
 <$action-createtiddler
 	$basetitle="$:/config/wikilabs/custom-markup/icons/inline/active"
-	$overwrite="yes" $template=<<getConfigName>>
+	$overwrite="yes"
+	$template={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:open{$:/config/edit/inlinePrefix/xx!!id}get[marker-icon]] }}}
 />
 \end
 \define selectActions()
@@ -28,17 +27,11 @@ type: text/vnd.tiddlywiki
 \end
 
 \define idSelector()
-<$tiddler tiddler="$:/config/edit/inlinePrefix/xx">
+<$select tiddler="$:/config/edit/inlinePrefix/xx" field="id" actions=<<selectID>>>
 	<$list filter="[{$:/HistoryList!!current-tiddler}cm-active-markers[inline]sort[caption]!sort[order]]" variable="markerTitle">
-		<$set name="open" value={{{ [<markerTitle>get[open]] }}}>
-			<$set name="close" value={{{ [<markerTitle>get[close]] }}}>
-				<$set name="markerName" value={{{ [<markerTitle>get[legacy-kind]] ~[<markerTitle>splitregexp[/]last[]lowercase[]] }}}>
-					<$wl-radio field="id" value=<<open>> actions=<<selectID>> name=<<markerName>>> <code><$text text=<<open>>/>..<$text text=<<close>>/></code> </$wl-radio>|
-				</$set>
-			</$set>
-		</$set>
+		<option value={{{ [<markerTitle>get[open]] }}}><$text text={{{ [<markerTitle>get[open]] }}}/>..<$text text={{{ [<markerTitle>get[close]] }}}/><$entity entity="&emsp;"/><$text text={{{ [<markerTitle>get[caption]] }}}/></option>
 	</$list>
-</$tiddler>
+</$select>
 \end
 
 \define preview-type-button()
@@ -61,7 +54,7 @@ type: text/vnd.tiddlywiki
 </$button>
 \end
 
-Select inline glyph -- <$macrocall $name=idSelector />
+Select inline glyph: <$macrocall $name=idSelector />
 
 ----
 

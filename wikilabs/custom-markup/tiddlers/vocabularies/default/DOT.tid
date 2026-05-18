@@ -7,4 +7,5 @@ kind: glyph
 mode: block
 classes: .wltc-dot
 allow-symbol: no
+order: 2
 description: Paragraph block, no symbol. Class chain syntax is `..cls`. Avoids prose collisions like `.NET` or `.com` (allow-symbol off plus strict-class regex).

@@ -4,3 +4,4 @@ list-before: $:/config/ViewTemplateBodyFilters/default
 
 [tag[$:/tags/CustomMarkup/Marker]then[$:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary]]
 [<currentTiddler>match[$:/tags/CustomMarkup/Marker]then[$:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-tag-summary]]
+[tag[$:/tags/CustomMarkup/Vocabulary]then[$:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary]]

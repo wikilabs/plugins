@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-13 - 2026-05-18
+
+* Toolbar prefix and inline dropdowns are `<select>` widgets; Vocab/Default ordered Angle, Single, Dot, Degree.
+* `$:/vocab/*` tiddlers show a summary view.
+
+------
+
 V 1.0.0-beta-12 - 2026-05-18
 
 * Editor toolbar add/remove glyph buttons enabled only for markers with `max-level > 1` (ANGLE, SINGLE, APPROX, PILCROW); toggle enabled for any line-prefix marker. Filter reads the marker tiddler directly.
