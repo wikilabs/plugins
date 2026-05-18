@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-10 - 2026-05-18
+
+* PageTemplate global pragmas are cached per wiki; ~3× faster wikitext parse on tiddlers with custom markup.
+
+------
+
 V 1.0.0-beta-9 - 2026-05-18
 
 * `marker-icon` field on each marker tiddler; new `dot` icon.
