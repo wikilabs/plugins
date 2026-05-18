@@ -13,10 +13,7 @@ holds its own instance, populated during wikirule init().
 
 var MARKER_TAG = "$:/tags/CustomMarkup/Marker";
 var VOCAB_TAG = "$:/tags/CustomMarkup/Vocabulary";
-var PRAGMA_TAG = "$:/tags/Pragma";
 var PAGE_TEMPLATE_TITLE = "$:/config/custom-markup/pragma/PageTemplate";
-var GLOBALS_CACHE_PROP = "__cmGlobalSymbolsCache";
-var INVALIDATOR_PROP = "__cmGlobalsInvalidatorInstalled";
 
 var CmRegistry = function(wiki) {
 	this.wiki = wiki;
@@ -229,94 +226,28 @@ CmRegistry.prototype.mergeSymbolsFrom = function(other) {
 // pragmas (e.g. the `°clip` / `°example` macro shortcuts shipped in
 // `.example-macro` and `global-pragma-definition`).
 //
-// Caching: the sub-parse result (a per-open globalSymbols map) is memoized
-// on the wiki object so subsequent parses skip the ~0.5 ms PageTemplate
-// re-parse. We use a custom wiki property (not TW core's globalCache, which
-// is wiped on every tiddler change including UI-state churn) plus a
-// targeted invalidator that wipes only when a marker tiddler, a
-// $:/tags/Pragma tiddler, or PageTemplate itself changes.
+// Caching: `wiki.parseTiddler` memoizes its result via TW core's per-
+// tiddler cache (`getCacheForTiddler`). The cached sub-parser is
+// invalidated only when PageTemplate itself changes — UI state churn
+// (popups, folded, drafts) leaves it warm. This is the same pattern
+// the v0.x plugin used (see Phase-1 handoff Chunk 1: "replaced cache
+// access with `parser.wiki.parseTiddler(template).configTickText`").
 //
-// Recursion guard: the sub-parse builds a sub-parser whose marker-rule
-// init re-enters loadGlobalPragmas; the `_loadingGlobals` static flag
-// short-circuits that recursive call so the sub-parser doesn't try to
-// load globals into itself.
+// Recursion guard: parseTiddler's cache initializer builds a sub-parser
+// whose marker-rule init re-enters loadGlobalPragmas; the
+// `_loadingGlobals` static flag short-circuits that recursive call.
 CmRegistry.prototype.loadGlobalPragmas = function() {
 	if(CmRegistry._loadingGlobals) { return; }
-	var wiki = this.wiki;
-	installGlobalsInvalidator(wiki);
-	var cached = wiki[GLOBALS_CACHE_PROP];
-	if(!cached) {
-		cached = buildGlobalSymbolsCache(wiki);
-		wiki[GLOBALS_CACHE_PROP] = cached;
-	}
-	// Attach cached per-open symbols to the markers in this registry.
-	// Markers not present here are simply skipped (matches the prior
-	// `mergeSymbolsFrom` behaviour).
-	var self = this;
-	Object.keys(cached.globalSymbols).forEach(function(open) {
-		if(self.markers[open]) {
-			self.markers[open].globalSymbols = cached.globalSymbols[open];
-		}
-	});
-};
-
-function buildGlobalSymbolsCache(wiki) {
-	var globalSymbols = Object.create(null);
-	var pragmaTitles = Object.create(null);
 	CmRegistry._loadingGlobals = true;
 	try {
-		var template = wiki.getTiddler(PAGE_TEMPLATE_TITLE);
-		if(template && template.fields.text) {
-			var subParser = wiki.parseText("text/vnd.tiddlywiki", template.fields.text);
-			if(subParser && subParser.cmRegistry) {
-				// Extract per-open symbol maps from the sub-parser's
-				// markers. Same shape mergeSymbolsFrom used to attach
-				// directly to live markers — now plain data in cache.
-				Object.keys(subParser.cmRegistry.markers).forEach(function(open) {
-					var syms = subParser.cmRegistry.markers[open].symbols;
-					if(syms && Object.keys(syms).length > 0) {
-						globalSymbols[open] = syms;
-					}
-				});
-			}
-			// Record the $:/tags/Pragma tiddlers PageTemplate's
-			// `\importcustom` pulled in; the invalidator wipes the cache
-			// if any of them (or other pragma-tagged tiddlers) change.
-			var imported = wiki.filterTiddlers("[all[shadows+tiddlers]tag[" + PRAGMA_TAG + "]]");
-			imported.forEach(function(t) { pragmaTitles[t] = true; });
+		var subParser = this.wiki.parseTiddler(PAGE_TEMPLATE_TITLE);
+		if(subParser && subParser.cmRegistry) {
+			this.mergeSymbolsFrom(subParser.cmRegistry);
 		}
 	} finally {
 		CmRegistry._loadingGlobals = false;
 	}
-	return { globalSymbols: globalSymbols, pragmaTitles: pragmaTitles };
-}
-
-function installGlobalsInvalidator(wiki) {
-	if(wiki[INVALIDATOR_PROP]) { return; }
-	wiki[INVALIDATOR_PROP] = true;
-	wiki.addEventListener("change", function(changes) {
-		var cache = wiki[GLOBALS_CACHE_PROP];
-		if(!cache) { return; }
-		for(var title in changes) {
-			if(title === PAGE_TEMPLATE_TITLE) {
-				wiki[GLOBALS_CACHE_PROP] = null;
-				return;
-			}
-			if(cache.pragmaTitles[title]) {
-				wiki[GLOBALS_CACHE_PROP] = null;
-				return;
-			}
-			var tiddler = wiki.getTiddler(title);
-			if(tiddler) {
-				var tags = tiddler.fields.tags || [];
-				if(tags.indexOf(PRAGMA_TAG) >= 0 || tags.indexOf(MARKER_TAG) >= 0) {
-					wiki[GLOBALS_CACHE_PROP] = null;
-					return;
-				}
-			}
-		}
-	});
-}
+};
 
 CmRegistry.prototype.findByOpen = function(literal) {
 	return this.markers[literal] || null;
