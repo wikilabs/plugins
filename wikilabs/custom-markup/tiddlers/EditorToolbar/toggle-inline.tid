@@ -3,7 +3,7 @@ tags: $:/tags/EditorToolbar
 icon: $:/plugins/wikilabs/custom-markup/icons/inline-toggle
 caption: inline
 description: wrap selection
-condition: [<targetTiddler>!has[type]] [<targetTiddler>type[text/vnd.tiddlywiki]] [<targetTiddler>type[application/x-tiddler-dictionary]]
+condition: [<targetTiddler>!has[type]] [<targetTiddler>get[type]prefix[text/vnd.tiddlywiki]] [<targetTiddler>type[application/x-tiddler-dictionary]]
 shortcuts: ((toggle-inline))
 
 <$action-sendmessage

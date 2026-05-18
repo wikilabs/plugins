@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-14 - 2026-05-18
+
+* `\debugcustom` lists v1 markers as well as legacy kinds; lookup by `open` literal works.
+* Editor toolbar add/remove/toggle glyph and toggle-inline buttons show on `;vocab=...` types.
+
+------
+
 V 1.0.0-beta-13 - 2026-05-18
 
 * Toolbar prefix and inline dropdowns are `<select>` widgets; Vocab/Default ordered Angle, Single, Dot, Degree.
