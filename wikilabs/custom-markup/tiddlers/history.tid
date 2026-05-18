@@ -1,110 +1,95 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-14 - 2026-05-18
+V 1.0.0-beta-15 - 2026-05-18
 
-* `\debugcustom` lists v1 markers as well as legacy kinds; lookup by `open` literal works.
-* Editor toolbar add/remove/toggle glyph and toggle-inline buttons show on `;vocab=...` types.
+* V 1.0.0-beta-15
+** Removed legacy hardcoded-glyph buttons add-tick, remove-tick, toggle-tick, add-angle, remove-angle. Use the vocab dropdowns instead.
 
-------
 
-V 1.0.0-beta-13 - 2026-05-18
+* V 1.0.0-beta-14
+** `\debugcustom` lists v1 markers as well as legacy kinds; lookup by `open` literal works.
+** Editor toolbar add/remove/toggle glyph and toggle-inline buttons show on `;vocab=...` types.
 
-* Toolbar prefix and inline dropdowns are `<select>` widgets; Vocab/Default ordered Angle, Single, Dot, Degree.
-* `$:/vocab/*` tiddlers show a summary view.
+* V 1.0.0-beta-13
 
-------
+** Toolbar prefix and inline dropdowns are `<select>` widgets; Vocab/Default ordered Angle, Single, Dot, Degree.
+** `$:/vocab/*` tiddlers show a summary view.
 
-V 1.0.0-beta-12 - 2026-05-18
+* V 1.0.0-beta-12
 
-* Editor toolbar add/remove glyph buttons enabled only for markers with `max-level > 1` (ANGLE, SINGLE, APPROX, PILCROW); toggle enabled for any line-prefix marker. Filter reads the marker tiddler directly.
+** Editor toolbar add/remove glyph buttons enabled only for markers with `max-level > 1` (ANGLE, SINGLE, APPROX, PILCROW); toggle enabled for any line-prefix marker. Filter reads the marker tiddler directly.
 
-------
+* V 1.0.0-beta-11
 
-V 1.0.0-beta-11 - 2026-05-18
+** Internal: use TW core's `parseTiddler` for the global-pragma cache. No behaviour change.
 
-* Internal: use TW core's `parseTiddler` for the global-pragma cache. No behaviour change.
+* V 1.0.0-beta-10
 
-------
+** PageTemplate global pragmas are cached per wiki; ~3× faster wikitext parse on tiddlers with custom markup.
 
-V 1.0.0-beta-10 - 2026-05-18
+* V 1.0.0-beta-9
 
-* PageTemplate global pragmas are cached per wiki; ~3× faster wikitext parse on tiddlers with custom markup.
-
-------
-
-V 1.0.0-beta-9 - 2026-05-18
-
-* `marker-icon` field on each marker tiddler; new `dot` icon.
-* Marker tiddler and `$:/tags/CustomMarkup/Marker` tag show summary views.
-* Edit-view type input widens for `;vocab=...` types.
+** `marker-icon` field on each marker tiddler; new `dot` icon.
+** Marker tiddler and `$:/tags/CustomMarkup/Marker` tag show summary views.
+** Edit-view type input widens for `;vocab=...` types.
 
 ------
 
 V 1.0.0-beta-8 - 2026-05-17
 
-* `\custom <kind>=<sym> _mode=block` on non-paragraph markers (`´`, `°`, `›`) now defaults to single-newline body termination. Tables built with `´td`-per-line work again.
+* V 1.0.0-beta-8
 
-------
+** `\custom <kind>=<sym> _mode=block` on non-paragraph markers (`´`, `°`, `›`) now defaults to single-newline body termination. Tables built with `´td`-per-line work again.
 
-V 1.0.0-beta-7 - 2026-05-17
+* V 1.0.0-beta-7
 
-* `\custom <kind>=<sym> ...` now auto-activates the marker for the tiddler — author defining custom behaviour implies the marker should fire.
-* `_endString="\n"` (and `\r`, `\t`, `\\`, `\"`, `\'`) finally interprets the JS escapes instead of matching the literal `\n` characters.
-* `_useGlobal=<sym>` switches to the global target wholesale; only local `_debug` wins, so the debug codeblock shows the resolved config.
-* Trailing newline no longer leaks into widget `src` attribute or debug `text` codeblock when the terminator is eaten.
+** `\custom <kind>=<sym> ...` now auto-activates the marker for the tiddler — author defining custom behaviour implies the marker should fire.
+** `_endString="\n"` (and `\r`, `\t`, `\\`, `\"`, `\'`) finally interprets the JS escapes instead of matching the literal `\n` characters.
+** `_useGlobal=<sym>` switches to the global target wholesale; only local `_debug` wins, so the debug codeblock shows the resolved config.
+** Trailing newline no longer leaks into widget `src` attribute or debug `text` codeblock when the terminator is eaten.
 
-------
+* V 1.0.0-beta-6
 
-V 1.0.0-beta-6 - 2026-05-17
+** `_use` and `_useGlobal` pragma aliases follow through to the target.
+** `_debug=pragma|text|both|*Only|no` emits the pragma string and/or source slice as a code block.
+** `°` `›` default to single-newline body termination again; `»` `≈` `¶` to blank-line.
 
-* `_use` and `_useGlobal` pragma aliases follow through to the target.
-* `_debug=pragma|text|both|*Only|no` emits the pragma string and/or source slice as a code block.
-* `°` `›` default to single-newline body termination again; `»` `≈` `¶` to blank-line.
+* V 1.0.0-beta-5
 
-------
-
-V 1.0.0-beta-5 - 2026-05-17
-
-* `:"<arg>"` positional arguments after the symbol/class chain now feed `_params` widget attributes (`°☐:"a"` overrides the first `_params` entry from the bridged pragma).
-* Indirect / macro / filtered attribute values (`field={{!!yy}}`, `UID=<<qualify>>`) survive into the registry; previously stringified to `[object Object]`.
-* Global `\custom` pragmas from `$:/config/custom-markup/pragma/PageTemplate` are loaded into every parser, restoring wiki-wide marker shortcuts (e.g. `°clip`, `°example`).
-* `»` `≈` `¶` markers wrap as `<p class="...">...</p>` again instead of `<div><p>...</p></div>`, matching the v0.x rendering.
-* Widget `src` no longer carries a trailing newline (which became `%0A` in URL-valued attributes).
+** `:"<arg>"` positional arguments after the symbol/class chain now feed `_params` widget attributes (`°☐:"a"` overrides the first `_params` entry from the bridged pragma).
+** Indirect / macro / filtered attribute values (`field={{!!yy}}`, `UID=<<qualify>>`) survive into the registry; previously stringified to `[object Object]`.
+** Global `\custom` pragmas from `$:/config/custom-markup/pragma/PageTemplate` are loaded into every parser, restoring wiki-wide marker shortcuts (e.g. `°clip`, `°example`).
+** `»` `≈` `¶` markers wrap as `<p class="...">...</p>` again instead of `<div><p>...</p></div>`, matching the v0.x rendering.
+** Widget `src` no longer carries a trailing newline (which became `%0A` in URL-valued attributes).
 
 ------
 
 V 1.0.0-beta-4 - 2026-05-16
 
-* `\custom <unknown-kind>` (anything outside the 9 legacy kinds) no longer crashes the parse rule.
+* V 1.0.0-beta-4
 
-------
+** `\custom <unknown-kind>` (anything outside the 9 legacy kinds) no longer crashes the parse rule.
 
-V 1.0.0-beta-3 - 2026-05-16
+* V 1.0.0-beta-3
 
-* Bare-kind pragmas (`\custom angle _element=td`) now activate the marker's default override.
-* Block-position fires always wrap in a block element; `wltc-l<N>` level class always added.
+** Bare-kind pragmas (`\custom angle _element=td`) now activate the marker's default override.
+** Block-position fires always wrap in a block element; `wltc-l<N>` level class always added.
 
-------
+* V 1.0.0-beta-2
 
-V 1.0.0-beta-2 - 2026-05-16
+** Editor toolbar dropdowns filter by the active vocabulary for the tiddler being edited (vocabs come from the `;vocab=` parameter on the type field; defaults to Vocab/Default).
+** New `cm-active-markers` filter operator: `[<tiddler>cm-active-markers[block|inline|word]]` returns marker titles active for that tiddler.
+** Inline-pair dropdown lists `/° °/` first (SLASH gets `order: 1`; sort chain `sort[caption]!sort[order]`).
 
-* Editor toolbar dropdowns filter by the active vocabulary for the tiddler being edited (vocabs come from the `;vocab=` parameter on the type field; defaults to Vocab/Default).
-* New `cm-active-markers` filter operator: `[<tiddler>cm-active-markers[block|inline|word]]` returns marker titles active for that tiddler.
-* Inline-pair dropdown lists `/° °/` first (SLASH gets `order: 1`; sort chain `sort[caption]!sort[order]`).
+* V 1.0.0-beta-1 (Breaking changes)
 
-------
-
-V 1.0.0-beta-1 - 2026-05-16
-
-! Breaking changes in V1.0.0-beta-1
-
-* Markers are now tiddlers tagged `$:/tags/CustomMarkup/Marker`, grouped into vocabularies (`Vocab/<Name>`). Default vocabulary ships `°` `.` `»` `›` (block) and `/° °/`, `❮ ❯`, `⠒ ⠶` (inline-pair). Activate extra vocabularies per tiddler via `type=text/vnd.tiddlywiki;vocab=Default,Legacy-Glyphs` or via `\importcustom [tag[Vocab/X]]`.
-* `´` `≈` `¶` moved to opt-in `Vocab/Legacy-Glyphs`. To keep using them, add `;vocab=Default,Legacy-Glyphs` to the tiddler's type field.
-* `°` and `›` now default to blank-line termination (was single-newline). Back-to-back `°foo` `°bar` lines join into one block. Set `mode: inline` on the marker tiddler or use `\custom degree=foo _mode=inline` to restore the old single-newline behaviour.
-* Editor toolbar dropdowns iterate marker tiddlers; new vocabularies appear automatically.
-* New `word` marker kind enables Fountain-flavoured DSLs. `Vocab/Presentation` (in editions) wraps the Reveal.js plugin: `PRESENTATION` / `CUT TO:` / `ANIMATE TO:` / `FADE IN:` / `FADE OUT.`.
-* `\custom <kind>=<symbol>` pragma is preserved as an in-tiddler escape hatch and bridges into the new registry via each marker's `legacy-kind` field.
-* Dropped the `pragma-comment` plugin dependency (HTML comments are in TW core).
+** Markers are now tiddlers tagged `$:/tags/CustomMarkup/Marker`, grouped into vocabularies (`Vocab/<Name>`). Default vocabulary ships `°` `.` `»` `›` (block) and `/° °/`, `❮ ❯`, `⠒ ⠶` (inline-pair). Activate extra vocabularies per tiddler via `type=text/vnd.tiddlywiki;vocab=Default,Legacy-Glyphs` or via `\importcustom [tag[Vocab/X]]`.
+** `´` `≈` `¶` moved to opt-in `Vocab/Legacy-Glyphs`. To keep using them, add `;vocab=Default,Legacy-Glyphs` to the tiddler's type field.
+** `°` and `›` now default to blank-line termination (was single-newline). Back-to-back `°foo` `°bar` lines join into one block. Set `mode: inline` on the marker tiddler or use `\custom degree=foo _mode=inline` to restore the old single-newline behaviour.
+** Editor toolbar dropdowns iterate marker tiddlers; new vocabularies appear automatically.
+** New `word` marker kind enables Fountain-flavoured DSLs. `Vocab/Presentation` (in editions) wraps the Reveal.js plugin: `PRESENTATION` / `CUT TO:` / `ANIMATE TO:` / `FADE IN:` / `FADE OUT.`.
+** `\custom <kind>=<symbol>` pragma is preserved as an in-tiddler escape hatch and bridges into the new registry via each marker's `legacy-kind` field.
+** Dropped the `pragma-comment` plugin dependency (HTML comments are in TW core).
 
 ------
 
