@@ -1,5 +1,13 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-27 - 2026-05-19
+
+* V 1.0.0-beta-27
+** Inline-pair arms sort longest-open-first so multi-char markers like `***` win over `**` and `*` at the same position.
+** Inline-pair markers honor `allow-symbol: no` (previously only block-glyph markers did); required for body-only markers like Fountain's `*italic*`.
+** `emit-open: yes` prepends a trailing space when the body is non-empty so the open literal and body don't run together (`INT. KITCHEN`, not `INT.KITCHEN`).
+** New `frontmatter` wikirule: when an active vocab declares `front-matter: yes`, a YAML block at the very top of the tiddler is consumed and rendered as `<div class="wltc-front-matter">`. Terminated by blank line or `===`. Parsing uses a vendored copy of the minimal YAML library from Jermolene's TiddlyWiki5 PR #9806 (`bidirectional-filesystem` branch).
+
 V 1.0.0-beta-26 - 2026-05-19
 
 * V 1.0.0-beta-26

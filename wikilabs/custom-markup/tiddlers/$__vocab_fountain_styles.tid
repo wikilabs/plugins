@@ -1,0 +1,189 @@
+created: 20260519092959557
+modified: 20260519161500000
+tags: $:/tags/Stylesheet
+title: $:/vocab/fountain/styles
+type: text/vnd.tiddlywiki
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline html
+
+/* ---- Typography baseline -----------------------------------------
+   Monospace face for the typewriter feel of a shooting script. Applied
+   per class because there's no wrapping container; a future engine
+   change could inject one, in which case font-family would move there.
+   max-width:60ch on each block approximates the printed-page width
+   (~60 columns of Courier on a US Letter page with 1" margins).
+*/
+
+.wltc-fountain-scene-heading,
+.wltc-fountain-transition,
+.wltc-fountain-fade-in,
+.wltc-fountain-character,
+.wltc-fountain-action,
+.wltc-fountain-synopsis,
+.wltc-fountain-section,
+.wltc-front-matter,
+.wltc-fountain-centered {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 1em;
+	line-height: 1.3;
+}
+
+/* ---- Title page (front-matter) -----------------------------------
+   Centered key:value block at the top of the tiddler. The on-page
+   convention shows values only (the `Title:` / `Author:` keys are
+   visual scaffolding, not content), so the key span is hidden.
+   First row is enlarged as a stand-in for the screenplay title.
+*/
+
+.wltc-front-matter {
+	text-align: center;
+	margin: 3em auto 4em;
+	padding: 2em 0;
+	max-width: 60ch;
+	border-bottom: 1px dotted #ddd;
+}
+
+.wltc-front-matter-key {
+	display: none;
+}
+
+.wltc-front-matter-row {
+	margin: 0.5em 0;
+}
+
+.wltc-front-matter-row:first-child {
+	font-size: 1.4em;
+	font-weight: bold;
+	margin: 1em 0 2em;
+}
+
+.wltc-front-matter-row[data-key="Source"] {
+	font-style: italic;
+	margin-bottom: 2em;
+}
+
+.wltc-front-matter-row[data-key="Copyright"] {
+	margin-top: 3em;
+	font-size: 0.85em;
+	color: #666;
+}
+
+/* ---- Scene headings ----------------------------------------------
+   Industry convention: at the left margin, bold uppercase. Slightly
+   more top spacing than a paragraph break to separate scenes.
+*/
+
+.wltc-fountain-scene-heading {
+	text-transform: uppercase;
+	font-weight: bold;
+	margin-top: 2em;
+	margin-bottom: 0.5em;
+}
+
+/* ---- Action paragraphs -------------------------------------------
+   Left margin, regular case, narrow screenplay-page width.
+*/
+
+.wltc-fountain-action {
+	margin: 1em 0;
+	max-width: 60ch;
+}
+
+/* ---- Character cue + dialogue ------------------------------------
+   Cue is centered uppercase in a narrow column. Dialogue follows on
+   the next paragraph(s); we can only reliably target the immediately
+   adjacent <p> with CSS — multi-paragraph dialogue runs need engine
+   support for lookahead (bd-j5b).
+*/
+
+.wltc-fountain-character {
+	text-transform: uppercase;
+	text-align: center;
+	margin: 1.2em auto 0;
+	max-width: 20ch;
+}
+
+.wltc-fountain-character + p {
+	margin: 0 auto 1em;
+	max-width: 35ch;
+	font-family: "Courier New", Courier, monospace;
+}
+
+/* ---- Transitions -------------------------------------------------
+   Mid-script transitions sit at the right margin; the FADE IN opener
+   stays at left per the spec.
+*/
+
+.wltc-fountain-transition {
+	text-transform: uppercase;
+	text-align: right;
+	margin: 1em 0;
+	max-width: 60ch;
+}
+
+.wltc-fountain-fade-in {
+	text-transform: uppercase;
+	text-align: left;
+	margin: 1em 0;
+	max-width: 60ch;
+}
+
+/* ---- Synopsis ----------------------------------------------------
+   Author-only note. Light italic gray so it's distinguishable from
+   produced action.
+*/
+
+.wltc-fountain-synopsis {
+	font-style: italic;
+	color: #888;
+	margin-left: 2em;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	font-size: 0.95em;
+}
+
+/* ---- Boneyard ----------------------------------------------------
+   Author-side cuts; hidden from rendered output.
+*/
+
+.wltc-fountain-boneyard {
+	display: none;
+}
+
+/* ---- Sections (author outline headers) ---------------------------
+   Hierarchical via the standard wltc-l<N> level classes.
+*/
+
+.wltc-fountain-section {
+	font-weight: bold;
+	text-transform: uppercase;
+	color: #555;
+	margin-top: 2em;
+	margin-bottom: 0.5em;
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 0.2em;
+	max-width: 60ch;
+}
+
+.wltc-fountain-section.wltc-l1 { font-size: 1.2em; }
+.wltc-fountain-section.wltc-l2 { font-size: 1.05em; margin-left: 1em; }
+.wltc-fountain-section.wltc-l3 { font-size: 1em; margin-left: 2em; }
+.wltc-fountain-section.wltc-l4 { font-size: 0.95em; margin-left: 3em; }
+
+/* ---- Centered text ----------------------------------------------- */
+
+.wltc-fountain-centered {
+	display: block;
+	text-align: center;
+	margin: 1em 0;
+}
+
+/* ---- Inline emphasis --------------------------------------------- */
+
+.wltc-fountain-bold-italic {
+	font-style: italic;
+}
+
+.wltc-fountain-underline {
+	text-decoration: underline;
+}

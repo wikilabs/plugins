@@ -78,6 +78,10 @@ var CmRegistry = function(wiki) {
 	// colliding core rules (heading vs `!action`, list vs `*x` line-start,
 	// prettylink vs `[[note]]`, ...) stop firing for the tiddler.
 	this.disabledCoreRules = Object.create(null);
+	// True if any activated vocab declared `front-matter: yes`. The
+	// front-matter wikirule consults this flag to decide whether to
+	// consume a `Key: Value` block at parser.pos === 0.
+	this.frontMatter = false;
 	this.blockRegex = null;
 	this.inlineRegex = null;
 	this.dirty = true;
@@ -135,8 +139,15 @@ CmRegistry.prototype.activate = function(name) {
 			if(rule) { self.disabledCoreRules[rule] = true; }
 		});
 	}
+	if(meta.fields["front-matter"] === "yes") {
+		self.frontMatter = true;
+	}
 	self.dirty = true;
 	return true;
+};
+
+CmRegistry.prototype.hasFrontMatter = function() {
+	return this.frontMatter;
 };
 
 CmRegistry.prototype.isActive = function(open) {
@@ -424,6 +435,13 @@ CmRegistry.prototype.rebuildRegexes = function() {
 		return 0;
 	});
 
+	// Inline arms longest-first for the same reason (`***` must win over
+	// `**` must win over `*`; JS regex alternation picks the first arm
+	// that matches at a position).
+	inlineMarkers.sort(function(a, b) {
+		return b.open.length - a.open.length;
+	});
+
 	var blockArms = [];
 	$tw.utils.each(blockMarkers, function(m) {
 		blockArms.push(buildBlockArm(m));
@@ -467,10 +485,17 @@ function buildBlockArm(m) {
 
 function buildInlineArm(m) {
 	var open = $tw.utils.escapeRegExp(m.open);
+	var quotedArgs = String.raw`(?::"[^"]*")*`;
+	// allow-symbol: no skips the symbol + class chain. Required for
+	// body-only markers like Fountain's `*italic*` where there's no symbol
+	// to capture between open and body; the default arm would eat "italic"
+	// as the symbol and leave body empty.
+	if(m.allowSymbol === false) {
+		return String.raw`(?:${open}${quotedArgs})`;
+	}
 	// Symbol/class char-class must exclude the first char of the close marker,
 	// otherwise text like `{!body!}` swallows the `!}` close into the symbol.
 	var closeFirst = m.close ? $tw.utils.escapeRegExp(m.close.charAt(0)) : "";
-	var quotedArgs = String.raw`(?::"[^"]*")*`;
 	return String.raw`(?:${open}(?:[^.:\r\n\s${closeFirst}]+)?(?:\.[^.\r\n\s:${closeFirst}]+)*${quotedArgs})`;
 }
 

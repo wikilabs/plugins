@@ -58,9 +58,12 @@ exports.parse = function() {
 	var children = parseBody(this.parser, config);
 	// Marker opts into keeping its open literal visible as body content
 	// (Fountain transitions: `CUT TO:`, `FADE IN:`, ... where the keyword
-	// IS the content).
+	// IS the content). Add a trailing space when body has content so the
+	// open literal and body don't run together (`INT. KITCHEN`, not
+	// `INT.KITCHEN`); skipWhitespace eats the source-side separator before
+	// body parsing begins, so we re-introduce it on the rendered side.
 	if(marker.emitOpen === "yes") {
-		children.unshift({type: "text", text: marker.open});
+		children.unshift({type: "text", text: children.length > 0 ? marker.open + " " : marker.open});
 	}
 	var textEnd = this.parser.pos;
 	var nodes = [];
