@@ -6,7 +6,7 @@ module-type: widget-subclass
 Keyboard shortcut widget
 
 \*/
-(function(){
+
 /*jslint node: true, browser: true */
 /*global $tw: false */
 "use strict";
@@ -49,4 +49,3 @@ exports.prototype.handleChangeEvent = function(event) {
 	return false;
 }
 
-})();
