@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/custom-markup/ViewTemplateBodyFilters/marker
+tags: $:/tags/ViewTemplateBodyFilter
+list-before: $:/config/ViewTemplateBodyFilters/default
+
+[tag[$:/tags/CustomMarkup/Marker]then[$:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary]]

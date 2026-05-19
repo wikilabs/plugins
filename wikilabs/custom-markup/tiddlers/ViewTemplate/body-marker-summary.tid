@@ -4,7 +4,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 
 <div class="wltc-marker-summary">
 
-	<%if [<currentTiddler>has[marker-icon]] %>
+	<%if [<currentTiddler>has:field[marker-icon]] %>
 		<svg viewBox="0 0 128 128" width="64" height="64" class="wltc-marker-summary-icon">
 			<$transclude tiddler={{!!marker-icon}} index="element"/>
 		</svg>
@@ -12,7 +12,17 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 
 	<h2>{{!!caption}}</h2>
 
-		<code class="wltc-marker-summary-glyph"><$text text={{!!open}}/></code><%if [<currentTiddler>has[close]] %> ... <code class="wltc-marker-summary-glyph"><$text text={{!!close}}/></code><%endif%>
+	<table class="wltc-marker-summary-glyphs">
+		<thead>
+			<tr><th>Open</th><th>Close</th></tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><code class="wltc-marker-summary-glyph"><$text text={{!!open}}/></code></td>
+				<td><%if [<currentTiddler>has:field[close]] %><code class="wltc-marker-summary-glyph"><$text text={{!!close}}/></code><%endif%></td>
+			</tr>
+		</tbody>
+	</table>
 
 	<p>{{!!description}}</p>
 
@@ -22,26 +32,28 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 		<tbody>
 			<tr><th>kind</th><td>{{!!kind}}</td></tr>
 			<tr><th>mode</th><td>{{!!mode}}</td></tr>
-			<%if [<currentTiddler>has[element]] %>
+			<%if [<currentTiddler>has:field[element]] %>
 				<tr><th>element</th><td><code>{{!!element}}</code></td></tr>
 			<%endif%>
 			<%if [<currentTiddler>field:paragraph-marker[yes]] %>
 				<tr><th>paragraph-marker</th><td>yes</td></tr>
 			<%endif%>
-			<tr><th>classes</th><td><code>{{!!classes}}</code></td></tr>
-			<%if [<currentTiddler>has[max-level]] %>
+			<%if [<currentTiddler>has:field[classes]] %>
+				<tr><th>classes</th><td><code>{{!!classes}}</code></td></tr>
+			<%endif%>
+			<%if [<currentTiddler>has:field[max-level]] %>
 				<tr><th>max-level</th><td>{{!!max-level}}</td></tr>
 			<%endif%>
-			<%if [<currentTiddler>has[allow-symbol]] %>
+			<%if [<currentTiddler>has:field[allow-symbol]] %>
 				<tr><th>allow-symbol</th><td>{{!!allow-symbol}}</td></tr>
 			<%endif%>
-			<%if [<currentTiddler>has[legacy-kind]] %>
+			<%if [<currentTiddler>has:field[legacy-kind]] %>
 				<tr><th>legacy-kind</th><td><code>{{!!legacy-kind}}</code></td></tr>
 			<%endif%>
-			<%if [<currentTiddler>has[order]] %>
+			<%if [<currentTiddler>has:field[order]] %>
 				<tr><th>order</th><td>{{!!order}}</td></tr>
 			<%endif%>
-			<%if [<currentTiddler>has[marker-icon]] %>
+			<%if [<currentTiddler>has:field[marker-icon]] %>
 				<tr><th>marker-icon</th><td><$link to={{!!marker-icon}}><$text text={{!!marker-icon}}/></$link></td></tr>
 			<%endif%>
 			<tr>

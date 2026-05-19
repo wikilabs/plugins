@@ -11,7 +11,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
 			<tr><th>marker-tag</th><td><code>{{!!marker-tag}}</code></td></tr>
-			<%if [<currentTiddler>has[version]] %>
+			<%if [<currentTiddler>has:field[version]] %>
 				<tr><th>version</th><td>{{!!version}}</td></tr>
 			<%endif%>
 		</tbody>
@@ -37,7 +37,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 			<$list filter="[all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
 				<tr>
 					<td class="wltc-icon-col">
-						<%if [<currentTiddler>has[marker-icon]] %>
+						<%if [<currentTiddler>has:field[marker-icon]] %>
 							<svg viewBox="0 0 128 128" width="28" height="28">
 								<$transclude tiddler={{!!marker-icon}} index="element"/>
 							</svg>
@@ -45,7 +45,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 					</td>
 					<td><code><$text text={{!!open}}/></code></td>
 					<td>
-						<%if [<currentTiddler>has[close]] %>
+						<%if [<currentTiddler>has:field[close]] %>
 							<code><$text text={{!!close}}/></code>
 						<%endif%>
 					</td>
@@ -53,7 +53,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 					<td>{{!!kind}}</td>
 					<td>{{!!mode}}</td>
 					<td>
-						<%if [<currentTiddler>has[element]] %>
+						<%if [<currentTiddler>has:field[element]] %>
 							<code>{{!!element}}</code>
 						<%endif%>
 					</td>

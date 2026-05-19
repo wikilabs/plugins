@@ -1,0 +1,5 @@
+title: $:/plugins/wikilabs/custom-markup/ViewTemplateBodyFilters/vocab
+tags: $:/tags/ViewTemplateBodyFilter
+list-before: $:/config/ViewTemplateBodyFilters/default
+
+[tag[$:/tags/CustomMarkup/Vocabulary]then[$:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary]]

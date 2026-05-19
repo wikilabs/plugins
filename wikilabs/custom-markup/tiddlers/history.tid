@@ -1,6 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-19 - 2026-05-19
+V 1.0.0-beta-20 - 2026-05-19
+
+* V 1.0.0-beta-20
+** ViewTemplate body cascade split: one tiddler per clause.
+** Marker-summary: open/close glyphs in a two-column table.
 
 * V 1.0.0-beta-19
 ** Vocab-summary table adds `Max-level` and `Paragraph` columns; marker-summary view adds a `paragraph-marker` row.
