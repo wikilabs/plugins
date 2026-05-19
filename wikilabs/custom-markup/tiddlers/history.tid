@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-23 - 2026-05-19
+
+* V 1.0.0-beta-23
+** Secure-by-default: iframe markers get `sandbox=""` injected (max restrictions; neutralizes srcdoc-script and external-content vectors). `object`/`embed`/`frame`/`frameset` are denied (no usable sandbox). `javascript:` URLs are stripped from `src`/`href`/`xlink:href`/`data`/`action`/`formaction`. Opt out per marker with `allow-unsafe: yes` (or pragma `_allow_unsafe=yes`).
+
 V 1.0.0-beta-22 - 2026-05-19
 
 * V 1.0.0-beta-22

@@ -15,6 +15,54 @@ var MARKER_TAG = "$:/tags/CustomMarkup/Marker";
 var VOCAB_TAG = "$:/tags/CustomMarkup/Vocabulary";
 var PAGE_TEMPLATE_TITLE = "$:/config/custom-markup/pragma/PageTemplate";
 
+// Secure-by-default. Three categories:
+//   - DENIED: replaced with the default wrapper element. No usable sandbox
+//     semantics; the element itself is dropped.
+//   - SANDBOXABLE: rendered, but `sandbox=""` is injected if the marker
+//     author hasn't set a sandbox attribute. The sandbox neutralizes
+//     script execution from `srcdoc` and external content alike.
+//   - everything else: untouched.
+// Markers opt out of all three rules with `allow-unsafe: yes` (or pragma
+// form `_allow_unsafe=yes`).
+var DENIED_ELEMENTS = ["object", "embed", "frame", "frameset"];
+var SANDBOXABLE_ELEMENTS = ["iframe"];
+
+// URL-bearing attributes scrubbed for `javascript:` scheme. TW already
+// strips inline event-handler attributes via `excludeEventAttributes: true`
+// in element.js, so we focus on the URL vectors that bypass that path.
+var URL_ATTRS = ["src", "href", "xlink:href", "data", "action", "formaction"];
+var JAVASCRIPT_URL_RE = /^\s*javascript:/i;
+
+function isDeniedElement(el) {
+	if(!el || typeof el !== "string") { return false; }
+	return DENIED_ELEMENTS.indexOf(el.toLowerCase()) !== -1;
+}
+
+function isSandboxableElement(el) {
+	if(!el || typeof el !== "string") { return false; }
+	return SANDBOXABLE_ELEMENTS.indexOf(el.toLowerCase()) !== -1;
+}
+
+function hasSandboxAttr(attrs) {
+	if(!attrs) { return false; }
+	return Object.keys(attrs).some(function(k) { return k.toLowerCase() === "sandbox"; });
+}
+
+function scrubAttributes(attrs, element) {
+	if(!attrs || typeof attrs !== "object") { attrs = {}; }
+	var out = {};
+	Object.keys(attrs).forEach(function(key) {
+		var lk = key.toLowerCase();
+		var val = attrs[key];
+		if(URL_ATTRS.indexOf(lk) !== -1 && typeof val === "string" && JAVASCRIPT_URL_RE.test(val)) { return; }
+		out[key] = val;
+	});
+	if(isSandboxableElement(element) && !hasSandboxAttr(out)) {
+		out.sandbox = "";
+	}
+	return out;
+}
+
 var CmRegistry = function(wiki) {
 	this.wiki = wiki;
 	this.markers = Object.create(null);
@@ -108,19 +156,26 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 			attrs = {};
 		}
 	}
+	var allowUnsafe = f["allow-unsafe"] === "yes";
+	var element = f.element || "";
+	if(!allowUnsafe) {
+		if(isDeniedElement(element)) { element = ""; }
+		attrs = scrubAttributes(attrs, element);
+	}
 	return {
 		title: title,
 		open: f.open,
 		close: f.close || "",
 		kind: f.kind,
 		mode: f.mode || (f.kind === "inline-pair" ? "inline" : "block"),
-		element: f.element || "",
+		element: element,
 		endString: f["end-string"] || "",
 		classes: f.classes || "",
 		attributes: attrs,
 		srcName: f["src-name"] || "src",
 		allowSymbol: f["allow-symbol"] !== "no",
 		allowClasses: f["allow-classes"] === "yes",
+		allowUnsafe: allowUnsafe,
 		maxLevel: parseInt(f["max-level"] || "4", 10) || 4,
 		// paragraph-marker: "yes" opts into paragraph terminator semantics
 		// (blank-line, no nested-p body parse) independently of `element`.
@@ -189,6 +244,7 @@ function normalizeLegacyConfig(legacy) {
 			case "_use": out.use = legacy[key]; break;
 			case "_useGlobal": out.useGlobal = legacy[key]; break;
 			case "_activate": out.activate = legacy[key]; break;
+			case "_allow_unsafe": out.allowUnsafe = legacy[key]; break;
 			case "_debug": out.debug = legacy[key]; break;
 			case "_params": out.params = legacy[key]; break;
 			default:
@@ -203,6 +259,15 @@ function normalizeLegacyConfig(legacy) {
 					}
 				}
 		}
+	}
+	// Secure-by-default: deny iframe-family unsafeoutright (frame, frameset,
+	// object, embed) and force a `sandbox=""` on iframe unless the pragma
+	// explicitly opts out with `_allow_unsafe=yes`. Strip `javascript:` URL
+	// values from URL-bearing attributes either way (the opt-out covers
+	// elements, not URL schemes).
+	if(out.allowUnsafe !== "yes") {
+		if(isDeniedElement(out.element)) { delete out.element; }
+		attributes = scrubAttributes(attributes, out.element);
 	}
 	if(Object.keys(attributes).length > 0) {
 		out.attributes = attributes;
