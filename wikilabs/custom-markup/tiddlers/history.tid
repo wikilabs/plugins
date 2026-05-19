@@ -1,9 +1,14 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-22 - 2026-05-19
+
+* V 1.0.0-beta-22
+** `\custom <kind>=<sym> _activate=no` opts out of the implicit marker activation. Useful for pragmas that only exist to be referenced via `_useGlobal` from other tiddlers.
+
 V 1.0.0-beta-21 - 2026-05-19
 
 * V 1.0.0-beta-21
-** Plugin-side `$:/config/custom-markup/pragma/PageTemplate` corrected: tag `$:/tags/Macro` 
+** Plugin-side `$:/config/custom-markup/pragma/PageTemplate` corrected: tag `$:/tags/Macro`
 
 V 1.0.0-beta-20 - 2026-05-19
 

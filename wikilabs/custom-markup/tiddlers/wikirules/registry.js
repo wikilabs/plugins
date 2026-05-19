@@ -154,13 +154,15 @@ CmRegistry.prototype.bridgeLegacyConfig = function(kindOrOpen, legacyConfig) {
 	// {name:"angle", value:"true"}. Treat both `undefined` and `"true"`
 	// as the empty-key sentinel so resolveConfig picks them up.
 	var symbolKey = (rawSymbol === undefined || rawSymbol === "true") ? "" : rawSymbol;
-	marker.symbols[symbolKey] = normalizeLegacyConfig(legacyConfig);
+	var normalized = normalizeLegacyConfig(legacyConfig);
+	marker.symbols[symbolKey] = normalized;
 	// Author-intent activation: a `\custom <kind>=...` pragma implies the
-	// author wants the marker active in this tiddler. Without this, `´list`
-	// in a tiddler whose type field doesn't include Legacy-Glyphs would
-	// render as literal text — surprising and (when the body contains
-	// `{{!!text}}`) triggers transclusion recursion.
-	this.active[marker.open] = true;
+	// author wants the marker active in this tiddler. Opt out with
+	// `_activate=no` (e.g. for pragmas that only exist to be referenced
+	// via `_useGlobal` from other tiddlers).
+	if(normalized.activate !== "no") {
+		this.active[marker.open] = true;
+	}
 	return true;
 };
 
@@ -186,6 +188,7 @@ function normalizeLegacyConfig(legacy) {
 			case "_srcName": out.srcName = legacy[key]; break;
 			case "_use": out.use = legacy[key]; break;
 			case "_useGlobal": out.useGlobal = legacy[key]; break;
+			case "_activate": out.activate = legacy[key]; break;
 			case "_debug": out.debug = legacy[key]; break;
 			case "_params": out.params = legacy[key]; break;
 			default:
