@@ -26,6 +26,10 @@ exports.init = function(parser) {
 		// pragmas (v0.x global pragma equivalent). Recursion-guarded.
 		parser.cmRegistry.loadGlobalPragmas();
 		parser.cmRegistry.activateFromTypeField(parser.type);
+		// Schedule the declared TW core-rule exclusions. The actual mutation
+		// runs via a one-shot parsePragmas wrap (see registry.applyAmendRules
+		// for why); init() is too early to amend rules safely.
+		parser.cmRegistry.applyAmendRules(parser);
 	}
 	this.matchRegExp = parser.cmRegistry.getBlockRegex() || /(?!)/g;
 };
@@ -52,6 +56,12 @@ exports.parse = function() {
 	var config = resolveConfig(marker, parsed.symbol, parsed.classes, parsed.level);
 	config.quotedArgs = parsed.quotedArgs;
 	var children = parseBody(this.parser, config);
+	// Marker opts into keeping its open literal visible as body content
+	// (Fountain transitions: `CUT TO:`, `FADE IN:`, ... where the keyword
+	// IS the content).
+	if(marker.emitOpen === "yes") {
+		children.unshift({type: "text", text: marker.open});
+	}
 	var textEnd = this.parser.pos;
 	var nodes = [];
 	if(config.debug && config.debug !== "no") {

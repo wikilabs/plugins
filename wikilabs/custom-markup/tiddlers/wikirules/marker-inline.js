@@ -21,6 +21,7 @@ exports.init = function(parser) {
 		parser.cmRegistry.loadAllMarkers();
 		parser.cmRegistry.loadGlobalPragmas();
 		parser.cmRegistry.activateFromTypeField(parser.type);
+		parser.cmRegistry.applyAmendRules(parser);
 	}
 	this.matchRegExp = parser.cmRegistry.getInlineRegex() || /(?!)/g;
 };

@@ -1,6 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-25 - 2026-05-19
+V 1.0.0-beta-26 - 2026-05-19
+
+* V 1.0.0-beta-26
+** Vocab meta `disable-core-rules: <names>` suppresses listed TW core wikirules for tiddlers that activate the vocab; user `\rules` pragmas can still amend further.
+** Marker field `emit-open: yes` prepends the marker's open literal to its rendered body (for word markers where the keyword IS the content).
 
 * V 1.0.0-beta-25
 ** Cross-vocab marker collisions (two vocabs with the same `open`) now resolve to the LAST activated vocab. Type field `;vocab=A,B` makes B win on overlap; `;vocab=B,A` makes A win. Previously the alphabetically-last marker tiddler always won regardless of activation.

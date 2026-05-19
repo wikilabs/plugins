@@ -73,6 +73,11 @@ var CmRegistry = function(wiki) {
 	// pragmas (\importcustom) activate vocabularies after parser init,
 	// without falling foul of TW's rule-pruning at instantiateRules time.
 	this.active = Object.create(null);
+	// Union of TW core wikirule names that each activated vocab declared
+	// in its `disable-core-rules` field. Applied via parser.amendRules so
+	// colliding core rules (heading vs `!action`, list vs `*x` line-start,
+	// prettylink vs `[[note]]`, ...) stop firing for the tiddler.
+	this.disabledCoreRules = Object.create(null);
 	this.blockRegex = null;
 	this.inlineRegex = null;
 	this.dirty = true;
@@ -121,12 +126,47 @@ CmRegistry.prototype.activate = function(name) {
 			self.active[config.open] = true;
 		}
 	});
+	// Union-merge the vocab's declared core-rule exclusions. Whitespace
+	// separated list of TW core wikirule names (e.g. `heading list
+	// prettylink`). Empty / absent field is a no-op.
+	var disabled = meta.fields["disable-core-rules"];
+	if(typeof disabled === "string" && disabled.length > 0) {
+		disabled.split(/\s+/).forEach(function(rule) {
+			if(rule) { self.disabledCoreRules[rule] = true; }
+		});
+	}
 	self.dirty = true;
 	return true;
 };
 
 CmRegistry.prototype.isActive = function(open) {
 	return !!this.active[open];
+};
+
+// Apply the union of declared core-rule exclusions to the parser.
+//
+// Timing constraint: cannot call parser.amendRules synchronously from a
+// rule's init() — during the WikiParser constructor, init() runs while
+// instantiateRules is mid-flight assigning this.blockRules /
+// this.inlineRules / this.pragmaRules. amendRules walks all three arrays
+// and crashes on the not-yet-assigned ones (TypeError → RSOD).
+//
+// Defer via a one-shot wrap of parser.parsePragmas (called immediately
+// after instantiateRules completes, so all rule arrays are populated and
+// safe to mutate). The wrap also runs BEFORE pragma rules fire, so any
+// user `\rules except|only ...` pragma in the source can still amend
+// further on top of the vocab's baseline.
+CmRegistry.prototype.applyAmendRules = function(parser) {
+	var names = Object.keys(this.disabledCoreRules);
+	if(names.length === 0) { return; }
+	if(parser._cmAmendScheduled) { return; }
+	parser._cmAmendScheduled = true;
+	var originalParsePragmas = parser.parsePragmas;
+	parser.parsePragmas = function() {
+		parser.amendRules("except", names);
+		parser.parsePragmas = originalParsePragmas;
+		return originalParsePragmas.apply(this, arguments);
+	};
 };
 
 // Parse a content-type string like `text/vnd.tiddlywiki;vocab=A,B,C` and
@@ -185,6 +225,12 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		// paragraph-marker: "yes" opts into paragraph terminator semantics
 		// (blank-line, no nested-p body parse) independently of `element`.
 		paragraphMarker: f["paragraph-marker"],
+		// emit-open: "yes" prepends the open literal as a text node to the
+		// rendered children. Useful for word markers whose keyword IS the
+		// content (Fountain transitions: `CUT TO:`, `FADE IN:`, ...).
+		// Default behaviour consumes the open literal; this opts back into
+		// emitting it.
+		emitOpen: f["emit-open"],
 		// legacy-kind: friendly name from the v0.x plugin (tick, degree, angle,
 		// approx, pilcrow, single, corner, braille, slash). Lets the legacy
 		// `\custom degree=foo` pragma resolve to the right marker.
