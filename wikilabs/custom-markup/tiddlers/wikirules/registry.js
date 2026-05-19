@@ -154,10 +154,13 @@ CmRegistry.prototype.isActive = function(open) {
 	return !!this.active[open];
 };
 
-// Apply the union of declared core-rule exclusions to the parser.
+// Apply the union of declared core-rule exclusions to the parser, and
+// also flag the parser as "post-pragmas" once parsePragmas completes so
+// cmblock/cminline's findNextMatch overrides can start filtering out
+// inactive marker matches (see those modules for the why).
 //
-// Timing constraint: cannot call parser.amendRules synchronously from a
-// rule's init() — during the WikiParser constructor, init() runs while
+// The amendRules side: cannot call parser.amendRules synchronously from
+// a rule's init() — during the WikiParser constructor, init() runs while
 // instantiateRules is mid-flight assigning this.blockRules /
 // this.inlineRules / this.pragmaRules. amendRules walks all three arrays
 // and crashes on the not-yet-assigned ones (TypeError → RSOD).
@@ -167,18 +170,44 @@ CmRegistry.prototype.isActive = function(open) {
 // safe to mutate). The wrap also runs BEFORE pragma rules fire, so any
 // user `\rules except|only ...` pragma in the source can still amend
 // further on top of the vocab's baseline.
+//
+// The post-pragmas flag is set AFTER the original parsePragmas returns,
+// so vocab activations from pragmas like `\importcustom` are visible to
+// subsequent body parsing.
 CmRegistry.prototype.applyAmendRules = function(parser) {
-	var names = Object.keys(this.disabledCoreRules);
-	if(names.length === 0) { return; }
 	if(parser._cmAmendScheduled) { return; }
 	parser._cmAmendScheduled = true;
+	var names = Object.keys(this.disabledCoreRules);
 	var originalParsePragmas = parser.parsePragmas;
 	parser.parsePragmas = function() {
-		parser.amendRules("except", names);
+		if(names.length > 0) {
+			parser.amendRules("except", names);
+		}
 		parser.parsePragmas = originalParsePragmas;
-		return originalParsePragmas.apply(this, arguments);
+		var result = originalParsePragmas.apply(this, arguments);
+		parser._cmPragmasDone = true;
+		// instantiateRules cached cmblock/cminline's matchIndex from
+		// before pragmas ran. TW's WikiParser.findNextMatch only re-runs
+		// a rule's own findNextMatch when matchIndex < startPos, so the
+		// cached "match this `#` at position 0" sticks even now that
+		// we'd correctly skip it as an inactive marker. Refresh the
+		// cached value so the filter applies on next round.
+		refreshCmRuleMatch(parser.blockRules, "cmblock");
+		refreshCmRuleMatch(parser.inlineRules, "cminline");
+		return result;
 	};
 };
+
+function refreshCmRuleMatch(rules, ruleName) {
+	if(!rules) { return; }
+	for(var i = 0; i < rules.length; i++) {
+		var info = rules[i];
+		if(info.rule && info.rule.name === ruleName) {
+			info.matchIndex = info.rule.findNextMatch(0);
+			return;
+		}
+	}
+}
 
 // Parse a content-type string like `text/vnd.tiddlywiki;vocab=A,B,C` and
 // activate the listed vocabularies. Without a `;vocab=` parameter, falls

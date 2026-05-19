@@ -34,6 +34,38 @@ exports.init = function(parser) {
 	this.matchRegExp = parser.cmRegistry.getBlockRegex() || /(?!)/g;
 };
 
+// Override the default findNextMatch so that AFTER pragmas have parsed
+// (so `\importcustom` has had its chance to activate vocabs), we skip
+// over inactive marker positions instead of claiming them. Without this
+// filter, an inactive marker whose open literal collides with a TW core
+// rule (Vocab/Fountain's `#` SECTION vs core `list`, etc.) would silently
+// eat the position via the text-fallback in parse(), suppressing the
+// core rule for any tiddler in the wiki — even tiddlers that don't
+// activate the offending vocab.
+//
+// Before pragmas: behave like the default (accept any marker match) so
+// the rule survives TW's `instantiateRules` pruning and remains
+// available for pragma-activated vocabs to use.
+exports.findNextMatch = function(startPos) {
+	var source = this.parser.source;
+	var regex = this.matchRegExp;
+	regex.lastIndex = startPos;
+	var match;
+	while((match = regex.exec(source)) !== null) {
+		if(this.parser._cmPragmasDone) {
+			var marker = identifyMarker(match[0], this.parser.cmRegistry);
+			if(!marker || !this.parser.cmRegistry.isActive(marker.open)) {
+				regex.lastIndex = match.index + 1;
+				continue;
+			}
+		}
+		this.match = match;
+		return match.index;
+	}
+	this.match = null;
+	return undefined;
+};
+
 exports.parse = function() {
 	var registry = this.parser.cmRegistry;
 	var matchText = this.match[0];

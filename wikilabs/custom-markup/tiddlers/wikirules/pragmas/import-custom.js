@@ -47,7 +47,12 @@ exports.parse = function() {
 
 	if(!match) { return []; }
 	var filter = match[1];
-	var tiddlerList = $tw.wiki.filterTiddlers(filter);
+	// Run the filter against shadows + tiddlers so users can write
+	// `[tag[Vocab/X]]` without having to remember to spell
+	// `[all[shadows+tiddlers]tag[Vocab/X]]`. Marker tiddlers are almost
+	// always shadows (shipped inside plugins), so this is what authors
+	// want 99% of the time and matches the type-field activation path.
+	var tiddlerList = $tw.wiki.filterTiddlers(filter, null, $tw.wiki.eachShadowPlusTiddlers);
 
 	$tw.utils.each(tiddlerList, function(title) {
 		var t = $tw.wiki.getTiddler(title);

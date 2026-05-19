@@ -28,7 +28,9 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 				<th>Caption</th>
 				<th>Kind</th>
 				<th>Mode</th>
+				<th>Default Mode</th>
 				<th>Element</th>
+				<th>Default Element</th>
 				<th>Max-level</th>
 				<th>Paragraph</th>
 			</tr>
@@ -51,10 +53,28 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 					</td>
 					<td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
 					<td>{{!!kind}}</td>
-					<td>{{!!mode}}</td>
+					<td>
+						<%if [<currentTiddler>has:field[mode]] %>
+							{{!!mode}}
+						<%endif%>
+					</td>
+					<td>
+						<%if [<currentTiddler>field:kind[inline-pair]] %>
+							inline
+						<%else%>
+							block
+						<%endif%>
+					</td>
 					<td>
 						<%if [<currentTiddler>has:field[element]] %>
 							<code>{{!!element}}</code>
+						<%endif%>
+					</td>
+					<td>
+						<%if [<currentTiddler>field:kind[inline-pair]] %>
+							<code>span</code>
+						<%else%>
+							<code>div</code>
 						<%endif%>
 					</td>
 					<td>

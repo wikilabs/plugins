@@ -26,6 +26,30 @@ exports.init = function(parser) {
 	this.matchRegExp = parser.cmRegistry.getInlineRegex() || /(?!)/g;
 };
 
+// See marker-block.js findNextMatch override for the rationale. Same
+// pattern: filter inactive marker positions once pragmas have parsed,
+// so inline-pair markers in vocabs the tiddler hasn't activated don't
+// shadow TW core rules.
+exports.findNextMatch = function(startPos) {
+	var source = this.parser.source;
+	var regex = this.matchRegExp;
+	regex.lastIndex = startPos;
+	var match;
+	while((match = regex.exec(source)) !== null) {
+		if(this.parser._cmPragmasDone) {
+			var marker = identifyInlinePairMarker(match[0], this.parser.cmRegistry);
+			if(!marker || !this.parser.cmRegistry.isActive(marker.open)) {
+				regex.lastIndex = match.index + 1;
+				continue;
+			}
+		}
+		this.match = match;
+		return match.index;
+	}
+	this.match = null;
+	return undefined;
+};
+
 exports.parse = function() {
 	var registry = this.parser.cmRegistry;
 	var matchText = this.match[0];

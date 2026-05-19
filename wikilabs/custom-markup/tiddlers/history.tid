@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-28 - 2026-05-19
+
+* V 1.0.0-beta-28
+** Inactive marker positions no longer shadow TW core rules. `cmblock` and `cminline` now override `findNextMatch` to skip matches whose marker isn't active in the current tiddler (gated by a `_cmPragmasDone` flag so pragma-activated vocabs still work). Previously a marker with a common open like `#` or `*` would eat the position via text-fallback in `parse()`, suppressing the competing core rule (e.g. TW ordered lists) for every tiddler in the wiki — even ones that didn't activate the offending vocab.
+** `\importcustom <filter>` now runs the filter over `[all[shadows+tiddlers]]` automatically, so `\importcustom [tag[Vocab/X]]` finds shadow markers without the author having to spell the shadow-inclusion prefix. Type-field activation already had this behaviour.
+** Vocab-summary ViewTemplate splits "Mode" / "Element" columns from new "Default Mode" / "Default Element" columns so the kind-implied defaults stay visible alongside any explicit overrides.
+
 V 1.0.0-beta-27 - 2026-05-19
 
 * V 1.0.0-beta-27
