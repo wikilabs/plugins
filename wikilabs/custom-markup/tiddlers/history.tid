@@ -1,6 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-24 - 2026-05-19
+V 1.0.0-beta-25 - 2026-05-19
+
+* V 1.0.0-beta-25
+** Cross-vocab marker collisions (two vocabs with the same `open`) now resolve to the LAST activated vocab. Type field `;vocab=A,B` makes B win on overlap; `;vocab=B,A` makes A win. Previously the alphabetically-last marker tiddler always won regardless of activation.
 
 * V 1.0.0-beta-24
 ** Drop redundant `(function(){ ... })()` wrappers from 7 JS modules. TW's module loader already encapsulates.

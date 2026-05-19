@@ -98,8 +98,11 @@ CmRegistry.prototype.loadAllMarkers = function() {
 };
 
 // Activate a vocabulary by name. Adds the open literal of every marker
-// tagged with that vocabulary's marker-tag to the active set. Markers
-// must already be loaded (via loadAllMarkers).
+// tagged with that vocabulary's marker-tag to the active set, AND
+// re-writes the marker config for each open with the activated vocab's
+// version. The re-write resolves cross-vocab collisions (two vocabs
+// shipping a marker with the same `open`) by letting the activated vocab
+// win. When multiple vocabs are activated, the LAST one wins.
 CmRegistry.prototype.activate = function(name) {
 	var titles = this.wiki.filterTiddlers(
 		"[all[shadows+tiddlers]tag[" + VOCAB_TAG + "]field:caption[" + name + "]]"
@@ -112,11 +115,13 @@ CmRegistry.prototype.activate = function(name) {
 	var markerTitles = this.wiki.filterTiddlers("[all[shadows+tiddlers]tag[" + markerTag + "]]");
 	var self = this;
 	markerTitles.forEach(function(title) {
-		var t = self.wiki.getTiddler(title);
-		if(t && t.fields.open) {
-			self.active[t.fields.open] = true;
+		var config = self.parseMarkerTiddler(title);
+		if(config && config.open) {
+			self.markers[config.open] = config;
+			self.active[config.open] = true;
 		}
 	});
+	self.dirty = true;
 	return true;
 };
 
