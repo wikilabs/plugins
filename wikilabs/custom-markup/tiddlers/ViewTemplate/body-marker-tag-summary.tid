@@ -22,25 +22,15 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-tag-summary
 		<tbody>
 			<$list filter="[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
 				<tr>
-					<td class="wltc-icon-col">
-						<$list filter="[<currentTiddler>has[marker-icon]]" variable="ignore">
-							<svg viewBox="0 0 128 128" width="28" height="28">
-								<$transclude tiddler={{!!marker-icon}} index="element"/>
-							</svg>
-						</$list>
-					</td>
+					<td class="wltc-icon-col"><%if [<currentTiddler>has:field[marker-icon]] %><svg viewBox="0 0 128 128" width="28" height="28"><$transclude tiddler={{!!marker-icon}} index="element"/></svg><%endif%></td>
 					<td><code><$text text={{!!open}}/></code></td>
-					<td><$list filter="[<currentTiddler>has[close]]" variable="ignore"><code><$text text={{!!close}}/></code></$list></td>
+					<td><%if [<currentTiddler>has:field[close]] %><code><$text text={{!!close}}/></code><%endif%></td>
 					<td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
 					<td>{{!!kind}}</td>
 					<td>{{!!mode}}</td>
+					<td><%if [<currentTiddler>has:field[element]] %><code>{{!!element}}</code><%endif%></td>
 					<td>
-						<$list filter="[<currentTiddler>has[element]]" variable="ignore">
-							<code>{{!!element}}</code>
-						</$list>
-					</td>
-					<td>
-						<$list filter="[<currentTiddler>tags[]prefix[Vocab/]]" variable="vocabTag">
+						<$list filter="[<currentTiddler>tags[]prefix[vocab/]]" variable="vocabTag">
 							<$text text=<<vocabTag>>/>
 						</$list>
 					</td>

@@ -113,12 +113,10 @@ CmRegistry.prototype.loadAllMarkers = function() {
 // shipping a marker with the same `open`) by letting the activated vocab
 // win. When multiple vocabs are activated, the LAST one wins.
 CmRegistry.prototype.activate = function(name) {
-	var titles = this.wiki.filterTiddlers(
-		"[all[shadows+tiddlers]tag[" + VOCAB_TAG + "]field:caption[" + name + "]]"
-	);
-	if(!titles || !titles.length) { return false; }
-	var meta = this.wiki.getTiddler(titles[0]);
+	var meta = this.wiki.getTiddler("vocab/" + name.toLowerCase());
 	if(!meta) { return false; }
+	var tags = meta.fields.tags;
+	if(!tags || tags.indexOf(VOCAB_TAG) === -1) { return false; }
 	var markerTag = meta.fields["marker-tag"];
 	if(!markerTag) { return false; }
 	var markerTitles = this.wiki.filterTiddlers("[all[shadows+tiddlers]tag[" + markerTag + "]]");

@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-29 - 2026-05-20
+
+* V 1.0.0-beta-29
+** Vocab activation resolves `;vocab=Name` by direct `getTiddler("vocab/" + name.toLowerCase())` instead of a `field:caption` filter walk over all shadow+tiddlers. Around 33x faster microbench (3.46 to 0.10 µs/op for one vocab; 6.80 to 0.18 µs/op for the typical two-vocab activation). Convention: vocab title must be `vocab/<lowercase-caption>`.
+
 V 1.0.0-beta-28 - 2026-05-19
 
 * V 1.0.0-beta-28

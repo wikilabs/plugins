@@ -32,34 +32,18 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 		<tbody>
 			<tr><th>kind</th><td>{{!!kind}}</td></tr>
 			<tr><th>mode</th><td>{{!!mode}}</td></tr>
-			<%if [<currentTiddler>has:field[element]] %>
-				<tr><th>element</th><td><code>{{!!element}}</code></td></tr>
-			<%endif%>
-			<%if [<currentTiddler>field:paragraph-marker[yes]] %>
-				<tr><th>paragraph-marker</th><td>yes</td></tr>
-			<%endif%>
-			<%if [<currentTiddler>has:field[classes]] %>
-				<tr><th>classes</th><td><code>{{!!classes}}</code></td></tr>
-			<%endif%>
-			<%if [<currentTiddler>has:field[max-level]] %>
-				<tr><th>max-level</th><td>{{!!max-level}}</td></tr>
-			<%endif%>
-			<%if [<currentTiddler>has:field[allow-symbol]] %>
-				<tr><th>allow-symbol</th><td>{{!!allow-symbol}}</td></tr>
-			<%endif%>
-			<%if [<currentTiddler>has:field[legacy-kind]] %>
-				<tr><th>legacy-kind</th><td><code>{{!!legacy-kind}}</code></td></tr>
-			<%endif%>
-			<%if [<currentTiddler>has:field[order]] %>
-				<tr><th>order</th><td>{{!!order}}</td></tr>
-			<%endif%>
-			<%if [<currentTiddler>has:field[marker-icon]] %>
-				<tr><th>marker-icon</th><td><$link to={{!!marker-icon}}><$text text={{!!marker-icon}}/></$link></td></tr>
-			<%endif%>
+			<tr><th>element</th><td><%if [<currentTiddler>has:field[element]] %><code>{{!!element}}</code><%endif%></td></tr>
+			<tr><th>paragraph-marker</th><td>{{!!paragraph-marker}}</td></tr>
+			<tr><th>classes</th><td><%if [<currentTiddler>has:field[classes]] %><code>{{!!classes}}</code><%endif%></td></tr>
+			<tr><th>max-level</th><td>{{!!max-level}}</td></tr>
+			<tr><th>allow-symbol</th><td>{{!!allow-symbol}}</td></tr>
+			<tr><th>legacy-kind</th><td><%if [<currentTiddler>has:field[legacy-kind]] %><code>{{!!legacy-kind}}</code><%endif%></td></tr>
+			<tr><th>order</th><td>{{!!order}}</td></tr>
+			<tr><th>marker-icon</th><td><%if [<currentTiddler>has:field[marker-icon]] %><$link to={{!!marker-icon}}><$text text={{!!marker-icon}}/></$link><%endif%></td></tr>
 			<tr>
 				<th>vocabulary</th>
 				<td>
-					<$list filter="[<currentTiddler>tags[]prefix[Vocab/]]" variable="vocabTag">
+					<$list filter="[<currentTiddler>tags[]prefix[vocab/]]" variable="vocabTag">
 						<$text text=<<vocabTag>>/>
 					</$list>
 				</td>

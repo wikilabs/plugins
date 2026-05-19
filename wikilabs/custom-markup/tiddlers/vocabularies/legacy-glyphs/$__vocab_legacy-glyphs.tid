@@ -1,6 +1,0 @@
-title: $:/vocab/legacy-glyphs
-tags: $:/tags/CustomMarkup/Vocabulary
-caption: Legacy-Glyphs
-description: Backward-compat for ´, ≈, ¶ removed from Vocab/Default in cm-redesign. Opt in via type=`text/vnd.tiddlywiki;vocab=Default,Legacy-Glyphs` or `\importcustom [tag[Vocab/Legacy-Glyphs]]`.
-marker-tag: Vocab/Legacy-Glyphs
-version: 0.1.0

@@ -70,14 +70,12 @@ function activeMarkerTags(wiki, typeStr) {
 		: ["Default"];
 	var tags = [];
 	vocabNames.forEach(function(name) {
-		var metas = wiki.filterTiddlers(
-			"[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Vocabulary]field:caption[" + name + "]]"
-		);
-		if(metas.length > 0) {
-			var meta = wiki.getTiddler(metas[0]);
-			var tag = meta && meta.fields && meta.fields["marker-tag"];
-			if(tag) { tags.push(tag); }
-		}
+		var meta = wiki.getTiddler("vocab/" + name.toLowerCase());
+		if(!meta) { return; }
+		var metaTags = meta.fields.tags;
+		if(!metaTags || metaTags.indexOf("$:/tags/CustomMarkup/Vocabulary") === -1) { return; }
+		var tag = meta.fields["marker-tag"];
+		if(tag) { tags.push(tag); }
 	});
 	return tags;
 }

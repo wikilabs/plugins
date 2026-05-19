@@ -1,5 +1,5 @@
 title: vocab/legacy-glyphs/TICK
-tags: $:/tags/CustomMarkup/Marker [[Vocab/Legacy-Glyphs]]
+tags: $:/tags/CustomMarkup/Marker [[vocab/legacy-glyphs]]
 caption: Tick (legacy)
 marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/tick
 open: ´
@@ -7,4 +7,4 @@ kind: glyph
 mode: inline
 classes: .wltc-tick-legacy
 legacy-kind: tick
-description: Inline wrap; default `<span>`. Single-newline terminated. Removed from Default in cm-redesign; activate Vocab/Legacy-Glyphs for backward-compat with content that still uses `´`.
+description: Inline wrap; default `<span>`. Single-newline terminated. Removed from Default in cm-redesign; activate vocab/legacy-glyphs for backward-compat with content that still uses `´`.
