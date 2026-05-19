@@ -1,6 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-18 - 2026-05-19
+V 1.0.0-beta-19 - 2026-05-19
+
+* V 1.0.0-beta-19
+** Vocab-summary table adds `Max-level` and `Paragraph` columns; marker-summary view adds a `paragraph-marker` row.
 
 * V 1.0.0-beta-18
 ** `paragraph-marker: yes` field on marker tiddlers opts into paragraph terminator semantics (blank-line, no nested-p body parse). Shipped paragraph markers (ANGLE, APPROX, PILCROW) declare it explicitly.

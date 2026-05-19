@@ -8,4 +8,4 @@ kind: inline-pair
 classes: .wltc-slash
 legacy-kind: slash
 order: 1
-description: Inline wrap; default <span>. Easiest inline marker on de/fr keyboards (the ° char is on a dedicated key).
+description: Inline wrap; default `<span>`. Easiest inline marker on de/fr keyboards (the ° char is on a dedicated key).

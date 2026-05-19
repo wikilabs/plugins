@@ -4,17 +4,15 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 
 <div class="wltc-marker-summary">
 
-	<$list filter="[<currentTiddler>has[marker-icon]]" variable="ignore">
+	<%if [<currentTiddler>has[marker-icon]] %>
 		<svg viewBox="0 0 128 128" width="64" height="64" class="wltc-marker-summary-icon">
 			<$transclude tiddler={{!!marker-icon}} index="element"/>
 		</svg>
-	</$list>
+	<%endif%>
 
 	<h2>{{!!caption}}</h2>
 
-	<p>
-		<code class="wltc-marker-summary-glyph"><$text text={{!!open}}/></code><$list filter="[<currentTiddler>has[close]]" variable="ignore"> ... <code class="wltc-marker-summary-glyph"><$text text={{!!close}}/></code></$list>
-	</p>
+		<code class="wltc-marker-summary-glyph"><$text text={{!!open}}/></code><%if [<currentTiddler>has[close]] %> ... <code class="wltc-marker-summary-glyph"><$text text={{!!close}}/></code><%endif%>
 
 	<p>{{!!description}}</p>
 
@@ -24,25 +22,28 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 		<tbody>
 			<tr><th>kind</th><td>{{!!kind}}</td></tr>
 			<tr><th>mode</th><td>{{!!mode}}</td></tr>
-			<$list filter="[<currentTiddler>has[element]]" variable="ignore">
+			<%if [<currentTiddler>has[element]] %>
 				<tr><th>element</th><td><code>{{!!element}}</code></td></tr>
-			</$list>
+			<%endif%>
+			<%if [<currentTiddler>field:paragraph-marker[yes]] %>
+				<tr><th>paragraph-marker</th><td>yes</td></tr>
+			<%endif%>
 			<tr><th>classes</th><td><code>{{!!classes}}</code></td></tr>
-			<$list filter="[<currentTiddler>has[max-level]]" variable="ignore">
+			<%if [<currentTiddler>has[max-level]] %>
 				<tr><th>max-level</th><td>{{!!max-level}}</td></tr>
-			</$list>
-			<$list filter="[<currentTiddler>has[allow-symbol]]" variable="ignore">
+			<%endif%>
+			<%if [<currentTiddler>has[allow-symbol]] %>
 				<tr><th>allow-symbol</th><td>{{!!allow-symbol}}</td></tr>
-			</$list>
-			<$list filter="[<currentTiddler>has[legacy-kind]]" variable="ignore">
+			<%endif%>
+			<%if [<currentTiddler>has[legacy-kind]] %>
 				<tr><th>legacy-kind</th><td><code>{{!!legacy-kind}}</code></td></tr>
-			</$list>
-			<$list filter="[<currentTiddler>has[order]]" variable="ignore">
+			<%endif%>
+			<%if [<currentTiddler>has[order]] %>
 				<tr><th>order</th><td>{{!!order}}</td></tr>
-			</$list>
-			<$list filter="[<currentTiddler>has[marker-icon]]" variable="ignore">
+			<%endif%>
+			<%if [<currentTiddler>has[marker-icon]] %>
 				<tr><th>marker-icon</th><td><$link to={{!!marker-icon}}><$text text={{!!marker-icon}}/></$link></td></tr>
-			</$list>
+			<%endif%>
 			<tr>
 				<th>vocabulary</th>
 				<td>

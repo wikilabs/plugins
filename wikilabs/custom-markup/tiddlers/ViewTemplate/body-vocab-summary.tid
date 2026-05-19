@@ -11,9 +11,9 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
 			<tr><th>marker-tag</th><td><code>{{!!marker-tag}}</code></td></tr>
-			<$list filter="[<currentTiddler>has[version]]" variable="ignore">
+			<%if [<currentTiddler>has[version]] %>
 				<tr><th>version</th><td>{{!!version}}</td></tr>
-			</$list>
+			<%endif%>
 		</tbody>
 	</table>
 
@@ -29,31 +29,43 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 				<th>Kind</th>
 				<th>Mode</th>
 				<th>Element</th>
+				<th>Max-level</th>
+				<th>Paragraph</th>
 			</tr>
 		</thead>
 		<tbody>
 			<$list filter="[all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
 				<tr>
 					<td class="wltc-icon-col">
-						<$list filter="[<currentTiddler>has[marker-icon]]" variable="ignore">
+						<%if [<currentTiddler>has[marker-icon]] %>
 							<svg viewBox="0 0 128 128" width="28" height="28">
 								<$transclude tiddler={{!!marker-icon}} index="element"/>
 							</svg>
-						</$list>
+						<%endif%>
 					</td>
 					<td><code><$text text={{!!open}}/></code></td>
 					<td>
-						<$list filter="[<currentTiddler>has[close]]" variable="ignore">
+						<%if [<currentTiddler>has[close]] %>
 							<code><$text text={{!!close}}/></code>
-						</$list>
+						<%endif%>
 					</td>
 					<td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
 					<td>{{!!kind}}</td>
 					<td>{{!!mode}}</td>
 					<td>
-						<$list filter="[<currentTiddler>has[element]]" variable="ignore">
+						<%if [<currentTiddler>has[element]] %>
 							<code>{{!!element}}</code>
-						</$list>
+						<%endif%>
+					</td>
+					<td>
+						<%if [<currentTiddler>field:kind[glyph-level]] %>
+							{{!!max-level}}
+						<%endif%>
+					</td>
+					<td>
+						<%if [<currentTiddler>field:paragraph-marker[yes]] %>
+							yes
+						<%endif%>
 					</td>
 				</tr>
 			</$list>
