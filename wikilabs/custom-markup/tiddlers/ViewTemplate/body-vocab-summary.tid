@@ -16,7 +16,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 		</tbody>
 	</table>
 
-	<p class="wltc-field-reference">Full vocab-field reference: <$link class="tc-tiny-gap-left" to="Vocabulary Engine">Vocabulary Engine</$link>.</p>
+	<p class="wltc-field-reference">Full vocab-field reference: <$link class="tc-tiny-gap-left" to="Vocabulary Meta Fields">Vocabulary Meta Fields</$link>.</p>
 
 	<%if [<currentTiddler>has:field[text]] %>
 		<h3>Body</h3>
