@@ -10,19 +10,13 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
-			<tr><th>caption</th><td>{{!!caption}}</td></tr>
-			<!-- <tr><th>description</th><td>{{!!description}}</td></tr> -->
-			<tr><th>marker-tag</th><td><code>{{!!marker-tag}}</code></td></tr>
-			<tr><th>version</th><td>{{!!version}}</td></tr>
-			<tr><th>disable-core-rules</th><td><%if [<currentTiddler>has:field[disable-core-rules]] %><code>{{!!disable-core-rules}}</code><%endif%></td></tr>
-			<tr><th>front-matter</th><td>{{!!front-matter}}</td></tr>
-			<tr><th>filter</th><td><%if [<currentTiddler>has:field[filter]] %><code>{{!!filter}}</code><%endif%></td></tr>
-			<tr><th>tags</th><td><$list filter="[<currentTiddler>tags[]]" variable="tg"><code><$text text=<<tg>>/></code>&#32;</$list></td></tr>
-			<$list filter="[<currentTiddler>fields[]] -title -caption -description -marker-tag -version -disable-core-rules -front-matter -filter -tags -text -created -modified -type -revision -bag" variable="fld">
+			<$list filter="[<currentTiddler>fields[]sort[]] -caption -description -text -bag -revision -created -modified" variable="fld">
 				<tr><th><$text text=<<fld>>/></th><td><$transclude tiddler=<<currentTiddler>> field=<<fld>>/></td></tr>
 			</$list>
 		</tbody>
 	</table>
+
+	<p class="wltc-field-reference">Full vocab-field reference: <$link class="tc-tiny-gap-left" to="Vocabulary Engine">Vocabulary Engine</$link>.</p>
 
 	<%if [<currentTiddler>has:field[text]] %>
 		<h3>Body</h3>

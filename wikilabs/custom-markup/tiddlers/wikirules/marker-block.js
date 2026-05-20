@@ -80,6 +80,13 @@ exports.parse = function() {
 		this.parser.pos = this.matchRegExp.lastIndex;
 		return [{type: "text", text: matchText}];
 	}
+	// List-item markers consume the whole list in one parse() call:
+	// consecutive items collapse into a single container element, deeper
+	// indent nests under the previous item, container switch starts a
+	// sibling list. Body of each item parses as an inline run.
+	if(marker.kind === "list-item") {
+		return parseListItems(this.parser, this.match, this.matchRegExp);
+	}
 	var textStart = this.match.index;
 	var parsed = parseMatchTail(matchText, marker);
 	this.parser.pos = this.matchRegExp.lastIndex;
@@ -151,14 +158,91 @@ function identifyMarker(matchText, registry) {
 		// Word ahead of non-word; longest open first within each
 		if(a.kind === "word" && b.kind !== "word") { return -1; }
 		if(a.kind !== "word" && b.kind === "word") { return 1; }
-		return b.open.length - a.open.length;
+		var aLen = a.kind === "list-item" ? (a.openPattern || a.open).length : a.open.length;
+		var bLen = b.kind === "list-item" ? (b.openPattern || b.open).length : b.open.length;
+		return bLen - aLen;
 	});
+	// list-item matches start with optional indent; strip it before testing
+	// the bullet so e.g. "  - " resolves to the dash marker.
+	var trimmed = matchText.replace(/^[ \t]+/, "");
 	for(var i = 0; i < markers.length; i++) {
-		if(matchText.indexOf(markers[i].open) === 0) {
-			return markers[i];
+		var m = markers[i];
+		if(m.kind === "list-item") {
+			if(m.openPattern) {
+				if(new RegExp("^(?:" + m.openPattern + ")").test(trimmed)) {
+					return m;
+				}
+			} else if(trimmed.indexOf(m.open) === 0) {
+				return m;
+			}
+		} else if(matchText.indexOf(m.open) === 0) {
+			return m;
 		}
 	}
 	return null;
+}
+
+// Consume a run of list-item matches into a nested tree of container
+// elements. Each item's body is parsed as an inline run terminated by
+// the next newline. Indent (after tab-expansion to indent-unit spaces)
+// drives nesting level; container change at the same level starts a
+// sibling list.
+function parseListItems(parser, firstMatch, blockRegExp) {
+	var registry = parser.cmRegistry;
+	var roots = [];
+	var stack = []; // [{listNode, container, level}]
+	var sharedRe = new RegExp(blockRegExp.source, "mg");
+	var match = firstMatch;
+
+	while(match) {
+		var marker = identifyMarker(match[0], registry);
+		if(!marker || marker.kind !== "list-item" || !registry.isActive(marker.open)) { break; }
+
+		var indentText = (/^[ \t]*/.exec(match[0]) || [""])[0];
+		var indent = indentText.replace(/\t/g, repeatSpace(marker.indentUnit)).length;
+		var level = Math.floor(indent / marker.indentUnit);
+		if(level > stack.length) { level = stack.length; }
+
+		while(stack.length > level + 1) { stack.pop(); }
+
+		if(stack.length === level + 1 && stack[level].container !== marker.container) {
+			stack.pop();
+		}
+
+		if(stack.length === level) {
+			var newList = {type: "element", tag: marker.container, children: []};
+			if(level === 0) {
+				roots.push(newList);
+			} else {
+				var parentList = stack[level - 1].listNode;
+				var parentItem = parentList.children[parentList.children.length - 1];
+				parentItem.children.push(newList);
+			}
+			stack.push({listNode: newList, container: marker.container, level: level});
+		}
+
+		parser.pos = match.index + match[0].length;
+		var bodyTree = parser.parseInlineRun(/(\r?\n)/mg, {eatTerminator: true});
+
+		stack[level].listNode.children.push({
+			type: "element",
+			tag: marker.itemElement,
+			children: bodyTree
+		});
+
+		sharedRe.lastIndex = parser.pos;
+		var nextMatch = sharedRe.exec(parser.source);
+		if(!nextMatch || nextMatch.index !== parser.pos) { break; }
+		match = nextMatch;
+	}
+
+	return roots;
+}
+
+function repeatSpace(n) {
+	var s = "";
+	for(var i = 0; i < n; i++) { s += " "; }
+	return s;
 }
 
 function parseMatchTail(matchText, marker) {

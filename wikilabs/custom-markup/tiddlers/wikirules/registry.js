@@ -204,7 +204,6 @@ CmRegistry.prototype.applyAmendRules = function(parser) {
 		// Vocab-gated standalone block rules need the same refresh —
 		// they return undefined at init time (vocab not yet activated)
 		// and TW caches that, never re-calling until matchIndex < startPos.
-		refreshCmRuleMatch(parser.blockRules, "markdown-list");
 		refreshCmRuleMatch(parser.blockRules, "markdown-table");
 		refreshCmRuleMatch(parser.inlineRules, "markdown-newline");
 		return result;
@@ -290,6 +289,17 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		// raw-HTML quotes) where wikitext inside the body must be preserved
 		// verbatim. Only honored by inline-pair markers.
 		bodyRaw: f["body-raw"] === "yes",
+		// list-item kind fields. `container` is the wrapping element for
+		// the list (ul/ol/dl/blockquote). `item-element` is the element
+		// for each item (li/dt/dd/div). `indent-unit` is how many spaces
+		// of leading indent map to one nesting level (default 2).
+		// `open-pattern` is an optional regex source string; when present
+		// the engine uses it instead of the literal `open` for matching
+		// (lets a single marker handle `\d+\.` for ordered lists).
+		container: f.container || "ul",
+		itemElement: f["item-element"] || "li",
+		indentUnit: parseInt(f["indent-unit"] || "2", 10) || 2,
+		openPattern: f["open-pattern"] || "",
 		// legacy-kind: friendly name from the v0.x plugin (tick, degree, angle,
 		// approx, pilcrow, single, corner, braille, slash). Lets the legacy
 		// `\custom degree=foo` pragma resolve to the right marker.
@@ -469,7 +479,7 @@ CmRegistry.prototype.getInlineRegex = function() {
 
 CmRegistry.prototype.rebuildRegexes = function() {
 	var blockMarkers = this.list(function(m) {
-		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word";
+		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word" || m.kind === "list-item";
 	});
 	var inlineMarkers = this.list(function(m) {
 		return m.kind === "inline-pair";
@@ -526,6 +536,12 @@ function buildBlockArm(m) {
 		case "word":
 			var wordCls = m.allowClasses ? classChain : "";
 			return `(?:${open}${wordCls}${bound})`;
+		case "list-item":
+			// Match line-start + optional indent + bullet + required space.
+			// Bullet is either the openPattern regex (for OL: \d+\.) or the
+			// escaped open literal (for UL: - / * / +).
+			var bullet = m.openPattern || open;
+			return `(?:^[ \\t]*(?:${bullet})[ \\t]+)`;
 		default:
 			return `(?:${open}${bound})`;
 	}

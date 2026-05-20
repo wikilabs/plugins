@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-32 - 2026-05-20
+
+* V 1.0.0-beta-32
+** New marker kind `list-item`: consecutive items collapse into a `container` element (ul/ol/dl/blockquote), nesting via indent. New fields: `container`, `item-element`, `indent-unit`, `open-pattern`. Markdown's list bullets now ship as marker tiddlers; `markdown-list.js` removed.
+** View templates list fields dynamically created
+
 V 1.0.0-beta-31 - 2026-05-20
 
 * V 1.0.0-beta-31

@@ -30,25 +30,12 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
-			<tr><th>kind</th><td>{{!!kind}}</td></tr>
-			<tr><th>mode</th><td>{{!!mode}}</td></tr>
-			<tr><th>element</th><td><%if [<currentTiddler>has:field[element]] %><code>{{!!element}}</code><%endif%></td></tr>
-			<tr><th>paragraph-marker</th><td>{{!!paragraph-marker}}</td></tr>
-			<tr><th>classes</th><td><%if [<currentTiddler>has:field[classes]] %><code>{{!!classes}}</code><%endif%></td></tr>
-			<tr><th>max-level</th><td>{{!!max-level}}</td></tr>
-			<tr><th>allow-symbol</th><td>{{!!allow-symbol}}</td></tr>
-			<tr><th>legacy-kind</th><td><%if [<currentTiddler>has:field[legacy-kind]] %><code>{{!!legacy-kind}}</code><%endif%></td></tr>
-			<tr><th>order</th><td>{{!!order}}</td></tr>
-			<tr><th>marker-icon</th><td><%if [<currentTiddler>has:field[marker-icon]] %><$link to={{!!marker-icon}}><$text text={{!!marker-icon}}/></$link><%endif%></td></tr>
-			<tr>
-				<th>vocabulary</th>
-				<td>
-					<$list filter="[<currentTiddler>tags[]prefix[vocab/]]" variable="vocabTag">
-						<$text text=<<vocabTag>>/>
-					</$list>
-				</td>
-			</tr>
+			<$list filter="[<currentTiddler>fields[]sort[]] -caption -description -text -bag -revision -open -close -created -modified" variable="fld">
+				<tr><th><$text text=<<fld>>/></th><td><$transclude tiddler=<<currentTiddler>> field=<<fld>>/></td></tr>
+			</$list>
 		</tbody>
 	</table>
+
+	<p class="wltc-field-reference">Full marker-field reference: <$link class="tc-tiny-gap-left" to="Vocabulary Engine">Vocabulary Engine</$link>.</p>
 
 </div>
