@@ -73,6 +73,10 @@ var CmRegistry = function(wiki) {
 	// pragmas (\importcustom) activate vocabularies after parser init,
 	// without falling foul of TW's rule-pruning at instantiateRules time.
 	this.active = Object.create(null);
+	// Set of activated vocab titles (e.g. "vocab/markdown"). Lets other
+	// rules gate themselves on a specific vocab being active for the
+	// current parser without walking the marker store.
+	this.activeVocabs = Object.create(null);
 	// Union of TW core wikirule names that each activated vocab declared
 	// in its `disable-core-rules` field. Applied via parser.amendRules so
 	// colliding core rules (heading vs `!action`, list vs `*x` line-start,
@@ -117,6 +121,7 @@ CmRegistry.prototype.activate = function(name) {
 	if(!meta) { return false; }
 	var tags = meta.fields.tags;
 	if(!tags || tags.indexOf(VOCAB_TAG) === -1) { return false; }
+	this.activeVocabs["vocab/" + name.toLowerCase()] = true;
 	var markerTag = meta.fields["marker-tag"];
 	if(!markerTag) { return false; }
 	var markerTitles = this.wiki.filterTiddlers("[all[shadows+tiddlers]tag[" + markerTag + "]]");
@@ -150,6 +155,10 @@ CmRegistry.prototype.hasFrontMatter = function() {
 
 CmRegistry.prototype.isActive = function(open) {
 	return !!this.active[open];
+};
+
+CmRegistry.prototype.isActiveVocab = function(title) {
+	return !!this.activeVocabs[title];
 };
 
 // Apply the union of declared core-rule exclusions to the parser, and
@@ -192,6 +201,10 @@ CmRegistry.prototype.applyAmendRules = function(parser) {
 		// cached value so the filter applies on next round.
 		refreshCmRuleMatch(parser.blockRules, "cmblock");
 		refreshCmRuleMatch(parser.inlineRules, "cminline");
+		// Vocab-gated standalone block rules need the same refresh —
+		// they return undefined at init time (vocab not yet activated)
+		// and TW caches that, never re-calling until matchIndex < startPos.
+		refreshCmRuleMatch(parser.blockRules, "markdown-list");
 		return result;
 	};
 };
@@ -269,6 +282,12 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		// Default behaviour consumes the open literal; this opts back into
 		// emitting it.
 		emitOpen: f["emit-open"],
+		// body-raw: "yes" captures the inline-pair body as a single text
+		// node between open and close, with no recursive inline parsing.
+		// Required for literal-content markers (code spans, escape regions,
+		// raw-HTML quotes) where wikitext inside the body must be preserved
+		// verbatim. Only honored by inline-pair markers.
+		bodyRaw: f["body-raw"] === "yes",
 		// legacy-kind: friendly name from the v0.x plugin (tick, degree, angle,
 		// approx, pilcrow, single, corner, braille, slash). Lets the legacy
 		// `\custom degree=foo` pragma resolve to the right marker.

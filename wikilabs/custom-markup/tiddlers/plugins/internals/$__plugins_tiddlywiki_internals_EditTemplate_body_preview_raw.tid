@@ -1,0 +1,9 @@
+caption: raw HTML
+code-body: yes
+list-after: $:/plugins/tiddlywiki/internals/EditTemplate/body/preview/widget-tree
+modified: 20260519232729758
+tags: $:/tags/EditPreview
+title: $:/plugins/tiddlywiki/internals/EditTemplate/body/preview/raw
+
+\whitespace trim
+<pre><code><$wikify name="cm-raw-preview" text={{!!text}} type={{!!type}} output="html"><$text text=<<cm-raw-preview>>/></$wikify></code></pre>

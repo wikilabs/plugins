@@ -368,7 +368,7 @@ function buildNode(config, children, source, contentStart, parserPos) {
 	if(config.userClasses && config.userClasses.length) {
 		classes = classes.concat(config.userClasses);
 	}
-	if(config.level) {
+	if(config.level && config.marker && config.marker.kind === "glyph-level") {
 		classes.push("wltc-l" + config.level);
 	}
 	classes.push("wltc");

@@ -164,7 +164,8 @@ function resolveConfig(marker, symbol, classes) {
 		classes: marker.classes || "",
 		attributes: marker.attributes || {},
 		srcName: marker.srcName,
-		userClasses: classes
+		userClasses: classes,
+		bodyRaw: marker.bodyRaw
 	};
 	var sym = lookupSymbol(marker, symbol);
 	if(sym) {
@@ -235,6 +236,20 @@ function applySymbolToConfig(config, sym) {
 }
 
 function parseBody(parser, config) {
+	if(config.bodyRaw) {
+		// Literal-text body: capture everything between open and close
+		// verbatim as a single text node, no recursive parsing. Used for
+		// code spans, escape regions, raw-HTML quoting — any inline-pair
+		// where the body must be preserved as-is.
+		var closeIdx = parser.source.indexOf(config.close, parser.pos);
+		if(closeIdx === -1) {
+			// No close found — consume to end of source.
+			closeIdx = parser.source.length;
+		}
+		var bodyText = parser.source.substring(parser.pos, closeIdx);
+		parser.pos = closeIdx + config.close.length;
+		return [{type: "text", text: bodyText}];
+	}
 	if(config.mode === "block") {
 		return parser.parseBlocks($tw.utils.escapeRegExp(config.close));
 	}

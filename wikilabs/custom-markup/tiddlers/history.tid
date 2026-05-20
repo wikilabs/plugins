@@ -1,5 +1,14 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-30 - 2026-05-20
+
+* V 1.0.0-beta-30
+** Inline-pair `body-raw: yes`: body is captured as a single literal text node, no recursive parsing. Enables code-span markers that preserve raw HTML and wikitext.
+** New `markdown-list` block wikirule (gated on the markdown vocab): `-`/`*`/`+` for `<ul>`, `<digits>.` for `<ol>`, 2-space indent per nesting level.
+** `CmRegistry.activeVocabs` + `isActiveVocab(title)`: lets wikirules gate on a specific vocab being active for the current parser.
+** Override the internals raw-preview template to use `$wikify` with `type={{!!type}}` so parametric types (`;vocab=...`) preview correctly.
+** `wltc-l<n>` class is now only emitted for `glyph-level` markers.
+
 V 1.0.0-beta-29 - 2026-05-20
 
 * V 1.0.0-beta-29
