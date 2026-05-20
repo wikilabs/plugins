@@ -10,14 +10,30 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
+			<tr><th>caption</th><td>{{!!caption}}</td></tr>
+			<!-- <tr><th>description</th><td>{{!!description}}</td></tr> -->
 			<tr><th>marker-tag</th><td><code>{{!!marker-tag}}</code></td></tr>
-			<%if [<currentTiddler>has:field[version]] %>
-				<tr><th>version</th><td>{{!!version}}</td></tr>
-			<%endif%>
+			<tr><th>version</th><td>{{!!version}}</td></tr>
+			<tr><th>disable-core-rules</th><td><%if [<currentTiddler>has:field[disable-core-rules]] %><code>{{!!disable-core-rules}}</code><%endif%></td></tr>
+			<tr><th>front-matter</th><td>{{!!front-matter}}</td></tr>
+			<tr><th>filter</th><td><%if [<currentTiddler>has:field[filter]] %><code>{{!!filter}}</code><%endif%></td></tr>
+			<tr><th>tags</th><td><$list filter="[<currentTiddler>tags[]]" variable="tg"><code><$text text=<<tg>>/></code>&#32;</$list></td></tr>
+			<$list filter="[<currentTiddler>fields[]] -title -caption -description -marker-tag -version -disable-core-rules -front-matter -filter -tags -text -created -modified -type -revision -bag" variable="fld">
+				<tr><th><$text text=<<fld>>/></th><td><$transclude tiddler=<<currentTiddler>> field=<<fld>>/></td></tr>
+			</$list>
 		</tbody>
 	</table>
 
+	<%if [<currentTiddler>has:field[text]] %>
+		<h3>Body</h3>
+		<$transclude tiddler=<<currentTiddler>> field="text" mode="block"/>
+	<%endif%>
+
 	<h3>Markers in this vocabulary</h3>
+
+	<$let tv-wikilinks=no>
+	{{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]count[]] }}}	<span class="tc-tiny-gap">total</span> ({{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]!field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">block,</span>	{{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">inline)</span>
+	</$let>
 
 	<table class="tc-table-no-border wltc-marker-tag-summary-table">
 		<thead>
