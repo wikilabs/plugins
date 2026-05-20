@@ -205,6 +205,8 @@ CmRegistry.prototype.applyAmendRules = function(parser) {
 		// they return undefined at init time (vocab not yet activated)
 		// and TW caches that, never re-calling until matchIndex < startPos.
 		refreshCmRuleMatch(parser.blockRules, "markdown-list");
+		refreshCmRuleMatch(parser.blockRules, "markdown-table");
+		refreshCmRuleMatch(parser.inlineRules, "markdown-newline");
 		return result;
 	};
 };
