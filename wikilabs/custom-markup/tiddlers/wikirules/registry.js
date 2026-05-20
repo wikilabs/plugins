@@ -129,6 +129,14 @@ CmRegistry.prototype.activate = function(name) {
 	markerTitles.forEach(function(title) {
 		var config = self.parseMarkerTiddler(title);
 		if(config && config.open) {
+			// loadGlobalPragmas runs in init() BEFORE activateFromTypeField,
+			// attaching `globalSymbols` (bridged from $:/tags/Pragma tiddlers
+			// via PageTemplate's \importcustom) to each marker. Replacing the
+			// marker config wholesale here would drop those bindings, so
+			// `°clip`, `°sc`, etc. would silently fall through to the marker
+			// default. Preserve globalSymbols across the replacement.
+			var prior = self.markers[config.open];
+			if(prior && prior.globalSymbols) { config.globalSymbols = prior.globalSymbols; }
 			self.markers[config.open] = config;
 			self.active[config.open] = true;
 		}

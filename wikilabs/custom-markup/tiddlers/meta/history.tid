@@ -1,18 +1,17 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-32 - 2026-05-20
+V 1.0.0-beta-33 - 2026-05-20
+
+* V 1.0.0-beta-33
+** Fix: global pragmas (`°clip`, `°sc`, etc. from `$:/tags/Pragma` tiddlers) no longer fall through to the marker default. Activation was replacing the marker config and dropping the `globalSymbols` bindings attached by `loadGlobalPragmas`.
 
 * V 1.0.0-beta-32
 ** New marker kind `list-item`: consecutive items collapse into a `container` element (ul/ol/dl/blockquote), nesting via indent. New fields: `container`, `item-element`, `indent-unit`, `open-pattern`. Markdown's list bullets now ship as marker tiddlers; `markdown-list.js` removed.
 ** View templates list fields dynamically created
 
-V 1.0.0-beta-31 - 2026-05-20
-
 * V 1.0.0-beta-31
 ** New `markdown-newline` inline wikirule: any intra-paragraph `\n` emits `<br>`.
 ** New `markdown-table` block wikirule: pipe tables with separator row and alignment colons; cell content parses as an inline run.
-
-V 1.0.0-beta-30 - 2026-05-20
 
 * V 1.0.0-beta-30
 ** Inline-pair `body-raw: yes`: body is captured as a single literal text node, no recursive parsing. Enables code-span markers that preserve raw HTML and wikitext.
@@ -20,8 +19,6 @@ V 1.0.0-beta-30 - 2026-05-20
 ** `CmRegistry.activeVocabs` + `isActiveVocab(title)`: lets wikirules gate on a specific vocab being active for the current parser.
 ** Override the internals raw-preview template to use `$wikify` with `type={{!!type}}` so parametric types (`;vocab=...`) preview correctly.
 ** `wltc-l<n>` class is now only emitted for `glyph-level` markers.
-
-V 1.0.0-beta-29 - 2026-05-20
 
 * V 1.0.0-beta-29
 ** Vocab activation resolves `;vocab=Name` by direct `getTiddler("vocab/" + name.toLowerCase())` instead of a `field:caption` filter walk over all shadow+tiddlers. Around 33x faster microbench (3.46 to 0.10 µs/op for one vocab; 6.80 to 0.18 µs/op for the typical two-vocab activation). Convention: vocab title must be `vocab/<lowercase-caption>`.
@@ -33,15 +30,11 @@ V 1.0.0-beta-28 - 2026-05-19
 ** `\importcustom <filter>` now runs the filter over `[all[shadows+tiddlers]]` automatically, so `\importcustom [tag[Vocab/X]]` finds shadow markers without the author having to spell the shadow-inclusion prefix. Type-field activation already had this behaviour.
 ** Vocab-summary ViewTemplate splits "Mode" / "Element" columns from new "Default Mode" / "Default Element" columns so the kind-implied defaults stay visible alongside any explicit overrides.
 
-V 1.0.0-beta-27 - 2026-05-19
-
 * V 1.0.0-beta-27
 ** Inline-pair arms sort longest-open-first so multi-char markers like `***` win over `**` and `*` at the same position.
 ** Inline-pair markers honor `allow-symbol: no` (previously only block-glyph markers did); required for body-only markers like Fountain's `*italic*`.
 ** `emit-open: yes` prepends a trailing space when the body is non-empty so the open literal and body don't run together (`INT. KITCHEN`, not `INT.KITCHEN`).
 ** New `frontmatter` wikirule: when an active vocab declares `front-matter: yes`, a YAML block at the very top of the tiddler is consumed and rendered as `<div class="wltc-front-matter">`. Terminated by blank line or `===`. Parsing uses a vendored copy of the minimal YAML library from Jermolene's TiddlyWiki5 PR #9806 (`bidirectional-filesystem` branch).
-
-V 1.0.0-beta-26 - 2026-05-19
 
 * V 1.0.0-beta-26
 ** Vocab meta `disable-core-rules: <names>` suppresses listed TW core wikirules for tiddlers that activate the vocab; user `\rules` pragmas can still amend further.
