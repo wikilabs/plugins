@@ -47,7 +47,9 @@ exports.parse = function() {
 		return [];
 	}
 
-	var eqIdx = arg.indexOf("=");
+	// Split on LAST `=` so an open literal containing `=` still parses
+	// correctly (mode-name set is fixed and contains no `=`).
+	var eqIdx = arg.lastIndexOf("=");
 	if(eqIdx === -1) { return []; }
 
 	var open = arg.slice(0, eqIdx).trim();

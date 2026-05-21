@@ -334,7 +334,7 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 
 // Auto-generate a single pseudo-pragma line for the debug codeblock when a
 // marker tiddler omits `debug-string`. Reads the RAW tiddler fields (not the
-// defaulted config) so only what the author actually set shows up — defaults
+// defaulted config), so only what the author actually set shows up; defaults
 // like `container='ul'` on a word marker stay invisible.
 function autoDebugString(title, f) {
 	var parts = ["marker " + title];
