@@ -64,4 +64,17 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 		</tbody>
 	</table>
 
+	<h3>Used in</h3>
+
+	<$let
+		typeRegex={{{ [[(?i);vocab=.*\b]addsuffix{!!caption}addsuffix[\b]] }}}
+		textRegex={{{ [[\\importcustom.*]addsuffix<currentTiddler>] }}}
+	>
+		<ul class="multi-columns">
+			<$list filter="[!is[system]regexp:type<typeRegex>] [!is[system]regexp:text<textRegex>] -[<currentTiddler>]" emptyMessage="<li><em>Not yet used.</em></li>">
+				<li><$link><$view field="caption"><$text text=<<currentTiddler>>/></$view></$link></li>
+			</$list>
+		</ul>
+	</$let>
+
 </div>
