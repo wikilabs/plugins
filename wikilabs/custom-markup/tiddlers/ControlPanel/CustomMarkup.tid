@@ -1,0 +1,102 @@
+title: $:/plugins/wikilabs/custom-markup/ui/ControlPanel/CustomMarkup
+tags: $:/tags/ControlPanel/Advanced
+caption: Custom Markup
+
+\whitespace trim
+
+<p>{{$:/plugins/wikilabs/custom-markup!!description}}</p>
+
+<p>CM Plugin Version: <code>{{$:/plugins/wikilabs/custom-markup!!version}}</code>. <$link to="$:/plugins/wikilabs/custom-markup" class="tc-tiny-gap-left">Plugin tiddler</$link> &middot; <$link to="$:/plugins/wikilabs/custom-markup/readme"  class="tc-tiny-gap-left">Readme</$link> &middot; <$link to="$:/plugins/wikilabs/custom-markup/history"  class="tc-tiny-gap-left">History</$link></p>
+
+!! Vocabularies
+
+Each vocab ships a set of markers. Activate per tiddler via the type field (<code>;vocab=Name</code>) or via <code>\importcustom</code>. Click a caption to open the vocab summary (full marker table and "Used in" list).
+
+<table class="tc-table-no-border">
+<thead>
+<tr><th>Caption</th><th align="right">Markers</th><th>Marker tag</th><th>Activate via type</th></tr>
+</thead>
+<tbody>
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Vocabulary]sort[caption]]">
+<tr>
+<td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
+<td align="right">{{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]count[]] }}}</td>
+<td><code>{{!!marker-tag}}</code></td>
+<td><code>;vocab={{!!caption}}</code></td>
+</tr>
+</$list>
+</tbody>
+</table>
+
+<p>Vocabulary tag: <$link to="$:/tags/CustomMarkup/Vocabulary"><code>$:/tags/CustomMarkup/Vocabulary</code></$link></p>
+
+!! Markers
+
+<$let
+	total={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]count[]] }}}
+	glyph={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:kind[glyph]count[]] }}}
+	glyphLevel={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:kind[glyph-level]count[]] }}}
+	word={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:kind[word]count[]] }}}
+	inlinePair={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:kind[inline-pair]count[]] }}}
+	listItem={{{ [all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]field:kind[list-item]count[]] }}}
+>
+<table class="tc-table-no-border">
+<thead><tr><th>Kind</th><th align="right">Count</th></tr></thead>
+<tbody>
+<tr><td>''Total''</td><td align="right">''<<total>>''</td></tr>
+<tr><td><code>glyph</code></td><td align="right"><<glyph>></td></tr>
+<tr><td><code>glyph-level</code></td><td align="right"><<glyphLevel>></td></tr>
+<tr><td><code>word</code></td><td align="right"><<word>></td></tr>
+<tr><td><code>inline-pair</code></td><td align="right"><<inlinePair>></td></tr>
+<tr><td><code>list-item</code></td><td align="right"><<listItem>></td></tr>
+</tbody>
+</table>
+</$let>
+
+<p>Marker tag: <$link to="$:/tags/CustomMarkup/Marker"><code>$:/tags/CustomMarkup/Marker</code></$link></p>
+
+!! Global pragmas
+
+Tiddlers tagged <code>$:/tags/Pragma</code> are bridged into every parser at init time via the page template's <code>\importcustom</code>. Use these for legacy <code>\custom &lt;kind&gt;=&lt;symbol&gt;</code> definitions that should apply wiki-wide.
+
+<ul>
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/Pragma]sort[title]]" emptyMessage="(none)">
+<li><$link/></li>
+</$list>
+</ul>
+
+<p>Page-template container: <$link to="$:/config/custom-markup/pragma/PageTemplate"><code>$:/config/custom-markup/pragma/PageTemplate</code></$link></p>
+
+!! Debug pragmas
+
+* <code>\debugcustom</code>. Parse-time registry inspector. Forms: <code>\debugcustom</code>, <code>\debugcustom list</code>, <code>\debugcustom &lt;open-or-legacy-kind&gt;</code>, <code>\debugcustom global ...</code>, <code>\debugcustom no</code>.
+
+* <code>\debugmarker</code>. Per-tiddler render-time mode override for a marker's <code>debug</code> field. Forms: <code>\debugmarker &lt;open&gt;=&lt;mode&gt;</code>, <code>\debugmarker &lt;open&gt;=no</code>, <code>\debugmarker no</code>. Modes: <code>pragma</code>, <code>pragmaOnly</code>, <code>text</code>, <code>textOnly</code>, <code>both</code>, <code>no</code>.
+
+!! Editor toolbar
+
+Buttons and dropdowns the plugin contributes to the text-editor toolbar.
+
+<ul class="multi-columns">
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/EditorToolbar]prefix[$:/plugins/wikilabs/custom-markup/]sort[title]]" emptyMessage="<li>(none)</li>">
+<li><$link/></li>
+</$list>
+</ul>
+
+!! Templates and cascades
+
+View-template body cascades installed by the plugin (route marker / marker-tag / vocab tiddlers to their dedicated summary views).
+
+<ul class="multi-columns">
+<$list filter="[all[shadows+tiddlers]tag[$:/tags/ViewTemplateBodyFilter]prefix[$:/plugins/wikilabs/custom-markup/]sort[title]]" emptyMessage="(none)">
+<li><$link/></li>
+</$list>
+</ul>
+
+Summary-view templates:
+
+<ul class="multi-columns">
+<$list filter="[all[shadows+tiddlers]prefix[$:/plugins/wikilabs/custom-markup/ViewTemplate/body/]sort[title]]" emptyMessage="(none)">
+<li><$link/></li>
+</$list>
+</ul>

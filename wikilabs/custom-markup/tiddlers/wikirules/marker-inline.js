@@ -74,15 +74,26 @@ exports.parse = function() {
 	var children = parseBody(this.parser, config);
 	var textEnd = this.parser.pos;
 	var nodes = [];
-	if(config.debug && config.debug !== "no") {
+	// See marker-block.js for the override resolution rationale.
+	var effectiveDebug = resolveDebugMode(this.parser, marker.open, config.debug);
+	if(effectiveDebug && effectiveDebug !== "no") {
 		var textOuter = this.parser.source.slice(textStart, textEnd).replace(/(?:\r?\n)+$/, "");
-		nodes = nodes.concat(buildDebugNodes(config.debug, config.debugString || "", textOuter));
+		nodes = nodes.concat(buildDebugNodes(effectiveDebug, config.debugString || "", textOuter));
 	}
-	if(!isDebugRenderSuppressed(config.debug)) {
+	if(!isDebugRenderSuppressed(effectiveDebug)) {
 		nodes.push(buildNode(config, children, this.parser.source, contentStart, textEnd));
 	}
 	return nodes;
 };
+
+function resolveDebugMode(parser, open, fieldDebug) {
+	if(parser.debugMarkerAllOff) { return "no"; }
+	var overrides = parser.debugMarkerOverrides;
+	if(overrides && Object.prototype.hasOwnProperty.call(overrides, open)) {
+		return overrides[open];
+	}
+	return fieldDebug;
+}
 
 function buildDebugNodes(debug, debugString, textOuter) {
 	var nodes = [];
@@ -165,7 +176,10 @@ function resolveConfig(marker, symbol, classes) {
 		attributes: marker.attributes || {},
 		srcName: marker.srcName,
 		userClasses: classes,
-		bodyRaw: marker.bodyRaw
+		bodyRaw: marker.bodyRaw,
+		// See marker-block.js for the rationale on propagating debug fields.
+		debug: marker.debug || "",
+		debugString: marker.debugString || ""
 	};
 	var sym = lookupSymbol(marker, symbol);
 	if(sym) {

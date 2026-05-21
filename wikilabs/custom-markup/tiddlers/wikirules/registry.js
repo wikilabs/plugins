@@ -267,7 +267,7 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		if(isDeniedElement(element)) { element = ""; }
 		attrs = scrubAttributes(attrs, element);
 	}
-	return {
+	var config = {
 		title: title,
 		open: f.open,
 		close: f.close || "",
@@ -314,9 +314,40 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		legacyKind: f["legacy-kind"] || "",
 		caption: f.caption || title,
 		description: f.description || "",
+		// debug + debug-string: per-marker render-time codeblock (the v0.x
+		// `_debug` capability lifted to v1.0 marker tiddlers). Modes: pragma
+		// (default if truthy), pragmaOnly, text, textOnly, both, no. When
+		// `debug` is set and `debug-string` is empty, auto-generate a single
+		// pseudo-pragma line from the marker's metadata.
+		debug: f.debug || "",
+		debugString: f["debug-string"] || "",
 		symbols: Object.create(null)
 	};
+	// Always populate a fallback debugString so the `\debugmarker` pragma
+	// (per-tiddler override on a marker with no static `debug` field) still
+	// has something to show. Setting `debug-string` explicitly wins.
+	if(!config.debugString) {
+		config.debugString = autoDebugString(title, f);
+	}
+	return config;
 };
+
+// Auto-generate a single pseudo-pragma line for the debug codeblock when a
+// marker tiddler omits `debug-string`. Reads the RAW tiddler fields (not the
+// defaulted config) so only what the author actually set shows up — defaults
+// like `container='ul'` on a word marker stay invisible.
+function autoDebugString(title, f) {
+	var parts = ["marker " + title];
+	var fields = ["open", "close", "kind", "mode", "element", "src-name",
+		"end-string", "classes", "max-level", "paragraph-marker", "emit-open",
+		"body-raw", "container", "item-element", "indent-unit", "open-pattern",
+		"allow-symbol", "allow-classes", "allow-unsafe", "legacy-kind"];
+	fields.forEach(function(k) {
+		var v = f[k];
+		if(v !== undefined && v !== "") { parts.push(k + "='" + v + "'"); }
+	});
+	return parts.join(" ");
+}
 
 CmRegistry.prototype.registerSymbol = function(openLiteral, symbol, config) {
 	var marker = this.markers[openLiteral];

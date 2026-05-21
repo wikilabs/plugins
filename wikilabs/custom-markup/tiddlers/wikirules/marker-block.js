@@ -106,18 +106,32 @@ exports.parse = function() {
 	}
 	var textEnd = this.parser.pos;
 	var nodes = [];
-	if(config.debug && config.debug !== "no") {
+	// `\debugmarker` pragma overrides the marker's static `debug` field for
+	// this tiddler. `debugMarkerAllOff` is the wiki-wide off switch
+	// (`\debugmarker no`); per-marker entries in `debugMarkerOverrides`
+	// (including `=no`) win over the field.
+	var effectiveDebug = resolveDebugMode(this.parser, marker.open, config.debug);
+	if(effectiveDebug && effectiveDebug !== "no") {
 		// Strip the trailing terminator (newline or blank-line) that
 		// eatTerminator consumed, so the debug `text` codeblock matches
 		// v0.x's clean per-marker source slice.
 		var textOuter = this.parser.source.slice(textStart, textEnd).replace(/(?:\r?\n)+$/, "");
-		nodes = nodes.concat(buildDebugNodes(config.debug, config.debugString || "", textOuter));
+		nodes = nodes.concat(buildDebugNodes(effectiveDebug, config.debugString || "", textOuter));
 	}
-	if(!isDebugRenderSuppressed(config.debug)) {
+	if(!isDebugRenderSuppressed(effectiveDebug)) {
 		nodes.push(buildNode(config, children, this.parser.source, contentStart, textEnd));
 	}
 	return nodes;
 };
+
+function resolveDebugMode(parser, open, fieldDebug) {
+	if(parser.debugMarkerAllOff) { return "no"; }
+	var overrides = parser.debugMarkerOverrides;
+	if(overrides && Object.prototype.hasOwnProperty.call(overrides, open)) {
+		return overrides[open];
+	}
+	return fieldDebug;
+}
 
 // `_debug` modes from v0.x (glyph-text.js / glyph-inline.js):
 //   pragma (default), pragmaOnly, text, textOnly, both, no.
@@ -296,7 +310,12 @@ function resolveConfig(marker, symbol, classes, level) {
 		classes: marker.classes || "",
 		attributes: marker.attributes || {},
 		srcName: marker.srcName,
-		userClasses: classes
+		userClasses: classes,
+		// Marker-tiddler `debug` / `debug-string` fields. Symbol resolution
+		// (applySymbolToConfig) can still override these with `_use` / legacy
+		// `_debug` values from a pragma symbol.
+		debug: marker.debug || "",
+		debugString: marker.debugString || ""
 	};
 	var sym = lookupSymbol(marker, symbol);
 	if(sym) {

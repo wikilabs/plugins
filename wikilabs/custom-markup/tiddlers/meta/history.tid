@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-34 - 2026-05-21
+
+* V 1.0.0-beta-34
+** `debug` and `debug-string` fields on marker tiddlers: per-marker render-time codeblock. Modes `pragma`, `pragmaOnly`, `text`, `textOnly`, `both`, `no`.
+** `\debugmarker <open>=<mode>` pragma: per-tiddler override of a marker's `debug` field.
+** ControlPanel > Advanced > "Custom Markup": navigation dashboard for vocabularies, markers, global pragmas, toolbar and cascades.
+
 V 1.0.0-beta-33 - 2026-05-20
 
 * V 1.0.0-beta-33
