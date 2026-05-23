@@ -4,9 +4,9 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 
 <div class="wltc-vocab-summary">
 
-	<h2>{{!!caption}}</h2>
+	<h2><span class="tc-tiny-gap-right">Caption:</span> {{!!caption}}</h2>
 
-	<p>{{!!description}}</p>
+	<p><span class="tc-tiny-gap-right">Description:</span> {{!!description}}</p>
 
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
@@ -18,15 +18,10 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 
 	<p class="wltc-field-reference">Full vocab-field reference: <$link class="tc-tiny-gap-left" to="Vocabulary Meta Fields">Vocabulary Meta Fields</$link>.</p>
 
-	<%if [<currentTiddler>has:field[text]] %>
-		<h3>Body</h3>
-		<$transclude tiddler=<<currentTiddler>> field="text" mode="block"/>
-	<%endif%>
-
 	<h3>Markers in this vocabulary</h3>
 
 	<$let tv-wikilinks=no>
-	{{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]count[]] }}}	<span class="tc-tiny-gap">total</span> ({{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]!field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">block,</span>	{{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">inline)</span>
+	{{{ [all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]count[]] }}}	<span class="tc-tiny-gap">total</span> ({{{ [all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]!field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">block,</span>	{{{ [all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">inline)</span>
 	</$let>
 
 	<table class="tc-table-no-border wltc-marker-tag-summary-table">
@@ -46,7 +41,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 			</tr>
 		</thead>
 		<tbody>
-			<$list filter="[all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
+			<$list filter="[all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
 				<tr>
 					<td class="wltc-icon-col"><%if [<currentTiddler>has:field[marker-icon]] %><svg viewBox="0 0 128 128" width="28" height="28"><$transclude tiddler={{!!marker-icon}} index="element"/></svg><%endif%></td>
 					<td><code><$text text={{!!open}}/></code></td>
@@ -64,7 +59,13 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 		</tbody>
 	</table>
 
-	<h3>Used in</h3>
+	<%if [<currentTiddler>has:field[text]] %>
+		<h2>Notes</h2>
+		<$transclude tiddler=<<currentTiddler>> field="text" mode="block"/>
+	<%endif%>
+
+
+	<h2>Used in</h2>
 
 	<$let
 		typeRegex={{{ [[(?i);vocab=.*\b]addsuffix{!!caption}addsuffix[\b]] }}}

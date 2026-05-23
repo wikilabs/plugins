@@ -20,8 +20,8 @@ Each vocab ships a set of markers. Activate per tiddler via the type field (<cod
 <$list filter="[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Vocabulary]sort[caption]]">
 <tr>
 <td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
-<td align="right">{{{ [all[shadows+tiddlers]tag{!!marker-tag}tag[$:/tags/CustomMarkup/Marker]count[]] }}}</td>
-<td><code>{{!!marker-tag}}</code></td>
+<td align="right">{{{ [all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]count[]] }}}</td>
+<td><code><$text text=<<currentTiddler>>/></code></td>
 <td><code>;vocab={{!!caption}}</code></td>
 </tr>
 </$list>

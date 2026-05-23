@@ -111,20 +111,20 @@ CmRegistry.prototype.loadAllMarkers = function() {
 };
 
 // Activate a vocabulary by name. Adds the open literal of every marker
-// tagged with that vocabulary's marker-tag to the active set, AND
-// re-writes the marker config for each open with the activated vocab's
-// version. The re-write resolves cross-vocab collisions (two vocabs
-// shipping a marker with the same `open`) by letting the activated vocab
-// win. When multiple vocabs are activated, the LAST one wins.
+// tagged with the vocabulary tiddler's title (e.g. `vocab/foo`) to the
+// active set, AND re-writes the marker config for each open with the
+// activated vocab's version. The re-write resolves cross-vocab collisions
+// (two vocabs shipping a marker with the same `open`) by letting the
+// activated vocab win. When multiple vocabs are activated, the LAST one
+// wins.
 CmRegistry.prototype.activate = function(name) {
-	var meta = this.wiki.getTiddler("vocab/" + name.toLowerCase());
+	var vocabTitle = "vocab/" + name.toLowerCase();
+	var meta = this.wiki.getTiddler(vocabTitle);
 	if(!meta) { return false; }
 	var tags = meta.fields.tags;
 	if(!tags || tags.indexOf(VOCAB_TAG) === -1) { return false; }
-	this.activeVocabs["vocab/" + name.toLowerCase()] = true;
-	var markerTag = meta.fields["marker-tag"];
-	if(!markerTag) { return false; }
-	var markerTitles = this.wiki.filterTiddlers("[all[shadows+tiddlers]tag[" + markerTag + "]]");
+	this.activeVocabs[vocabTitle] = true;
+	var markerTitles = this.wiki.filterTiddlers("[all[shadows+tiddlers]tag[" + vocabTitle + "]]");
 	var self = this;
 	markerTitles.forEach(function(title) {
 		var config = self.parseMarkerTiddler(title);

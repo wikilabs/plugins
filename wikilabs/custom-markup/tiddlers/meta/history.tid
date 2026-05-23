@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-35 - 2026-05-23
+
+* V 1.0.0-beta-35
+** Vocabulary meta tiddlers no longer need a `marker-tag` field. The vocabulary's title is automatically the tag its markers carry — one less field to author and keep in sync.
+
 V 1.0.0-beta-34 - 2026-05-21
 
 * V 1.0.0-beta-34
