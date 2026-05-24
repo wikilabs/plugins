@@ -1,6 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-36 - 2026-05-24
+V 1.0.0-beta-37 - 2026-05-24
+
+* V 1.0.0-beta-37
+** Fix: `body-class` parser wrap only fires at the outermost `parseBlocks` call. Nested calls from block-mode marker bodies (`marker-inline.js`, `marker-block.js` with `end-string`) no longer accumulate redundant wrapper `<div>`s.
 
 * V 1.0.0-beta-36
 ** (P1) Per-marker flags: `no-space-bound`, `trailing-blank`, `case-insensitive` extend the marker tiddler vocabulary.

@@ -267,9 +267,21 @@ CmRegistry.prototype.applyAmendRules = function(parser) {
 	// vocab-specific CSS can use the cascade (e.g. `.wltc-fountain
 	// .wltc-fountain-character`). Driven entirely by the `body-class`
 	// values on active vocab metas — engine knows no class names.
+	//
+	// Only the OUTERMOST parseBlocks call gets the wrap. parseBlocks is
+	// also called recursively from marker bodies (marker-inline.js,
+	// marker-block.js) — wrapping each nested call would bloat the AST
+	// with one `<div class="wltc-fountain">` per block-mode marker body
+	// and break the cascade scoping. The depth counter increments on
+	// entry and decrements on exit; wrap fires only when depth returns
+	// to zero.
 	var originalParseBlocks = parser.parseBlocks;
+	parser._cmParseBlocksDepth = 0;
 	parser.parseBlocks = function() {
+		parser._cmParseBlocksDepth++;
 		var blocks = originalParseBlocks.apply(this, arguments);
+		parser._cmParseBlocksDepth--;
+		if(parser._cmParseBlocksDepth !== 0) { return blocks; }
 		var cls = self.getBodyClass();
 		if(!cls) { return blocks; }
 		return [{
