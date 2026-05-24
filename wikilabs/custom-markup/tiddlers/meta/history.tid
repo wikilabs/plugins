@@ -1,5 +1,14 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-36 - 2026-05-24
+
+* V 1.0.0-beta-36
+** (P1) Per-marker flags: `no-space-bound`, `trailing-blank`, `case-insensitive` extend the marker tiddler vocabulary.
+** (P2) Generic vocab-flag store: `hasVocabFlag(name)` replaces the five named accessors; new `body-class` field wraps the parsed tree for cascade-scoped CSS.
+** (P3) `yaml.js`: multi-line scalar values and tab indentation, both required for Fountain title pages.
+** (P4) New `wikirules/fountain-flavour/`: `fountain-character.js` (uppercase cue auto-detection with parentheticals and dual dialogue wrap), `fountain-transition.js` (generic `... TO:` + forced `>` transitions).
+** (P5) Fountain styles: lyrics, cue-block with side-by-side dual layout, multi-line front-matter values, character source-case preserved.
+
 V 1.0.0-beta-35 - 2026-05-23
 
 * V 1.0.0-beta-35

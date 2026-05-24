@@ -7,11 +7,11 @@ type: text/vnd.tiddlywiki
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline html
 
 /* ---- Typography baseline -----------------------------------------
-   Monospace face for the typewriter feel of a shooting script. Applied
-   per class because there's no wrapping container; a future engine
-   change could inject one, in which case font-family would move there.
-   max-width:60ch on each block approximates the printed-page width
-   (~60 columns of Courier on a US Letter page with 1" margins).
+Monospace face for the typewriter feel of a shooting script. Applied
+per class because there's no wrapping container; a future engine
+change could inject one, in which case font-family would move there.
+max-width:60ch on each block approximates the printed-page width
+(~60 columns of Courier on a US Letter page with 1" margins).
 */
 
 .wltc-fountain-scene-heading,
@@ -21,6 +21,7 @@ type: text/vnd.tiddlywiki
 .wltc-fountain-action,
 .wltc-fountain-synopsis,
 .wltc-fountain-section,
+.wltc-fountain-lyrics,
 .wltc-front-matter,
 .wltc-fountain-centered {
 	font-family: "Courier New", Courier, monospace;
@@ -29,10 +30,10 @@ type: text/vnd.tiddlywiki
 }
 
 /* ---- Title page (front-matter) -----------------------------------
-   Centered key:value block at the top of the tiddler. The on-page
-   convention shows values only (the `Title:` / `Author:` keys are
-   visual scaffolding, not content), so the key span is hidden.
-   First row is enlarged as a stand-in for the screenplay title.
+Centered key:value block at the top of the tiddler. The on-page
+convention shows values only (the `Title:` / `Author:` keys are
+visual scaffolding, not content), so the key span is hidden.
+First row is enlarged as a stand-in for the screenplay title.
 */
 
 .wltc-front-matter {
@@ -45,6 +46,10 @@ type: text/vnd.tiddlywiki
 
 .wltc-front-matter-key {
 	display: none;
+}
+
+.wltc-front-matter-value {
+	white-space: pre-line;
 }
 
 .wltc-front-matter-row {
@@ -69,8 +74,8 @@ type: text/vnd.tiddlywiki
 }
 
 /* ---- Scene headings ----------------------------------------------
-   Industry convention: at the left margin, bold uppercase. Slightly
-   more top spacing than a paragraph break to separate scenes.
+Industry convention: at the left margin, bold uppercase. Slightly
+more top spacing than a paragraph break to separate scenes.
 */
 
 .wltc-fountain-scene-heading {
@@ -81,7 +86,7 @@ type: text/vnd.tiddlywiki
 }
 
 /* ---- Action paragraphs -------------------------------------------
-   Left margin, regular case, narrow screenplay-page width.
+Left margin, regular case, narrow screenplay-page width.
 */
 
 .wltc-fountain-action {
@@ -90,14 +95,13 @@ type: text/vnd.tiddlywiki
 }
 
 /* ---- Character cue + dialogue ------------------------------------
-   Cue is centered uppercase in a narrow column. Dialogue follows on
-   the next paragraph(s); we can only reliably target the immediately
-   adjacent <p> with CSS — multi-paragraph dialogue runs need engine
-   support for lookahead (bd-j5b).
+Cue is centered uppercase in a narrow column. Dialogue follows on
+the next paragraph(s); we can only reliably target the immediately
+adjacent <p> with CSS — multi-paragraph dialogue runs need engine
+support for lookahead (bd-j5b).
 */
 
 .wltc-fountain-character {
-	text-transform: uppercase;
 	text-align: center;
 	margin: 1.2em auto 0;
 	max-width: 20ch;
@@ -109,9 +113,39 @@ type: text/vnd.tiddlywiki
 	font-family: "Courier New", Courier, monospace;
 }
 
+/* ---- Dual dialogue ----------------------------------------------
+The auto-character rule wraps each cue + dialogue pair in
+`<div class="wltc-fountain-cue-block">`. When the second cue carries
+a `^`, its wrapper picks up `wltc-fountain-cue-block-dual`. CSS
+detects the adjacent non-dual + dual pair and lays them out as
+inline-block columns sitting side-by-side.
+*/
+
+.wltc-fountain-cue-block {
+	margin: 0;
+}
+
+.wltc-fountain-cue-block:not(.wltc-fountain-cue-block-dual):has(+ .wltc-fountain-cue-block-dual),
+.wltc-fountain-cue-block-dual {
+	display: inline-block;
+	vertical-align: top;
+	width: 48%;
+}
+
+.wltc-fountain-cue-block:not(.wltc-fountain-cue-block-dual):has(+ .wltc-fountain-cue-block-dual) {
+	margin-right: 2%;
+}
+
+/* Inside a dual column, the dialogue paragraph's centered 35ch column
+   would either overflow or look orphaned. Let it fill the column. */
+.wltc-fountain-cue-block-dual .wltc-fountain-character + p,
+.wltc-fountain-cue-block:not(.wltc-fountain-cue-block-dual):has(+ .wltc-fountain-cue-block-dual) .wltc-fountain-character + p {
+	max-width: none;
+}
+
 /* ---- Transitions -------------------------------------------------
-   Mid-script transitions sit at the right margin; the FADE IN opener
-   stays at left per the spec.
+Mid-script transitions sit at the right margin; the FADE IN opener
+stays at left per the spec.
 */
 
 .wltc-fountain-transition {
@@ -129,8 +163,8 @@ type: text/vnd.tiddlywiki
 }
 
 /* ---- Synopsis ----------------------------------------------------
-   Author-only note. Light italic gray so it's distinguishable from
-   produced action.
+Author-only note. Light italic gray so it's distinguishable from
+produced action.
 */
 
 .wltc-fountain-synopsis {
@@ -143,7 +177,7 @@ type: text/vnd.tiddlywiki
 }
 
 /* ---- Boneyard ----------------------------------------------------
-   Author-side cuts; hidden from rendered output.
+Author-side cuts; hidden from rendered output.
 */
 
 .wltc-fountain-boneyard {
@@ -151,7 +185,7 @@ type: text/vnd.tiddlywiki
 }
 
 /* ---- Sections (author outline headers) ---------------------------
-   Hierarchical via the standard wltc-l<N> level classes.
+Hierarchical via the standard wltc-l<N> level classes.
 */
 
 .wltc-fountain-section {
@@ -170,6 +204,17 @@ type: text/vnd.tiddlywiki
 .wltc-fountain-section.wltc-l3 { font-size: 1em; margin-left: 2em; }
 .wltc-fountain-section.wltc-l4 { font-size: 0.95em; margin-left: 3em; }
 
+/* ---- Lyrics ------------------------------------------------------
+Each `~`-prefixed line is its own paragraph; spec convention is
+italic.
+*/
+
+.wltc-fountain-lyrics {
+	font-style: italic;
+	margin: 0.2em 0;
+	max-width: 60ch;
+}
+
 /* ---- Centered text ----------------------------------------------- */
 
 .wltc-fountain-centered {
@@ -187,3 +232,17 @@ type: text/vnd.tiddlywiki
 .wltc-fountain-underline {
 	text-decoration: underline;
 }
+
+/* ---- Fountain Body ---------------------------------------------
+The engine wraps the parsed tree in `<div class="wltc-fountain">`
+inside `.tc-tiddler-body` (driven by `body-class: wltc-fountain` on
+vocab/fountain). All fountain content lives inside this wrapper, so
+styling it directly gives us the centered narrow-column screenplay
+layout without touching TW's body class.
+*/
+
+.wltc-fountain {
+	margin: 0 auto;
+	max-width: 80ch;
+}
+
