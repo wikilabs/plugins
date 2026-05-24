@@ -189,6 +189,14 @@ function identifyMarker(matchText, registry) {
 			} else if(trimmed.indexOf(m.open) === 0) {
 				return m;
 			}
+		} else if(m.caseInsensitive) {
+			// Case-insensitive word markers (e.g. Fountain `INT.` matching
+			// `int.` / `Int.`). Compare lowercased so the marker resolves
+			// regardless of source case.
+			var head = matchText.substring(0, m.open.length);
+			if(head.toLowerCase() === m.open.toLowerCase()) {
+				return m;
+			}
 		} else if(matchText.indexOf(m.open) === 0) {
 			return m;
 		}

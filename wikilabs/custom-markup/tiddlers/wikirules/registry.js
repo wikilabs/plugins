@@ -308,6 +308,25 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		itemElement: f["item-element"] || "li",
 		indentUnit: parseInt(f["indent-unit"] || "2", 10) || 2,
 		openPattern: f["open-pattern"] || "",
+		// no-space-bound: "yes" drops the whitespace-after-open requirement
+		// for glyph / glyph-level kinds and also drops symbol/class/quoted-arg
+		// capture. The marker fires on the bare open literal at line start
+		// (block mode) with a negative lookahead preventing it from chaining
+		// into another instance of the same literal (`..` and `##` greed
+		// already handles the level case). Required for spec-compliant
+		// Fountain interop where `.SCENE`, `@NAME`, `!action`, `=synopsis`
+		// must fire without the separator.
+		noSpaceBound: f["no-space-bound"] === "yes",
+		// trailing-blank: "yes" makes a word-kind marker only fire when its
+		// body line is followed by a blank line (or end of input). Required
+		// for spec-compliant Fountain interop where scene headings and
+		// transitions disambiguate from character cues by the presence of a
+		// trailing blank line.
+		trailingBlank: f["trailing-blank"] === "yes",
+		// case-insensitive: "yes" matches the open literal regardless of
+		// case (per-character `[Aa]` char-classes in the regex). Fountain
+		// scene headings (`int.`, `Int.`, `INT.`) all fire the INT. marker.
+		caseInsensitive: f["case-insensitive"] === "yes",
 		// legacy-kind: friendly name from the v0.x plugin (tick, degree, angle,
 		// approx, pilcrow, single, corner, braille, slash). Lets the legacy
 		// `\custom degree=foo` pragma resolve to the right marker.
@@ -341,7 +360,7 @@ function autoDebugString(title, f) {
 	var fields = ["open", "close", "kind", "mode", "element", "src-name",
 		"end-string", "classes", "max-level", "paragraph-marker", "emit-open",
 		"body-raw", "container", "item-element", "indent-unit", "open-pattern",
-		"allow-symbol", "allow-classes", "allow-unsafe", "legacy-kind"];
+		"no-space-bound", "trailing-blank", "case-insensitive", "allow-symbol", "allow-classes", "allow-unsafe", "legacy-kind"];
 	fields.forEach(function(k) {
 		var v = f[k];
 		if(v !== undefined && v !== "") { parts.push(k + "='" + v + "'"); }
@@ -553,6 +572,25 @@ CmRegistry.prototype.rebuildRegexes = function() {
 	this.dirty = false;
 };
 
+// Build a case-folded regex pattern for a literal: each letter becomes
+// `[Aa]`, non-letters are escaped. Used by case-insensitive word markers
+// so the combined block regex can mix case-sensitive and case-insensitive
+// arms without per-arm regex flags.
+function caseFoldPattern(s) {
+	var out = "";
+	for(var i = 0; i < s.length; i++) {
+		var c = s.charAt(i);
+		var lc = c.toLowerCase();
+		var uc = c.toUpperCase();
+		if(lc !== uc) {
+			out += "[" + uc + lc + "]";
+		} else {
+			out += $tw.utils.escapeRegExp(c);
+		}
+	}
+	return out;
+}
+
 function buildBlockArm(m) {
 	var open = $tw.utils.escapeRegExp(m.open);
 	// Strict-class rule kicks in when allow-symbol is off (e.g. dot marker)
@@ -566,6 +604,19 @@ function buildBlockArm(m) {
 	var quotedArgs = String.raw`(?::"[^"]*")*`;
 	var bound = String.raw`(?=[ \t\r\n]|$)`;
 
+	// no-space-bound: compact form for spec-compliant interop (e.g. Fountain
+	// `.SCENE`, `@NAME`). Skips symbol/class/quoted-arg capture and replaces
+	// the whitespace bound with a negative lookahead against the open itself,
+	// so `..` / `##` don't false-match while `.S` / `#H` do.
+	if(m.noSpaceBound && (m.kind === "glyph" || m.kind === "glyph-level")) {
+		var notOpen = "(?!" + open + ")";
+		if(m.kind === "glyph") {
+			return `(?:${open}${notOpen})`;
+		}
+		var lvlCompact = `(?:${open}){1,${m.maxLevel}}`;
+		return `(?:${lvlCompact}${notOpen})`;
+	}
+
 	switch(m.kind) {
 		case "glyph":
 			return `(?:${open}${symbol}${classChain}${quotedArgs}${bound})`;
@@ -573,8 +624,18 @@ function buildBlockArm(m) {
 			var lvl = `(?:${open}){1,${m.maxLevel}}`;
 			return `(?:${lvl}${symbol}${classChain}${quotedArgs}${bound})`;
 		case "word":
+			var wordOpen = m.caseInsensitive ? caseFoldPattern(m.open) : open;
 			var wordCls = m.allowClasses ? classChain : "";
-			return `(?:${open}${wordCls}${bound})`;
+			if(m.trailingBlank) {
+				// Spec-correct: body extends to end-of-line, then a blank
+				// line OR end-of-input must follow. Without this, scene
+				// headings (`INT. KITCHEN`) followed immediately by an
+				// uppercase line would compete with the auto-character
+				// rule (Fountain disambiguates on the trailing blank).
+				var trail = String.raw`(?=[^\n]*(?:\n(?:\n|(?![\s\S]))|(?![\s\S])))`;
+				return `(?:${wordOpen}${wordCls}${bound}${trail})`;
+			}
+			return `(?:${wordOpen}${wordCls}${bound})`;
 		case "list-item":
 			// Match line-start + optional indent + bullet + required space.
 			// Bullet is either the openPattern regex (for OL: \d+\.) or the
