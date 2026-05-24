@@ -321,7 +321,26 @@ CmRegistry.prototype.activateFromTypeField = function(typeStr) {
 	});
 };
 
+// Module-level cache for marker tiddler configs, keyed by title and
+// invalidated when the tiddler's change-count moves. Every parser ran
+// parseMarkerTiddler for ~83 marker tiddlers; with ~30 parsers per page
+// that's ~2.5k calls of identical work. Each cache hit skips a
+// getTiddler + ~24 field reads + scrubAttributes for the parser, at
+// the cost of a getChangeCount lookup and a shallow clone.
+var _markerTiddlerCache = Object.create(null);
+
 CmRegistry.prototype.parseMarkerTiddler = function(title) {
+	var changeCount = this.wiki.getChangeCount(title);
+	var cached = _markerTiddlerCache[title];
+	if(cached && cached.changeCount === changeCount) {
+		// Shallow clone with a fresh `symbols` map so per-parser
+		// `\custom` / pragma symbol writes don't leak between parsers.
+		// `globalSymbols` is added later by activate(); not present on
+		// the cached snapshot.
+		var clone = $tw.utils.extend({}, cached.config);
+		clone.symbols = Object.create(null);
+		return clone;
+	}
 	var t = this.wiki.getTiddler(title);
 	if(!t) { return null; }
 	var f = t.fields;
@@ -423,6 +442,11 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 	if(!config.debugString) {
 		config.debugString = autoDebugString(title, f);
 	}
+	// Cache a snapshot (without the per-parser `symbols` map) keyed by
+	// change-count so the next parser can clone instead of re-parsing.
+	var snapshot = $tw.utils.extend({}, config);
+	snapshot.symbols = null;
+	_markerTiddlerCache[title] = {changeCount: changeCount, config: snapshot};
 	return config;
 };
 

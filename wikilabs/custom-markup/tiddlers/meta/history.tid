@@ -1,6 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-37 - 2026-05-24
+V 1.0.0-beta-38 - 2026-05-24
+
+* V 1.0.0-beta-38
+** Perf: `parseMarkerTiddler` results are cached at module level, keyed by tiddler change-count. Each parser instance re-uses identical configs across the 100+ per-parser marker reads. ~6% per-parse speedup on Fountain content (~2 ms → ~1.86 ms in a 200-call microbench).
 
 * V 1.0.0-beta-37
 ** Fix: `body-class` parser wrap only fires at the outermost `parseBlocks` call. Nested calls from block-mode marker bodies (`marker-inline.js`, `marker-block.js` with `end-string`) no longer accumulate redundant wrapper `<div>`s.
