@@ -3,14 +3,14 @@ title: $:/plugins/wikilabs/custom-markup/wikirules/markdown-newline.js
 type: application/javascript
 module-type: wikirule
 
-Markdown-style newline handling: every intra-paragraph `\n` (or `\r\n`)
-emits a `<br>`. Blank-line paragraph breaks already work via TW's block
+Preserve intra-paragraph newlines: every single `\n` (or `\r\n`) emits
+a `<br>`. Blank-line paragraph breaks already work via TW's block
 parser, which terminates the inline run at `\n\n` before this rule can
 see the second newline — so this rule only fires on single newlines
 inside a paragraph, never on the boundary between paragraphs.
 
-Fires only when the markdown vocabulary is active for the tiddler being
-parsed.
+Fires when any activated vocab opts in via `preserve-newlines: yes`
+(e.g. vocab/markdown, vocab/fountain).
 
 \*/
 
@@ -34,7 +34,7 @@ exports.init = function(parser) {
 };
 
 exports.findNextMatch = function(startPos) {
-	if(!this.parser.cmRegistry || !this.parser.cmRegistry.isActiveVocab("vocab/markdown")) {
+	if(!this.parser.cmRegistry || !this.parser.cmRegistry.hasVocabFlag("preserve-newlines")) {
 		return undefined;
 	}
 	var regex = new RegExp(NL_RE.source, "g");

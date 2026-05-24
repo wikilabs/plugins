@@ -82,10 +82,20 @@ var CmRegistry = function(wiki) {
 	// colliding core rules (heading vs `!action`, list vs `*x` line-start,
 	// prettylink vs `[[note]]`, ...) stop firing for the tiddler.
 	this.disabledCoreRules = Object.create(null);
-	// True if any activated vocab declared `front-matter: yes`. The
-	// front-matter wikirule consults this flag to decide whether to
-	// consume a `Key: Value` block at parser.pos === 0.
-	this.frontMatter = false;
+	// Set of `<name>: yes` fields declared by activated vocab metas.
+	// Wikirules consume their feature switches by name via hasVocabFlag()
+	// so the engine stays agnostic of any specific vocab's vocabulary:
+	// fountain owns `auto-character`, markdown/fountain share
+	// `preserve-newlines`, etc., and the registry just records which
+	// names were opted into.
+	this.vocabFlags = Object.create(null);
+	// Ordered list of class names declared by each activated vocab via
+	// its `body-class` field. The parser wraps the rendered tree in a
+	// `<div class="...">` containing these classes (joined by spaces)
+	// so vocab-scoped CSS can use the cascade. Engine stays neutral:
+	// the value is opaque (e.g. `wltc-fountain`), the engine just
+	// records and applies it.
+	this.bodyClasses = [];
 	this.blockRegex = null;
 	this.inlineRegex = null;
 	this.dirty = true;
@@ -150,15 +160,49 @@ CmRegistry.prototype.activate = function(name) {
 			if(rule) { self.disabledCoreRules[rule] = true; }
 		});
 	}
-	if(meta.fields["front-matter"] === "yes") {
-		self.frontMatter = true;
+	// Record every `<name>: yes` field as an opt-in flag, skipping the
+	// system fields the engine already consumes structurally (tags etc.).
+	// The wikirule layer owns the name → behaviour mapping; the engine
+	// just remembers what was opted into.
+	$tw.utils.each(meta.fields, function(value, key) {
+		if(value === "yes" && !RESERVED_VOCAB_FIELDS[key]) {
+			self.vocabFlags[key] = true;
+		}
+	});
+	var bodyClass = meta.fields["body-class"];
+	if(typeof bodyClass === "string" && bodyClass.trim() !== "") {
+		self.bodyClasses.push(bodyClass.trim());
 	}
 	self.dirty = true;
 	return true;
 };
 
-CmRegistry.prototype.hasFrontMatter = function() {
-	return this.frontMatter;
+// Fields handled structurally elsewhere on the vocab meta tiddler —
+// excluded from the generic flag scan so a stray `tags: yes` (or other
+// system value of "yes") doesn't masquerade as a feature opt-in.
+var RESERVED_VOCAB_FIELDS = {
+	"title": true,
+	"tags": true,
+	"type": true,
+	"created": true,
+	"modified": true,
+	"caption": true,
+	"description": true,
+	"filter": true,
+	"version": true,
+	"disable-core-rules": true,
+	"body-class": true
+};
+
+CmRegistry.prototype.hasVocabFlag = function(name) {
+	return !!this.vocabFlags[name];
+};
+
+// Joined `body-class` values from all activated vocabs (space-separated).
+// Empty string when none declared — parseBlocks wrap is then skipped so
+// tiddlers without a vocab body-class render exactly as before.
+CmRegistry.prototype.getBodyClass = function() {
+	return this.bodyClasses.join(" ");
 };
 
 CmRegistry.prototype.isActive = function(open) {
@@ -192,6 +236,7 @@ CmRegistry.prototype.isActiveVocab = function(title) {
 CmRegistry.prototype.applyAmendRules = function(parser) {
 	if(parser._cmAmendScheduled) { return; }
 	parser._cmAmendScheduled = true;
+	var self = this;
 	var names = Object.keys(this.disabledCoreRules);
 	var originalParsePragmas = parser.parsePragmas;
 	parser.parsePragmas = function() {
@@ -213,8 +258,26 @@ CmRegistry.prototype.applyAmendRules = function(parser) {
 		// they return undefined at init time (vocab not yet activated)
 		// and TW caches that, never re-calling until matchIndex < startPos.
 		refreshCmRuleMatch(parser.blockRules, "markdown-table");
+		refreshCmRuleMatch(parser.blockRules, "fountain-character");
+		refreshCmRuleMatch(parser.blockRules, "fountain-transition");
 		refreshCmRuleMatch(parser.inlineRules, "markdown-newline");
 		return result;
+	};
+	// Wrap the block-level parse output in a vocab-scoped `<div>` so
+	// vocab-specific CSS can use the cascade (e.g. `.wltc-fountain
+	// .wltc-fountain-character`). Driven entirely by the `body-class`
+	// values on active vocab metas — engine knows no class names.
+	var originalParseBlocks = parser.parseBlocks;
+	parser.parseBlocks = function() {
+		var blocks = originalParseBlocks.apply(this, arguments);
+		var cls = self.getBodyClass();
+		if(!cls) { return blocks; }
+		return [{
+			type: "element",
+			tag: "div",
+			attributes: {"class": {type: "string", value: cls}},
+			children: blocks
+		}];
 	};
 };
 

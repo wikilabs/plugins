@@ -53,7 +53,7 @@ exports.init = function(parser) {
 
 exports.findNextMatch = function(startPos) {
 	if(startPos !== 0) { return undefined; }
-	if(!this.parser.cmRegistry.hasFrontMatter()) { return undefined; }
+	if(!this.parser.cmRegistry.hasVocabFlag("front-matter")) { return undefined; }
 	var firstLine = readLine(this.parser.source, 0);
 	if(!KEY_LINE_RE.test(firstLine.text)) { return undefined; }
 	this.match = [firstLine.text];
