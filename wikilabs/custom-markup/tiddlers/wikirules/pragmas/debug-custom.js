@@ -55,7 +55,12 @@ exports.parse = function() {
 
 	var localConfig = this.pc,
 		localMarkers = (this.p.cmRegistry && this.p.cmRegistry.markers) || {},
-		globalParser = this.p.wiki.parseTiddler("$:/config/custom-markup/pragma/PageTemplate"),
+		// parseAsInline + configTrimWhiteSpace match the options TW core's
+		// ImportVariablesWidget passes when it parses the same tiddler, so
+		// we share the cache slot rather than triggering a separate full
+		// parse. Pragma phase populates configTickText / cmRegistry the
+		// same way regardless of mode.
+		globalParser = this.p.wiki.parseTiddler("$:/config/custom-markup/pragma/PageTemplate", {parseAsInline: true, configTrimWhiteSpace: false}),
 		globalConfig = (globalParser && globalParser.configTickText) || {},
 		globalMarkers = (globalParser && globalParser.cmRegistry && globalParser.cmRegistry.markers) || {};
 

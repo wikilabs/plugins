@@ -15,6 +15,39 @@ var MARKER_TAG = "$:/tags/CustomMarkup/Marker";
 var VOCAB_TAG = "$:/tags/CustomMarkup/Vocabulary";
 var PAGE_TEMPLATE_TITLE = "$:/config/custom-markup/pragma/PageTemplate";
 
+// PageTemplate is special: it is parsed by TW core's ImportVariablesWidget
+// AND by our loadGlobalPragmas, and `getCacheForTiddler` has no in-flight
+// dedupe. So when one caller's parseTiddler(PT) factory is mid-execution,
+// any nested parseTiddler(PT) (typically from a parser instantiated during
+// PT's own `\importcustom` processing) misses the cache and triggers a
+// second full PT parse — both factories then race to write the cache, the
+// outer one wins. We patch wiki.parseTiddler once per wiki to track the
+// PT-parse depth: nested calls return whatever's in the cache (possibly
+// undefined) without invoking the factory. Callers must handle undefined.
+var _ptParseDepth = 0;
+// Exposed as static method so a startup module can install the wrap
+// before any rendering path (and thus before TW core's
+// ImportVariablesWidget) can call parseTiddler(PageTemplate).
+function ensurePageTemplateDedupe(wiki) {
+	if(!wiki || wiki._cmPtDedupe) { return; }
+	wiki._cmPtDedupe = true;
+	var orig = wiki.parseTiddler;
+	wiki.parseTiddler = function(title, options) {
+		var isPT = (title === PAGE_TEMPLATE_TITLE);
+		if(isPT && _ptParseDepth > 0) {
+			var caches = this.caches && this.caches[title];
+			var cacheType = (options && options.parseAsInline) ? "inlineParseTree" : "blockParseTree";
+			return caches ? caches[cacheType] : undefined;
+		}
+		if(isPT) { _ptParseDepth++; }
+		try {
+			return orig.apply(this, arguments);
+		} finally {
+			if(isPT) { _ptParseDepth--; }
+		}
+	};
+}
+
 // Secure-by-default. Three categories:
 //   - DENIED: replaced with the default wrapper element. No usable sandbox
 //     semantics; the element itself is dropped.
@@ -65,6 +98,7 @@ function scrubAttributes(attrs, element) {
 
 var CmRegistry = function(wiki) {
 	this.wiki = wiki;
+	ensurePageTemplateDedupe(wiki);
 	this.markers = Object.create(null);
 	// `active` tracks which marker open literals are currently enabled
 	// for this parser. The regex always contains EVERY known marker, but
@@ -584,17 +618,58 @@ CmRegistry.prototype.mergeSymbolsFrom = function(other) {
 // Recursion guard: parseTiddler's cache initializer builds a sub-parser
 // whose marker-rule init re-enters loadGlobalPragmas; the
 // `_loadingGlobals` static flag short-circuits that recursive call.
+// Module-level cache of the global-symbols map extracted from
+// PageTemplate, keyed by the tiddler's change-count. TW's
+// `parseTiddler` cache (getCacheForTiddler) has no in-flight dedupe,
+// so if ImportVariablesWidget and our loadGlobalPragmas race to
+// populate the same cache slot via nested parser-init, both factories
+// run and the outer one overwrites the inner's result. Memoizing the
+// extracted symbols here keeps the total work to a single parse per
+// PageTemplate change — every subsequent parser hits the local cache.
+var _globalSymbolsCache = null;
+var _globalSymbolsAtChange = -1;
+
 CmRegistry.prototype.loadGlobalPragmas = function() {
 	if(CmRegistry._loadingGlobals) { return; }
+	var ptChange = this.wiki.getChangeCount(PAGE_TEMPLATE_TITLE);
+	if(_globalSymbolsCache && _globalSymbolsAtChange === ptChange) {
+		this.applyGlobalSymbols(_globalSymbolsCache);
+		return;
+	}
 	CmRegistry._loadingGlobals = true;
 	try {
-		var subParser = this.wiki.parseTiddler(PAGE_TEMPLATE_TITLE);
+		// `parseAsInline: true` shares the cache slot TW core's
+		// ImportVariablesWidget uses for the same tiddler.
+		var subParser = this.wiki.parseTiddler(PAGE_TEMPLATE_TITLE, {parseAsInline: true, configTrimWhiteSpace: false});
 		if(subParser && subParser.cmRegistry) {
 			this.mergeSymbolsFrom(subParser.cmRegistry);
+			// Snapshot the symbol map by open literal so future parsers
+			// don't need to invoke parseTiddler at all.
+			var snapshot = Object.create(null);
+			var srcMarkers = subParser.cmRegistry.markers;
+			Object.keys(srcMarkers).forEach(function(open) {
+				if(srcMarkers[open].symbols) {
+					snapshot[open] = srcMarkers[open].symbols;
+				}
+			});
+			_globalSymbolsCache = snapshot;
+			_globalSymbolsAtChange = ptChange;
 		}
 	} finally {
 		CmRegistry._loadingGlobals = false;
 	}
+};
+
+// Attach a cached global-symbols map (open → symbol table) onto this
+// registry's marker configs as `globalSymbols`. Used by both the
+// memoized cache-hit path and any other consumer that already has the
+// extracted map.
+CmRegistry.prototype.applyGlobalSymbols = function(symbolsByOpen) {
+	var self = this;
+	Object.keys(symbolsByOpen).forEach(function(open) {
+		var lM = self.markers[open];
+		if(lM) { lM.globalSymbols = symbolsByOpen[open]; }
+	});
 };
 
 CmRegistry.prototype.findByOpen = function(literal) {
@@ -761,6 +836,8 @@ function buildInlineArm(m) {
 	var closeFirst = m.close ? $tw.utils.escapeRegExp(m.close.charAt(0)) : "";
 	return String.raw`(?:${open}(?:[^.:\r\n\s${closeFirst}]+)?(?:\.[^.\r\n\s:${closeFirst}]+)*${quotedArgs})`;
 }
+
+CmRegistry.ensurePageTemplateDedupe = ensurePageTemplateDedupe;
 
 exports.CmRegistry = CmRegistry;
 exports.CM_MARKER_TAG = MARKER_TAG;
