@@ -235,8 +235,7 @@ function parseBlockSequence(lines, start, seqIndent) {
 				i++;
 			}
 			if(childLines.length > 0) {
-				var parsed = parseBlock(childLines, 0, childLines[0].indent);
-				result.push(parsed.value);
+				result.push(parseChildBlockValue(childLines));
 			} else {
 				result.push(null);
 			}
@@ -306,14 +305,28 @@ function parseBlockMapping(lines, start, mapIndent) {
 				i++;
 			}
 			if(childLines.length > 0) {
-				var parsed = parseBlock(childLines, 0, childLines[0].indent);
-				result[key] = parsed.value;
+				result[key] = parseChildBlockValue(childLines);
 			} else {
 				result[key] = null;
 			}
 		}
 	}
 	return {value: result, nextIndex: i};
+}
+
+// Decide whether collected child lines form a structured value (block
+// mapping / block sequence) or a multi-line scalar (Fountain title-page
+// `Notes:\n  first\n  second` convention). For the scalar case, leading
+// indent has already been stripped by the tokenizer so we can just join.
+function parseChildBlockValue(childLines) {
+	var first = childLines[0].raw;
+	var looksLikeSequence = first.indexOf("- ") === 0 || first === "-";
+	var looksLikeMapping = first.indexOf(":") !== -1 && !isQuotedColonValue(first);
+	if(!looksLikeSequence && !looksLikeMapping) {
+		return childLines.map(function(l) { return l.raw; }).join("\n");
+	}
+	var parsed = parseBlock(childLines, 0, childLines[0].indent);
+	return parsed.value;
 }
 
 // -- Main API --
@@ -342,8 +355,13 @@ function load(text) {
 		if(trimmed === "" || trimmed[0] === "#") {
 			continue;
 		}
+		// Count leading whitespace. Each space OR tab counts as one
+		// indent unit — strict YAML forbids tabs, but Fountain's
+		// title-page convention allows tab indentation for multi-line
+		// values, so we accept both. The comparison only cares about
+		// relative depth between parent and child, not visual width.
 		var indent = 0;
-		while(indent < raw.length && raw[indent] === " ") {
+		while(indent < raw.length && (raw[indent] === " " || raw[indent] === "\t")) {
 			indent++;
 		}
 		lines.push({indent: indent, raw: trimmed});
