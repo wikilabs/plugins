@@ -151,7 +151,7 @@ stays at left per the spec.
 .wltc-fountain-transition {
 	text-transform: uppercase;
 	text-align: right;
-	margin: 1em 0;
+	margin: 1em 0 1em auto;
 	max-width: 60ch;
 }
 

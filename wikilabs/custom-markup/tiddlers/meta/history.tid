@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-40 - 2026-05-25
+
+* V 1.0.0-beta-40
+** Fountain: page-break wikirule — `===` on a blank-flanked line, gated on `page-break: yes`.
+** Fountain: transition right edge now aligns with body, not 20ch short.
+
 V 1.0.0-beta-39 - 2026-05-25
 
 * V 1.0.0-beta-39
