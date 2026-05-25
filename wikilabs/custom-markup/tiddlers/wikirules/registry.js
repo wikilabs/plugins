@@ -100,6 +100,14 @@ var CmRegistry = function(wiki) {
 	this.wiki = wiki;
 	ensurePageTemplateDedupe(wiki);
 	this.markers = Object.create(null);
+	// Parallel storage for inline-kind markers (`inline-pair`, `linked-pair`)
+	// keyed by open literal. `this.markers` is also written, but its open-keyed
+	// dict can't hold two markers with the same open (e.g. `*` shared by
+	// vocab/markdown's ITALIC inline-pair AND ITEM-STAR list-item) — the
+	// second to load clobbers the first. Inline regex building / identify
+	// helpers consume this dict so the inline marker survives even when a
+	// block marker with the same open later overwrites `this.markers`.
+	this.inlineMarkers = Object.create(null);
 	// `active` tracks which marker open literals are currently enabled
 	// for this parser. The regex always contains EVERY known marker, but
 	// only active ones produce element output (the parse function emits
@@ -142,10 +150,21 @@ CmRegistry.prototype.addFromFilter = function(filterExpr) {
 		var config = self.parseMarkerTiddler(title);
 		if(config && config.open) {
 			self.markers[config.open] = config;
+			if(isInlineKind(config.kind)) {
+				self.inlineMarkers[config.open] = config;
+			}
 		}
 	});
 	this.dirty = true;
 };
+
+// Inline-pair / linked-pair are the two kinds whose markers fire at inline
+// positions and live in `this.inlineMarkers` alongside `this.markers`. All
+// other kinds (`glyph`, `glyph-level`, `word`, `list-item`) are block-only
+// and stay in `this.markers` exclusively.
+function isInlineKind(kind) {
+	return kind === "inline-pair" || kind === "linked-pair";
+}
 
 // Load every marker tiddler in the wiki into the registry. The regex will
 // then cover all known markers; whether they actually fire is decided by
@@ -182,6 +201,11 @@ CmRegistry.prototype.activate = function(name) {
 			var prior = self.markers[config.open];
 			if(prior && prior.globalSymbols) { config.globalSymbols = prior.globalSymbols; }
 			self.markers[config.open] = config;
+			if(isInlineKind(config.kind)) {
+				var inlinePrior = self.inlineMarkers[config.open];
+				if(inlinePrior && inlinePrior.globalSymbols) { config.globalSymbols = inlinePrior.globalSymbols; }
+				self.inlineMarkers[config.open] = config;
+			}
 			self.active[config.open] = true;
 		}
 	});
@@ -425,6 +449,15 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		// raw-HTML quotes) where wikitext inside the body must be preserved
 		// verbatim. Only honored by inline-pair markers.
 		bodyRaw: f["body-raw"] === "yes",
+		// open-variable: "yes" turns an inline-pair marker into a variable-
+		// length delimiter run. The open `open` field is treated as a SINGLE
+		// character that can repeat 1..N times; the close must match the
+		// SAME N. Flanking constraint on both ends: the run is preceded
+		// AND followed by a non-open character (or string boundary), so
+		// runs are maximal and unambiguous. Implies `body-raw: yes` — the
+		// body is captured verbatim. CommonMark inline code span is the
+		// canonical use (`` ` ``, ``` `` ```, ``` ``` ``` ...).
+		openVariable: f["open-variable"] === "yes",
 		// list-item kind fields. `container` is the wrapping element for
 		// the list (ul/ol/dl/blockquote). `item-element` is the element
 		// for each item (li/dt/dd/div). `indent-unit` is how many spaces
@@ -436,6 +469,63 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		itemElement: f["item-element"] || "li",
 		indentUnit: parseInt(f["indent-unit"] || "2", 10) || 2,
 		openPattern: f["open-pattern"] || "",
+		// linked-pair kind fields. A linked-pair marker captures TWO
+		// bracketed portions back-to-back: open BODY close link-open LINK
+		// link-close. Markdown link `[text](url)` and image `![alt](url)`
+		// are the obvious cases, but the engine stays generic — any DSL
+		// can pick its own delimiters and target attribute names. Defaults
+		// match the markdown shape: link-open `(`, link-close `)`,
+		// link-attribute `href`. With `body-attribute` set, BODY becomes
+		// a plain-text attribute on the rendered element (no inline parse,
+		// no children) — required for `<img alt="...">` where alt is not
+		// child content. Without it, BODY parses as inline content.
+		// `auto-external: yes` opts the marker into TW's prettylink-style
+		// internal/external split: when LINK matches a URL pattern, the
+		// configured element is swapped for a plain `<a href>` with
+		// `target="_blank" rel="noopener noreferrer"`. Needed so an
+		// `element: $link` marker (TW's tiddler-link widget) still routes
+		// external URLs correctly — the widget itself only understands
+		// tiddler titles.
+		linkOpen: f["link-open"] || "(",
+		linkClose: f["link-close"] || ")",
+		linkAttribute: f["link-attribute"] || "href",
+		bodyAttribute: f["body-attribute"] || "",
+		autoExternal: f["auto-external"] === "yes",
+		// TW-markdown-plugin compatibility knobs (linked-pair). Each is
+		// opt-in via a marker field so DSL authors can pick which subset
+		// they want. None of them change the matching regex — they all
+		// post-process the captured LINK text in parseLinkedPair.
+		// - `link-hash-prefix`:
+		//   - `yes`: a leading `#` on the captured target means "internal
+		//     tiddler" — strip the `#`, percent-decode the rest, and skip
+		//     auto-external. Targets without `#` still fall through to the
+		//     configured element (flexible / backward-compatible mode).
+		//   - `required`: same `#` recognition AS ABOVE, AND targets
+		//     without `#` are routed through the external-link branch
+		//     (`<a href>`) instead of falling through. Matches the TW
+		//     markdown plugin's strict semantics ("everything is a URL
+		//     unless explicitly marked internal").
+		// - `link-tooltip-attribute: <name>`: accept an optional `"..."`
+		//   parameter at the end of the captured target (TW md plugin's
+		//   tooltip syntax) and emit its content on this attribute (`title`
+		//   on `<a>`, `tooltip` on `<$image>`, etc.).
+		// - `link-angle-brackets: yes`: accept `<...>` wrapping around the
+		//   captured target so titles with whitespace, `<`, `>`, or other
+		//   awkward characters can be written. `\<` and `\>` inside the
+		//   brackets unescape to literal angle brackets.
+		linkHashPrefix: f["link-hash-prefix"] || "",
+		linkTooltipAttribute: f["link-tooltip-attribute"] || "",
+		linkAngleBrackets: f["link-angle-brackets"] === "yes",
+		// Any marker field of the form `attr-<name>-from: <fieldname>`
+		// declares "look up <fieldname> on the source tiddler (whatever
+		// matched LINK in this linked-pair) and emit its current value
+		// on the rendered element's <name> attribute". Resolved via TW's
+		// `indirect` attribute type at render time, so updates flow
+		// reactively. Used by IMAGE to pull `alt` + `tooltip` from a
+		// source tiddler's `alt-text` field; any DSL can repurpose for
+		// glossary tooltips, footnote bodies, etc. Body-attribute writes
+		// still override (explicit user-provided body wins).
+		attrFromFields: parseAttrFromFields(f),
 		// no-space-bound: "yes" drops the whitespace-after-open requirement
 		// for glyph / glyph-level kinds and also drops symbol/class/quoted-arg
 		// capture. The marker fires on the bare open literal at line start
@@ -483,6 +573,23 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 	_markerTiddlerCache[title] = {changeCount: changeCount, config: snapshot};
 	return config;
 };
+
+// Scan marker fields for the `attr-<name>-from: <field>` pattern and
+// return a map { <name>: <field> } (null when no such fields exist, so
+// the hot path can skip the iteration). See the linked-pair config
+// block above for the rendered-attribute semantics.
+function parseAttrFromFields(fields) {
+	var out = null;
+	Object.keys(fields).forEach(function(key) {
+		var m = /^attr-(.+)-from$/.exec(key);
+		if(!m) { return; }
+		var value = fields[key];
+		if(typeof value !== "string" || value.length === 0) { return; }
+		if(!out) { out = {}; }
+		out[m[1]] = value;
+	});
+	return out;
+}
 
 // Auto-generate a single pseudo-pragma line for the debug codeblock when a
 // marker tiddler omits `debug-string`. Reads the RAW tiddler fields (not the
@@ -713,9 +820,15 @@ CmRegistry.prototype.rebuildRegexes = function() {
 	var blockMarkers = this.list(function(m) {
 		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word" || m.kind === "list-item";
 	});
-	var inlineMarkers = this.list(function(m) {
-		return m.kind === "inline-pair";
-	});
+	// Inline markers come from the parallel `inlineMarkers` dict, not from
+	// filtering `this.markers` — that flat dict gets clobbered when an
+	// inline-kind marker shares an `open` with a block-kind one (markdown's
+	// ITALIC `*` vs ITEM-STAR `*` is the canonical case).
+	var inlineMarkers = [];
+	var openKeys = Object.keys(this.inlineMarkers);
+	for(var k = 0; k < openKeys.length; k++) {
+		inlineMarkers.push(this.inlineMarkers[openKeys[k]]);
+	}
 
 	// Word arms longest-first so longer literals preempt shorter prefixes
 	blockMarkers.sort(function(a, b) {
@@ -822,8 +935,21 @@ function buildBlockArm(m) {
 }
 
 function buildInlineArm(m) {
+	if(m.kind === "linked-pair") {
+		return buildLinkedPairArm(m);
+	}
 	var open = $tw.utils.escapeRegExp(m.open);
 	var quotedArgs = String.raw`(?::"[^"]*")*`;
+	// open-variable: match a MAXIMAL run of the open character, flanked
+	// by non-open chars on both sides (start-of-input / end-of-input
+	// count as non-open via the JS regex anchor semantics). parse()
+	// then walks forward to find a same-length closing run with the
+	// same flanking property. Single-char open assumed — multi-char
+	// "open" repetition isn't useful for the CommonMark code-span case
+	// this covers.
+	if(m.openVariable) {
+		return String.raw`(?<!${open})${open}+(?!${open})`;
+	}
 	// allow-symbol: no skips the symbol + class chain. Required for
 	// body-only markers like Fountain's `*italic*` where there's no symbol
 	// to capture between open and body; the default arm would eat "italic"
@@ -835,6 +961,25 @@ function buildInlineArm(m) {
 	// otherwise text like `{!body!}` swallows the `!}` close into the symbol.
 	var closeFirst = m.close ? $tw.utils.escapeRegExp(m.close.charAt(0)) : "";
 	return String.raw`(?:${open}(?:[^.:\r\n\s${closeFirst}]+)?(?:\.[^.\r\n\s:${closeFirst}]+)*${quotedArgs})`;
+}
+
+// Linked-pair arm: open BODY close link-open LINK link-close. Body and
+// link runs use lazy first-char-of-closer exclusion classes so they can't
+// run past the close literal. Multi-char closes work because the first
+// char is the discriminator (CommonMark `]` / `)` are single-char anyway).
+// `findNextMatch` only fires when the WHOLE pattern matches, so a bare
+// `[` with no following `](url)` falls through to plain text — no
+// post-hoc fallback needed in parse().
+function buildLinkedPairArm(m) {
+	var open = $tw.utils.escapeRegExp(m.open);
+	var close = $tw.utils.escapeRegExp(m.close);
+	var linkOpen = $tw.utils.escapeRegExp(m.linkOpen || "(");
+	var linkClose = $tw.utils.escapeRegExp(m.linkClose || ")");
+	var closeFirstEsc = $tw.utils.escapeRegExp((m.close || "]").charAt(0));
+	var linkCloseFirstEsc = $tw.utils.escapeRegExp((m.linkClose || ")").charAt(0));
+	var bodyClass = String.raw`[^${closeFirstEsc}\r\n]`;
+	var linkClass = String.raw`[^${linkCloseFirstEsc}\r\n]`;
+	return String.raw`(?:${open}${bodyClass}*?${close}${linkOpen}${linkClass}*?${linkClose})`;
 }
 
 CmRegistry.ensurePageTemplateDedupe = ensurePageTemplateDedupe;
