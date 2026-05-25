@@ -321,19 +321,30 @@ function parseLinkedPair(parser, marker, match) {
 	if(marker.linkTooltipAttribute && parsedLink.tooltip != null) {
 		attrs[marker.linkTooltipAttribute] = {type: "string", value: parsedLink.tooltip};
 	}
-	// `attr-X-from` fields wire the rendered element's X attribute to a
-	// field on the source tiddler — but only when that tiddler exists AND
-	// has the field set. For URLs, missing tiddlers, or missing fields,
-	// we leave the attribute alone so the body-attribute fallback above
-	// stays in effect. Presence check is parse-time; the value is emitted
-	// as an indirect attribute so it stays reactive after that.
+	// `attr-X-from` fields fall back to the source tiddler's field when
+	// the user didn't supply a value for the attribute (body / "tooltip"
+	// param both win when present). Special rule for `alt`: when the
+	// user-supplied alt is ≤2 words AND the source field is ≥3 words,
+	// prefer the source — descriptive alt-text matters more for
+	// accessibility than a short callsite label. For URLs, missing
+	// tiddlers, or missing fields, we leave the user's value untouched.
 	if(marker.attrFromFields) {
 		var sourceTiddler = parser.wiki.getTiddler(linkText);
 		if(sourceTiddler) {
 			for(var attrName in marker.attrFromFields) {
 				var sourceField = marker.attrFromFields[attrName];
 				var fieldValue = sourceTiddler.fields[sourceField];
-				if(fieldValue != null && fieldValue !== "") {
+				if(fieldValue == null || fieldValue === "") { continue; }
+				var userAttr = attrs[attrName];
+				var useSource = !userAttr;
+				if(!useSource && attrName === "alt" && userAttr.type === "string") {
+					var userWords = countWords(userAttr.value);
+					var fieldWords = countWords(fieldValue);
+					if(userWords > 0 && userWords <= 2 && fieldWords >= 3) {
+						useSource = true;
+					}
+				}
+				if(useSource) {
 					attrs[attrName] = {
 						type: "indirect",
 						textReference: linkText + "!!" + sourceField
@@ -398,6 +409,17 @@ function isExternalLink(value) {
 		return $tw.utils.isLinkExternal(value);
 	}
 	return /^(?:(?:file|http|https|mailto|ftp|irc|news|data):|\/\/)/i.test(value);
+}
+
+// Count whitespace-separated words in a string. Used by the alt-attribute
+// smart-override rule: a 1-2-word user-supplied alt is replaced by a 3+
+// word source-tiddler alt-text field. Trim first so leading/trailing
+// whitespace doesn't bias the count.
+function countWords(value) {
+	if(typeof value !== "string") { return 0; }
+	var trimmed = value.replace(/^\s+|\s+$/g, "");
+	if(trimmed === "") { return 0; }
+	return trimmed.split(/\s+/).length;
 }
 
 // Parse the captured-LINK content for the TW markdown plugin's extra
