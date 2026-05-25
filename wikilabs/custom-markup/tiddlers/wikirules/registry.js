@@ -839,6 +839,23 @@ function buildInlineArm(m) {
 
 CmRegistry.ensurePageTemplateDedupe = ensurePageTemplateDedupe;
 
+// Static helper called from wikirule init(): builds a CmRegistry on the
+// parser if absent, loads all markers + global pragmas, activates the
+// vocabs declared by `;vocab=` in the parser type, and schedules the
+// deferred amend-rules pass. Idempotent — rules sharing a parser only
+// pay the cost on the first call. Returns the parser's registry so
+// callers needing it (cmblock/cminline for getBlockRegex/getInlineRegex)
+// don't re-read `parser.cmRegistry`.
+CmRegistry.ensureRegistry = function(parser) {
+	if(parser.cmRegistry) { return parser.cmRegistry; }
+	parser.cmRegistry = new CmRegistry(parser.wiki);
+	parser.cmRegistry.loadAllMarkers();
+	parser.cmRegistry.loadGlobalPragmas();
+	parser.cmRegistry.activateFromTypeField(parser.type);
+	parser.cmRegistry.applyAmendRules(parser);
+	return parser.cmRegistry;
+};
+
 exports.CmRegistry = CmRegistry;
 exports.CM_MARKER_TAG = MARKER_TAG;
 exports.CM_VOCAB_TAG = VOCAB_TAG;

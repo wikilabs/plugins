@@ -1,12 +1,15 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-40 - 2026-05-25
+V 1.0.0-beta-41 - 2026-05-25
+
+* V 1.0.0-beta-41
+** Markdown table now gates on `tables: yes` (was hard-coded to `vocab/markdown`) — derived vocabs can opt in.
+** `markdown-newline` swaps the regex scan for `indexOf("\n")` — same semantics, no per-call RegExp alloc on a hot path.
+** Refactor: 8 wikirules share `CmRegistry.ensureRegistry(parser)` instead of inlining the registry-init boilerplate.
 
 * V 1.0.0-beta-40
 ** Fountain: page-break wikirule — `===` on a blank-flanked line, gated on `page-break: yes`.
 ** Fountain: transition right edge now aligns with body, not 20ch short.
-
-V 1.0.0-beta-39 - 2026-05-25
 
 * V 1.0.0-beta-39
 ** Perf: PageTemplate is now parsed exactly once per startup. `loadGlobalPragmas` calls `parseTiddler` with `parseAsInline: true` to share TW core's cache slot, memoizes the extracted global-symbols map per PT change-count, and a new startup module installs a `wiki.parseTiddler` wrap that dedupes nested PageTemplate factory calls (TW core's `getCacheForTiddler` has no in-flight dedupe). ~50-80 ms shaved off startup.

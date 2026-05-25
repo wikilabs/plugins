@@ -3,8 +3,8 @@ title: $:/plugins/wikilabs/custom-markup/wikirules/markdown-table.js
 type: application/javascript
 module-type: wikirule
 
-Markdown-style table block rule. Fires only when the markdown vocabulary
-is active for the tiddler being parsed.
+Markdown-style table block rule. Fires only when an activated vocab opts
+in via `tables: yes` (e.g. vocab/markdown).
 
 Recognises pipe-syntax tables with a required separator row:
 
@@ -36,17 +36,11 @@ var ROW_RE = /^[ \t]*\|([^\r\n]*?)\|[ \t]*(\r?\n|$)/mg;
 exports.init = function(parser) {
 	this.parser = parser;
 	this.matchRegExp = TABLE_RE;
-	if(!parser.cmRegistry) {
-		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
-		parser.cmRegistry.loadAllMarkers();
-		parser.cmRegistry.loadGlobalPragmas();
-		parser.cmRegistry.activateFromTypeField(parser.type);
-		parser.cmRegistry.applyAmendRules(parser);
-	}
+	$tw.utils.CmRegistry.ensureRegistry(parser);
 };
 
 exports.findNextMatch = function(startPos) {
-	if(!this.parser.cmRegistry || !this.parser.cmRegistry.isActiveVocab("vocab/markdown")) {
+	if(!this.parser.cmRegistry || !this.parser.cmRegistry.hasVocabFlag("tables")) {
 		return undefined;
 	}
 	var regex = new RegExp(TABLE_RE.source, "mg");

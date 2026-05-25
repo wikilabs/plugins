@@ -15,15 +15,8 @@ exports.types = {inline: true};
 
 exports.init = function(parser) {
 	this.parser = parser;
-	if(!parser.cmRegistry) {
-		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
-		// See marker-block.js for why all markers are loaded at init.
-		parser.cmRegistry.loadAllMarkers();
-		parser.cmRegistry.loadGlobalPragmas();
-		parser.cmRegistry.activateFromTypeField(parser.type);
-		parser.cmRegistry.applyAmendRules(parser);
-	}
-	this.matchRegExp = parser.cmRegistry.getInlineRegex() || /(?!)/g;
+	var registry = $tw.utils.CmRegistry.ensureRegistry(parser);
+	this.matchRegExp = registry.getInlineRegex() || /(?!)/g;
 };
 
 // See marker-block.js findNextMatch override for the rationale. Same

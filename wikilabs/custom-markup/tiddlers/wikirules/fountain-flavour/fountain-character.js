@@ -59,13 +59,7 @@ var CHAR_RE = /(?<=^|\n\n)([ \t]*)([A-Z][A-Z0-9 .'\-]*?(?:\s*\([^)\n]*\))?)[ \t]
 exports.init = function(parser) {
 	this.parser = parser;
 	this.matchRegExp = CHAR_RE;
-	if(!parser.cmRegistry) {
-		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
-		parser.cmRegistry.loadAllMarkers();
-		parser.cmRegistry.loadGlobalPragmas();
-		parser.cmRegistry.activateFromTypeField(parser.type);
-		parser.cmRegistry.applyAmendRules(parser);
-	}
+	$tw.utils.CmRegistry.ensureRegistry(parser);
 };
 
 exports.findNextMatch = function(startPos) {

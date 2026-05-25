@@ -19,33 +19,35 @@ Fires when any activated vocab opts in via `preserve-newlines: yes`
 exports.name = "markdown-newline";
 exports.types = {inline: true};
 
+// Kept for informational `matchRegExp` (some TW internals inspect it).
+// The hot scan path below uses indexOf instead — `\n` is the most common
+// character in multi-paragraph content and a regex allocation per call
+// is wasteful for a fixed two-char pattern.
 var NL_RE = /\r?\n/g;
 
 exports.init = function(parser) {
 	this.parser = parser;
 	this.matchRegExp = NL_RE;
-	if(!parser.cmRegistry) {
-		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
-		parser.cmRegistry.loadAllMarkers();
-		parser.cmRegistry.loadGlobalPragmas();
-		parser.cmRegistry.activateFromTypeField(parser.type);
-		parser.cmRegistry.applyAmendRules(parser);
-	}
+	$tw.utils.CmRegistry.ensureRegistry(parser);
 };
 
 exports.findNextMatch = function(startPos) {
 	if(!this.parser.cmRegistry || !this.parser.cmRegistry.hasVocabFlag("preserve-newlines")) {
 		return undefined;
 	}
-	var regex = new RegExp(NL_RE.source, "g");
-	regex.lastIndex = startPos;
-	var match = regex.exec(this.parser.source);
-	if(!match) { return undefined; }
-	this.match = match;
-	return match.index;
+	var source = this.parser.source;
+	var nlIdx = source.indexOf("\n", startPos);
+	if(nlIdx === -1) { return undefined; }
+	// Mirror `\r?\n`: include a preceding `\r` in the match when present
+	// AND within the current search window.
+	var matchIdx = (nlIdx > startPos && source.charAt(nlIdx - 1) === "\r")
+		? nlIdx - 1
+		: nlIdx;
+	this.matchEnd = nlIdx + 1;
+	return matchIdx;
 };
 
 exports.parse = function() {
-	this.parser.pos = this.match.index + this.match[0].length;
+	this.parser.pos = this.matchEnd;
 	return [{type: "element", tag: "br"}];
 };

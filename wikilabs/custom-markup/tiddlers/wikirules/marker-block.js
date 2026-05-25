@@ -15,23 +15,15 @@ exports.types = {block: true};
 
 exports.init = function(parser) {
 	this.parser = parser;
-	if(!parser.cmRegistry) {
-		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
-		// Load all known markers so the regex is comprehensive at init time
-		// (avoids TW's rule-pruning when source has only later-activated
-		// markers). Vocabulary scoping is enforced by the active-set check
-		// in parse() below.
-		parser.cmRegistry.loadAllMarkers();
-		// Pull bridged symbols from PageTemplate's `\importcustom`-loaded
-		// pragmas (v0.x global pragma equivalent). Recursion-guarded.
-		parser.cmRegistry.loadGlobalPragmas();
-		parser.cmRegistry.activateFromTypeField(parser.type);
-		// Schedule the declared TW core-rule exclusions. The actual mutation
-		// runs via a one-shot parsePragmas wrap (see registry.applyAmendRules
-		// for why); init() is too early to amend rules safely.
-		parser.cmRegistry.applyAmendRules(parser);
-	}
-	this.matchRegExp = parser.cmRegistry.getBlockRegex() || /(?!)/g;
+	// Builds the registry on first wikirule init() for this parser: loads
+	// all markers (so the combined regex is comprehensive — vocab scoping is
+	// enforced by the active-set check in parse() below), pulls bridged
+	// symbols from PageTemplate's `\importcustom`-loaded pragmas, activates
+	// vocabs from the parser type, and schedules the deferred core-rule
+	// exclusions (see registry.applyAmendRules for why init() is too early
+	// to amend rules directly).
+	var registry = $tw.utils.CmRegistry.ensureRegistry(parser);
+	this.matchRegExp = registry.getBlockRegex() || /(?!)/g;
 };
 
 // Override the default findNextMatch so that AFTER pragmas have parsed

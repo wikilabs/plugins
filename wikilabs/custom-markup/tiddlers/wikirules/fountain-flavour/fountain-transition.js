@@ -38,13 +38,7 @@ exports.init = function(parser) {
 	this.parser = parser;
 	// matchRegExp is informational; we re-derive per-call below.
 	this.matchRegExp = AUTO_RE;
-	if(!parser.cmRegistry) {
-		parser.cmRegistry = new $tw.utils.CmRegistry(parser.wiki);
-		parser.cmRegistry.loadAllMarkers();
-		parser.cmRegistry.loadGlobalPragmas();
-		parser.cmRegistry.activateFromTypeField(parser.type);
-		parser.cmRegistry.applyAmendRules(parser);
-	}
+	$tw.utils.CmRegistry.ensureRegistry(parser);
 };
 
 exports.findNextMatch = function(startPos) {
