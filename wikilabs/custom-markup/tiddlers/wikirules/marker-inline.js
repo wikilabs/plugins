@@ -65,6 +65,9 @@ exports.parse = function() {
 	if(marker.kind === "linked-pair") {
 		return parseLinkedPair(this.parser, marker, this.match);
 	}
+	if(marker.kind === "autolink") {
+		return parseAutolink(this.parser, marker, this.match, this.matchRegExp);
+	}
 	if(marker.openVariable) {
 		return parseVariableInlinePair(this.parser, marker, this.match);
 	}
@@ -398,6 +401,70 @@ function parseLinkedPair(parser, marker, match) {
 	}
 	if(children) { node.children = children; }
 	return [node];
+}
+
+// Autolink: capture body between open and close, validate against the
+// marker's URL / email patterns, emit `<a href>` (or whatever the marker
+// configures) when one matches; otherwise fall through to literal text.
+// The body becomes BOTH the link target (with optional email-prefix) AND
+// the rendered link text — CommonMark Section 6.5 maps onto this with
+// the defaults shipped on `vocab/markdown/AUTOLINK`.
+function parseAutolink(parser, marker, match, matchRegExp) {
+	var matchText = match[0];
+	var openLen = marker.open.length;
+	var closeLen = marker.close.length;
+	var body = matchText.substring(openLen, matchText.length - closeLen);
+
+	var hrefPrefix = "";
+	var matched = false;
+	if(marker.urlPattern) {
+		try {
+			if(new RegExp(marker.urlPattern).test(body)) { matched = true; }
+		} catch(e) { /* malformed pattern: treat as non-matching */ }
+	}
+	if(!matched && marker.emailPattern) {
+		try {
+			if(new RegExp(marker.emailPattern).test(body)) {
+				matched = true;
+				hrefPrefix = marker.emailPrefix || "mailto:";
+			}
+		} catch(e) { /* malformed pattern: treat as non-matching */ }
+	}
+
+	parser.pos = matchRegExp.lastIndex;
+	if(!matched) {
+		// Neither pattern accepted the body — emit the raw `<text>` so it
+		// renders as literal characters and any later inline rule (e.g.
+		// TW core's html rule for `<tagname>`) had its chance to fire.
+		return [{type: "text", text: matchText}];
+	}
+
+	var classes = [];
+	if(marker.classes) {
+		$tw.utils.each(marker.classes.split("."), function(c) {
+			if(c) { classes.push(c); }
+		});
+	}
+	classes.push("wltc");
+
+	var attrs = {
+		"class": {type: "string", value: classes.join(" ").trim()}
+	};
+	attrs[marker.linkAttribute || "href"] = {type: "string", value: hrefPrefix + body};
+	if(marker.attributes) {
+		Object.keys(marker.attributes).forEach(function(key) {
+			if(key !== "class") {
+				attrs[key] = toAttrNode(marker.attributes[key]);
+			}
+		});
+	}
+
+	return [{
+		type: "element",
+		tag: marker.element || "a",
+		attributes: attrs,
+		children: [{type: "text", text: body}]
+	}];
 }
 
 // Matches strings TW core considers external links. Use $tw.utils

@@ -163,7 +163,7 @@ CmRegistry.prototype.addFromFilter = function(filterExpr) {
 // other kinds (`glyph`, `glyph-level`, `word`, `list-item`) are block-only
 // and stay in `this.markers` exclusively.
 function isInlineKind(kind) {
-	return kind === "inline-pair" || kind === "linked-pair";
+	return kind === "inline-pair" || kind === "linked-pair" || kind === "autolink";
 }
 
 // Load every marker tiddler in the wiki into the registry. The regex will
@@ -559,6 +559,21 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		// `data-onclick=...`, an inert data attribute, not an event
 		// handler). MkDocs / Hugo / VuePress style info-string metadata.
 		infoAttrs: f["info-attrs"] === "yes",
+		// autolink kind fields. Open + close wrap the body (typically
+		// `<` / `>`); body is captured raw (no inline parsing) and used
+		// both as the rendered link text AND as the `link-attribute`
+		// value (default `href`). The body must match `url-pattern` OR
+		// `email-pattern` for the marker to fire; if neither matches,
+		// the engine emits the raw match as literal text. URL-matched
+		// bodies are used as-is for the link attribute; email-matched
+		// bodies get `email-prefix` (default `mailto:`) prepended.
+		// CommonMark Section 6.5 maps directly onto this with the
+		// defaults shipped on `vocab/markdown/AUTOLINK`. A DSL can
+		// repurpose either pattern slot — e.g. `email-pattern: ^\+?\d+$`
+		// + `email-prefix: tel:` for phone-number autolinks.
+		urlPattern: f["url-pattern"] || "",
+		emailPattern: f["email-pattern"] || "",
+		emailPrefix: f["email-prefix"] || "mailto:",
 		// no-space-bound: "yes" drops the whitespace-after-open requirement
 		// for glyph / glyph-level kinds and also drops symbol/class/quoted-arg
 		// capture. The marker fires on the bare open literal at line start
@@ -982,6 +997,9 @@ function buildInlineArm(m) {
 	if(m.kind === "linked-pair") {
 		return buildLinkedPairArm(m);
 	}
+	if(m.kind === "autolink") {
+		return buildAutolinkArm(m);
+	}
 	var open = $tw.utils.escapeRegExp(m.open);
 	var quotedArgs = String.raw`(?::"[^"]*")*`;
 	// open-variable: match a MAXIMAL run of the open character, flanked
@@ -1024,6 +1042,20 @@ function buildLinkedPairArm(m) {
 	var bodyClass = String.raw`[^${closeFirstEsc}\r\n]`;
 	var linkClass = String.raw`[^${linkCloseFirstEsc}\r\n]`;
 	return String.raw`(?:${open}${bodyClass}*?${close}${linkOpen}${linkClass}*?${linkClose})`;
+}
+
+// Autolink arm: open BODY close with body content excluding whitespace,
+// the open's first char, and the close's first char. CommonMark autolinks
+// use `<` / `>`, so the default is `<[^\s<>]+>`. The body is captured raw
+// and validated against the marker's `url-pattern` / `email-pattern` in
+// parseAutolink (the regex here is permissive; pattern enforcement is
+// done post-match so a non-matching `<text>` falls through to literal).
+function buildAutolinkArm(m) {
+	var open = $tw.utils.escapeRegExp(m.open);
+	var close = $tw.utils.escapeRegExp(m.close);
+	var openFirst = $tw.utils.escapeRegExp(m.open.charAt(0));
+	var closeFirst = $tw.utils.escapeRegExp(m.close.charAt(0));
+	return String.raw`(?:${open}[^\s${openFirst}${closeFirst}]+${close})`;
 }
 
 CmRegistry.ensurePageTemplateDedupe = ensurePageTemplateDedupe;
