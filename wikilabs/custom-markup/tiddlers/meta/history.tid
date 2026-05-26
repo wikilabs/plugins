@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-46 - 2026-05-26
+
+* V 1.0.0-beta-46
+** Markdown backslash escapes (`\*`, `\_`, `` \` ``, `\[`, ...): a backslash before any of the 30 CommonMark ASCII-punctuation chars renders as the literal character — the marker that would otherwise fire on it stays silent. Gated on the new `backslash-escapes: yes` vocab flag.
+
 V 1.0.0-beta-45 - 2026-05-26
 
 * V 1.0.0-beta-45
