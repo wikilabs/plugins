@@ -1,11 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-46 - 2026-05-26
+V 1.0.0-beta-47 - 2026-05-26
 
-* V 1.0.0-beta-46
-** Markdown backslash escapes (`\*`, `\_`, `` \` ``, `\[`, ...): a backslash before any of the 30 CommonMark ASCII-punctuation chars renders as the literal character — the marker that would otherwise fire on it stays silent. Gated on the new `backslash-escapes: yes` vocab flag.
-
-V 1.0.0-beta-45 - 2026-05-26
+* V 1.0.0-beta-47
+** Markdown horizontal rules: a line of `---`, `***`, or `___` (or longer) renders as `<hr>`.
 
 * V 1.0.0-beta-45
 ** Markdown autolinks via the new `autolink` marker kind: `<https://example.com>` and `<user@example.com>` shapes, both rendered as `<a href>` with `mailto:` prepended for email targets. The marker is configurable — URL and email patterns are regex fields, so DSL authors can repurpose either slot (e.g. `tel:` for phone numbers).

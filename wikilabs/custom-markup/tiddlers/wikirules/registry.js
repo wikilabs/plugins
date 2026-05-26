@@ -866,7 +866,7 @@ CmRegistry.prototype.getInlineRegex = function() {
 
 CmRegistry.prototype.rebuildRegexes = function() {
 	var blockMarkers = this.list(function(m) {
-		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word" || m.kind === "list-item" || m.kind === "fenced";
+		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word" || m.kind === "list-item" || m.kind === "fenced" || m.kind === "hr";
 	});
 	// Inline markers come from the parallel `inlineMarkers` dict, not from
 	// filtering `this.markers` — that flat dict gets clobbered when an
@@ -977,6 +977,17 @@ function buildBlockArm(m) {
 			// escaped open literal (for UL: - / * / +).
 			var bullet = m.openPattern || open;
 			return `(?:^[ \\t]*(?:${bullet})[ \\t]+)`;
+		case "hr":
+			// CommonMark thematic break shape: 0-3 spaces of indent, then
+			// the marker's literal `open` (e.g. `---`, `***`, `___`), then
+			// any number of additional repetitions of the first char with
+			// optional inner whitespace, then optional trailing whitespace
+			// and EOL/EOF. The literal-3-char open avoids the same-`open`
+			// collision a single-char design would have with list-item
+			// markers (ITEM-DASH `open: -`, ITEM-STAR `open: *`).
+			var hrOpenLit = $tw.utils.escapeRegExp(m.open);
+			var hrChar = $tw.utils.escapeRegExp(m.open.charAt(0));
+			return String.raw`(?:^[ \t]{0,3}${hrOpenLit}(?:[ \t]*${hrChar})*[ \t]*(?:\r?\n|$))`;
 		case "fenced":
 			// Match line-start + a fence run of N>=open.length chars (where
 			// the fence char is open.charAt(0)) + any info-string content

@@ -86,6 +86,12 @@ exports.parse = function() {
 	if(marker.kind === "fenced") {
 		return parseFenced(this.parser, marker, this.match);
 	}
+	// Hr markers fire on a thematic-break line: open + optional more of
+	// the same char + optional whitespace + EOL. No body, no symbol, no
+	// quoted args — just emit the configured element with classes.
+	if(marker.kind === "hr") {
+		return parseHr(this.parser, marker, this.matchRegExp);
+	}
 	var textStart = this.match.index;
 	var parsed = parseMatchTail(matchText, marker);
 	this.parser.pos = this.matchRegExp.lastIndex;
@@ -264,6 +270,29 @@ function repeatSpace(n) {
 	var s = "";
 	for(var i = 0; i < n; i++) { s += " "; }
 	return s;
+}
+
+// Hr marker: emit a single childless element (default `<hr>`) for a
+// thematic-break line that already matched the engine's block regex.
+// No body to parse, no symbol/class chain after the open, no quoted
+// args — just the classes from the marker config plus the universal
+// `wltc` hook.
+function parseHr(parser, marker, matchRegExp) {
+	parser.pos = matchRegExp.lastIndex;
+	var classes = [];
+	if(marker.classes) {
+		$tw.utils.each(marker.classes.split("."), function(c) {
+			if(c) { classes.push(c); }
+		});
+	}
+	classes.push("wltc");
+	return [{
+		type: "element",
+		tag: marker.element || "hr",
+		attributes: {
+			"class": {type: "string", value: classes.join(" ").trim()}
+		}
+	}];
 }
 
 // Fenced block: capture the body between the open fence (already matched
