@@ -526,6 +526,39 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		// glossary tooltips, footnote bodies, etc. Body-attribute writes
 		// still override (explicit user-provided body wins).
 		attrFromFields: parseAttrFromFields(f),
+		// fenced kind fields. The marker `open` field is the MINIMUM fence
+		// run length and pins the fence character (`` ``` `` for code,
+		// `::::` for callouts, etc. — `open.charAt(0)` is the fence char,
+		// `open.length` is the minimum run). The engine matches a run of
+		// N>=open.length fence chars at line start with no inner fence
+		// chars after; the closing fence is the same char, run length >=N,
+		// on its own line. Body is captured raw (no inline parsing).
+		// `wrapper-element` optionally wraps the inner element so markdown
+		// code blocks can emit `<pre><code>...</code></pre>` shape. The
+		// info-string (text after the open fence on the same line) is
+		// emitted on the configured `info-attribute`: when `class`, it is
+		// appended to the marker's class chain; otherwise it becomes its
+		// own attribute. `info-prefix` is prepended to the info value
+		// (CommonMark uses `language-`). `info-words` defaults to "1"
+		// (first whitespace-delimited token only — CommonMark convention);
+		// set `all` to emit the whole info string verbatim.
+		wrapperElement: f["wrapper-element"] || "",
+		infoAttribute: f["info-attribute"] || "",
+		infoPrefix: f["info-prefix"] || "",
+		infoWords: f["info-words"] || "",
+		// info-attrs: "yes" parses the info string (or its remainder after
+		// the first word, when `info-attribute` is also set) as TW
+		// macro-parameter attributes — `name="value"`, `name=value`,
+		// `name:value`, `name={{!!field}}`, `name={{{filter}}}`,
+		// `name=<<macro>>`, `name=` ``` `text` ```. Each parsed attribute name
+		// is prepended with `data-` and the result is emitted as an
+		// additional attribute on the SAME element that carries the
+		// non-class info attribute (outer wrapper if present, else the
+		// single element). The `data-` prefix is mandatory — it
+		// neutralises XSS vectors (a user-supplied `onclick=...` lands as
+		// `data-onclick=...`, an inert data attribute, not an event
+		// handler). MkDocs / Hugo / VuePress style info-string metadata.
+		infoAttrs: f["info-attrs"] === "yes",
 		// no-space-bound: "yes" drops the whitespace-after-open requirement
 		// for glyph / glyph-level kinds and also drops symbol/class/quoted-arg
 		// capture. The marker fires on the bare open literal at line start
@@ -818,7 +851,7 @@ CmRegistry.prototype.getInlineRegex = function() {
 
 CmRegistry.prototype.rebuildRegexes = function() {
 	var blockMarkers = this.list(function(m) {
-		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word" || m.kind === "list-item";
+		return m.kind === "glyph" || m.kind === "glyph-level" || m.kind === "word" || m.kind === "list-item" || m.kind === "fenced";
 	});
 	// Inline markers come from the parallel `inlineMarkers` dict, not from
 	// filtering `this.markers` — that flat dict gets clobbered when an
@@ -929,6 +962,17 @@ function buildBlockArm(m) {
 			// escaped open literal (for UL: - / * / +).
 			var bullet = m.openPattern || open;
 			return `(?:^[ \\t]*(?:${bullet})[ \\t]+)`;
+		case "fenced":
+			// Match line-start + a fence run of N>=open.length chars (where
+			// the fence char is open.charAt(0)) + any info-string content
+			// to end of line. Backticks (or whatever the fence char is) are
+			// disallowed in the info string so an inline code-span open on
+			// the same line can't be false-matched as a block fence
+			// (CommonMark constraint). Close + body are handled by
+			// parseFenced; only the open line is captured here.
+			var fenceChar = $tw.utils.escapeRegExp(m.open.charAt(0));
+			var minLen = m.open.length;
+			return String.raw`(?:^${fenceChar}{${minLen},}[^${fenceChar}\r\n]*$)`;
 		default:
 			return `(?:${open}${bound})`;
 	}

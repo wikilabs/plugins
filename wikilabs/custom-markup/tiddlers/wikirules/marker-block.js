@@ -79,6 +79,13 @@ exports.parse = function() {
 	if(marker.kind === "list-item") {
 		return parseListItems(this.parser, this.match, this.matchRegExp);
 	}
+	// Fenced markers consume the whole block in one parse() call: the
+	// open line gives the fence-run length and info string, the body is
+	// captured raw until a matching close fence (same char, run length
+	// >= open length, on its own line), implicit close at EOF.
+	if(marker.kind === "fenced") {
+		return parseFenced(this.parser, marker, this.match);
+	}
 	var textStart = this.match.index;
 	var parsed = parseMatchTail(matchText, marker);
 	this.parser.pos = this.matchRegExp.lastIndex;
@@ -257,6 +264,218 @@ function repeatSpace(n) {
 	var s = "";
 	for(var i = 0; i < n; i++) { s += " "; }
 	return s;
+}
+
+// Fenced block: capture the body between the open fence (already matched
+// by the block regex) and the next matching close fence on its own line,
+// with implicit close at EOF when none is found. The marker's `open`
+// field pins the fence character (`open.charAt(0)`) and the MINIMUM run
+// length (`open.length`); the actual open run can be longer, and the
+// close must match >= that actual length. Body is captured verbatim
+// (no inline parsing). The info string — text after the opening fence
+// on the same line — is wired to the configured attribute (typically
+// `class` with the `language-` prefix, mirroring CommonMark's output).
+function parseFenced(parser, marker, match) {
+	var source = parser.source;
+	var openLine = match[0];
+	var fenceChar = marker.open.charAt(0);
+
+	// Count the actual fence-run length in this open instance (the marker's
+	// `open.length` is the minimum; an author can use a longer run so the
+	// body itself can contain shorter runs of the fence char without
+	// terminating early).
+	var fenceLen = 0;
+	while(fenceLen < openLine.length && openLine.charAt(fenceLen) === fenceChar) {
+		fenceLen++;
+	}
+
+	// Info string is everything after the fence run on the open line,
+	// trimmed of surrounding whitespace.
+	var infoString = openLine.substring(fenceLen).replace(/^[ \t]+|[ \t]+$/g, "");
+
+	// Advance past the open line + its newline (CR+LF or LF). The block
+	// regex captured up to (but not including) the line break so we step
+	// past it explicitly.
+	var afterOpen = match.index + openLine.length;
+	if(source.charAt(afterOpen) === "\r") { afterOpen++; }
+	if(source.charAt(afterOpen) === "\n") { afterOpen++; }
+
+	// Scan for the matching close fence: same fence char, run length
+	// >= the open run, at line start (col 0), followed by optional
+	// trailing whitespace and the line terminator (or EOF).
+	var fenceCharEsc = $tw.utils.escapeRegExp(fenceChar);
+	var closeRe = new RegExp("^" + fenceCharEsc + "{" + fenceLen + ",}[ \\t]*(?:\\r?\\n|$)", "mg");
+	closeRe.lastIndex = afterOpen;
+	var closeMatch = closeRe.exec(source);
+	var bodyEnd, advanceTo;
+	if(closeMatch) {
+		bodyEnd = closeMatch.index;
+		advanceTo = closeMatch.index + closeMatch[0].length;
+	} else {
+		// CommonMark: missing close fence is implicitly closed at EOF.
+		bodyEnd = source.length;
+		advanceTo = source.length;
+	}
+
+	// Body runs from one past the open line's \n through to the start of
+	// the close fence. That range includes the \n that ends the last body
+	// line — keeping it would emit a visible trailing blank line inside
+	// `<pre><code>...</code></pre>`. TW core's `codeblock` rule strips it
+	// (the close-fence sentinel matches the \n BEFORE the fence, not the
+	// fence itself); match that convention.
+	var body = source.substring(afterOpen, bodyEnd).replace(/\r?\n$/, "");
+	parser.pos = advanceTo;
+
+	return buildFencedNodes(marker, infoString, body);
+}
+
+function buildFencedNodes(marker, infoString, body) {
+	// Info-string value: first word by default (CommonMark / GFM
+	// convention), or full string when `info-words: all`. The
+	// `info-prefix` is prepended (CommonMark uses `language-`).
+	var infoValue = "";
+	if(infoString && marker.infoAttribute) {
+		infoValue = (marker.infoWords === "all") ? infoString : infoString.split(/\s+/)[0];
+		if(marker.infoPrefix) {
+			infoValue = marker.infoPrefix + infoValue;
+		}
+	}
+
+	// Marker identity classes (`wltc` + the marker's `.classes` chain) go
+	// on the OUTERMOST block element: the wrapper when one is configured,
+	// else the single element. The universal `.wltc` hook usually carries
+	// a vocab-wide margin; placing it on the wrapper means the margin
+	// lands OUTSIDE the visible block (e.g. above/below `<pre>`) rather
+	// than inside it (where it would show as whitespace before/after the
+	// rendered content). The inner element keeps only the info attribute
+	// — CommonMark's `<pre><code class="language-X">...</code></pre>`
+	// shape, where syntax highlighters (Prism, highlight.js, Shiki) look
+	// for `.language-X` on `<code>` specifically.
+	var baseClasses = [];
+	if(marker.classes) {
+		$tw.utils.each(marker.classes.split("."), function(c) {
+			if(c) { baseClasses.push(c); }
+		});
+	}
+	baseClasses.push("wltc");
+
+	var hasWrapper = !!marker.wrapperElement;
+	var innerAttrs = {};
+	var outerAttrs = {};
+
+	// Static attributes from the marker tiddler's `attributes` JSON field
+	// land on the inner element — they describe the content element, not
+	// the wrapper.
+	if(marker.attributes) {
+		for(var key in marker.attributes) {
+			if(key !== "class") {
+				innerAttrs[key] = toAttrNode(marker.attributes[key]);
+			}
+		}
+	}
+
+	if(hasWrapper) {
+		// Wrapper carries the marker identity. Info attribute placement
+		// depends on its type:
+		// - `class`: stays on the INNER element alone (CommonMark
+		//   `<code class="language-X">` convention — syntax highlighters
+		//   like Prism / highlight.js / Shiki look there).
+		// - anything else (`data-caption`, `data-attrs`, ...): goes on
+		//   the OUTER wrapper alongside the marker identity classes, so
+		//   a CSS rule like `.wltc-captioned-code[data-caption]::before
+		//   { content: attr(data-caption); }` can target the same element
+		//   for both the class hook and the attr value.
+		outerAttrs["class"] = {type: "string", value: baseClasses.join(" ").trim()};
+		if(infoValue) {
+			if(marker.infoAttribute === "class") {
+				innerAttrs["class"] = {type: "string", value: infoValue};
+			} else {
+				outerAttrs[marker.infoAttribute] = {type: "string", value: infoValue};
+			}
+		}
+		parseInfoAttrsInto(marker, infoString, infoValue, outerAttrs);
+	} else {
+		// No wrapper — the single element collects everything.
+		var innerClasses = baseClasses.slice();
+		if(infoValue) {
+			if(marker.infoAttribute === "class") {
+				innerClasses.push(infoValue);
+			} else {
+				innerAttrs[marker.infoAttribute] = {type: "string", value: infoValue};
+			}
+		}
+		innerAttrs["class"] = {type: "string", value: innerClasses.join(" ").trim()};
+		parseInfoAttrsInto(marker, infoString, infoValue, innerAttrs);
+	}
+
+	var inner = {
+		type: "element",
+		tag: marker.element || "code",
+		attributes: innerAttrs,
+		children: [{type: "text", text: body}]
+	};
+
+	if(hasWrapper) {
+		return [{
+			type: "element",
+			tag: marker.wrapperElement,
+			attributes: outerAttrs,
+			children: [inner]
+		}];
+	}
+	return [inner];
+}
+
+// When `info-attrs: yes`, parse the info string (or its after-first-word
+// remainder when an `info-attribute` already claimed the first word) as a
+// sequence of TW macro-parameter attributes. Each parsed name is prepended
+// with `data-` and the resulting attribute is added to `target`.
+//
+// `parseMacroParameterAsAttribute` is the canonical TW parser for the
+// `name=value`, `name:value`, `name="quoted"`, `name={{!!field}}`,
+// `name={{{filter}}}`, `name=<<macro>>`, `name=` ``` `subst` ``` syntaxes. Reusing it
+// means all the canonical attribute value types work, plus the same
+// quoting / escaping rules as everywhere else in TW.
+//
+// The hardcoded `data-` prefix is the security boundary: a user-supplied
+// `onclick="alert(1)"` is emitted as `data-onclick="alert(1)"` (an inert
+// data attribute), and a `href="javascript:..."` lands as `data-href=...`
+// (no URL evaluation). No need to maintain a denylist — every parsed
+// attribute becomes a data-* by construction.
+function parseInfoAttrsInto(marker, infoString, infoValue, target) {
+	if(!marker.infoAttrs || !infoString) { return; }
+	// Determine which slice of the info string is the attr source.
+	// When info-attribute already claimed the first word, parse only the
+	// remainder. Otherwise the whole info string is fair game.
+	var source = infoString;
+	if(marker.infoAttribute && infoValue && marker.infoWords !== "all") {
+		var firstWord = infoString.split(/\s+/)[0];
+		source = infoString.substring(firstWord.length).replace(/^\s+/, "");
+	}
+	var pos = 0;
+	while(pos < source.length) {
+		var attr = $tw.utils.parseMacroParameterAsAttribute(source, pos);
+		if(!attr || typeof attr.end !== "number" || attr.end <= pos) { break; }
+		pos = attr.end;
+		if(!attr.name) { continue; }
+		target["data-" + attr.name] = parsedAttrToNode(attr);
+	}
+}
+
+function parsedAttrToNode(attr) {
+	switch(attr.type) {
+		case "indirect":
+			return {type: "indirect", textReference: attr.textReference};
+		case "filtered":
+			return {type: "filtered", filter: attr.filter};
+		case "substituted":
+			return {type: "substituted", rawValue: attr.rawValue};
+		case "macro":
+			return {type: "macro", value: attr.value};
+		case "string":
+		default:
+			return {type: "string", value: attr.value !== undefined ? String(attr.value) : ""};
+	}
 }
 
 function parseMatchTail(matchText, marker) {

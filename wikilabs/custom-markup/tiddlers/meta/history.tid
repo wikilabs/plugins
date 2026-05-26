@@ -1,11 +1,12 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
-V 1.0.0-beta-43 - 2026-05-25
+V 1.0.0-beta-44 - 2026-05-25
+
+* V 1.0.0-beta-44
+** Markdown fenced code blocks via the new `fenced` marker kind: backtick fence with the CommonMark `language-X` class on the inner code element, plus MkDocs / Hugo style attribute metadata after the first word (`title="src/foo.py"`, `highlight="2,5"`, ...) parsed by TW's macro-parameter attribute parser and emitted as `data-*` on the outer wrapper. New marker fields: `wrapper-element`, `info-attribute`, `info-prefix`, `info-words`, `info-attrs`.
 
 * V 1.0.0-beta-43
 ** `attr-X-from` is now a FALLBACK rather than an override: user-supplied body/`"tooltip"` win, source-tiddler field fills in when absent. Special rule for `alt`: short user-alt (≤2 words) yields to a 3+ word source `alt-text` for accessibility. Markdown IMAGE: body-attribute is now `alt` (was `tooltip`), so `![alt](src "title")` maps CommonMark-cleanly.
-
-V 1.0.0-beta-42 - 2026-05-25
 
 * V 1.0.0-beta-42
 ** Markdown links and images: TW-md-plugin syntax (`[x](#Title)`, `<#…>` brackets, `"tooltip"`); routed through `<$link>` / `<$image>` widgets via the new `linked-pair` marker kind.
