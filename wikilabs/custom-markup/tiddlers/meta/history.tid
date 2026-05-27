@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-48 - 2026-05-27
+
+* V 1.0.0-beta-48
+** Markdown reference-style links: define a target once with `[label]: target` and reference it anywhere with `[text][label]`. Defs must appear before usages in the source.
+
 V 1.0.0-beta-47 - 2026-05-26
 
 * V 1.0.0-beta-47

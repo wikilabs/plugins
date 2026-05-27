@@ -151,19 +151,40 @@ CmRegistry.prototype.addFromFilter = function(filterExpr) {
 		if(config && config.open) {
 			self.markers[config.open] = config;
 			if(isInlineKind(config.kind)) {
-				self.inlineMarkers[config.open] = config;
+				pushInlineMarker(self.inlineMarkers, config);
 			}
 		}
 	});
 	this.dirty = true;
 };
 
-// Inline-pair / linked-pair are the two kinds whose markers fire at inline
-// positions and live in `this.inlineMarkers` alongside `this.markers`. All
-// other kinds (`glyph`, `glyph-level`, `word`, `list-item`) are block-only
-// and stay in `this.markers` exclusively.
+// Inline-pair / linked-pair / autolink are the kinds whose markers fire at
+// inline positions and live in `this.inlineMarkers` alongside `this.markers`.
+// All other kinds (`glyph`, `glyph-level`, `word`, `list-item`, `fenced`,
+// `hr`) are block-only and stay in `this.markers` exclusively.
 function isInlineKind(kind) {
 	return kind === "inline-pair" || kind === "linked-pair" || kind === "autolink";
+}
+
+// Bucketed-write helper for `this.inlineMarkers`. Each `open` holds an
+// ARRAY of marker configs, not a single config — this lets two markers
+// share the same `open` literal (e.g. LINK `[text](url)` and LINK-REF
+// `[text][label]` both starting with `[`). When a marker with the same
+// title is re-added (vocab activation overwriting the initial
+// addFromFilter load), the entry is replaced in place AND any
+// `globalSymbols` from the prior entry is preserved on the replacement.
+function pushInlineMarker(dict, config) {
+	var bucket = dict[config.open] || (dict[config.open] = []);
+	for(var i = 0; i < bucket.length; i++) {
+		if(bucket[i].title === config.title) {
+			if(bucket[i].globalSymbols && !config.globalSymbols) {
+				config.globalSymbols = bucket[i].globalSymbols;
+			}
+			bucket[i] = config;
+			return;
+		}
+	}
+	bucket.push(config);
 }
 
 // Load every marker tiddler in the wiki into the registry. The regex will
@@ -202,9 +223,7 @@ CmRegistry.prototype.activate = function(name) {
 			if(prior && prior.globalSymbols) { config.globalSymbols = prior.globalSymbols; }
 			self.markers[config.open] = config;
 			if(isInlineKind(config.kind)) {
-				var inlinePrior = self.inlineMarkers[config.open];
-				if(inlinePrior && inlinePrior.globalSymbols) { config.globalSymbols = inlinePrior.globalSymbols; }
-				self.inlineMarkers[config.open] = config;
+				pushInlineMarker(self.inlineMarkers, config);
 			}
 			self.active[config.open] = true;
 		}
@@ -516,6 +535,15 @@ CmRegistry.prototype.parseMarkerTiddler = function(title) {
 		linkHashPrefix: f["link-hash-prefix"] || "",
 		linkTooltipAttribute: f["link-tooltip-attribute"] || "",
 		linkAngleBrackets: f["link-angle-brackets"] === "yes",
+		// link-resolve: when "ref", the captured LINK text is treated as a
+		// reference LABEL — looked up at parse time in
+		// `parser.cmRegistry.linkRefs` (populated by ref-def block rules
+		// like `markdown-ref-def`). If found, the resolved target replaces
+		// the captured text before parseLinkSyntax decodes hash/angle/
+		// tooltip flags. If not found, the marker emits its raw match
+		// text as literal characters (so an unresolved `[x][y]` shows
+		// as written rather than as a broken link).
+		linkResolve: f["link-resolve"] || "",
 		// Any marker field of the form `attr-<name>-from: <fieldname>`
 		// declares "look up <fieldname> on the source tiddler (whatever
 		// matched LINK in this linked-pair) and emit its current value
@@ -871,11 +899,16 @@ CmRegistry.prototype.rebuildRegexes = function() {
 	// Inline markers come from the parallel `inlineMarkers` dict, not from
 	// filtering `this.markers` — that flat dict gets clobbered when an
 	// inline-kind marker shares an `open` with a block-kind one (markdown's
-	// ITALIC `*` vs ITEM-STAR `*` is the canonical case).
+	// ITALIC `*` vs ITEM-STAR `*` is the canonical case). The dict is
+	// bucketed (array per open) so two inline-kind markers can share an
+	// open too — e.g. LINK `[text](url)` and LINK-REF `[text][label]`.
 	var inlineMarkers = [];
 	var openKeys = Object.keys(this.inlineMarkers);
 	for(var k = 0; k < openKeys.length; k++) {
-		inlineMarkers.push(this.inlineMarkers[openKeys[k]]);
+		var bucket = this.inlineMarkers[openKeys[k]];
+		for(var j = 0; j < bucket.length; j++) {
+			inlineMarkers.push(bucket[j]);
+		}
 	}
 
 	// Word arms longest-first so longer literals preempt shorter prefixes
@@ -899,7 +932,11 @@ CmRegistry.prototype.rebuildRegexes = function() {
 	});
 	var inlineArms = [];
 	$tw.utils.each(inlineMarkers, function(m) {
-		inlineArms.push(buildInlineArm(m));
+		// Cache the built arm on the marker config so
+		// `identifyInlinePairMarker` can regex-test the matchText against
+		// each candidate in a same-`open` bucket without rebuilding.
+		if(!m.cachedInlineArm) { m.cachedInlineArm = buildInlineArm(m); }
+		inlineArms.push(m.cachedInlineArm);
 	});
 
 	this.blockRegex = blockArms.length ? new RegExp(blockArms.join("|"), "mg") : null;
@@ -1070,6 +1107,16 @@ function buildAutolinkArm(m) {
 }
 
 CmRegistry.ensurePageTemplateDedupe = ensurePageTemplateDedupe;
+
+// CommonMark reference-link label normalisation: case-insensitive,
+// whitespace-collapsed, leading/trailing trimmed. Used by both the
+// `markdown-ref-def` wikirule (storing) and `parseLinkedPair` (looking
+// up) so `[Click Me]` and `[click me]` and `[  click  me  ]` all
+// resolve to the same key `click me` in `parser.cmRegistry.linkRefs`.
+CmRegistry.normalizeRefLabel = function(label) {
+	if(typeof label !== "string") { return ""; }
+	return label.replace(/\s+/g, " ").trim().toLowerCase();
+};
 
 // Static helper called from wikirule init(): builds a CmRegistry on the
 // parser if absent, loads all markers + global pragmas, activates the

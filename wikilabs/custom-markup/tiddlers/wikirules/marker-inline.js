@@ -138,16 +138,32 @@ function identifyInlinePairMarker(matchText, registry) {
 	// overwrote `registry.markers` (e.g. markdown's `*` ITALIC vs `*`
 	// ITEM-STAR). The flat `registry.markers` would resolve `*` to the
 	// block-kind survivor and identify would never return ITALIC.
-	var markers = [];
-	var openKeys = Object.keys(registry.inlineMarkers);
+	//
+	// The inline dict is BUCKETED — each `open` maps to an array of
+	// configs because two inline-kind markers can share an open (e.g.
+	// LINK `[text](url)` and LINK-REF `[text][label]` both start with
+	// `[`). Sort buckets by open-length descending so multi-char opens
+	// (`***`) win over single-char (`*`). Within a bucket, regex-test
+	// each candidate against matchText to pick the marker whose specific
+	// arm produced this match.
+	var openKeys = Object.keys(registry.inlineMarkers).sort(function(a, b) { return b.length - a.length; });
 	for(var i = 0; i < openKeys.length; i++) {
-		markers.push(registry.inlineMarkers[openKeys[i]]);
-	}
-	markers.sort(function(a, b) { return b.open.length - a.open.length; });
-	for(var j = 0; j < markers.length; j++) {
-		if(matchText.indexOf(markers[j].open) === 0) {
-			return markers[j];
+		var open = openKeys[i];
+		if(matchText.indexOf(open) !== 0) { continue; }
+		var bucket = registry.inlineMarkers[open];
+		for(var j = 0; j < bucket.length; j++) {
+			var m = bucket[j];
+			if(!m.cachedInlineArmRe && m.cachedInlineArm) {
+				m.cachedInlineArmRe = new RegExp("^(?:" + m.cachedInlineArm + ")$");
+			}
+			if(m.cachedInlineArmRe && m.cachedInlineArmRe.test(matchText)) {
+				return m;
+			}
 		}
+		// Fallback: no regex test passed (e.g. bucket has only one
+		// candidate with no cached arm yet). Return the first whose `open`
+		// is the prefix — matches legacy single-config dispatch.
+		if(bucket.length > 0) { return bucket[0]; }
 	}
 	return null;
 }
@@ -287,11 +303,30 @@ function parseLinkedPair(parser, marker, match) {
 	if(linkEnd === -1) { linkEnd = matchEnd - marker.linkClose.length; }
 	var rawLinkText = parser.source.substring(parser.pos, linkEnd);
 	parser.pos = linkEnd + marker.linkClose.length;
+	// Reference-link resolution. When `link-resolve: ref`, the captured
+	// link text is a LABEL — look it up in the per-parser ref store
+	// populated by ref-def block rules (markdown-ref-def). On hit, the
+	// resolved target replaces the label and the def's title (if any)
+	// fills in for `tooltip` later. On miss, emit the raw match as
+	// literal text so an unresolved `[x][y]` shows as written.
+	var refDefTitle = "";
+	if(marker.linkResolve === "ref") {
+		var refs = parser.cmRegistry && parser.cmRegistry.linkRefs;
+		var key = $tw.utils.CmRegistry.normalizeRefLabel(rawLinkText);
+		var resolved = refs && refs[key];
+		if(!resolved) {
+			parser.pos = match.index + match[0].length;
+			return [{type: "text", text: match[0]}];
+		}
+		rawLinkText = resolved.target;
+		refDefTitle = resolved.title || "";
+	}
 	// Decode TW-md-plugin compat affordances: strip optional `<...>` wrap,
 	// peel off trailing `"tooltip"`, and recognise `#`-prefix as an
 	// explicit-internal hint. All three are no-ops when the marker hasn't
 	// opted in — `linkText` then equals `rawLinkText`.
 	var parsedLink = parseLinkSyntax(rawLinkText, marker);
+	if(refDefTitle && !parsedLink.tooltip) { parsedLink.tooltip = refDefTitle; }
 	var linkText = parsedLink.target;
 
 	var classList = [];
