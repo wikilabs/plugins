@@ -137,6 +137,15 @@ module.exports = {
 							hasMetaFile: tiddlerFile.hasMetaFile,
 							isEditableFile: effectiveRetain || tiddlerFile.isEditableFile || tiddlerFile.filepath.indexOf($tw.boot.wikiTiddlersPath) !== 0
 						};
+						// Stamp originalpath like boot.js does. Core's
+						// generateTiddlerFilepath reuses an existing on-disk
+						// location ONLY via fileInfo.originalpath (filepath just
+						// feeds the uniquifier), so a boot.files entry without it
+						// makes the next save regenerate a root-level path from
+						// the title -- relocating subdirectory .tid files.
+						if(diskFileInfo[title].isEditableFile) {
+							diskFileInfo[title].originalpath = path.relative($tw.boot.wikiTiddlersPath,tiddlerFile.filepath);
+						}
 					}
 				});
 			});
