@@ -4,7 +4,7 @@
 	"description": "Model Context Protocol server for TiddlyWiki",
 	"author": "pmario",
 	"core-version": ">=5.4.0",
-	"version": "0.13.37",
+	"version": "0.13.38",
 	"list": "readme license history",
 	"stability": "STABILITY_1_EXPERIMENTAL"
 }

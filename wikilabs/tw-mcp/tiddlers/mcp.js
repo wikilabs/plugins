@@ -11,6 +11,12 @@ Usage (readonly by default):
   tiddlywiki ./wiki --mcp rw [label=<name>] [allowed-paths=<paths>]
   tiddlywiki ./wiki --mcp rw listen [port=<n>] [host=<h>] [label=<name>] ...
   tiddlywiki ./wiki --mcp rw sse    [port=<n>] [host=<h>] [label=<name>] ...
+  tiddlywiki ./wiki --mcp pear=<accountDir>   (serve a RUNNING Facets app)
+
+Pear mode serves a running Facets (Pear) app instead of this process's wiki:
+<accountDir> is a Facets account directory whose mcp.json discovery file
+names the app's agent pipe. All other flags are ignored in pear mode; the
+read/write mode follows the app's own mcp.flag. See mcp-pear.js.
 
 Single-file wiki workflow (runtime tools):
   Start a normal --mcp rw listen server against an empty wiki folder, then
@@ -62,6 +68,8 @@ Command.prototype.execute = function() {
 		} else if(param === "sse") {
 			listenMode = true;
 			sseMode = true;
+		} else if(param.indexOf("pear=") === 0) {
+			options.pearDir = param.slice("pear=".length);
 		} else if(param.indexOf("allowed-paths=") === 0) {
 			options.allowedPaths = param.slice("allowed-paths=".length).split(",");
 		} else if(param.indexOf("label=") === 0) {
@@ -71,6 +79,13 @@ Command.prototype.execute = function() {
 			var eq = param.indexOf("=");
 			listenParams[param.slice(0, eq)] = param.slice(eq + 1);
 		}
+	}
+	// Pear mode: the stdio front dials a running Facets app's pipe — no local
+	// handlers, no HTTP, no primary/proxy machinery. Everything below is the
+	// local-wiki path and does not apply.
+	if(options.pearDir) {
+		require("$:/core/modules/commands/inspect/mcp-pear.js").startPearMode(options);
+		return null;
 	}
 	// Load the filesystem plugin if not already present (needed for disk persistence)
 	if(!options.readonly && !$tw.wiki.getTiddler("$:/plugins/tiddlywiki/filesystem")) {
