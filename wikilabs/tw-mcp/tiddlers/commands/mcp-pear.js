@@ -29,8 +29,14 @@ var PROTOCOL_VERSION = "2025-03-26";
 var SERVER_NAME = "tiddlywiki-mcp";
 var CALL_TIMEOUT_MS = 20000;
 
-var PEAR_READ_TOOLS = ["get_wiki_info", "list_tiddlers", "get_tiddler", "run_filter", "render_tiddler", "render_text"];
+var PEAR_READ_TOOLS = ["get_wiki_info", "list_tiddlers", "get_tiddler", "run_filter", "render_tiddler", "render_text",
+	"render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
 var PEAR_WRITE_TOOLS = ["put_tiddler", "delete_tiddler"];
+// tools the app engine serves by running the REAL tw-mcp handlers: forward the
+// call verbatim over the pipe and pass the handler's pre-formatted text through.
+// (search_lines/get_tiddlers are excluded until hashline.js is ICU-free — its
+// \p{…} regex breaks under the engine's no-ICU V8.)
+var PEAR_ENGINE_TOOLS = ["render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
 
 // This client's own ed25519 identity for `agent` mode (concept 12
 // §Authorization). Persisted per-user so an approval sticks across restarts.
@@ -273,6 +279,15 @@ function startPearMode(options) {
 	}
 
 	function handlePearTool(name, args, done) {
+		// engine-served tools: the app runs the real tw-mcp handler and returns
+		// its pre-formatted text — forward verbatim
+		if(PEAR_ENGINE_TOOLS.indexOf(name) >= 0) {
+			return call(name, args, function(err, r) {
+				if(err) return done(errorResult(err.message));
+				if(!r.ok) return done(errorResult("Facets: " + r.error));
+				done(textResult((r.result && r.result.text) || ""));
+			});
+		}
 		switch(name) {
 			case "get_wiki_info":
 				return call("ready", {}, function(err, r) {
