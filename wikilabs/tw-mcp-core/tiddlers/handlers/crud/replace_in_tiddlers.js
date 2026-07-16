@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/replace_in_tiddlers.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: replace_in_tiddlers — bulk find+replace across many
 tiddlers. Multiple {pattern, replacement} rules per call, per-rule flags;

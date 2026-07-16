@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/filesystem.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handlers for filesystem and build operations.
 

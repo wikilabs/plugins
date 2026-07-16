@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/inspect/inspect_tw.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: inspect_tw — walk $tw object graph at a path,
 optionally invoke safe read-only methods, and render values/functions

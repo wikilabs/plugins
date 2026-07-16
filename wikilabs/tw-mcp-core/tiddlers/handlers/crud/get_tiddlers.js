@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/get_tiddlers.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: get_tiddlers — batch read by titles array. Text output
 is CompoundTiddlers (blocks separated by `\n+\n`); JSON output is

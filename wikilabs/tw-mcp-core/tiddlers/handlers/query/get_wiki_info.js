@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/query/get_wiki_info.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: get_wiki_info — wiki metadata (title, version, counts,
 plugins, themes, settings) plus MCP role/PID and HTML-import status if

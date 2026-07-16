@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/edit_tiddler.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: edit_tiddler — apply hashline-anchored edits to an
 existing tiddler's text, optionally also setting/deleting other fields.

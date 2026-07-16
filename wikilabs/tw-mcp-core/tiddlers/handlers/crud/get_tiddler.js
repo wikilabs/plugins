@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/get_tiddler.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: get_tiddler — single-tiddler read. Returns title-first
 .tid/JSON/hashline forms; for plugin tiddlers shows the shadow-subtiddler

@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/render/render_field.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: render_field — render a single field (or index entry)
 as wikitext.

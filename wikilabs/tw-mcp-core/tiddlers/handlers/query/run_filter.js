@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/query/run_filter.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: run_filter — evaluate a TW filter expression and
 return matching titles, one per line. Caps at 500 results.

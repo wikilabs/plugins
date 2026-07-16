@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/admin.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP admin tools — currently: reload_mcp_modules for hot-reload of
 plugin JS during development without restarting the server.
@@ -12,8 +12,9 @@ plugin JS during development without restarting the server.
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
-var PLUGIN_NAME = "wikilabs/tw-mcp";
-var PLUGIN_TITLE = "$:/plugins/" + PLUGIN_NAME;
+// Both halves of the split plugin reload together: the runtime-agnostic
+// tool core and this server plugin.
+var PLUGIN_NAMES = ["wikilabs/tw-mcp-core", "wikilabs/tw-mcp"];
 
 // Modules that hold live state and cannot be reloaded without breaking
 // running connections, init context, or change listeners.
@@ -96,7 +97,8 @@ module.exports = {
 		var skipped = [];
 		var errors = [];
 
-		// Phase 1: re-read plugin from disk so $tw.wiki has fresh subtiddler text.
+		// Phase 1: re-read both plugins from disk so $tw.wiki has fresh
+		// subtiddler text.
 		if(args.skip_disk_reload !== true) {
 			try {
 				var paths = $tw.getLibraryItemSearchPaths(
@@ -111,40 +113,47 @@ module.exports = {
 				// false, so the bundle is never persisted to the edition's
 				// tiddlers/ folder. Fallback to addTiddler if no syncer is
 				// active (eg headless `--build`).
-				var pluginPath = $tw.findLibraryItem(PLUGIN_NAME, paths);
-				if(!pluginPath) {
-					return shared.errorResult("Plugin folder not found: " + PLUGIN_NAME);
-				}
-				var pluginFields = $tw.loadPluginFolder(pluginPath);
-				if(!pluginFields) {
-					return shared.errorResult("Failed to load plugin from folder: " + pluginPath);
-				}
-				if($tw.syncer) {
-					$tw.syncer.storeTiddler(pluginFields);
-				} else {
-					$tw.wiki.addTiddler(pluginFields);
+				for(var pi = 0; pi < PLUGIN_NAMES.length; pi++) {
+					var pluginPath = $tw.findLibraryItem(PLUGIN_NAMES[pi], paths);
+					if(!pluginPath) {
+						return shared.errorResult("Plugin folder not found: " + PLUGIN_NAMES[pi]);
+					}
+					var pluginFields = $tw.loadPluginFolder(pluginPath);
+					if(!pluginFields) {
+						return shared.errorResult("Failed to load plugin from folder: " + pluginPath);
+					}
+					if($tw.syncer) {
+						$tw.syncer.storeTiddler(pluginFields);
+					} else {
+						$tw.wiki.addTiddler(pluginFields);
+					}
+					messages.push("Plugin re-read from disk: $:/plugins/" + PLUGIN_NAMES[pi]);
 				}
 				$tw.wiki.readPluginInfo();
 				$tw.wiki.registerPluginTiddlers(null);
 				$tw.wiki.unpackPluginTiddlers();
-				messages.push("Plugin re-read from disk: " + PLUGIN_TITLE);
 			} catch(e) {
 				return shared.errorResult("Failed to re-read plugin from disk: " + e.message);
 			}
 		}
 
-		// Phase 2: collect JS module titles inside the plugin.
-		var pluginInfo = $tw.wiki.getPluginInfo(PLUGIN_TITLE);
-		if(!pluginInfo || !pluginInfo.tiddlers) {
-			return shared.errorResult("Plugin info not found: " + PLUGIN_TITLE);
-		}
+		// Phase 2: collect JS module titles from both plugins.
 		var moduleTitles = [];
-		Object.keys(pluginInfo.tiddlers).forEach(function(t) {
-			var pt = pluginInfo.tiddlers[t];
-			if(pt.type === "application/javascript" && pt["module-type"]) {
-				moduleTitles.push(t);
+		var moduleTypes = {};
+		for(var pj = 0; pj < PLUGIN_NAMES.length; pj++) {
+			var pluginTitle = "$:/plugins/" + PLUGIN_NAMES[pj];
+			var pluginInfo = $tw.wiki.getPluginInfo(pluginTitle);
+			if(!pluginInfo || !pluginInfo.tiddlers) {
+				return shared.errorResult("Plugin info not found: " + pluginTitle);
 			}
-		});
+			Object.keys(pluginInfo.tiddlers).forEach(function(t) {
+				var pt = pluginInfo.tiddlers[t];
+				if(pt.type === "application/javascript" && pt["module-type"]) {
+					moduleTitles.push(t);
+					moduleTypes[t] = pt["module-type"];
+				}
+			});
+		}
 		moduleTitles.sort();
 
 		// Phase 3: reload each module, except excluded.
@@ -154,7 +163,7 @@ module.exports = {
 				skipped.push(title + " (" + EXCLUDE_FROM_RELOAD[title] + ")");
 				return;
 			}
-			var moduleType = pluginInfo.tiddlers[title]["module-type"];
+			var moduleType = moduleTypes[title];
 			var result = reloadInPlace(title, moduleType);
 			if(result.ok) {
 				reloaded.push(title + (PRESERVE_IDENTITY[title] ? " [identity]" : ""));

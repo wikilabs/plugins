@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/query/list_tiddlers.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: list_tiddlers — convenience over run_filter for common
 listing tasks (plugin contents, overridden shadows, tag, system inclusion).

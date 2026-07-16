@@ -1,8 +1,10 @@
 title: $:/plugins/wikilabs/tw-mcp/readme
-caption: Click Effect
+caption: TW MCP Server
 tags: $:/tags/ControlPanel/WikiLabs
 
 The full documentation can be found at [[tw-mcp plugin|https://wikilabs.github.io/editions/tw-mcp/]] main page.
+
+''Since v0.14.0'' the tool handlers live in the separate [[tw-mcp-core|$:/plugins/wikilabs/tw-mcp-core]] plugin — install BOTH plugins.
 
 ----
 

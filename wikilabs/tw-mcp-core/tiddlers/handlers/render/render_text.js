@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/render/render_text.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: render_text — parse/render arbitrary wikitext or other
 parser input. output='parsetree' returns the compacted parse tree as JSON.

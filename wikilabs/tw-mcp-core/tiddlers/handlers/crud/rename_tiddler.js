@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/rename_tiddler.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: rename_tiddler — write the new title, then unlink the
 old file + store entry. Best-effort on the unlink (the new tiddler is

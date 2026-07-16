@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/inspect/inspect_scope.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: inspect_scope — show all variables visible at a
 given char position inside text or a tiddler, classified as local /

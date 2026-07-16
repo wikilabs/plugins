@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.14.0 - 2026-07-16
+
+* ''BREAKING install step'': the plugin is split in two. The runtime-agnostic tool core (crud/query/render/inspect handlers, hashline, dispatcher, the `search-lines` filter) now lives in [[$:/plugins/wikilabs/tw-mcp-core]]; this plugin keeps the node server (HTTP/SSE/stdio transports, pear mode) and the node-only tools (`save_wiki_folder`, `build_wiki`, `upload_file`, `import_html_wiki`, `extract_html_wiki`, `reload_*`, `resave_tiddler`). Add `wikilabs/tw-mcp-core` to your edition's plugin list — nothing else changes.
+* Tool handlers are now DISCOVERED by `module-type: mcp-handler` instead of a hardcoded list — any plugin can contribute MCP tools by shipping such a module (each export becomes a tool).
+* `reload_mcp_modules` re-reads both plugins.
+
 V 0.13.40 - 2026-07-16
 
 * Persistence seam: `shared.init(context)` accepts optional `persist(tiddler, title, action)` and `remove(title)` hooks. When a host injects them it owns persistence — `persistTiddler` and the file-unlink paths in `delete_tiddler`/`rename_tiddler` delegate instead of touching the filesystem. Default behaviour (no hooks) is unchanged.

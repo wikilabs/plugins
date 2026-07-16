@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/query/search_lines.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: search_lines — per-line search via the search-lines
 filter operator; groups by title+field, splits into ranges by line-number

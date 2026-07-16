@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/resave_tiddler.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: resave_tiddler — re-route an existing tiddler through
 FSP/FSE filters, stripping redundant fields and optionally preserving

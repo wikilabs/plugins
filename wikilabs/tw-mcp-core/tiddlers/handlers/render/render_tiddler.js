@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/render/render_tiddler.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: render_tiddler — render a tiddler's body (raw mode) or
 its ViewTemplate cascade body (viewtemplate mode).

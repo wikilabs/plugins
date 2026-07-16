@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/inspect/inspect_tree.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: inspect_tree — compact parse-tree summary with type
 counts, link targets, and depth-bounded JSON dump of the widget tree.

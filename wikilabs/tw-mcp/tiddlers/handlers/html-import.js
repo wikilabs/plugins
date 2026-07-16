@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/html-import.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 HTML single-file wiki import handler for MCP server.
 Loads tiddlers from an HTML file, analyzes structure, and provides

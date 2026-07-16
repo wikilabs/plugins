@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/inspect/inspect_pos.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: inspect_pos — render text with source-position
 attributes (p=, v=, ctx=, c=) on every DOM element. Hot-path tool;

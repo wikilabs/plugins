@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/delete_tiddler.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: delete_tiddler — unlink the on-disk file (if any) then
 remove the tiddler from the wiki store. Honours the allowed-paths gate.

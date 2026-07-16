@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/crud/put_tiddler.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handler: put_tiddler — create new tiddler or full-rewrite an
 existing one. Without overwrite, an existing title triggers uniquify.
