@@ -301,3 +301,60 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["inspect_scope"].definition = {
+	"description": "Variable scope at a source position. tiddler+charPos OR text+charPos. charPos = char offset into wikitext text field, NOT line number — p= from inspect_pos is lines including header, must be converted via source text. Output: per-var line w/ kind prefix (widget/fn/proc/macro/def/var), name, params, value (≤70 chars), source. Sections: local scope, used globals (parse-tree refs + transitive macro body expansion), other globals (all:true). match: requires named vars to equal given values — disambiguates sibling widgets sharing parseTreeNode.start (repeating lists). renderContext: 'isolated' (default), 'viewtemplate' (tiddler-render context), 'root' (PageTemplate context).",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"tiddler": {
+				"type": "string",
+				"description": "Tiddler title"
+			},
+			"charPos": {
+				"type": "number",
+				"description": "Character position in text field"
+			},
+			"text": {
+				"type": "string",
+				"description": "Wikitext instead of tiddler"
+			},
+			"context": {
+				"type": "string",
+				"description": "Context tiddler"
+			},
+			"match": {
+				"type": "object",
+				"description": "Match widget by variable values",
+				"additionalProperties": {
+					"type": "string"
+				}
+			},
+			"filter": {
+				"type": "string",
+				"description": "Substring filter"
+			},
+			"limit": {
+				"type": "number",
+				"default": 20
+			},
+			"all": {
+				"type": "boolean",
+				"default": false,
+				"description": "Include unused globals"
+			},
+			"renderContext": {
+				"type": "string",
+				"enum": [
+					"isolated",
+					"viewtemplate",
+					"root"
+				],
+				"default": "isolated"
+			}
+		},
+		"required": []
+	}
+};

@@ -294,3 +294,29 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["inspect_pos"].definition = {
+	"description": "Render wikitext to HTML with source-position attrs + title index header. Header: [0=Title 1=Title ...]. Each node may carry p=\"idx:line\" or p=\"idx:start-end\" (idx→header, lines in defining tiddler), v=\"name\" (transcluded procedure/macro/variable that produced this node), c=\"A|B|C\" (caller chain — closest enclosing transclude first, outermost last), and ctx=\"Title\" (currentTiddler when it differs from the source-context tiddler — distinguishes repeated list items). Pair with inspect_scope.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"text": {
+				"type": "string",
+				"description": "Wikitext to render"
+			},
+			"type": {
+				"type": "string",
+				"default": "text/vnd.tiddlywiki"
+			},
+			"context": {
+				"type": "string",
+				"description": "Context tiddler"
+			}
+		},
+		"required": [
+			"text"
+		]
+	}
+};

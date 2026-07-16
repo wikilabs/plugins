@@ -28,7 +28,6 @@ var EXCLUDE_FROM_RELOAD = {
 // Modules whose exports object identity must be preserved because
 // mcp-lib.js captured a reference at require-time.
 var PRESERVE_IDENTITY = {
-	"$:/core/modules/commands/inspect/mcp-tools.js": true,
 	"$:/core/modules/commands/inspect/mcp-handlers.js": true
 };
 
@@ -211,4 +210,22 @@ module.exports = {
 			? shared.errorResult(out.join("\n"))
 			: shared.textResult(out.join("\n"));
 	}
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["reload_mcp_modules"].definition = {
+	"description": "Hot-reload tw-mcp plugin. Re-reads plugin folder, refreshes ALL subtiddlers (JS + non-JS doc/wikitext/CSS), re-executes JS modules. Non-JS applies immediately; JS modules apply on next tool call. Excludes mcp.js/mcp-lib.js/shared.js/filesystem.js (hold live state — need server restart).",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"skip_disk_reload": {
+				"type": "boolean",
+				"default": false,
+				"description": "Skip the $tw.loadPlugin step. Use only when the wiki store already has fresh plugin source (e.g., after a manual reload_tiddlers)."
+			}
+		},
+		"required": []
+	},
+	"write": true
 };

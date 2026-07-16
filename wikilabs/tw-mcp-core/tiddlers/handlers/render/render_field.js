@@ -43,3 +43,40 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["render_field"].definition = {
+	"description": "Render tiddler field or data tiddler index as wikitext. Errors on missing/empty (not silent empty).",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"title": {
+				"type": "string",
+				"description": "Tiddler title"
+			},
+			"field": {
+				"type": "string",
+				"default": "text",
+				"description": "Field name (default: text)"
+			},
+			"index": {
+				"type": "string",
+				"description": "Data tiddler index (alternative to field)"
+			},
+			"output": {
+				"type": "string",
+				"enum": [
+					"text/plain",
+					"text/plain-formatted",
+					"text/html"
+				],
+				"default": "text/html",
+				"description": "Output type"
+			}
+		},
+		"required": [
+			"title"
+		]
+	}
+};

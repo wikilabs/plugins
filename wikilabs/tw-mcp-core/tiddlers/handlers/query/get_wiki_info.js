@@ -95,3 +95,14 @@ module.exports = {
 		return shared.textResult(lines.join("\n"));
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["get_wiki_info"].definition = {
+	"description": "Wiki metadata: title, version, tiddler counts, plugins, themes, settings.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {},
+		"required": []
+	}
+};

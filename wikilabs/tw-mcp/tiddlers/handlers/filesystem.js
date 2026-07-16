@@ -436,3 +436,120 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["reload_tiddlers"].definition = {
+	"description": "Re-read tiddlers from disk; reports diff vs last call (first call may show large initial set). scope='shadows': refreshes non-JS plugin subtiddlers (doc/wikitext/CSS) — does NOT re-execute plugin JS. For JS in tw-mcp plugin use reload_mcp_modules. Refreshes $:/config/OriginalTiddlerPaths when retain-original-tiddler-path is set.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"scope": {
+				"type": "string",
+				"enum": [
+					"tiddlers",
+					"shadows",
+					"all"
+				],
+				"default": "tiddlers",
+				"description": "tiddlers = edition tiddlers on disk (default). shadows = re-register plugins and re-unpack shadow tiddlers from in-memory plugin JSON (does NOT re-read plugin folders from disk). all = both."
+			}
+		},
+		"required": []
+	}
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["save_wiki_folder"].definition = {
+	"description": "Export wiki to folder. filter selects tiddlers (default '[all[tiddlers]]'). explodePlugins='yes' (default): plugins as exploded subtiddler folders; 'no': single .json bundles. Path gated by allowed-paths.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"path": {
+				"type": "string",
+				"description": "Output directory"
+			},
+			"filter": {
+				"type": "string",
+				"default": "[all[tiddlers]]"
+			},
+			"explodePlugins": {
+				"type": "string",
+				"enum": [
+					"yes",
+					"no"
+				],
+				"default": "yes"
+			}
+		},
+		"required": [
+			"path"
+		]
+	},
+	"write": true
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["build_wiki"].definition = {
+	"description": "Render wiki as single HTML. Silently overwrites output, creates parent dirs. template = renderable tiddler (default '$:/core/save/all'); invalid template → empty output, not error. Verify result.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"output": {
+				"type": "string",
+				"description": "Output file path"
+			},
+			"template": {
+				"type": "string",
+				"default": "$:/core/save/all"
+			}
+		},
+		"required": [
+			"output"
+		]
+	},
+	"write": true
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["upload_file"].definition = {
+	"description": "Upload base64 file to files/, create canonical tiddler. tags = TW-format STRING (e.g. 'foo [[bar baz]]'), NOT array. Writes binary file + .tid sidecar with _canonical_uri.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"filename": {
+				"type": "string",
+				"description": "Filename (no path separators)"
+			},
+			"data": {
+				"type": "string",
+				"description": "Base64 content"
+			},
+			"type": {
+				"type": "string",
+				"description": "MIME type"
+			},
+			"title": {
+				"type": "string",
+				"maxLength": 1024,
+				"description": "Tiddler title (max 1024 chars; defaults to filename)"
+			},
+			"tags": {
+				"type": "string"
+			},
+			"subfolder": {
+				"type": "string",
+				"description": "Subfolder in files/"
+			}
+		},
+		"required": [
+			"filename",
+			"data",
+			"type"
+		]
+	},
+	"write": true
+};

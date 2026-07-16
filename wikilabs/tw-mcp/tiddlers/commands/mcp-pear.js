@@ -95,7 +95,7 @@ function log(msg) {
 
 function startPearMode(options) {
 	var pearDir = options.pearDir;
-	var tools = require("$:/core/modules/commands/inspect/mcp-tools.js");
+	var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
 
 	// --- the pipe client (lazy connect, reconnect per call, per-call timeout) ---
 	var sock = null;
@@ -368,7 +368,7 @@ function startPearMode(options) {
 		// read set still lists (calls return a readable pending error).
 		var rw = (authScope === "rw") && (authState === "full-trust" || authState === "authenticated");
 		var names = rw ? PEAR_READ_TOOLS.concat(PEAR_WRITE_TOOLS) : PEAR_READ_TOOLS;
-		return tools.getToolDefinitions(!rw).filter(function(t) {
+		return handlers.getToolDefinitions(!rw).filter(function(t) {
 			return names.indexOf(t.name) >= 0;
 		});
 	}

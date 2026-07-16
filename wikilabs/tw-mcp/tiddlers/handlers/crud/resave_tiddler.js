@@ -87,3 +87,38 @@ module.exports = {
 		return shared.textResult(msg);
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["resave_tiddler"].definition = {
+	"description": "Rewrite a tiddler's .tid file using current FileSystemPaths. Relocates the file if path rules changed. Preserves modified/modifier by default. Refuses on shadow-only, plugin/theme/language, or .multids-bundled tiddlers.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"title": {
+				"type": "string",
+				"maxLength": 1024,
+				"description": "Tiddler title (max 1024 chars)"
+			},
+			"preserve_timestamps": {
+				"type": "boolean",
+				"default": true,
+				"description": "Keep modified/modifier unchanged (default). Set false to stamp current time and user."
+			},
+			"strip_redundant": {
+				"type": "boolean",
+				"default": true,
+				"description": "Drop 'revision' and drop 'type' when it equals text/vnd.tiddlywiki (default)."
+			},
+			"dry_run": {
+				"type": "boolean",
+				"default": false,
+				"description": "Report old/new path and fields that would be stripped; do not write."
+			}
+		},
+		"required": [
+			"title"
+		]
+	},
+	"write": true
+};

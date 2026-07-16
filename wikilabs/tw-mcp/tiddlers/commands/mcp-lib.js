@@ -17,7 +17,6 @@ var fs = $tw.node ? require("fs") : null,
 	net = $tw.node ? require("net") : null,
 	crypto = $tw.node ? require("crypto") : null;
 
-var tools = require("$:/core/modules/commands/inspect/mcp-tools.js");
 var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
 
 var PROTOCOL_VERSION = "2025-03-26";
@@ -229,7 +228,7 @@ function dispatchMessage(line, send) {
 
 		case "tools/list":
 			send(jsonrpcResponse(id, {
-				tools: tools.getToolDefinitions(readonlyMode)
+				tools: handlers.getToolDefinitions(readonlyMode)
 			}));
 			break;
 
@@ -761,9 +760,9 @@ function startProxyMode(discovery) {
 	var pendingStdio = [];
 	var initializeId = null;
 	var toolsListIds = {}; // track tools/list request ids for readonly filtering
-	// Build write tool name set for readonly enforcement
-	var writeToolNames = {};
-	tools.writeTools.forEach(function(t) { writeToolNames[t.name] = true; });
+	// Build write tool name set for readonly enforcement (discovered from
+	// the handler definitions' write flag)
+	var writeToolNames = handlers.getWriteToolNames();
 
 	var takingOver = false; // true when we received a takeover notification (other proxies)
 	var initiatedTakeover = false; // true when WE requested the takeover

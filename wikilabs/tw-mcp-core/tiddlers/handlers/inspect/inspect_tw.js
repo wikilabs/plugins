@@ -139,3 +139,42 @@ module.exports = {
 		return shared.textResult( depthNote + result );
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["inspect_tw"].definition = {
+	"description": "Read-only $tw navigation. path: dot-path (e.g. 'wiki.boot.wikiPath'); blocks __proto__/constructor/prototype. Objects → keys+types+values, depth auto-reduces above 10KB. Functions without call → signature + source (truncated; fullSource:true for full). Functions with call → invoked, gated by read-only safe-list ($tw.wiki.* getters/filters, $tw.utils.*, heartbeats; full list in error). Writes go through put_tiddler/edit_tiddler/delete_tiddler. Auto-resolve: object path + call[0]=methodName rewrites to path.method(...rest) before safe-list.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"path": {
+				"type": "string",
+				"default": "",
+				"description": "Dot path (e.g. 'wiki', 'boot.wikiPath')"
+			},
+			"call": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Call function with args"
+			},
+			"depth": {
+				"type": "number",
+				"default": 1
+			},
+			"fullSource": {
+				"type": "boolean",
+				"default": false
+			},
+			"exclude": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Keys to skip"
+			}
+		},
+		"required": []
+	}
+};

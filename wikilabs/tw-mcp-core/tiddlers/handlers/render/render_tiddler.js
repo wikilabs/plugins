@@ -43,3 +43,39 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["render_tiddler"].definition = {
+	"description": "Render tiddler to text/HTML. mode='raw' (default): type parser. mode='viewtemplate': $:/tags/ViewTemplateBodyFilter cascade — output depends on type/tags, may include framing widgets (e.g. code-mirror frame) for non-wikitext types instead of body content.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"title": {
+				"type": "string",
+				"description": "Tiddler title"
+			},
+			"type": {
+				"type": "string",
+				"enum": [
+					"text/plain",
+					"text/plain-formatted",
+					"text/html"
+				],
+				"default": "text/plain-formatted"
+			},
+			"mode": {
+				"type": "string",
+				"enum": [
+					"raw",
+					"viewtemplate"
+				],
+				"default": "raw",
+				"description": "raw = type parser (default), viewtemplate = ViewTemplate body cascade"
+			}
+		},
+		"required": [
+			"title"
+		]
+	}
+};

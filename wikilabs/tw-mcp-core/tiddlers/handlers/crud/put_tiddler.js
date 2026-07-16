@@ -34,3 +34,33 @@ module.exports = {
 		return shared.persistTiddler(tiddler, title, "saved");
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["put_tiddler"].definition = {
+	"description": "Create or update tiddler, persists to disk. overwrite=true replaces existing. WITHOUT overwrite: existing-title silently creates duplicate with uniquified title (e.g. 'MyTiddler 1') — does NOT error. Check response title; use overwrite=true or edit_tiddler when updating.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"title": {
+				"type": "string",
+				"maxLength": 1024,
+				"description": "Tiddler title (max 1024 chars)"
+			},
+			"fields": {
+				"type": "object",
+				"description": "Tiddler fields (text, tags, type, etc.)",
+				"additionalProperties": true
+			},
+			"overwrite": {
+				"type": "boolean",
+				"default": false
+			}
+		},
+		"required": [
+			"title",
+			"fields"
+		]
+	},
+	"write": true
+};

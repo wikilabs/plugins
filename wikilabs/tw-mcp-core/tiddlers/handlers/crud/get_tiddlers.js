@@ -106,3 +106,52 @@ module.exports = {
 		return shared.textResult(output);
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["get_tiddlers"].definition = {
+	"description": "Batch fetch tiddlers by titles array. Text output: `.tid` blocks separated by `\\n+\\n` (CompoundTiddlers); each block `title:` first, other fields alpha, blank, text (if detailed). JSON: `{tiddlers, missing?, truncated?}`. Missing → trailing `Missing: a, b` line (text) or `missing` array (JSON). Truncation trailer: `(N entries truncated; raise max_tiddlers or max_bytes)`. Plugin tiddlers: fields-only. Default skips bookkeeping fields (created/modified/creator/modifier/revision); `verbose=true` includes. Caps: max_tiddlers=50, max_bytes=50000. Default `detailed=true`.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"titles": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Array of tiddler titles to fetch (input order preserved)"
+			},
+			"format": {
+				"type": "string",
+				"enum": [
+					"tid",
+					"json",
+					"hashline"
+				],
+				"default": "hashline",
+				"description": "hashline (default) text+hash anchors; tid plain text; json structured (parseable document)"
+			},
+			"detailed": {
+				"type": "boolean",
+				"default": true,
+				"description": "Include text field. Ignored for plugin tiddlers (always fields-only). Set false for metadata-only batch."
+			},
+			"verbose": {
+				"type": "boolean",
+				"default": false,
+				"description": "Include bookkeeping fields (created/modified/creator/modifier/revision). Default false drops them as noise."
+			},
+			"max_tiddlers": {
+				"type": "number",
+				"default": 50
+			},
+			"max_bytes": {
+				"type": "number",
+				"default": 50000
+			}
+		},
+		"required": [
+			"titles"
+		]
+	}
+};

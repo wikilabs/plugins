@@ -59,3 +59,36 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["get_tiddler"].definition = {
+	"description": "Get tiddler fields. Default: metadata only. detailed:true adds text field as hashlines ('LINE#HASH: text' per line; pass anchors to edit_tiddler). format='tid': plain text. Plugin tiddlers return fields + shadow-tiddler tree (format/detailed ignored).",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"title": {
+				"type": "string",
+				"description": "The tiddler title"
+			},
+			"format": {
+				"type": "string",
+				"enum": [
+					"tid",
+					"json",
+					"hashline"
+				],
+				"default": "hashline",
+				"description": "hashline (default) — text with hash anchors for editing. tid — plain text. json — structured fields."
+			},
+			"detailed": {
+				"type": "boolean",
+				"default": false,
+				"description": "Include the text field"
+			}
+		},
+		"required": [
+			"title"
+		]
+	}
+};

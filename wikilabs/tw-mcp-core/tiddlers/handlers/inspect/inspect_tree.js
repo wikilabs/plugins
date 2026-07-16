@@ -106,3 +106,48 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["inspect_tree"].definition = {
+	"description": "Analyze rendered widget tree. Output: type counts, unique link targets, depth-limited JSON (depth=3, structural recursion only). Text nodes ≤10 chars shown verbatim; longer shown as '…N' (length only — leading ellipsis chosen because real text rarely starts with one). include:['text'] inlines text in full, but caps individual nodes at 2000 chars: above that, output is '…N:<first 100>…<last 100>' (head+tail sample with full length N) to prevent runaway. Children capped at 10/parent ('+N more'). exclude drops attributes.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"text": {
+				"type": "string",
+				"description": "Wikitext to analyze"
+			},
+			"type": {
+				"type": "string",
+				"default": "text/vnd.tiddlywiki"
+			},
+			"context": {
+				"type": "string",
+				"description": "Context tiddler"
+			},
+			"exclude": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Attributes to omit"
+			},
+			"include": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Keys to unfold"
+			},
+			"depth": {
+				"type": "number",
+				"default": 3,
+				"description": "Max tree depth"
+			}
+		},
+		"required": [
+			"text"
+		]
+	}
+};

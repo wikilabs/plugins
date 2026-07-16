@@ -69,3 +69,72 @@ module.exports = {
 		return shared.persistTiddler(newTiddler, title, "edited");
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["edit_tiddler"].definition = {
+	"description": "Edit tiddler text and/or fields. Text edits via LINE#HASH anchors (e.g. '5#AB'); anchors come from get_tiddler. Stale anchors → HashlineMismatchError lists fresh anchors for retry. Fields via set_fields/delete_fields. One call covers both.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"title": {
+				"type": "string",
+				"maxLength": 1024,
+				"description": "Tiddler title (max 1024 chars)"
+			},
+			"edits": {
+				"type": "array",
+				"description": "Text line edits using hashline anchors (optional if only changing fields)",
+				"items": {
+					"type": "object",
+					"properties": {
+						"op": {
+							"type": "string",
+							"enum": [
+								"replace_line",
+								"replace_range",
+								"append_at",
+								"prepend_at"
+							]
+						},
+						"pos": {
+							"type": "string",
+							"description": "LINE#HASH anchor (e.g. '5#AB')"
+						},
+						"end": {
+							"type": "string",
+							"description": "End anchor for replace_range"
+						},
+						"lines": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							},
+							"description": "New lines to insert/replace"
+						}
+					},
+					"required": [
+						"op",
+						"lines"
+					]
+				}
+			},
+			"set_fields": {
+				"type": "object",
+				"description": "Fields to add or update (key: value). Does not affect text field — use edits for text.",
+				"additionalProperties": true
+			},
+			"delete_fields": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Field names to remove"
+			}
+		},
+		"required": [
+			"title"
+		]
+	},
+	"write": true
+};

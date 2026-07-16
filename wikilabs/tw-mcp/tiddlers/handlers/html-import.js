@@ -502,3 +502,39 @@ module.exports = {
 	"import_html_wiki": importHandler,
 	"extract_html_wiki": extractHandler
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["import_html_wiki"].definition = {
+	"description": "Stage a single-file HTML wiki for import. Loads tiddlers from the file into memory, classifies them, proposes FileSystemPaths rules, and writes the staged analysis to $:/temp/mcp/html-import. Nothing is written to disk yet — call extract_html_wiki to commit. Refuses if the wiki folder is already populated or another import is already pending.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"path": {
+				"type": "string",
+				"description": "Path to the .html single-file wiki to import. Paths with `.`-prefixed directory or filename segments (e.g. `.ssh/`, `.config/`, `.env`) are refused as a defence-in-depth against reading hidden config."
+			}
+		},
+		"required": [
+			"path"
+		]
+	},
+	"write": true
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["extract_html_wiki"].definition = {
+	"description": "Commit a previously staged HTML wiki import (see import_html_wiki) to disk as .tid files. Reads $:/config/FileSystemPaths from the wiki by default; the user can edit it in the browser before this call. Optionally override the rules via fileSystemPaths.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"fileSystemPaths": {
+				"type": "string",
+				"description": "Approved FileSystemPaths rules (one filter per line). If omitted, reads $:/config/FileSystemPaths from the wiki."
+			}
+		},
+		"required": []
+	},
+	"write": true
+};

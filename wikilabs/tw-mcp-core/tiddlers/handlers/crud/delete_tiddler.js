@@ -48,3 +48,23 @@ module.exports = {
 		return shared.textResult("Tiddler deleted: " + args.title);
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["delete_tiddler"].definition = {
+	"description": "Delete tiddler + .tid file. Shadow-only tiddlers (plugin-provided): removed from store only, no file touched, reappear on reload. Path gated by allowed-paths.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"title": {
+				"type": "string",
+				"maxLength": 1024,
+				"description": "Tiddler title (max 1024 chars)"
+			}
+		},
+		"required": [
+			"title"
+		]
+	},
+	"write": true
+};

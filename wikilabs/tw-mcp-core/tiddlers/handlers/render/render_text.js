@@ -67,3 +67,55 @@ module.exports = {
 		}
 	}
 };
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["render_text"].definition = {
+	"description": "Render wikitext to plain text, HTML, or parse tree. Full macro/procedure context.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"text": {
+				"type": "string",
+				"description": "Wikitext to render"
+			},
+			"type": {
+				"type": "string",
+				"default": "text/vnd.tiddlywiki",
+				"description": "Input type"
+			},
+			"output": {
+				"type": "string",
+				"enum": [
+					"text/plain",
+					"text/plain-formatted",
+					"text/html",
+					"parsetree"
+				],
+				"default": "text/plain",
+				"description": "Output type"
+			},
+			"context": {
+				"type": "string",
+				"description": "Context tiddler (sets currentTiddler)"
+			},
+			"exclude": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Keys to omit from parsetree"
+			},
+			"include": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"description": "Keys to unfold in parsetree"
+			}
+		},
+		"required": [
+			"text"
+		]
+	}
+};

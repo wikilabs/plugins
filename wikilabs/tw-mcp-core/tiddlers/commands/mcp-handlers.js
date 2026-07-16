@@ -40,6 +40,38 @@ function handleToolCall(name, args) {
 	return handler ? handler(args) : null;
 }
 
+// Tool advertisement, discovered like the tool map: each handler function
+// carries its MCP definition as `fn.definition` ({description, inputSchema,
+// write}); the name is the export key. Sorted by name for a deterministic
+// tools/list. Handlers without a definition are callable but unadvertised.
+function getToolDefinitions(isReadonly) {
+	var defs = [];
+	var toolMap = buildToolMap();
+	var names = Object.keys(toolMap);
+	for(var i = 0; i < names.length; i++) {
+		var d = toolMap[names[i]] && toolMap[names[i]].definition;
+		if(!d) continue;
+		if(isReadonly && d.write) continue;
+		defs.push({ name: names[i], description: d.description, inputSchema: d.inputSchema });
+	}
+	defs.sort(function(a, b) { return a.name < b.name ? -1 : a.name > b.name ? 1 : 0; });
+	return defs;
+}
+
+// {toolName: true} for every advertised write tool — mcp-lib's proxy path
+// filters readonly tools/list responses with it.
+function getWriteToolNames() {
+	var names = {};
+	var toolMap = buildToolMap();
+	for(var name in toolMap) {
+		var d = toolMap[name] && toolMap[name].definition;
+		if(d && d.write) names[name] = true;
+	}
+	return names;
+}
+
 exports.init = init;
 exports.handleToolCall = handleToolCall;
+exports.getToolDefinitions = getToolDefinitions;
+exports.getWriteToolNames = getWriteToolNames;
 exports.buildTree = shared.buildTree;
