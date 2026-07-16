@@ -10,12 +10,12 @@ OS pipe; every tool call is forwarded over it as an NDJSON bridge frame
 ({v:1,id,cmd,args} -> {id,ok,result|error}). This process's own wiki is only
 the plugin host — no local handlers, no HTTP, no primary/proxy machinery.
 
-Read tools ride the app's headless TW engine (the composed bag+staging
-view); writes are admitted only when the app's flag says rw, and they land
-like member saves (staging gates them). The edit family (edit_tiddler,
-rename_tiddler, replace_in_tiddlers) runs the REAL handlers inside the app
-engine; their writes leave it through the persist seam (shared.init persist/
-remove hooks) and route through the app's bag/staging path.
+Every tool runs the REAL tw-mcp handler inside the app's headless TW engine
+over the member's composed bag+staging view — full feature parity with the
+node server (ruled 2026-07-17). Write tools are admitted only at rw scope;
+their persistence leaves the engine through the persist seam (shared.init
+persist/remove hooks) and routes through the app's bag/staging path, so
+staging gates them like member saves.
 \*/
 
 "use strict";
@@ -30,15 +30,14 @@ var PROTOCOL_VERSION = "2025-03-26";
 var SERVER_NAME = "tiddlywiki-mcp";
 var CALL_TIMEOUT_MS = 20000;
 
+// Every tool forwards VERBATIM (feature parity, ruled 2026-07-17): the app
+// runs the real tw-mcp handler in its headless engine over the composed
+// bag+staging view and the pre-formatted text passes through. Write tools
+// are admitted only at rw scope; their persistence routes through the app's
+// bag/staging path (the persist seam).
 var PEAR_READ_TOOLS = ["get_wiki_info", "list_tiddlers", "get_tiddler", "run_filter", "render_tiddler", "render_text",
 	"search_lines", "get_tiddlers", "render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
 var PEAR_WRITE_TOOLS = ["put_tiddler", "delete_tiddler", "edit_tiddler", "rename_tiddler", "replace_in_tiddlers"];
-// tools the app engine serves by running the REAL tw-mcp handlers: forward the
-// call verbatim over the pipe and pass the handler's pre-formatted text through
-var PEAR_ENGINE_TOOLS = ["search_lines", "get_tiddlers", "render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
-// engine-served WRITE tools (persist seam): same verbatim forwarding, but the
-// app admits them only at rw scope and routes their writes into bag/staging
-var PEAR_ENGINE_WRITE_TOOLS = ["edit_tiddler", "rename_tiddler", "replace_in_tiddlers"];
 
 // This client's own ed25519 identity for `agent` mode (concept 12
 // §Authorization). Persisted per-user so an approval sticks across restarts.
@@ -267,115 +266,18 @@ function startPearMode(options) {
 		});
 	}
 
-	// --- tool formatting (pipe reply -> MCP text result) ---
-	function fieldsToTid(fields) {
-		var names = Object.keys(fields).filter(function(n) { return n !== "text"; }).sort();
-		var out = [];
-		for(var i = 0; i < names.length; i++) {
-			out.push(names[i] + ": " + String(fields[names[i]]).replace(/\n/g, " "));
-		}
-		out.push("");
-		out.push(fields.text === undefined ? "" : String(fields.text));
-		return out.join("\n");
-	}
-	function listFilter(args) {
-		var parts = [];
-		if(args.tag) {
-			parts.push("tag[" + args.tag + "]");
-		} else {
-			parts.push(args.includeSystem ? "all[tiddlers]" : "!is[system]");
-		}
-		parts.push("sort[title]");
-		return "[" + parts.join("") + "]";
-	}
-	function formatTitles(reply, limit) {
-		var titles = reply.titles || [];
-		if(limit && titles.length > limit) titles = titles.slice(0, limit);
-		if(titles.length === 0) return "(no results)";
-		var head = reply.total > titles.length ? "(" + reply.total + " total, showing first " + titles.length + ")\n" : "";
-		return head + titles.join("\n");
-	}
-
 	function handlePearTool(name, args, done) {
-		// engine-served tools: the app runs the real tw-mcp handler and returns
-		// its pre-formatted text — forward verbatim
-		if(PEAR_ENGINE_TOOLS.indexOf(name) >= 0 || PEAR_ENGINE_WRITE_TOOLS.indexOf(name) >= 0) {
-			return call(name, args, function(err, r) {
-				if(err) return done(errorResult(err.message));
-				if(!r.ok) return done(errorResult("Facets: " + r.error));
-				done(textResult((r.result && r.result.text) || ""));
-			});
+		// every tool forwards VERBATIM: the app runs the real tw-mcp handler
+		// in its headless engine (feature parity, ruled 2026-07-17) and the
+		// handler's pre-formatted text passes through
+		if(PEAR_READ_TOOLS.indexOf(name) < 0 && PEAR_WRITE_TOOLS.indexOf(name) < 0) {
+			return done(null); // unknown tool
 		}
-		switch(name) {
-			case "get_wiki_info":
-				return call("ready", {}, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					var i = r.result;
-					var disco = readDiscovery() || {};
-					done(textResult(
-						"Facets group '" + (i.name || "?") + "' (pear mode, " + (disco.mode || "ro") + ")\n" +
-						"group " + String(i.groupKey || "").slice(0, 8) + " | account " + String(i.account || "").slice(0, 6) +
-						" | member " + i.memberName + " (userName " + i.userName + ")" + (i.readOnly ? " | VIEWER (read-only)" : "") + "\n" +
-						"members " + i.members + (i.removed ? " (+" + i.removed + " removed)" : "") +
-						" | epoch " + i.epoch + " | net " + i.net + " | bag " + i.bag +
-						(i.baked ? " | baked " + i.baked.tiddlers + " tiddlers" : "")
-					));
-				});
-			case "list_tiddlers":
-				return call("run_filter", { filter: listFilter(args) }, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					done(textResult(formatTitles(r.result, args.limit)));
-				});
-			case "get_tiddler":
-				if(!args.title) return done(errorResult("get_tiddler: title required"));
-				return call("get", { title: args.title }, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					if(!r.result || !r.result.fields) return done(errorResult("No such tiddler in the bag: " + args.title + " (staged-only edits surface via run_filter/render on the engine view)"));
-					var rec = r.result;
-					var meta = "— bag record: ts " + rec.ts + (rec.author ? ", author " + String(rec.author).slice(0, 8) : "") + (rec.local ? ", device-local" : "") + "\n\n";
-					done(textResult(meta + fieldsToTid(rec.fields)));
-				});
-			case "run_filter":
-				if(!args.filter) return done(errorResult("run_filter: filter required"));
-				return call("run_filter", { filter: args.filter }, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					done(textResult(formatTitles(r.result)));
-				});
-			case "render_tiddler":
-				if(!args.title) return done(errorResult("render_tiddler: title required"));
-				return call("render_tiddler", { title: args.title, type: args.type }, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					done(textResult(r.result.rendered));
-				});
-			case "render_text":
-				if(args.output === "parsetree") return done(errorResult("render_text: output=parsetree is not available in pear mode (v1)"));
-				return call("render_text", { text: args.text, type: args.type }, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					done(textResult(r.result.rendered));
-				});
-			case "put_tiddler":
-				if(!args.title || !args.fields) return done(errorResult("put_tiddler: title and fields required"));
-				return call("put", { title: args.title, fields: Object.assign({ title: args.title }, args.fields) }, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					done(textResult("Saved " + args.title + (r.result.staged ? " (STAGED — private until committed, 03.1)" : " (published to the bag)")));
-				});
-			case "delete_tiddler":
-				if(!args.title) return done(errorResult("delete_tiddler: title required"));
-				return call("del", { title: args.title }, function(err, r) {
-					if(err) return done(errorResult(err.message));
-					if(!r.ok) return done(errorResult("Facets: " + r.error));
-					done(textResult("Deleted " + args.title + (r.result.staged ? " (STAGED deletion — private until committed)" : "")));
-				});
-			default:
-				return done(null); // unknown tool
-		}
+		return call(name, args, function(err, r) {
+			if(err) return done(errorResult(err.message));
+			if(!r.ok) return done(errorResult("Facets: " + r.error));
+			done(textResult((r.result && r.result.text) || ""));
+		});
 	}
 
 	function pearToolDefinitions() {

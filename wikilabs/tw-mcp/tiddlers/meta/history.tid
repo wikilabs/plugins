@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.14.2 - 2026-07-17
+
+* Pear mode reaches FULL feature parity with the node server: every tool (13 read + 5 write) now runs the real handler in the app's headless engine over the composed bag+staging view. Restored behaviors: `render_text output=parsetree`, `get_tiddler` hashline/plugin-tree formats, `put_tiddler` uniquify-on-collision and creation/modification stamping, agents read their own staged writes (`get_tiddler`/`list_tiddlers` were bag-view before). The client-side tool mappings are gone.
+
 V 0.14.1 - 2026-07-17
 
 * Pear mode self-heals its tool list: the server declares `tools.listChanged` and emits `notifications/tools/list_changed` whenever the effective scope changes — a client that connected while the app was down (13 read tools) picks up the write set automatically once the app is running, without a reconnect. While unreachable or enrollment-pending the server retries every 30 s.
