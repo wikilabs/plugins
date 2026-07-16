@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.14.1 - 2026-07-17
+
+* Pear mode self-heals its tool list: the server declares `tools.listChanged` and emits `notifications/tools/list_changed` whenever the effective scope changes — a client that connected while the app was down (13 read tools) picks up the write set automatically once the app is running, without a reconnect. While unreachable or enrollment-pending the server retries every 30 s.
+* Pear mode: a `pending` enrollment now re-runs the handshake on retry — approval in the Agents panel takes effect on the same connection (previously it needed a reconnect).
+
 V 0.14.0 - 2026-07-16
 
 * ''BREAKING install step'': the plugin is split in two. The runtime-agnostic tool core (crud/query/render/inspect handlers, hashline, dispatcher, the `search-lines` filter) now lives in [[$:/plugins/wikilabs/tw-mcp-core]]; this plugin keeps the node server (HTTP/SSE/stdio transports, pear mode) and the node-only tools (`save_wiki_folder`, `build_wiki`, `upload_file`, `import_html_wiki`, `extract_html_wiki`, `reload_*`, `resave_tiddler`). Add `wikilabs/tw-mcp-core` to your edition's plugin list — nothing else changes.

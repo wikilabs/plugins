@@ -109,6 +109,19 @@ function startPearMode(options) {
 	var connWaiters = [];
 	var readyWaiters = []; // single-flight handshake
 	var handshakeInFlight = false;
+	// tools/list_changed: remember what the last tools/list advertised; when a
+	// later handshake lands in a different effective scope (the app came up,
+	// the enrollment was approved, the agent was revoked) notify the client so
+	// it re-fetches — the write set appears exactly when it becomes callable.
+	var lastAdvertisedRw = null;
+	function effectiveRw() {
+		return (authScope === "rw") && (authState === "full-trust" || authState === "authenticated");
+	}
+	function maybeNotifyListChanged() {
+		if(lastAdvertisedRw === null || effectiveRw() === lastAdvertisedRw) return;
+		lastAdvertisedRw = effectiveRw();
+		send(JSON.stringify({ jsonrpc: "2.0", method: "notifications/tools/list_changed" }));
+	}
 
 	function readDiscovery() {
 		try {
@@ -204,13 +217,15 @@ function startPearMode(options) {
 			cb(new Error("Facets pipe write failed: " + e.message));
 		}
 	}
-	// connect + (in agent mode) run the enrollment handshake ONCE per socket;
+	// connect + (in agent mode) run the enrollment handshake per socket;
 	// single-flight so pipelined callers don't launch parallel handshakes that
-	// clobber the server's per-connection nonce
+	// clobber the server's per-connection nonce. A "pending" enrollment
+	// re-runs the handshake — the approval may have landed since (the server
+	// answers authenticated once the member approved in the Agents panel).
 	function ready(cb) {
 		connect(function(err) {
 			if(err) return cb(err);
-			if(authState !== "none") return cb(null);
+			if(authState !== "none" && authState !== "pending") return cb(null);
 			readyWaiters.push(cb);
 			if(handshakeInFlight) return;
 			handshakeInFlight = true;
@@ -218,6 +233,7 @@ function startPearMode(options) {
 				handshakeInFlight = false;
 				var w = readyWaiters; readyWaiters = [];
 				for(var i = 0; i < w.length; i++) w[i](e);
+				maybeNotifyListChanged();
 			}
 			var disco = readDiscovery();
 			if(!disco || disco.mode !== "agent") {
@@ -366,7 +382,7 @@ function startPearMode(options) {
 		// write tools show only at an effective rw scope: full-trust rw, or an
 		// agent authenticated at rw. In agent mode before/without approval the
 		// read set still lists (calls return a readable pending error).
-		var rw = (authScope === "rw") && (authState === "full-trust" || authState === "authenticated");
+		var rw = effectiveRw();
 		var names = rw ? PEAR_READ_TOOLS.concat(PEAR_WRITE_TOOLS) : PEAR_READ_TOOLS;
 		return handlers.getToolDefinitions(!rw).filter(function(t) {
 			return names.indexOf(t.name) >= 0;
@@ -393,7 +409,7 @@ function startPearMode(options) {
 				var disco = readDiscovery();
 				return send(jsonrpcResponse(id, {
 					protocolVersion: PROTOCOL_VERSION,
-					capabilities: { tools: {} },
+					capabilities: { tools: { listChanged: true } },
 					serverInfo: { name: SERVER_NAME, version: getServerVersion() },
 					instructions: "TiddlyWiki MCP server — PEAR MODE: tools answer from a RUNNING Facets app" +
 						(disco ? " (group '" + (disco.name || disco.group) + "', " + disco.mode + ")" : " (NOT currently reachable)") +
@@ -413,7 +429,10 @@ function startPearMode(options) {
 			case "tools/list":
 				// resolve the connection (and enrollment) first so the write
 				// tools appear exactly when they are actually callable
-				return ready(function() { send(jsonrpcResponse(id, { tools: pearToolDefinitions() })); });
+				return ready(function() {
+					lastAdvertisedRw = effectiveRw();
+					send(jsonrpcResponse(id, { tools: pearToolDefinitions() }));
+				});
 			case "tools/call": {
 				var toolName = parsed.params && parsed.params.name;
 				var toolArgs = (parsed.params && parsed.params.arguments) || {};
@@ -442,6 +461,13 @@ function startPearMode(options) {
 	});
 	var disco = readDiscovery();
 	log("pear mode: " + pearDir + (disco ? " -> " + disco.pipe + " (" + disco.mode + ")" : " (app not running yet — will dial on first call)"));
+	// self-healing: while unreachable or enrollment-pending, retry the
+	// handshake every 30 s — when the app comes up or the approval lands,
+	// maybeNotifyListChanged() tells the client to re-fetch the tool list.
+	setInterval(function() {
+		if(authState !== "none" && authState !== "pending") return;
+		ready(function() {});
+	}, 30000);
 }
 
 exports.startPearMode = startPearMode;
