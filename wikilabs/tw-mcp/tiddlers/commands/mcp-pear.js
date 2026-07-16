@@ -30,13 +30,11 @@ var SERVER_NAME = "tiddlywiki-mcp";
 var CALL_TIMEOUT_MS = 20000;
 
 var PEAR_READ_TOOLS = ["get_wiki_info", "list_tiddlers", "get_tiddler", "run_filter", "render_tiddler", "render_text",
-	"render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
+	"search_lines", "get_tiddlers", "render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
 var PEAR_WRITE_TOOLS = ["put_tiddler", "delete_tiddler"];
 // tools the app engine serves by running the REAL tw-mcp handlers: forward the
-// call verbatim over the pipe and pass the handler's pre-formatted text through.
-// (search_lines/get_tiddlers are excluded until hashline.js is ICU-free — its
-// \p{…} regex breaks under the engine's no-ICU V8.)
-var PEAR_ENGINE_TOOLS = ["render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
+// call verbatim over the pipe and pass the handler's pre-formatted text through
+var PEAR_ENGINE_TOOLS = ["search_lines", "get_tiddlers", "render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
 
 // This client's own ed25519 identity for `agent` mode (concept 12
 // §Authorization). Persisted per-user so an approval sticks across restarts.

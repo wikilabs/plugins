@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.39 - 2026-07-16
+
+* `hashline` now feature-detects Unicode property-escape regex support (`\p{L}\p{N}`) and falls back to ASCII alphanumerics on runtimes built without ICU (e.g. a bare-vm engine). ASCII and mixed content hash identically; only lines with no ASCII characters seed differently. This lets `search_lines`, `get_tiddlers` and the line-edit tools run in no-ICU runtimes.
+
 V 0.13.38 - 2026-07-16
 
 * New ''pear mode'': `--mcp pear=<accountDir>` serves a running Facets (Pear) app over its agent pipe instead of this process's wiki. v1 tools: `get_wiki_info`, `list_tiddlers`, `get_tiddler`, `run_filter`, `render_tiddler`, `render_text` (+ `put_tiddler`/`delete_tiddler` when the app's `mcp.flag` says `rw`). Filters and renders execute in the app's headless engine over the member's composed view.

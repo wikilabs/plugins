@@ -19,7 +19,18 @@ for(var i = 0; i < 256; i++) {
 	DICT.push(NIBBLE_STR[i >>> 4] + NIBBLE_STR[i & 0x0f]);
 }
 
-var RE_SIGNIFICANT = /[\p{L}\p{N}]/u;
+// A runtime without ICU (e.g. a bare-vm engine) rejects \p{…} property escapes
+// at parse time, so probe with a STRING-form RegExp (catchable) and fall back
+// to ASCII alphanumerics. The hash seed only differs for lines whose ONLY
+// significant characters are non-ASCII (they seed by index instead of content);
+// ASCII and mixed content hash identically, and the value is ephemeral (recomputed
+// on every edit), so this never mismatches across runtimes.
+var RE_SIGNIFICANT;
+try {
+	RE_SIGNIFICANT = new RegExp("[\\p{L}\\p{N}]", "u");
+} catch (e) {
+	RE_SIGNIFICANT = /[0-9A-Za-z]/;
+}
 var RE_TAG = /^\s*[>+-]*\s*(\d+)\s*#\s*([ZPMQVRWSNKTXJBYH]{2})/;
 
 function hash32(line, seed) {
