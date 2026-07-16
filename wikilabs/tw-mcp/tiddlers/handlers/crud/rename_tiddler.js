@@ -49,6 +49,13 @@ module.exports = {
 		if(result && result.isError) {
 			return result;
 		}
+		// Persistence seam (pear/engine mode): the host owns removal of the
+		// old title — no files, no $tw.boot.files entries there.
+		var removeHook = shared.getRemoveHook();
+		if(removeHook) {
+			removeHook(args.from);
+			return shared.textResult("Tiddler renamed: " + args.from + " -> " + args.to);
+		}
 		// Remove the old tiddler from disk and store. Best-effort: if the
 		// unlink fails we still report the rename a success since the new
 		// tiddler is in place; only stderr-warn.

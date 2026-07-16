@@ -40,10 +40,19 @@ function formatSourcePos(startLine, endLine, title) {
 // Module-level state, set via init()
 var readonlyMode = false;
 var checkPathAllowed = null;
+// Persistence seam (pear/engine mode): when the host injects these hooks it
+// owns persistence — persistTiddler/removal never touch the filesystem.
+// persist(tiddler, title, action) -> result replaces the fs write path;
+// remove(title) -> result replaces file unlink + store delete. Default
+// (both null) keeps today's node-fs behaviour.
+var persistHook = null;
+var removeHook = null;
 
 function init(context) {
 	readonlyMode = context.readonlyMode;
 	checkPathAllowed = context.checkPathAllowed;
+	persistHook = context.persist || null;
+	removeHook = context.remove || null;
 }
 
 function checkWritable(toolName) {
@@ -55,6 +64,12 @@ function checkWritable(toolName) {
 
 function isReadonly() {
 	return readonlyMode;
+}
+
+// The removal half of the persistence seam. Callers that unlink files
+// (delete_tiddler, rename_tiddler) branch to the hook when present.
+function getRemoveHook() {
+	return removeHook;
 }
 
 function getCheckPathAllowed() {
@@ -499,6 +514,12 @@ function shouldPersistToDisk(title) {
 }
 
 function persistTiddler(tiddler, title, action) {
+	// Persistence seam: the host owns the write (pear mode routes it through
+	// the app's bag/staging path). No fs, no rollback machinery needed — the
+	// hook applies to $tw.wiki itself so handlers keep read-your-writes.
+	if(persistHook) {
+		return persistHook(tiddler, title, action);
+	}
 	var checkPathAllowed = getCheckPathAllowed();
 	if(!$tw.boot.wikiTiddlersPath) {
 		// No wiki tiddlers path — still add to in-memory store.
@@ -610,6 +631,7 @@ exports.init = init;
 exports.checkWritable = checkWritable;
 exports.isReadonly = isReadonly;
 exports.getCheckPathAllowed = getCheckPathAllowed;
+exports.getRemoveHook = getRemoveHook;
 exports.buildTree = buildTree;
 exports.formatTitleTree = formatTitleTree;
 exports.parseAndRender = parseAndRender;

@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.13.40 - 2026-07-16
+
+* Persistence seam: `shared.init(context)` accepts optional `persist(tiddler, title, action)` and `remove(title)` hooks. When a host injects them it owns persistence — `persistTiddler` and the file-unlink paths in `delete_tiddler`/`rename_tiddler` delegate instead of touching the filesystem. Default behaviour (no hooks) is unchanged.
+* Pear mode: `edit_tiddler`, `rename_tiddler` and `replace_in_tiddlers` are now served at `rw` scope — the real handlers run in the app's headless engine and their writes route through the app's bag/staging path via the seam.
+
 V 0.13.39 - 2026-07-16
 
 * `hashline` now feature-detects Unicode property-escape regex support (`\p{L}\p{N}`) and falls back to ASCII alphanumerics on runtimes built without ICU (e.g. a bare-vm engine). ASCII and mixed content hash identically; only lines with no ASCII characters seed differently. This lets `search_lines`, `get_tiddlers` and the line-edit tools run in no-ICU runtimes.

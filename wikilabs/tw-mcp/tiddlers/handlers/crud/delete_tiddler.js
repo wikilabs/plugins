@@ -22,6 +22,12 @@ module.exports = {
 		if(!$tw.wiki.tiddlerExists(args.title)) {
 			return shared.errorResult("Tiddler not found: " + args.title);
 		}
+		// Persistence seam (pear/engine mode): the host owns removal — no
+		// files exist there, the hook stages/publishes the deletion itself.
+		var removeHook = shared.getRemoveHook();
+		if(removeHook) {
+			return removeHook(args.title);
+		}
 		var fileInfo = $tw.boot.files && $tw.boot.files[args.title];
 		if(fileInfo) {
 			var pathDenied = checkPathAllowed(fileInfo.filepath);
