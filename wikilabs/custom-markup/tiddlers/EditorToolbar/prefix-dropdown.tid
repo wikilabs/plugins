@@ -36,7 +36,7 @@ title: $:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown
 \define preview-type-button()
 <$button tag="a" class="wltc-snippet-block" actions=<<selectActions>> >
 
-	<$transclude tiddler=<<linePrefix>> field="caption" mode="inline">
+	<$transclude $tiddler=<<linePrefix>> $field="caption" $mode="inline">
 
 		<$view tiddler=<<linePrefix>> field="title" mode="inline"/>
 
@@ -57,7 +57,7 @@ Select glyph: <$macrocall $name=idSelector />
 
 ---
 
-<$transclude tiddler="$:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown/snippet-selector">
+<$transclude $tiddler="$:/plugins/wikilabs/custom-markup/EditorToolbar/prefix-dropdown/snippet-selector">
 
 <$list filter="[all[shadows+tiddlers]tag[$:/tags/WL/Snippet/LinePrefix]!has[draft.of]sort[title]]" variable="linePrefix">
 

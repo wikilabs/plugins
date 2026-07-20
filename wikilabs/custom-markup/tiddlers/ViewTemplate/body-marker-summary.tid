@@ -6,7 +6,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 
 	<%if [<currentTiddler>has:field[marker-icon]] %>
 		<svg viewBox="0 0 128 128" width="64" height="64" class="wltc-marker-summary-icon">
-			<$transclude tiddler={{!!marker-icon}} index="element"/>
+			<$transclude $tiddler={{!!marker-icon}} $index="element"/>
 		</svg>
 	<%endif%>
 
@@ -31,7 +31,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
 			<$list filter="[<currentTiddler>fields[]sort[]] -caption -description -text -bag -revision -open -close -created -modified" variable="fld">
-				<tr><th><$text text=<<fld>>/></th><td><$transclude tiddler=<<currentTiddler>> field=<<fld>>/></td></tr>
+				<tr><th><$text text=<<fld>>/></th><td><$transclude $tiddler=<<currentTiddler>> $field=<<fld>>/></td></tr>
 			</$list>
 		</tbody>
 	</table>

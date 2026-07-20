@@ -11,7 +11,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 	<table class="tc-table-no-border wltc-marker-summary-fields">
 		<tbody>
 			<$list filter="[<currentTiddler>fields[]sort[]] -caption -description -text -bag -revision -created -modified" variable="fld">
-				<tr><th><$text text=<<fld>>/></th><td><$transclude tiddler=<<currentTiddler>> field=<<fld>>/></td></tr>
+				<tr><th><$text text=<<fld>>/></th><td><$transclude $tiddler=<<currentTiddler>> $field=<<fld>>/></td></tr>
 			</$list>
 		</tbody>
 	</table>
@@ -43,7 +43,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 		<tbody>
 			<$list filter="[all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
 				<tr>
-					<td class="wltc-icon-col"><%if [<currentTiddler>has:field[marker-icon]] %><svg viewBox="0 0 128 128" width="28" height="28"><$transclude tiddler={{!!marker-icon}} index="element"/></svg><%endif%></td>
+					<td class="wltc-icon-col"><%if [<currentTiddler>has:field[marker-icon]] %><svg viewBox="0 0 128 128" width="28" height="28"><$transclude $tiddler={{!!marker-icon}} $index="element"/></svg><%endif%></td>
 					<td><code><$text text={{!!open}}/></code></td>
 					<td><%if [<currentTiddler>has:field[close]] %><code><$text text={{!!close}}/></code><%endif%></td>
 					<td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
@@ -61,7 +61,7 @@ title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
 
 	<%if [<currentTiddler>has:field[text]] %>
 		<h2>Notes</h2>
-		<$transclude tiddler=<<currentTiddler>> field="text" mode="block"/>
+		<$transclude $tiddler=<<currentTiddler>> $field="text" mode="block"/>
 	<%endif%>
 
 
