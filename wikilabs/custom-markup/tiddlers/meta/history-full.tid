@@ -3,6 +3,22 @@ title: $:/plugins/wikilabs/custom-markup/history-full
 
 {{$:/plugins/wikilabs/custom-markup/history}}
 
+V 0.22.1-beta - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
+V 0.22.0 - 2023-05-03
+
+''Breaking Changes in V0.22.0''
+
+* Use `❮ ❯` corner instead of `『 』`, becuase they had "strange white-spacing" as can be seen here
+* update license dates
+
+V 0.21.3 - 2021-10-18
+
+* Fix "force glyph in empty line" for add-glyph button
+
 V 0.21.2 - 2021-10-14
 
 * Fix "approx" glyph shown in button

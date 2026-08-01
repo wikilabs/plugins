@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/custom-markup/history
 
+V 1.0.0-beta-49 - 2026-07-20
+
+* Updage transclusion widgets to $-modern parameters
+
 V 1.0.0-beta-48 - 2026-05-27
 
 * V 1.0.0-beta-48
@@ -222,25 +226,5 @@ V 1.0.0-beta-4 - 2026-05-16
 ** New `word` marker kind enables Fountain-flavoured DSLs. `Vocab/Presentation` (in editions) wraps the Reveal.js plugin: `PRESENTATION` / `CUT TO:` / `ANIMATE TO:` / `FADE IN:` / `FADE OUT.`.
 ** `\custom <kind>=<symbol>` pragma is preserved as an in-tiddler escape hatch and bridges into the new registry via each marker's `legacy-kind` field.
 ** Dropped the `pragma-comment` plugin dependency (HTML comments are in TW core).
-
-------
-
-V 0.22.1-beta - 2024-05-23
-
-* Add stability badges
-** The development status of a plugin: deprecated, experimental, stable, or legacy
-
-! Breaking Changes in V0.22.0
-
-V 0.22.0 - 2023-05-03
-
-* Use `❮ ❯` corner instead of `『 』`, becuase they had "strange white-spacing" as can be seen here
-* update license dates
-
-------
-
-V 0.21.3 - 2021-10-18
-
-* Fix "force glyph in empty line" for add-glyph button
 
 See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]
