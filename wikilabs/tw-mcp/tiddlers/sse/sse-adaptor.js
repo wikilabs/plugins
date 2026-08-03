@@ -40,6 +40,7 @@ var STATE_MAIN = "$:/state/wikilabs/tw-mcp/main-clientId";
 var STATE_MAIN_USERNAME = "$:/state/wikilabs/tw-mcp/main-username";
 var STATE_CLIENTS_LIST = "$:/state/wikilabs/tw-mcp/clients-list";
 var STATE_MY_CLIENT_ID = "$:/state/wikilabs/tw-mcp/my-clientId";
+var STATE_CONNECTION = "$:/state/wikilabs/tw-mcp/sse-connection";
 var USERNAME_TIDDLER = "$:/status/UserName";
 // sessionStorage key for per-tab username persistence. sessionStorage is
 // scoped to a single browser tab, so each tab keeps its own UserName
@@ -85,6 +86,7 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		this.clientId = generateClientId();
 		this.eventSource = null;
 		this.lastServerInstanceId = null;
+		this.lastPingAt = null;
 		// Re-stamp the logger so console output identifies the actual class
 		this.logger = new $tw.utils.Logger("TiddlyWebSSEAdaptor");
 		// Hook UI buttons. The ControlPanel emits these messages.
@@ -238,9 +240,30 @@ exports.makeSSEAdaptor = function(BaseClass) {
 		es.addEventListener("cache-miss", function(ev) { self.handleCacheMiss(ev); });
 		es.addEventListener("presenter-changed", function(ev) { self.handlePresenterChanged(ev); });
 		es.addEventListener("main-changed", function(ev) { self.handleMainChanged(ev); });
-		es.addEventListener("error", function() {
-			self.logger.log("SSE stream error; will auto-reconnect");
+		es.addEventListener("open", function() {
+			self.setConnectionState("open");
 		});
+		es.addEventListener("ping", function() {
+			self.lastPingAt = Date.now();
+			// Self-heal the badge: a ping proves the stream is alive even if
+			// an earlier error left the state at "reconnecting".
+			self.setConnectionState("open");
+		});
+		es.addEventListener("error", function() {
+			var closed = es.readyState === 2;
+			self.setConnectionState(closed ? "closed" : "reconnecting");
+			self.logger.log(closed ? "SSE stream closed" : "SSE stream error; will auto-reconnect");
+		});
+	};
+
+	// Surface the EventSource lifecycle as a state tiddler so the UI can show
+	// a live connection badge. Write-on-change only, so the periodic ping does
+	// not churn the store. $:/state/ titles are excluded from SyncFilter:
+	// local to this tab, never persisted or broadcast.
+	TiddlyWebSSEAdaptor.prototype.setConnectionState = function(state) {
+		if(this.wiki.getTiddlerText(STATE_CONNECTION, "") !== state) {
+			this.wiki.addTiddler({title: STATE_CONNECTION, text: state});
+		}
 	};
 
 	TiddlyWebSSEAdaptor.prototype.handleHello = function(ev) {

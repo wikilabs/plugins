@@ -42,15 +42,16 @@ Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:
 ! SSE status
 
 |! Field | ! Value |
-|SSE active | <$text text={{{ [[$:/status/wikilabs/tw-mcp/sse-server-active]get[text]] :else[[no]] }}}/> |
-|Current mode | <$text text=<<mode>>/> |
-|Per-tab tiddlers filter | <$text text={{{ [[$:/config/wikilabs/tw-mcp/per-tab-tiddlers]get[text]] :else[[default]] }}}/> |
+|<$link to="$:/status/wikilabs/tw-mcp/sse-server-active">SSE active</$link> | <$text text={{{ [[$:/status/wikilabs/tw-mcp/sse-server-active]get[text]] :else[[no]] }}}/> |
+|<$link to="$:/state/wikilabs/tw-mcp/sse-connection">Connection (this tab)</$link> |''<$text text={{{ [[$:/state/wikilabs/tw-mcp/sse-connection]get[text]] :else[[not connected]] }}}/>'' |
+|<$link to="$:/config/wikilabs/tw-mcp/mode">Current mode</$link> | <$text text=<<mode>>/> |
+|<$link to="$:/config/wikilabs/tw-mcp/per-tab-tiddlers">Per-tab tiddlers filter</$link> | <$text text={{{ [[$:/config/wikilabs/tw-mcp/per-tab-tiddlers]get[text]] :else[[default]] }}}/> |
 
 <% if [<mode>!match[default]] %>
 
 ! Presenter
 
-''Current presenter:''<% if [<presenterCid>!is[blank]] %> <% if [<presenterName>!is[blank]] %>"''<$text text=<<presenterName>>/>''" <% endif %>(<$text text=<<presenterCid>>/>)<% else %> (none)<% endif %><% if [<presenterCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
+''<$link to="$:/state/wikilabs/tw-mcp/presenter-clientId">Current presenter</$link>:''<% if [<presenterCid>!is[blank]] %> <% if [<presenterName>!is[blank]] %>"''<$text text=<<presenterName>>/>''" <% endif %>(<$text text=<<presenterCid>>/>)<% else %> (none)<% endif %><% if [<presenterCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
 
 <<presenterButtons>>
 
@@ -60,7 +61,7 @@ In presentation mode the presenter's `$:/StoryList` and other per-tab tiddlers b
 
 ! Main (admin)
 
-''Current main:''<% if [<mainCid>!is[blank]] %> <% if [<mainName>!is[blank]] %>"''<$text text=<<mainName>>/>''" <% endif %>(<$text text=<<mainCid>>/>)<% else %> (none)<% endif %><% if [<mainCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
+''<$link to="$:/state/wikilabs/tw-mcp/main-clientId">Current main</$link>:''<% if [<mainCid>!is[blank]] %> <% if [<mainName>!is[blank]] %>"''<$text text=<<mainName>>/>''" <% endif %>(<$text text=<<mainCid>>/>)<% else %> (none)<% endif %><% if [<mainCid>!is[blank]match<myCid>] %> ''(this tab)''<% endif %>
 
 <% if [<mainCid>is[blank]] %><$button>
 <$action-sendmessage $message="tm-mcp-claim-main"/>
@@ -72,7 +73,7 @@ When an admin is set, the admin alone can change SSE settings (mode, per-tab fil
 
 <% if [<mainCid>!is[blank]match<myCid>] %>
 
-!! Connected clients
+!! <$link to="$:/state/wikilabs/tw-mcp/clients-list">Connected clients</$link>
 
 <$button message="tm-mcp-refresh-clients">Refresh client list</$button>
 
@@ -94,7 +95,7 @@ When an admin is set, the admin alone can change SSE settings (mode, per-tab fil
 
 ! Per-tab tiddlers
 
-<% if [<locked>match[yes]] %>//Locked: only the admin can edit `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` while main mode is active.//<% else %>Edit `$:/config/wikilabs/tw-mcp/per-tab-tiddlers` to extend or override which titles are treated as per-tab view state.<% endif %> The value is a TW filter; default:
+<% if [<locked>match[yes]] %>//Locked: only the admin can edit <$link to="$:/config/wikilabs/tw-mcp/per-tab-tiddlers"><code>$:/config/wikilabs/tw-mcp/per-tab-tiddlers</code></$link> while main mode is active.//<% else %>Edit <$link to="$:/config/wikilabs/tw-mcp/per-tab-tiddlers"><code>$:/config/wikilabs/tw-mcp/per-tab-tiddlers</code></$link> to extend or override which titles are treated as per-tab view state.<% endif %> The value is a TW filter; default:
 
 ```
 [[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]

@@ -407,10 +407,16 @@ function formatEventNoId(eventName, payload) {
 		+ "data: " + JSON.stringify(payload) + "\n\n";
 }
 
+// Heartbeat as a real `ping` event, not an SSE comment: comments are
+// invisible to EventSource listeners, a real event lets clients observe
+// liveness (the adaptor tracks lastPingAt and drives the connection badge).
+// No `id:` so Last-Event-ID replay is unaffected; not pushed to the ring
+// for the same reason.
 SSEBroadcaster.prototype.sendHeartbeat = function() {
+	var formatted = formatEventNoId("ping", {serverTime: Date.now()});
 	this.clients.forEach(function(c) {
 		try {
-			c.res.write(": keep-alive\n\n");
+			c.res.write(formatted);
 		} catch(e) {}
 	});
 };
