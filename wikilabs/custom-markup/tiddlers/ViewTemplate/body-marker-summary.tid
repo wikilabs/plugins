@@ -1,0 +1,41 @@
+title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/marker-summary
+
+\whitespace trim
+
+<div class="wltc-marker-summary">
+
+	<%if [<currentTiddler>has:field[marker-icon]] %>
+		<svg viewBox="0 0 128 128" width="64" height="64" class="wltc-marker-summary-icon">
+			<$transclude $tiddler={{!!marker-icon}} $index="element"/>
+		</svg>
+	<%endif%>
+
+	<h2>{{!!caption}}</h2>
+
+	<table class="wltc-marker-summary-glyphs">
+		<thead>
+			<tr><th>Open</th><th>Close</th></tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><code class="wltc-marker-summary-glyph"><$text text={{!!open}}/></code></td>
+				<td><%if [<currentTiddler>has:field[close]] %><code class="wltc-marker-summary-glyph"><$text text={{!!close}}/></code><%endif%></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p>{{!!description}}</p>
+
+	<div class="wltc-marker-summary-clear"/>
+
+	<table class="tc-table-no-border wltc-marker-summary-fields">
+		<tbody>
+			<$list filter="[<currentTiddler>fields[]sort[]] -caption -description -text -bag -revision -open -close -created -modified" variable="fld">
+				<tr><th><$text text=<<fld>>/></th><td><$transclude $tiddler=<<currentTiddler>> $field=<<fld>>/></td></tr>
+			</$list>
+		</tbody>
+	</table>
+
+	<p class="wltc-field-reference">Full marker-field reference: <$link class="tc-tiny-gap-left" to="Marker Fields">Marker Fields</$link>.</p>
+
+</div>

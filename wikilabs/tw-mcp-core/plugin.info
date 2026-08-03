@@ -1,0 +1,10 @@
+{
+	"title": "$:/plugins/wikilabs/tw-mcp-core",
+	"name": "TW MCP Core",
+	"description": "MCP tool handlers for TiddlyWiki (runtime-agnostic core)",
+	"author": "pmario",
+	"core-version": ">=5.4.0",
+	"version": "0.14.0",
+	"list": "readme license",
+	"stability": "STABILITY_1_EXPERIMENTAL"
+}

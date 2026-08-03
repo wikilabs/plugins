@@ -1,0 +1,15 @@
+title: $:/plugins/wikilabs/tw-mcp/ui/sse-status
+tags: $:/tags/Global
+code-body: yes
+
+\whitespace trim
+\procedure sse-status(open-colour:"#2da562", reconnect-colour:"#d4a017", error-colour:"#d63031", inactive-colour:"#999999")
+<$let
+	sseState={{{ [[$:/state/wikilabs/tw-mcp/sse-connection]get[text]] :else[[inactive]] }}}
+	sseColour={{{ [<sseState>match[open]then<open-colour>] :else[<sseState>match[reconnecting]then<reconnect-colour>] :else[<sseState>match[closed]then<error-colour>] :else[<inactive-colour>] }}}
+>
+	<$link to="$:/state/wikilabs/tw-mcp/sse-connection">
+		<svg width="0.75em" height="0.75em" viewBox="0 0 100 100" class="wl-sse-status-dot"><title>SSE: <$text text=<<sseState>>/></title><circle cx="50" cy="50" r="44" fill=<<sseColour>>/></svg>
+	</$link>
+</$let>
+\end

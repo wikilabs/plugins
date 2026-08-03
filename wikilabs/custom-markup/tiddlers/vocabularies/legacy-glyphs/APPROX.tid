@@ -1,0 +1,13 @@
+title: vocab/legacy-glyphs/APPROX
+tags: $:/tags/CustomMarkup/Marker [[vocab/legacy-glyphs]]
+caption: Approx (legacy)
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/approx
+open: ≈
+kind: glyph-level
+max-level: 4
+mode: inline
+element: p
+paragraph-marker: yes
+classes: .wltc-approx-legacy
+legacy-kind: approx
+description: Paragraph block with multi-level support (≈ through ≈≈≈≈). Removed from Default in cm-redesign; activate vocab/legacy-glyphs for backward-compat.

@@ -1,0 +1,81 @@
+title: $:/plugins/wikilabs/custom-markup/ViewTemplate/body/vocab-summary
+
+\whitespace trim
+
+<div class="wltc-vocab-summary">
+
+	<h2><span class="tc-tiny-gap-right">Caption:</span> {{!!caption}}</h2>
+
+	<p><span class="tc-tiny-gap-right">Description:</span> {{!!description}}</p>
+
+	<table class="tc-table-no-border wltc-marker-summary-fields">
+		<tbody>
+			<$list filter="[<currentTiddler>fields[]sort[]] -caption -description -text -bag -revision -created -modified" variable="fld">
+				<tr><th><$text text=<<fld>>/></th><td><$transclude $tiddler=<<currentTiddler>> $field=<<fld>>/></td></tr>
+			</$list>
+		</tbody>
+	</table>
+
+	<p class="wltc-field-reference">Full vocab-field reference: <$link class="tc-tiny-gap-left" to="Vocabulary Meta Fields">Vocabulary Meta Fields</$link>.</p>
+
+	<h3>Markers in this vocabulary</h3>
+
+	<$let tv-wikilinks=no>
+	{{{ [all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]count[]] }}}	<span class="tc-tiny-gap">total</span> ({{{ [all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]!field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">block,</span>	{{{ [all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]field:kind[inline-pair]count[]] }}} <span class="tc-tiny-gap">inline)</span>
+	</$let>
+
+	<table class="tc-table-no-border wltc-marker-tag-summary-table">
+		<thead>
+			<tr>
+				<th class="wltc-icon-col">Icon</th>
+				<th>Open</th>
+				<th>Close</th>
+				<th>Caption</th>
+				<th>Kind</th>
+				<th>Mode</th>
+				<th>Default Mode</th>
+				<th>Element</th>
+				<th>Default Element</th>
+				<th>Max-level</th>
+				<th>Paragraph</th>
+			</tr>
+		</thead>
+		<tbody>
+			<$list filter="[all[shadows+tiddlers]tag<currentTiddler>tag[$:/tags/CustomMarkup/Marker]sort[caption]]">
+				<tr>
+					<td class="wltc-icon-col"><%if [<currentTiddler>has:field[marker-icon]] %><svg viewBox="0 0 128 128" width="28" height="28"><$transclude $tiddler={{!!marker-icon}} $index="element"/></svg><%endif%></td>
+					<td><code><$text text={{!!open}}/></code></td>
+					<td><%if [<currentTiddler>has:field[close]] %><code><$text text={{!!close}}/></code><%endif%></td>
+					<td><$link to=<<currentTiddler>>>{{!!caption}}</$link></td>
+					<td>{{!!kind}}</td>
+					<td>{{!!mode}}</td>
+					<td><%if [<currentTiddler>field:kind[inline-pair]] %>inline<%else%>block<%endif%></td>
+					<td><%if [<currentTiddler>has:field[element]] %><code>{{!!element}}</code><%endif%></td>
+					<td><code><%if [<currentTiddler>field:kind[inline-pair]] %>span<%else%>div<%endif%></code></td>
+					<td>{{!!max-level}}</td>
+					<td>{{!!paragraph-marker}}</td>
+				</tr>
+			</$list>
+		</tbody>
+	</table>
+
+	<%if [<currentTiddler>has:field[text]] %>
+		<h2>Notes</h2>
+		<$transclude $tiddler=<<currentTiddler>> $field="text" mode="block"/>
+	<%endif%>
+
+
+	<h2>Used in</h2>
+
+	<$let
+		typeRegex={{{ [[(?i);vocab=.*\b]addsuffix{!!caption}addsuffix[\b]] }}}
+		textRegex={{{ [[\\importcustom.*]addsuffix<currentTiddler>] }}}
+	>
+		<ul class="multi-columns">
+			<$list filter="[!is[system]regexp:type<typeRegex>] [!is[system]regexp:text<textRegex>] -[<currentTiddler>]" emptyMessage="<li><em>Not yet used.</em></li>">
+				<li><$link><$view field="caption"><$text text=<<currentTiddler>>/></$view></$link></li>
+			</$list>
+		</ul>
+	</$let>
+
+</div>

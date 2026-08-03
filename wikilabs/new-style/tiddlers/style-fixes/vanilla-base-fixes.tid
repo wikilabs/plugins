@@ -1,0 +1,91 @@
+title: $:/themes/wikilabs/vanilla/base-fixes
+tags: [[$:/tags/Stylesheet]]
+list-after: $:/themes/tiddlywiki/vanilla/base
+code-body: yes
+
+/* Backport of upstream `$:/themes/tiddlywiki/vanilla/base` changes
+   between v5.4.0 and current master. Only the rules that differ are
+   included here; everything else continues to come from the bundled
+   upstream `base.tid`. */
+
+html button {
+	border: 1px solid <<colour button-border>>;
+	border-radius: 0.25em;
+}
+
+.tc-btn-standard {
+	color: <<colour foreground>>;
+	background-color: <<colour tab-background>>;
+	border: 1px solid <<colour muted-foreground>>;
+}
+
+button.tc-btn-invisible.tc-remove-tag-button {
+	outline: revert;
+}
+
+.tc-sidebar-tools-item button:hover {
+	background-color: <<colour button-background-hover>>;
+}
+
+@media (min-width: {{$:/themes/tiddlywiki/vanilla/metrics/sidebarbreakpoint}}) {
+
+	.tc-tiddler-frame {
+		border-radius: 8px;
+	}
+
+}
+
+.tc-subtitle {
+	font-size: 0.8em;
+	font-weight: 300;
+}
+
+.tc-drop-down {
+	color: <<colour foreground>>;
+}
+
+.tc-drop-down a.tc-tiddlylink {
+	display: block;
+	padding: 0 14px 0 14px;
+	width: 100%;
+}
+
+.tc-block-dropdown {
+	color: <<colour foreground>>;
+}
+
+.tc-block-dropdown a,
+.tc-block-dropdown a.tc-tiddlylink {
+	color: <<colour foreground>>;
+}
+
+.tc-block-dropdown a.tc-tiddlylink {
+	display: block;
+	padding: 4px 14px 4px 14px;
+}
+
+.tc-tab-buttons button:hover:not(.tc-tab-selected) {
+	background-color: <<colour tab-background-selected>>;
+	color: <<colour tab-foreground-selected>>;
+}
+
+.tc-tab-buttons.tc-vertical button {
+	border-right: 1px solid <<colour sidebar-tab-border>>;
+}
+
+.tc-swatch {
+	border: 1px solid <<colour muted-foreground>>;
+}
+
+.tc-thumbnail-caption {
+	background-color: <<colour muted-foreground>>;
+	color: <<colour background>>;
+}
+
+.tc-tree button {
+	color: <<colour muted-foreground>>;
+}
+
+.tc-tree li span {
+	color: <<colour muted-foreground>>;
+}

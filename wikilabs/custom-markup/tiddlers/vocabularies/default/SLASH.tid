@@ -1,0 +1,11 @@
+title: vocab/default/SLASH
+tags: $:/tags/CustomMarkup/Marker [[vocab/default]]
+caption: Slash
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/inline/slash
+open: /°
+close: °/
+kind: inline-pair
+classes: .wltc-slash
+legacy-kind: slash
+order: 1
+description: Inline wrap; default `<span>`. Easiest inline marker on de/fr keyboards (the ° char is on a dedicated key).

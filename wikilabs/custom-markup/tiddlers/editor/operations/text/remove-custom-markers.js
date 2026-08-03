@@ -3,52 +3,36 @@ title: $:/plugins/wikilabs/custom-markup/editor/operations/text/remove-custom-ma
 type: application/javascript
 module-type: texteditoroperation
 
-Text editor operation to add a prefix to the selected lines
+Strip Custom-Markup line prefixes from selected lines. The regex is
+rebuilt at operation time from every block-position marker tiddler
+(kind glyph or glyph-level) tagged $:/tags/CustomMarkup/Marker. Word
+markers are excluded because their open literals are full words and
+not appropriate to strip character-by-character.
 
 \*/
-(function(){
 
-/*jslint node:true, browser: true */
-/*global $tw:false exports:false */
 "use strict";
 
-exports["remove-custom-markers"] = function(event,operation) {
-	// regExp to detect custom markers like: 
-	// <ID><symol><class> some text
-	// ´span.myClass.otherClass some text
-	var regExp = /((?=´[^´])´|[»≈]{1,4}|(?=°[^°])°|(?=›[^›])›|(?=¶[^¶])¶)((?:[^\.\r\n\s´°]+))?(\.(?:[^\r\n\s]+))?/mg;
+exports["remove-custom-markers"] = function(event, operation) {
+	var regExp = buildMarkerStripRegex();
+	operation.cutStart = $tw.utils.findPrecedingLineBreak(operation.text, operation.selStart);
+	operation.cutEnd = $tw.utils.findFollowingLineBreak(operation.text, operation.selEnd);
+	var lines = operation.text.substring(operation.cutStart, operation.cutEnd).split(/\r?\n/mg);
 
-	var targetCount = parseInt(event.paramObject.count + "",10);
-	// Cut just past the preceding line break, or the start of the text
-	operation.cutStart = $tw.utils.findPrecedingLineBreak(operation.text,operation.selStart);
-	// Cut to just past the following line break, or to the end of the text
-	operation.cutEnd = $tw.utils.findFollowingLineBreak(operation.text,operation.selEnd);
-	// Compose the required prefix
-	var prefix = $tw.utils.repeat(event.paramObject.character,targetCount);
-	// Process each line
-	var lines = operation.text.substring(operation.cutStart,operation.cutEnd).split(/\r?\n/mg);
-
-	var test = "›´°_»≈";
-
-	$tw.utils.each(lines,function(line,index) {
+	$tw.utils.each(lines, function(line, index) {
 		var fragments = line.split(" ");
-		var match = fragments[0].match(regExp); 
-
-		if (match && (fragments[0] === match[0])) {
-			line = fragments.slice(1).join(" ");
-		} else if (!match && (test.indexOf(fragments[0]) !== -1)) {
+		var match = fragments[0].match(regExp);
+		if(match && fragments[0] === match[0]) {
 			line = fragments.slice(1).join(" ");
 		} else {
 			line = fragments.join(" ");
 		}
-		// Remove any whitespace
 		while(line.charAt(0) === " ") {
 			line = line.substring(1);
 		}
-		// Save the modified line
 		lines[index] = line;
-	}); 
-	// Stitch the replacement text together and set the selection
+	});
+
 	operation.replacement = lines.join("\n");
 	if(lines.length === 1) {
 		operation.newSelStart = operation.cutStart + operation.replacement.length;
@@ -59,4 +43,42 @@ exports["remove-custom-markers"] = function(event,operation) {
 	}
 };
 
-})();
+function buildMarkerStripRegex() {
+	var titles = $tw.wiki.filterTiddlers(
+		"[all[shadows+tiddlers]tag[$:/tags/CustomMarkup/Marker]!field:kind[inline-pair]!field:kind[word]]"
+	);
+	var markers = [];
+	titles.forEach(function(title) {
+		var tid = $tw.wiki.getTiddler(title);
+		if(tid && tid.fields.open) {
+			markers.push({open: tid.fields.open, kind: tid.fields.kind});
+		}
+	});
+	if(markers.length === 0) {
+		return /(?!)/;
+	}
+	var openArm = buildOpenArm(markers);
+	var symbolArm = buildSymbolArm(markers);
+	var classChainArm = String.raw`(?:\.[^.\r\n\s]+)*`;
+	return new RegExp(String.raw`(${openArm})${symbolArm}${classChainArm}`, "mg");
+}
+
+// One regex alternative per marker. Glyph-level markers (», ›) may repeat
+// up to 4 times (»» for level 2, »»» for level 3, and so on).
+function buildOpenArm(markers) {
+	return markers.map(function(m) {
+		var open = $tw.utils.escapeRegExp(m.open);
+		return m.kind === "glyph-level"
+			? String.raw`(?:${open}){1,4}`
+			: open;
+	}).join("|");
+}
+
+// The symbol char-class excludes every marker's first char so the symbol
+// doesn't eat into a following marker's open literal.
+function buildSymbolArm(markers) {
+	var firstChars = markers.map(function(m) {
+		return $tw.utils.escapeRegExp(m.open.charAt(0));
+	}).join("");
+	return String.raw`(?:[^.\r\n\s${firstChars}]+)?`;
+}

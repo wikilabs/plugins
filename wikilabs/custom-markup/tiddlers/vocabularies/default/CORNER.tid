@@ -1,0 +1,10 @@
+title: vocab/default/CORNER
+tags: $:/tags/CustomMarkup/Marker [[vocab/default]]
+caption: Corner
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/inline/corner
+open: ❮
+close: ❯
+kind: inline-pair
+classes: .wltc-corner
+legacy-kind: corner
+description: Inline wrap with distinct default classes. Visually quiet inside prose.

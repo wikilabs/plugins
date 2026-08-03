@@ -77,8 +77,9 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 <$list filter="[<__stop__>is[tiddler]]" emptyMessage=<<ERROR-STOPTIDDLER>> variable="ignore">
 	<$let
-		limit="[limit[1]]"
-		sort="[sort[]limit[1]]"
+		keep="[!is[system]] ~[is[tiddler]] ~[is[shadow]]"
+		limit="[filter<keep>limit[1]] ~[limit[1]]"
+		sort="[filter<keep>sort[]limit[1]] ~[sort[]limit[1]]"
 		sub={{{ [<__sort__>match[yes]then<sort>else<limit>] }}}
 		next={{{ [<__current__>get<__field__>enlist-input[]] -[enlist<__exclude__>] +[subfilter<sub>] :else[<__stop__>] }}}
 	>
@@ -166,8 +167,9 @@ type: text/vnd.tiddlywiki
 	variable="ignore"
 >
 	<$let
-		limit="[limit[1]]"
-		sort="[sort[]limit[1]]"
+		keep="[!is[system]] ~[is[tiddler]] ~[is[shadow]]"
+		limit="[filter<keep>limit[1]] ~[limit[1]]"
+		sort="[filter<keep>sort[]limit[1]] ~[sort[]limit[1]]"
 		sub={{{ [<__sort__>match[yes]then<sort>else<limit>] }}}
 		next={{{ [<__current__>get<__field__>enlist-input[]] -[enlist<__exclude__>] +[subfilter<sub>] :else[<__stop__>] }}}
 	>

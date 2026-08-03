@@ -4,7 +4,6 @@ type: application/javascript
 module-type: widget-subclass
 \*/
 
-(function(){
 /*jslint node: true, browser: true */
 /*global $tw: false */
 "use strict";
@@ -36,5 +35,3 @@ exports.prototype.handleChangeEvent = function(event) {
 		this.invokeActionString(this.radioActions,this,event,variables);
 	}
 }
-
-})();

@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/custom-markup/icons/glyphs/dot
+type: application/json
+
+{
+"glyph": ".",
+"element": "<circle cx='28' cy='92' r='11'/>"
+}

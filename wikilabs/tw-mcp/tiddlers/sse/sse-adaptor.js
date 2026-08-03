@@ -1,0 +1,502 @@
+/*\
+title: $:/plugins/wikilabs/tw-mcp/sse-adaptor.js
+type: application/javascript
+module-type: library
+
+Factory that wraps the stock tiddlyweb syncadaptor with SSE behaviour.
+
+The bootstrap calls makeSSEAdaptor(TiddlyWebAdaptor) and assigns the
+returned class back to tiddlyweb's `exports.adaptorClass`. The syncer's
+adaptor selection then instantiates the SSE-aware subclass.
+
+We inherit four methods from tiddlyweb unchanged:
+  getSkinnyTiddlers, loadTiddler, login, logout
+And two prototype helpers:
+  convertTiddlerToTiddlyWebFormat, convertTiddlerFromTiddlyWebFormat,
+  parseEtag, getHost, getCsrfToken, getTiddlerInfo, getTiddlerRevision,
+  setLoggerSaveBuffer, isReady
+
+We override:
+  getStatus     -- wraps the inherited one to also open the SSE stream
+  saveTiddler   -- adds X-MCP-Client-Id header (tiddlyweb hardcodes
+                   headers, so we must re-implement the body)
+  deleteTiddler -- adds X-MCP-Client-Id header (same reason)
+
+We add:
+  connectEventStream, handleHello, handleTiddlerChange, handleTiddlerDelete,
+  handleCacheMiss, forceFullSync, plus per-instance clientId / eventSource /
+  lastServerInstanceId state.
+
+This keeps all unchanged tiddlyweb logic in tiddlyweb's own module so any
+upstream fixes flow through automatically.
+
+\*/
+
+"use strict";
+
+var STATE_PRESENTER = "$:/state/wikilabs/tw-mcp/presenter-clientId";
+var STATE_PRESENTER_USERNAME = "$:/state/wikilabs/tw-mcp/presenter-username";
+var STATE_MAIN = "$:/state/wikilabs/tw-mcp/main-clientId";
+var STATE_MAIN_USERNAME = "$:/state/wikilabs/tw-mcp/main-username";
+var STATE_CLIENTS_LIST = "$:/state/wikilabs/tw-mcp/clients-list";
+var STATE_MY_CLIENT_ID = "$:/state/wikilabs/tw-mcp/my-clientId";
+var STATE_CONNECTION = "$:/state/wikilabs/tw-mcp/sse-connection";
+var USERNAME_TIDDLER = "$:/status/UserName";
+// sessionStorage key for per-tab username persistence. sessionStorage is
+// scoped to a single browser tab, so each tab keeps its own UserName
+// across page reloads without bleeding into siblings (which is what
+// localStorage / browserStorage would do).
+var USERNAME_SESSION_KEY = "wikilabs-tw-mcp-username";
+var PER_TAB_TIDDLERS_TIDDLER = "$:/config/wikilabs/tw-mcp/per-tab-tiddlers";
+var DEFAULT_PER_TAB_FILTER = "[[$:/StoryList]] [[$:/HistoryList]] [prefix[$:/state/]]";
+var SYNC_FILTER_TIDDLER = "$:/config/SyncFilter";
+
+function generateClientId() {
+	// Pre-hello placeholder. The server issues the real clientId at /events
+	// connect and returns it via hello.assignedClientId; the adaptor adopts
+	// it in handleHello. Until then, this UUID stands in for X-MCP-Client-Id
+	// headers on any save/delete that fires before hello arrives --
+	// echo-suppression matches against this.clientId regardless of who
+	// minted it.
+	// crypto.randomUUID is universal across modern browsers (Chrome 92+,
+	// Firefox 95+, Safari 15.4+) on every origin including plain http
+	// (only crypto.subtle is gated by secure context).
+	if(typeof crypto === "undefined" || !crypto.randomUUID) {
+		throw new Error("crypto.randomUUID() unavailable; tw-mcp/sse requires a modern browser");
+	}
+	return crypto.randomUUID();
+}
+
+function parseSSEData(ev) {
+	try {
+		return JSON.parse(ev.data);
+	} catch(e) {
+		return null;
+	}
+}
+
+exports.makeSSEAdaptor = function(BaseClass) {
+	function TiddlyWebSSEAdaptor(options) {
+		BaseClass.call(this, options);
+		// Pre-hello placeholder; handleHello overwrites with the server-issued
+		// clientId. STATE_MY_CLIENT_ID is left unstamped here -- the UI's
+		// "(this tab)" match only ever resolves against server-issued ids
+		// (which is what presenter-changed events carry), so a placeholder
+		// stamp would never match anything anyway.
+		this.clientId = generateClientId();
+		this.eventSource = null;
+		this.lastServerInstanceId = null;
+		this.lastPingAt = null;
+		// Re-stamp the logger so console output identifies the actual class
+		this.logger = new $tw.utils.Logger("TiddlyWebSSEAdaptor");
+		// Hook UI buttons. The ControlPanel emits these messages.
+		var self = this;
+		if($tw.rootWidget) {
+			$tw.rootWidget.addEventListener("tm-mcp-claim-presenter", function() {
+				self.postRoleAction("presenter", "claim");
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-release-presenter", function() {
+				self.postRoleAction("presenter", "release");
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-claim-main", function() {
+				self.postRoleAction("main", "claim");
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-release-main", function() {
+				self.postRoleAction("main", "release");
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-grant-presenter", function(event) {
+				self.postPresenterGrant(event.param);
+			});
+			$tw.rootWidget.addEventListener("tm-mcp-refresh-clients", function() {
+				self.refreshClientsList();
+			});
+		}
+		// Watch for per-tab tiddler changes the syncer would skip (most
+		// notably $:/state/*) and push them directly when we're the
+		// presenter. Without this the presenter's UI state wouldn't reach
+		// followers because TW's SyncFilter excludes $:/state/* entirely.
+		this.wiki.addEventListener("change", function(changes) {
+			self.pushPerTabIfPresenter(changes);
+			if(changes[USERNAME_TIDDLER]) {
+				try {
+					var val = self.wiki.getTiddlerText(USERNAME_TIDDLER, "") || "";
+					// Only persist non-empty values. TW writes "" at boot
+					// before our getStatus override has a chance to restore
+					// from sessionStorage; saving that "" would clobber the
+					// previously saved name.
+					if(val) sessionStorage.setItem(USERNAME_SESSION_KEY, val);
+				} catch(e) {}
+			}
+		});
+	}
+	TiddlyWebSSEAdaptor.prototype = Object.create(BaseClass.prototype);
+	TiddlyWebSSEAdaptor.prototype.constructor = TiddlyWebSSEAdaptor;
+	TiddlyWebSSEAdaptor.prototype.name = "tiddlywebsse";
+
+	TiddlyWebSSEAdaptor.prototype.saveTiddler = function(tiddler, callback, options) {
+		var self = this;
+		if(this.isReadOnly) {
+			return callback(null);
+		}
+		$tw.utils.httpRequest({
+			url: this.host + "recipes/" + encodeURIComponent(this.recipe) + "/tiddlers/" + encodeURIComponent(tiddler.fields.title),
+			type: "PUT",
+			headers: {
+				"Content-type": "application/json",
+				"X-MCP-Client-Id": this.clientId
+			},
+			data: this.convertTiddlerToTiddlyWebFormat(tiddler),
+			callback: function(err, data, request) {
+				if(err) {
+					return callback(err);
+				}
+				if($tw.browserStorage && $tw.browserStorage.isEnabled()) {
+					$tw.browserStorage.removeTiddlerFromLocalStorage(tiddler.fields.title);
+				}
+				var etag = request.getResponseHeader("Etag");
+				if(!etag) {
+					callback("Response from server is missing required `etag` header");
+				} else {
+					var etagInfo = self.parseEtag(etag);
+					callback(null, {bag: etagInfo.bag}, etagInfo.revision);
+				}
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.deleteTiddler = function(title, callback, options) {
+		if(this.isReadOnly) {
+			return callback(null);
+		}
+		var bag = options.tiddlerInfo.adaptorInfo && options.tiddlerInfo.adaptorInfo.bag;
+		if(!bag) {
+			return callback(null, options.tiddlerInfo.adaptorInfo);
+		}
+		$tw.utils.httpRequest({
+			url: this.host + "bags/" + encodeURIComponent(bag) + "/tiddlers/" + encodeURIComponent(title),
+			type: "DELETE",
+			headers: {
+				"X-MCP-Client-Id": this.clientId
+			},
+			callback: function(err) {
+				if(err) {
+					return callback(err);
+				}
+				callback(null, null);
+			}
+		});
+	};
+
+	var baseGetStatus = BaseClass.prototype.getStatus;
+	TiddlyWebSSEAdaptor.prototype.getStatus = function(callback) {
+		var self = this;
+		baseGetStatus.call(this, function(err, isLoggedIn, username, isReadOnly, isAnonymous) {
+			if(!err) {
+				// Per-tab UserName: if the server returned no username (the
+				// usual anonymous case), substitute whatever this tab last
+				// had in sessionStorage. Stamp the wiki up front so the
+				// SSE stream URL picks it up, and also pass it through to
+				// the syncer's callback so its own $:/status/UserName write
+				// matches (instead of clobbering with "").
+				if(!username) {
+					try {
+						var saved = sessionStorage.getItem(USERNAME_SESSION_KEY);
+						if(saved) {
+							username = saved;
+							self.wiki.addTiddler({title: USERNAME_TIDDLER, text: saved});
+						}
+					} catch(e) {}
+				}
+				self.connectEventStream();
+			}
+			if(callback) {
+				callback(err, isLoggedIn, username, isReadOnly, isAnonymous);
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.connectEventStream = function() {
+		var self = this;
+		if(this.eventSource) return;
+		if(typeof EventSource === "undefined") {
+			this.logger.log("EventSource not available; SSE disabled, falling back to polling");
+			return;
+		}
+		// EventSource cannot set custom headers, so the username rides in the
+		// query string. The server issues the clientId itself (returned via
+		// the hello payload's assignedClientId field) -- any caller-supplied
+		// clientId is ignored, so we don't bother sending one.
+		var username = this.wiki.getTiddlerText(USERNAME_TIDDLER, "") || "";
+		var url = this.host + "events";
+		if(username) {
+			url += "?username=" + encodeURIComponent(username);
+		}
+		this.logger.log("Opening SSE stream:", url);
+		var es = new EventSource(url, {withCredentials: true});
+		this.eventSource = es;
+		es.addEventListener("hello", function(ev) { self.handleHello(ev); });
+		es.addEventListener("tiddler-change", function(ev) { self.handleTiddlerChange(ev); });
+		es.addEventListener("tiddler-delete", function(ev) { self.handleTiddlerDelete(ev); });
+		es.addEventListener("cache-miss", function(ev) { self.handleCacheMiss(ev); });
+		es.addEventListener("presenter-changed", function(ev) { self.handlePresenterChanged(ev); });
+		es.addEventListener("main-changed", function(ev) { self.handleMainChanged(ev); });
+		es.addEventListener("open", function() {
+			self.setConnectionState("open");
+		});
+		es.addEventListener("ping", function() {
+			self.lastPingAt = Date.now();
+			// Self-heal the badge: a ping proves the stream is alive even if
+			// an earlier error left the state at "reconnecting".
+			self.setConnectionState("open");
+		});
+		es.addEventListener("error", function() {
+			var closed = es.readyState === 2;
+			self.setConnectionState(closed ? "closed" : "reconnecting");
+			self.logger.log(closed ? "SSE stream closed" : "SSE stream error; will auto-reconnect");
+		});
+	};
+
+	// Surface the EventSource lifecycle as a state tiddler so the UI can show
+	// a live connection badge. Write-on-change only, so the periodic ping does
+	// not churn the store. $:/state/ titles are excluded from SyncFilter:
+	// local to this tab, never persisted or broadcast.
+	TiddlyWebSSEAdaptor.prototype.setConnectionState = function(state) {
+		if(this.wiki.getTiddlerText(STATE_CONNECTION, "") !== state) {
+			this.wiki.addTiddler({title: STATE_CONNECTION, text: state});
+		}
+	};
+
+	TiddlyWebSSEAdaptor.prototype.handleHello = function(ev) {
+		var data = parseSSEData(ev);
+		if(!data) return;
+		if(this.lastServerInstanceId !== null && this.lastServerInstanceId !== data.serverInstanceId) {
+			this.logger.log("Server instance changed - forcing full sync");
+			this.forceFullSync();
+		}
+		this.lastServerInstanceId = data.serverInstanceId;
+		// Adopt the server-issued clientId. Role-gated routes 401 any header
+		// value not bound to an active connection, so this MUST come before
+		// any postRoleAction call below.
+		if(data.assignedClientId) {
+			this.clientId = data.assignedClientId;
+			this.wiki.addTiddler({title: STATE_MY_CLIENT_ID, text: this.clientId});
+		}
+		// Mirror server's presenter state into local state tiddlers so the UI
+		// can show who is presenting (UUID + friendly username).
+		this.wiki.addTiddler({title: STATE_PRESENTER, text: data.presenterClientId || ""});
+		this.wiki.addTiddler({title: STATE_PRESENTER_USERNAME, text: data.presenterUsername || ""});
+		this.wiki.addTiddler({title: STATE_MAIN, text: data.mainClientId || ""});
+		this.wiki.addTiddler({title: STATE_MAIN_USERNAME, text: data.mainUsername || ""});
+		// Auto-claim: in presentation mode, or in main mode without an admin,
+		// the first connecting tab takes the presenter role. In main mode WITH
+		// an admin, /presenter/claim returns 403, so don't try -- the admin
+		// must grant explicitly.
+		var canAutoClaim = (data.mode === "presentation")
+			|| (data.mode === "main" && !data.mainClientId);
+		if(canAutoClaim && !data.presenterClientId) {
+			this.postRoleAction("presenter", "claim");
+		}
+	};
+
+	TiddlyWebSSEAdaptor.prototype.handlePresenterChanged = function(ev) {
+		var data = parseSSEData(ev);
+		if(!data) return;
+		this.wiki.addTiddler({title: STATE_PRESENTER, text: data.clientId || ""});
+		this.wiki.addTiddler({title: STATE_PRESENTER_USERNAME, text: data.username || ""});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.handleMainChanged = function(ev) {
+		var data = parseSSEData(ev);
+		if(!data) return;
+		this.wiki.addTiddler({title: STATE_MAIN, text: data.clientId || ""});
+		this.wiki.addTiddler({title: STATE_MAIN_USERNAME, text: data.username || ""});
+	};
+
+	// Returns a Set of titles in `changedTitles` that match the given filter.
+	function runFilterOn(wiki, filterText, changedTitles) {
+		var fn = wiki.compileFilter(filterText);
+		var source = function(callback) {
+			changedTitles.forEach(function(title) {
+				var t = wiki.tiddlerExists(title) && wiki.getTiddler(title);
+				callback(t, title);
+			});
+		};
+		var hits = fn.call(wiki, source);
+		var set = Object.create(null);
+		for(var i = 0; i < hits.length; i++) set[hits[i]] = true;
+		return set;
+	}
+
+	TiddlyWebSSEAdaptor.prototype.pushPerTabIfPresenter = function(changes) {
+		if(!this.eventSource || !this.recipe) return;
+		// Only the current presenter pushes per-tab tiddlers; followers do not.
+		if(this.wiki.getTiddlerText(STATE_PRESENTER, "") !== this.clientId) return;
+		var titles = Object.keys(changes);
+		var perTab = runFilterOn(this.wiki, this.wiki.getTiddlerText(PER_TAB_TIDDLERS_TIDDLER, DEFAULT_PER_TAB_FILTER), titles);
+		// Skip titles the syncer will already push (e.g. $:/StoryList) -- avoids
+		// duplicate PUTs for tiddlers in both filters.
+		var syncFilter = this.wiki.getTiddlerText(SYNC_FILTER_TIDDLER, "[all[tiddlers]]");
+		var synced = runFilterOn(this.wiki, syncFilter, titles);
+		var self = this;
+		titles.forEach(function(title) {
+			if(!perTab[title]) return;
+			if(synced[title]) return;
+			if(changes[title].deleted) {
+				self.directDeleteForPresenter(title);
+			} else {
+				self.directPutForPresenter(title);
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.directPutForPresenter = function(title) {
+		var tiddler = this.wiki.getTiddler(title);
+		if(!tiddler) return;
+		var self = this;
+		$tw.utils.httpRequest({
+			url: this.host + "recipes/" + encodeURIComponent(this.recipe) + "/tiddlers/" + encodeURIComponent(title),
+			type: "PUT",
+			headers: {
+				"Content-type": "application/json",
+				"X-MCP-Client-Id": this.clientId
+			},
+			data: this.convertTiddlerToTiddlyWebFormat(tiddler),
+			callback: function(err) {
+				if(err) self.logger.log("presenter direct PUT failed for " + title + ":", err);
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.directDeleteForPresenter = function(title) {
+		var self = this;
+		// State tiddlers were never tracked by the syncer so we don't have a
+		// recorded bag; the default tiddlyweb bag is "default".
+		$tw.utils.httpRequest({
+			url: this.host + "bags/default/tiddlers/" + encodeURIComponent(title),
+			type: "DELETE",
+			headers: {
+				"X-MCP-Client-Id": this.clientId
+			},
+			callback: function(err) {
+				if(err) self.logger.log("presenter direct DELETE failed for " + title + ":", err);
+			}
+		});
+	};
+
+	// Unified POST for the presenter/* and main/* role routes. The role and
+	// action together build the URL ("presenter/claim", "main/release", ...).
+	// $:/status/UserName is read fresh every time so the server attaches the
+	// current friendly name to the resulting *-changed event -- the user may
+	// have set it AFTER the EventSource opened.
+	TiddlyWebSSEAdaptor.prototype.postRoleAction = function(role, action) {
+		var self = this;
+		var path = role + "/" + action;
+		var headers = {
+			"X-MCP-Client-Id": this.clientId,
+			"X-Requested-With": "TiddlyWiki"
+		};
+		var username = this.wiki.getTiddlerText(USERNAME_TIDDLER, "") || "";
+		if(username) {
+			headers["X-MCP-Username"] = username;
+		}
+		$tw.utils.httpRequest({
+			url: this.host + path,
+			type: "POST",
+			headers: headers,
+			callback: function(err) {
+				if(err) {
+					self.logger.log(path + " failed:", err);
+				}
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.postPresenterGrant = function(targetClientId) {
+		if(!targetClientId) return;
+		var self = this;
+		$tw.utils.httpRequest({
+			url: this.host + "presenter/grant",
+			type: "POST",
+			headers: {
+				"X-MCP-Client-Id": this.clientId,
+				"Content-type": "application/json",
+				"X-Requested-With": "TiddlyWiki"
+			},
+			data: JSON.stringify({ clientId: targetClientId }),
+			callback: function(err) {
+				if(err) {
+					self.logger.log("presenter/grant failed:", err);
+				}
+			}
+		});
+	};
+
+	// Polled by the admin sub-panel's Refresh button. Writes the live client
+	// set to a list-field tiddler the panel renders against.
+	TiddlyWebSSEAdaptor.prototype.refreshClientsList = function() {
+		var self = this;
+		$tw.utils.httpRequest({
+			url: this.host + "clients",
+			callback: function(err, data) {
+				if(err) {
+					self.logger.log("clients fetch failed:", err);
+					return;
+				}
+				var arr;
+				try {
+					arr = JSON.parse(data);
+				} catch(e) {
+					self.logger.log("clients parse failed:", e);
+					return;
+				}
+				var ids = [];
+				var fields = { title: STATE_CLIENTS_LIST };
+				arr.forEach(function(c) {
+					ids.push(c.clientId);
+					fields["username-" + c.clientId] = c.username || "";
+				});
+				fields.list = ids;
+				self.wiki.addTiddler(fields);
+			}
+		});
+	};
+
+	TiddlyWebSSEAdaptor.prototype.handleTiddlerChange = function(ev) {
+		var data = parseSSEData(ev);
+		if(!data) return;
+		if(data.clientId && data.clientId === this.clientId) return;
+		var syncer = $tw.syncer;
+		if(!syncer) return;
+		if(data.fields) {
+			var fields = this.convertTiddlerFromTiddlyWebFormat(data.fields);
+			syncer.storeTiddler(fields);
+		} else {
+			syncer.titlesToBeLoaded[data.title] = true;
+			syncer.processTaskQueue();
+		}
+	};
+
+	TiddlyWebSSEAdaptor.prototype.handleTiddlerDelete = function(ev) {
+		var data = parseSSEData(ev);
+		if(!data) return;
+		if(data.clientId && data.clientId === this.clientId) return;
+		var syncer = $tw.syncer;
+		if(!syncer) return;
+		delete syncer.tiddlerInfo[data.title];
+		this.wiki.deleteTiddler(data.title);
+	};
+
+	TiddlyWebSSEAdaptor.prototype.handleCacheMiss = function() {
+		this.logger.log("SSE cache-miss - forcing full sync");
+		this.forceFullSync();
+	};
+
+	TiddlyWebSSEAdaptor.prototype.forceFullSync = function() {
+		var syncer = $tw.syncer;
+		if(!syncer) return;
+		syncer.forceSyncFromServer = true;
+		syncer.processTaskQueue();
+	};
+
+	return TiddlyWebSSEAdaptor;
+};

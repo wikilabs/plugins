@@ -47,7 +47,7 @@ type: text/vnd.tiddlywiki
 
 <$select class="wltc-selector" tiddler="$:/config/WLCM/InlineSet/selected" default='xxx'>
 	<$list filter='[all[shadows+tiddlers]tag[$:/tags/WL/Inline/Set]]'>
-		<option value=<<currentTiddler>>><$transclude field='caption'><$text text=<<currentTiddler>>/></$transclude></option>
+		<option value=<<currentTiddler>>><$transclude $field='caption'><$text text=<<currentTiddler>>/></$transclude></option>
 	</$list>
 </$select>
 
@@ -66,7 +66,7 @@ type: text/vnd.tiddlywiki
 			-<<key>>-&nbsp;:&nbsp;
 			<span class="wltc-snippet ">
 			<$button class="tc-btn-invisible" actions=<<actionClick>> >
-				<$view field="caption">&nbsp;<$transclude field=title/></$view>
+				<$view field="caption">&nbsp;<$transclude $field="title"/></$view>
 			</$button>
 			</span><br>
 		</$tiddler>

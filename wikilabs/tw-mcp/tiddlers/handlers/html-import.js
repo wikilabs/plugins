@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/html-import.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 HTML single-file wiki import handler for MCP server.
 Loads tiddlers from an HTML file, analyzes structure, and provides
@@ -11,8 +11,8 @@ deferred extraction to disk with FileSystemPaths configuration.
 
 "use strict";
 
-var fs = require("fs"),
-	path = require("path");
+var fs = $tw.node ? require("fs") : null,
+	path = $tw.node ? require("path") : null;
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
@@ -27,6 +27,47 @@ var TIDDLERS_TO_IGNORE = [
 ];
 
 var MIN_GROUP_COUNT = 3;
+
+// import_html_wiki accepts paths from anywhere on disk by design (the user
+// typically points it at a downloaded `index.html`), so we cannot gate it on
+// `allowedPaths` like upload_file does. As a defence-in-depth, refuse any
+// resolved path whose directory or file segments start with `.` -- those are
+// conventional homes for secrets (.ssh, .aws, .config, .npmrc, .env, ...)
+// with no legitimate role as a single-file wiki source.
+function hasDotComponent(p) {
+	var parts = p.split(/[\/\\]/);
+	for(var i = 0; i < parts.length; i++) {
+		if(parts[i].length > 0 && parts[i].charAt(0) === ".") return true;
+	}
+	return false;
+}
+
+// Plugins/themes/languages loaded by the running wiki via tiddlywiki.info
+// must NOT be treated as custom plugins from the imported HTML, and must
+// NOT be written to disk by extract (they will load from the local plugin
+// path again on the next boot).
+function bootedPluginTitleSet() {
+	var info = $tw.boot.wikiInfo || {};
+	var set = {};
+	(info.plugins || []).forEach(function(n) { set["$:/plugins/" + n] = true; });
+	(info.themes || []).forEach(function(n) { set["$:/themes/" + n] = true; });
+	(info.languages || []).forEach(function(n) { set["$:/languages/" + n] = true; });
+	return set;
+}
+
+// Trim leading/trailing whitespace and trailing dots from each path component.
+// Windows silently strips trailing whitespace/dots from path components when
+// passed through the Win32 API, so files written with such names become
+// unreachable through normal tools (they require the \\?\ prefix to access).
+function sanitisePathComponents(filepath) {
+	var parts = filepath.split(path.sep);
+	return parts.map(function(part, idx) {
+		if(part === "") return part;
+		if(idx === 0 && /^[A-Za-z]:$/.test(part)) return part;
+		var cleaned = part.replace(/^\s+/, "").replace(/[\s.]+$/, "");
+		return cleaned || "_unnamed_";
+	}).join(path.sep);
+}
 
 // --- Plugin detection (adapted from savewikifolder.js) ---
 
@@ -87,7 +128,10 @@ function analyzeForFileSystemPaths(tiddlers) {
 		.sort(function(a, b) { return tagCounts[b] - tagCounts[a]; });
 	for(var si = 0; si < sortedTags.length; si++) {
 		var tag = sortedTags[si];
-		var folder = tag.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "_");
+		var folder = tag.toLowerCase()
+			.replace(/\s+/g, "-")
+			.replace(/[^a-z0-9\-]+/g, "_")
+			.replace(/^[-_]+|[-_]+$/g, "");
 		rules.push("[tag[" + tag + "]addprefix[" + folder + "/]]");
 		ruleDescriptions.push(tagCounts[tag] + " tiddlers tagged '" + tag + "' → " + folder + "/ subfolder");
 	}
@@ -109,21 +153,36 @@ function analyzeForFileSystemPaths(tiddlers) {
 	};
 }
 
-// --- Initialize: load HTML, analyze, import to memory ---
+// --- Import handler: load HTML, analyze, stage in memory ---
 
-function initialize(htmlFilePath, wiki) {
-	var filePath = path.resolve(htmlFilePath);
-	if(!fs.existsSync(filePath)) {
-		console.error("html-import: File not found: " + filePath);
-		return;
+function importHandler(args) {
+	var writeCheck = shared.checkWritable("import_html_wiki");
+	if(writeCheck) return writeCheck;
+	if(!args.path) {
+		return shared.errorResult("Missing required argument 'path' (path to single-file HTML wiki).");
 	}
-	// Re-launch detection: if tiddlers/ has .tid files and FileSystemPaths exists, skip
+	var filePath = path.resolve(args.path);
+	// Reject hidden-directory / dot-file paths BEFORE the existence check so
+	// an attacker can't probe for which dot-files are present (existence vs
+	// refusal would otherwise be distinguishable).
+	if(hasDotComponent(filePath)) {
+		return shared.errorResult("Refused: path contains a hidden (dot-prefixed) directory or file. (" + filePath + ")");
+	}
+	if(!fs.existsSync(filePath)) {
+		return shared.errorResult("File not found: " + filePath);
+	}
+	var wiki = $tw.wiki;
+	// Refuse if a pending import is already staged
+	var existing = wiki.getTiddler("$:/temp/mcp/html-import");
+	if(existing && existing.fields.status === "pending") {
+		return shared.errorResult("An HTML import is already pending (source: " + existing.fields["source-file"] + "). Call extract_html_wiki to commit it, or delete $:/temp/mcp/html-import to discard.");
+	}
+	// Refuse if the wiki folder is already populated
 	if($tw.boot.wikiTiddlersPath && fs.existsSync($tw.boot.wikiTiddlersPath)) {
 		var existingFiles = fs.readdirSync($tw.boot.wikiTiddlersPath);
 		var hasTidFiles = existingFiles.some(function(f) { return f.endsWith(".tid"); });
 		if(hasTidFiles && wiki.tiddlerExists("$:/config/FileSystemPaths")) {
-			console.error("html-import: Wiki already has extracted tiddlers and FileSystemPaths — skipping import");
-			return;
+			return shared.errorResult("Wiki already has extracted tiddlers and FileSystemPaths. Run import against an empty wiki folder.");
 		}
 	}
 	// Ensure tiddlers directory exists
@@ -146,6 +205,7 @@ function initialize(htmlFilePath, wiki) {
 	// Load tiddlers from HTML
 	var loaded = $tw.loadTiddlersFromPath(filePath);
 	// Classify tiddlers
+	var bootedPlugins = bootedPluginTitleSet();
 	var contentTiddlers = [];
 	var systemTiddlers = [];
 	var libraryPlugins = [];
@@ -163,12 +223,18 @@ function initialize(htmlFilePath, wiki) {
 			var type = fields.type,
 				pluginType = fields["plugin-type"];
 			if(type === "application/json" && pluginType) {
+				// Plugin already loaded by the running tiddlywiki.info — skip; the
+				// local plugin path will load it again on next boot.
+				if(bootedPlugins[fields.title]) {
+					ignoredCount++;
+					return;
+				}
 				var libraryInfo = findPluginInLibrary(fields.title);
 				if(libraryInfo) {
 					libraryPlugins.push(libraryInfo);
 					return;
 				}
-				customPlugins.push(fields.title);
+				customPlugins.push(fields);
 				return;
 			}
 			// System vs content
@@ -194,8 +260,8 @@ function initialize(htmlFilePath, wiki) {
 	if(infoChanged || !fs.existsSync(infoPath)) {
 		fs.writeFileSync(infoPath, JSON.stringify(wikiInfo, null, 4), "utf8");
 	}
-	// Import all content + system tiddlers into memory
-	var allTiddlers = contentTiddlers.concat(systemTiddlers);
+	// Import all content + system + custom-plugin tiddlers into memory
+	var allTiddlers = contentTiddlers.concat(systemTiddlers).concat(customPlugins);
 	for(var ai = 0; ai < allTiddlers.length; ai++) {
 		wiki.importTiddler(new $tw.Tiddler(allTiddlers[ai]));
 	}
@@ -235,7 +301,7 @@ function initialize(htmlFilePath, wiki) {
 	explanation.push("- Content tiddlers: " + contentTiddlers.length);
 	explanation.push("- System tiddlers: " + systemTiddlers.length);
 	explanation.push("- Library plugins (added to tiddlywiki.info): " + libraryPlugins.length);
-	explanation.push("- Custom plugins: " + customPlugins.length);
+	explanation.push("- Custom plugins (kept as single .tid files): " + customPlugins.length);
 	explanation.push("- Ignored (boot/core): " + ignoredCount);
 	var totalTags = Object.keys(analysis.tagCounts).length;
 	var totalPrefixes = Object.keys(analysis.prefixCounts).length;
@@ -301,29 +367,19 @@ function initialize(htmlFilePath, wiki) {
 		title: "$:/DefaultTiddlers",
 		text: "[[Import — Proposed Folder Structure]]"
 	}));
-	// Log summary to stderr
-	console.error("");
-	console.error("html-import: Loaded " + filePath);
-	console.error("  " + contentTiddlers.length + " content + " + systemTiddlers.length + " system tiddlers imported to memory");
-	console.error("  " + libraryPlugins.length + " library plugins added to tiddlywiki.info");
-	console.error("  " + analysis.proposedRules.length + " FileSystemPaths rules proposed");
-	console.error("");
-	console.error("  Tiddlers are in memory only — nothing written to disk yet.");
-	console.error("");
-	console.error("  Next steps:");
-	console.error("    1. Connect an MCP client to this wiki (see below)");
-	console.error("    2. Ask the AI: \"Check the tiddlywiki wiki info\"");
-	console.error("    3. The AI will show the proposed folder structure for your review");
-	console.error("    4. After you approve, the AI extracts .tid files to disk");
-	console.error("");
-	console.error("  Or browse the wiki at the URL shown below.");
-	console.error("");
-	console.error("  === Connect Claude Code ===");
-	console.error("  claude mcp add --transport stdio tiddlywiki -- tiddlywiki " + wikiPath + " --mcp rw label=claude");
-	console.error("");
-	console.error("  === Connect Gemini CLI ===");
-	console.error("  gemini mcp add --scope project tiddlywiki-mcp tiddlywiki " + wikiPath + " --mcp rw label=gemini");
-	console.error("");
+	var summary = [
+		"Loaded " + filePath,
+		"  content: " + contentTiddlers.length + " · system: " + systemTiddlers.length + " · library plugins: " + libraryPlugins.length + " · custom plugins: " + customPlugins.length + " · ignored: " + ignoredCount,
+		"  " + analysis.proposedRules.length + " FileSystemPaths rules proposed.",
+		"",
+		"Nothing written to disk yet. Next steps:",
+		"  1. Read $:/temp/mcp/html-import for the analysis summary.",
+		"  2. Show the user the proposed folder structure (also visible in the browser as 'Import — Proposed Folder Structure').",
+		"  3. Let the user edit $:/config/FileSystemPaths in the browser if they want changes.",
+		"  4. When approved, call extract_html_wiki() to commit the .tid files to disk.",
+		"  5. Restart the server once after extraction so any new library plugins activate."
+	].join("\n");
+	return shared.textResult(summary);
 }
 
 // --- MCP tool handler: extract to disk ---
@@ -333,7 +389,7 @@ function extractHandler(args) {
 	if(writeCheck) return writeCheck;
 	var analysisTiddler = $tw.wiki.getTiddler("$:/temp/mcp/html-import");
 	if(!analysisTiddler) {
-		return shared.errorResult("No pending HTML import found. Use --mcp file=xxx.html to load a single-file wiki first.");
+		return shared.errorResult("No pending HTML import found. Call import_html_wiki(path) first to stage a single-file wiki.");
 	}
 	if(analysisTiddler.fields.status === "extracted") {
 		return shared.errorResult("Tiddlers have already been extracted to disk.");
@@ -345,24 +401,30 @@ function extractHandler(args) {
 	if(!fileSystemPathsText) {
 		return shared.errorResult("No FileSystemPaths rules available.");
 	}
-	// Update the FileSystemPaths config tiddler (in case args override was used)
-	$tw.wiki.addTiddler(new $tw.Tiddler({
+	// Update the FileSystemPaths config tiddler (in case args override was used).
+	// Use storeTiddler: the explicit save loop below writes this tiddler to disk
+	// itself, so the syncer must not also queue an async save for it.
+	shared.addToWikiSilently(new $tw.Tiddler({
 		title: "$:/config/FileSystemPaths",
 		text: fileSystemPathsText
-	}));
-	// Parse path filters
-	var pathFilters = fileSystemPathsText.split("\n").filter(function(l) { return l.trim(); });
-	var extFilters;
-	if($tw.wiki.tiddlerExists("$:/config/FileSystemExtensions")) {
-		extFilters = $tw.wiki.getTiddlerText("$:/config/FileSystemExtensions", "").split("\n");
-	}
+	}).fields);
+	// Parse path filters. addToWikiSilently above just synced fileSystemPathsText
+	// into $:/config/FileSystemPaths, so loadFspFseFilters reads back the same
+	// text. filterBlank:true preserves the previous behaviour of dropping
+	// whitespace-only rule lines.
+	var filters = shared.loadFspFseFilters({ filterBlank: true });
+	var pathFilters = filters.pathFilters;
+	var extFilters = filters.extFilters;
 	var tiddlersDir = $tw.boot.wikiTiddlersPath;
 	if(!tiddlersDir) {
 		return shared.errorResult("No wiki tiddlers path available.");
 	}
-	// Get tiddlers to extract — same exclusions as $:/core/save/all
+	// Get tiddlers to extract — regular content + system + custom plugin tiddlers
+	// (kept as single tiddlers, not exploded). Library plugins live in tiddlywiki.info
+	// and are not in the regular tiddler space, so they're naturally excluded.
 	var allTitles = $tw.wiki.filterTiddlers(
 		"[all[tiddlers]!has[plugin-type]]" +
+		" [all[tiddlers]plugin-type[plugin]]" +
 		" -[prefix[$:/state/popup/]]" +
 		" -[prefix[$:/temp/]]" +
 		" -[prefix[$:/HistoryList]]" +
@@ -374,6 +436,7 @@ function extractHandler(args) {
 		" -[status[pending]plugin-type[import]]"
 	);
 	var checkPathAllowed = shared.getCheckPathAllowed();
+	var bootedPlugins = bootedPluginTitleSet();
 	var filesWritten = 0;
 	var errors = [];
 	var directorySummary = {};
@@ -381,6 +444,9 @@ function extractHandler(args) {
 		var title = allTitles[i];
 		// Skip tiddlers that already have fileInfo (already on disk)
 		if($tw.boot.files[title]) continue;
+		// Skip plugins/themes/languages loaded by tiddlywiki.info — they live in
+		// the local plugin path and must not be duplicated under tiddlers/.
+		if(bootedPlugins[title]) continue;
 		var tiddler = $tw.wiki.getTiddler(title);
 		if(!tiddler) continue;
 		try {
@@ -391,6 +457,7 @@ function extractHandler(args) {
 				wiki: $tw.wiki,
 				fileInfo: {}
 			});
+			fileInfo.filepath = sanitisePathComponents(fileInfo.filepath);
 			var pathDenied = checkPathAllowed(fileInfo.filepath);
 			if(pathDenied) {
 				errors.push(title + ": path denied");
@@ -432,6 +499,42 @@ function extractHandler(args) {
 }
 
 module.exports = {
-	initialize: initialize,
+	"import_html_wiki": importHandler,
 	"extract_html_wiki": extractHandler
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["import_html_wiki"].definition = {
+	"description": "Stage a single-file HTML wiki for import. Loads tiddlers from the file into memory, classifies them, proposes FileSystemPaths rules, and writes the staged analysis to $:/temp/mcp/html-import. Nothing is written to disk yet — call extract_html_wiki to commit. Refuses if the wiki folder is already populated or another import is already pending.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"path": {
+				"type": "string",
+				"description": "Path to the .html single-file wiki to import. Paths with `.`-prefixed directory or filename segments (e.g. `.ssh/`, `.config/`, `.env`) are refused as a defence-in-depth against reading hidden config."
+			}
+		},
+		"required": [
+			"path"
+		]
+	},
+	"write": true
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["extract_html_wiki"].definition = {
+	"description": "Commit a previously staged HTML wiki import (see import_html_wiki) to disk as .tid files. Reads $:/config/FileSystemPaths from the wiki by default; the user can edit it in the browser before this call. Optionally override the rules via fileSystemPaths.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"fileSystemPaths": {
+				"type": "string",
+				"description": "Approved FileSystemPaths rules (one filter per line). If omitted, reads $:/config/FileSystemPaths from the wiki."
+			}
+		},
+		"required": []
+	},
+	"write": true
 };

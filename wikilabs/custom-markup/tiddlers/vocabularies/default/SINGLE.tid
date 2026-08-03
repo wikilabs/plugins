@@ -1,0 +1,12 @@
+title: vocab/default/SINGLE
+tags: $:/tags/CustomMarkup/Marker [[vocab/default]]
+caption: Single
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/single
+open: ›
+kind: glyph-level
+max-level: 4
+mode: inline
+classes: .wltc-single
+legacy-kind: single
+order: 3
+description: Paragraph block with multi-level support, distinct default classes from angle.

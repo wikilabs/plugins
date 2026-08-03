@@ -1,7 +1,7 @@
 /*\
 title: $:/core/modules/commands/inspect/handlers/filesystem.js
 type: application/javascript
-module-type: library
+module-type: mcp-handler
 
 MCP tool handlers for filesystem and build operations.
 
@@ -9,14 +9,58 @@ MCP tool handlers for filesystem and build operations.
 
 "use strict";
 
-var fs = require("fs"),
-	path = require("path");
+var fs = $tw.node ? require("fs") : null,
+	path = $tw.node ? require("path") : null;
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
-// Change log: accumulates $tw.wiki changes between reload_tiddlers calls
+var addToWikiSilently = shared.addToWikiSilently;
+
+var MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+// Base64 inflates payload by ~4/3. Cap the encoded length so we reject
+// oversized payloads before allocating the decoded buffer.
+var MAX_UPLOAD_BASE64_LENGTH = Math.ceil(MAX_UPLOAD_BYTES / 3) * 4;
+
+// Recursively check whether any wiki in the includeWikis tree has
+// `retain-original-tiddler-path: true`. Each includeWikis entry is
+// a path string or `{path: "..."}` object, resolved relative to the
+// referring wiki's directory. Returns true on first hit.
+function wikiInfoHasRetain(info, basePath, seen) {
+	if(!info || !basePath) return false;
+	if(info.config && info.config["retain-original-tiddler-path"]) return true;
+	if(!info.includeWikis || !info.includeWikis.length) return false;
+	seen = seen || Object.create(null);
+	for(var i = 0; i < info.includeWikis.length; i++) {
+		var inc = info.includeWikis[i];
+		var incPath = (typeof inc === "string") ? inc : (inc && inc.path);
+		if(!incPath) continue;
+		try {
+			var resolvedDir = path.resolve(basePath, incPath);
+			if(seen[resolvedDir]) continue;
+			seen[resolvedDir] = true;
+			var infoPath = path.resolve(resolvedDir, "tiddlywiki.info");
+			if(!fs.existsSync(infoPath)) continue;
+			var subInfo = JSON.parse(fs.readFileSync(infoPath, "utf8"));
+			if(wikiInfoHasRetain(subInfo, resolvedDir, seen)) return true;
+		} catch(e) { /* ignore: continue to next include */ }
+	}
+	return false;
+}
+
+// Change log: accumulates $tw.wiki changes between reload_tiddlers calls.
+// Capped at CHANGE_LOG_MAX entries to bound memory if the user never calls
+// reload_tiddlers (eg an MCP-only workflow that mostly writes). On overflow
+// the oldest entry is dropped (object insertion order in modern engines).
 var changeLog = {};
 var changeLogActive = false;
+var CHANGE_LOG_MAX = 1000;
+// Per-reload title set. The change listener runs on $tw.utils.nextTick
+// AFTER reload_tiddlers returns, so events from the reload's own
+// addTiddler / deleteTiddler calls would otherwise land in changeLog and
+// show up as bogus entries on the next call. While reloadOwnedTitles is
+// non-null, the listener skips titles in this set. Cleared via setImmediate
+// (which fires after nextTick) so the events have a chance to be filtered.
+var reloadOwnedTitles = null;
 
 function startChangeLog() {
 	if(changeLogActive) {
@@ -29,6 +73,18 @@ function startChangeLog() {
 			var title = titles[i];
 			if(title.indexOf("$:/") === 0) {
 				continue;
+			}
+			if(reloadOwnedTitles && reloadOwnedTitles[title]) {
+				continue;
+			}
+			// Cap: when adding a new title would exceed the limit, drop the
+			// oldest (first-inserted) entry. Existing-title updates don't grow
+			// the map, so no cap check needed there.
+			if(changeLog[title] === undefined) {
+				var existingKeys = Object.keys(changeLog);
+				if(existingKeys.length >= CHANGE_LOG_MAX) {
+					delete changeLog[existingKeys[0]];
+				}
 			}
 			if(changes[title].deleted) {
 				changeLog[title] = "deleted";
@@ -45,19 +101,30 @@ module.exports = {
 	"reload_tiddlers": function(args) {
 		var scope = (args && args.scope) || "tiddlers";
 		var messages = [];
+		var dualScope = (scope === "all");
 
 		// Reload edition tiddlers
 		if(scope === "tiddlers" || scope === "all") {
+			if(dualScope) messages.push("=== scope: tiddlers ===");
 			if(!$tw.boot.wikiTiddlersPath) {
 				return shared.errorResult("No wiki tiddlers path available. Cannot reload from filesystem.");
 			}
 			var resolvedWikiPath = $tw.boot.wikiTiddlersPath;
-			var wikiInfo = $tw.boot.wikiInfo || {};
-			var config = wikiInfo.config || {};
-			var countBefore = $tw.wiki.allTitles().length;
+			// Effective retain: the outer config does not always carry the
+			// flag in an includeWikis setup, so walk the include tree.
+			var outerBase = path.resolve($tw.boot.wikiPath || ".");
+			var effectiveRetain = wikiInfoHasRetain($tw.boot.wikiInfo, outerBase);
 			var added = 0, updated = 0, skippedSystem = 0, unchanged = 0;
 			var diskTiddlers = Object.create(null);
 			var diskFileInfo = Object.create(null);
+			// Texts captured for in-call rename detection. Pair added/deleted
+			// titles whose `text` field matches exactly: that case is a
+			// rename (most often via bash mv plus reload).
+			var addedTexts = Object.create(null);
+			var deletedTexts = Object.create(null);
+			// Activate listener-suppression for this reload's own touches.
+			var ownedTitles = Object.create(null);
+			reloadOwnedTitles = ownedTitles;
 			$tw.utils.each($tw.loadTiddlersFromPath(resolvedWikiPath), function(tiddlerFile) {
 				$tw.utils.each(tiddlerFile.tiddlers, function(tiddlerFields) {
 					var title = tiddlerFields.title;
@@ -68,20 +135,34 @@ module.exports = {
 							filepath: tiddlerFile.filepath,
 							type: tiddlerFile.type,
 							hasMetaFile: tiddlerFile.hasMetaFile,
-							isEditableFile: config["retain-original-tiddler-path"] || tiddlerFile.isEditableFile || tiddlerFile.filepath.indexOf($tw.boot.wikiTiddlersPath) !== 0
+							isEditableFile: effectiveRetain || tiddlerFile.isEditableFile || tiddlerFile.filepath.indexOf($tw.boot.wikiTiddlersPath) !== 0
 						};
+						// Stamp originalpath like boot.js does. Core's
+						// generateTiddlerFilepath reuses an existing on-disk
+						// location ONLY via fileInfo.originalpath (filepath just
+						// feeds the uniquifier), so a boot.files entry without it
+						// makes the next save regenerate a root-level path from
+						// the title -- relocating subdirectory .tid files.
+						if(diskFileInfo[title].isEditableFile) {
+							diskFileInfo[title].originalpath = path.relative($tw.boot.wikiTiddlersPath,tiddlerFile.filepath);
+						}
 					}
 				});
 			});
 			for(var title in diskTiddlers) {
+				// Refresh boot.files unconditionally -- system tiddlers (`$:/`)
+				// still get their on-disk location tracked even though we skip
+				// adding them to the wiki below. Without this, a system tiddler
+				// file on disk + boot.files entry empty leaves TW core's syncer
+				// to uniquify (`_1`) on the next save.
+				if(diskFileInfo[title]) {
+					$tw.boot.files[title] = diskFileInfo[title];
+				}
 				if(title.indexOf("$:/") === 0) {
 					skippedSystem++;
 					continue;
 				}
 				var tiddlerFields = diskTiddlers[title];
-				if(diskFileInfo[title]) {
-					$tw.boot.files[title] = diskFileInfo[title];
-				}
 				var existing = $tw.wiki.getTiddler(title);
 				if(existing) {
 					var changed = false;
@@ -99,13 +180,16 @@ module.exports = {
 						}
 					}
 					if(changed) {
-						$tw.wiki.addTiddler(newTiddler);
+						ownedTitles[title] = true;
+						addToWikiSilently(tiddlerFields);
 						updated++;
 					} else {
 						unchanged++;
 					}
 				} else {
-					$tw.wiki.addTiddler(new $tw.Tiddler(tiddlerFields));
+					ownedTitles[title] = true;
+					addToWikiSilently(tiddlerFields);
+					addedTexts[title] = tiddlerFields.text || "";
 					added++;
 				}
 			}
@@ -116,16 +200,74 @@ module.exports = {
 				if($tw.boot.files[t] && $tw.boot.files[t].filepath) {
 					var filePath = $tw.boot.files[t].filepath;
 					if(filePath.indexOf(resolvedWikiPath) === 0 && !diskTiddlers[t]) {
+						var existing = $tw.wiki.getTiddler(t);
+						deletedTexts[t] = (existing && existing.fields.text) || "";
+						ownedTitles[t] = true;
 						$tw.wiki.deleteTiddler(t);
 						delete $tw.boot.files[t];
 						deleted++;
 					}
 				}
 			}
-			var countAfter = $tw.wiki.allTitles().length;
-			messages.push("Tiddlers reloaded from: " + resolvedWikiPath);
-			messages.push("Before: " + countBefore + ", After: " + countAfter + " (added: " + added + ", updated: " + updated + ", unchanged: " + unchanged + ", skipped-system: " + skippedSystem + ", deleted: " + deleted + ")");
-			// Report changes since last reload
+			// Pair add/delete titles with identical text into renames. Each
+			// pair represents ONE physical disk file, so decrement the raw
+			// add/delete counters: a rename is counted in `renamed` only,
+			// not in both `added` and `deleted`.
+			var renames = [];
+			for(var delTitle in deletedTexts) {
+				for(var addTitle in addedTexts) {
+					if(deletedTexts[delTitle] === addedTexts[addTitle]) {
+						renames.push({from: delTitle, to: addTitle});
+						delete addedTexts[addTitle];
+						delete deletedTexts[delTitle];
+						added--;
+						deleted--;
+						break;
+					}
+				}
+			}
+			// Rebuild $:/config/OriginalTiddlerPaths from $tw.boot.files when
+			// any wiki in the includeWikis tree sets retain-original-tiddler-path.
+			// When none do, leave OTP alone: it may still hold edge-case entries
+			// from tiddlywiki.files imports that the boot-time generator created
+			// independently of this flag.
+			var otpRefreshed = false, otpSkipped = false, otpCount = 0;
+			if(effectiveRetain) {
+				var otpOutput = {};
+				for(var btitle in $tw.boot.files) {
+					var bfi = $tw.boot.files[btitle];
+					if(bfi && bfi.isEditableFile && bfi.filepath) {
+						var rel = path.relative($tw.boot.wikiTiddlersPath, bfi.filepath);
+						otpOutput[btitle] = (path.sep === "/") ? rel : rel.split(path.sep).join("/");
+						otpCount++;
+					}
+				}
+				if(otpCount > 0) {
+					addToWikiSilently({title: "$:/config/OriginalTiddlerPaths", type: "application/json", text: JSON.stringify(otpOutput)});
+				}
+				otpRefreshed = true;
+			} else {
+				otpSkipped = true;
+			}
+			// Disk-side diff summary. Renames are counted separately from
+			// added/deleted so the row sums match the disk-tiddler total.
+			var diskTotal = added + updated + unchanged + skippedSystem + deleted + renames.length;
+			messages.push("Source: " + resolvedWikiPath);
+			messages.push("Disk tiddlers: " + diskTotal + " (added: " + added + ", updated: " + updated + ", unchanged: " + unchanged + ", deleted: " + deleted + ", renamed: " + renames.length + ")");
+			if(skippedSystem > 0) {
+				messages.push("System tiddlers on disk: " + skippedSystem + " (left untouched by design)");
+			}
+			if(renames.length > 0) {
+				for(var ri = 0; ri < renames.length; ri++) {
+					messages.push("  ~ " + renames[ri].from + " -> " + renames[ri].to + " (rename: text identical)");
+				}
+			}
+			if(otpRefreshed) {
+				messages.push("OTP: refreshed (" + otpCount + " entries)");
+			} else if(otpSkipped) {
+				messages.push("OTP: skipped (retain-original-tiddler-path off)");
+			}
+			// Report changes since last reload via the event-driven change log.
 			var logTitles = Object.keys(changeLog);
 			if(logTitles.length > 0) {
 				var logAdded = 0, logUpdated = 0, logDeleted = 0;
@@ -134,23 +276,35 @@ module.exports = {
 				for(var li = 0; li < logTitles.length; li++) {
 					var lt = logTitles[li];
 					var action = changeLog[lt];
-					if(action === "added") { logAdded++; logLines.push("  + " + lt); }
-					else if(action === "updated") { logUpdated++; logLines.push("  ~ " + lt); }
-					else if(action === "deleted") { logDeleted++; logLines.push("  - " + lt); }
+					if(action === "added") { logAdded++; logLines.push("  + " + lt + " (added)"); }
+					else if(action === "updated") { logUpdated++; logLines.push("  ~ " + lt + " (updated)"); }
+					else if(action === "deleted") { logDeleted++; logLines.push("  - " + lt + " (deleted)"); }
 				}
-				messages.push("\nSince last reload: " + logAdded + " added, " + logUpdated + " updated, " + logDeleted + " deleted");
+				messages.push("\nChange log: " + (logAdded + logUpdated + logDeleted) + " changes since last reload (" + logAdded + " added, " + logUpdated + " updated, " + logDeleted + " deleted)");
 				messages.push(logLines.join("\n"));
 				changeLog = {};
 			} else if(changeLogActive) {
-				messages.push("\nSince last reload: no changes");
+				messages.push("\nChange log: no changes since last reload");
 			} else {
-				messages.push("\nChange tracking started.");
+				messages.push("\nChange log: empty (first reload after server start; future calls will diff from here)");
 			}
 			startChangeLog();
+			// Release listener-suppression once the change events from this
+			// reload's own touches have fired. nextTick fires before
+			// setTimeout(0), so the listener sees `reloadOwnedTitles` set and
+			// skips those titles; the timer then clears the pointer (but
+			// only if a newer reload has not already replaced it).
+			setTimeout(function() {
+				if(reloadOwnedTitles === ownedTitles) {
+					reloadOwnedTitles = null;
+				}
+			}, 0);
 		}
 
 		// Reload shadow tiddlers from plugins
 		if(scope === "shadows" || scope === "all") {
+			if(dualScope) messages.push("\n=== scope: shadows ===");
+			else messages.push("");  // separator when shadows-only
 			try {
 				var shadowsBefore = $tw.wiki.allShadowTitles().length;
 				var results = $tw.wiki.readPluginInfo();
@@ -158,15 +312,14 @@ module.exports = {
 				$tw.wiki.registerPluginTiddlers(null);
 				$tw.wiki.unpackPluginTiddlers();
 				var shadowsAfter = $tw.wiki.allShadowTitles().length;
-				messages.push("\nShadow tiddlers refreshed");
-				messages.push("Shadows: " + shadowsBefore + " -> " + shadowsAfter);
+				messages.push("Shadow tiddlers: " + shadowsBefore + " -> " + shadowsAfter + " (re-registered from in-memory plugin JSON; plugin folders NOT re-read)");
 				if(modified.length > 0) {
 					messages.push("Modified plugins: " + modified.join(", "));
 				} else {
-					messages.push("No plugin changes detected on disk");
+					messages.push("No plugin changes detected");
 				}
 			} catch(e) {
-				messages.push("\nShadow reload error: " + e.message);
+				messages.push("Shadow reload error: " + e.message);
 			}
 		}
 
@@ -202,6 +355,14 @@ module.exports = {
 	"upload_file": function(args) {
 		var denied = shared.checkWritable("upload_file");
 		if(denied) return denied;
+		var titleErr = shared.checkTitle(args.title, "upload_file");
+		if(titleErr) return titleErr;
+		if(typeof args.data !== "string") {
+			return shared.errorResult("upload_file: data must be a base64-encoded string");
+		}
+		if(args.data.length > MAX_UPLOAD_BASE64_LENGTH) {
+			return shared.errorResult("upload_file: data exceeds " + MAX_UPLOAD_BYTES + " bytes (50 MB)");
+		}
 		var checkPathAllowed = shared.getCheckPathAllowed();
 		var filename = args.filename;
 		if(filename.indexOf("/") !== -1 || filename.indexOf("\\") !== -1 || filename.indexOf("..") !== -1) {
@@ -242,7 +403,7 @@ module.exports = {
 			tiddlerFields.tags = args.tags;
 		}
 		var tiddler = new $tw.Tiddler(creationFields, tiddlerFields, modificationFields);
-		$tw.wiki.addTiddler(tiddler);
+		addToWikiSilently(tiddler.fields);
 		try {
 			var tiddlerFileInfo = $tw.utils.generateTiddlerFileInfo(tiddler, {
 				directory: $tw.boot.wikiTiddlersPath,
@@ -274,4 +435,121 @@ module.exports = {
 			return shared.errorResult("Failed to build wiki: " + e.message);
 		}
 	}
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["reload_tiddlers"].definition = {
+	"description": "Re-read tiddlers from disk; reports diff vs last call (first call may show large initial set). scope='shadows': refreshes non-JS plugin subtiddlers (doc/wikitext/CSS) — does NOT re-execute plugin JS. For JS in tw-mcp plugin use reload_mcp_modules. Refreshes $:/config/OriginalTiddlerPaths when retain-original-tiddler-path is set.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"scope": {
+				"type": "string",
+				"enum": [
+					"tiddlers",
+					"shadows",
+					"all"
+				],
+				"default": "tiddlers",
+				"description": "tiddlers = edition tiddlers on disk (default). shadows = re-register plugins and re-unpack shadow tiddlers from in-memory plugin JSON (does NOT re-read plugin folders from disk). all = both."
+			}
+		},
+		"required": []
+	}
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["save_wiki_folder"].definition = {
+	"description": "Export wiki to folder. filter selects tiddlers (default '[all[tiddlers]]'). explodePlugins='yes' (default): plugins as exploded subtiddler folders; 'no': single .json bundles. Path gated by allowed-paths.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"path": {
+				"type": "string",
+				"description": "Output directory"
+			},
+			"filter": {
+				"type": "string",
+				"default": "[all[tiddlers]]"
+			},
+			"explodePlugins": {
+				"type": "string",
+				"enum": [
+					"yes",
+					"no"
+				],
+				"default": "yes"
+			}
+		},
+		"required": [
+			"path"
+		]
+	},
+	"write": true
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["build_wiki"].definition = {
+	"description": "Render wiki as single HTML. Silently overwrites output, creates parent dirs. template = renderable tiddler (default '$:/core/save/all'); invalid template → empty output, not error. Verify result.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"output": {
+				"type": "string",
+				"description": "Output file path"
+			},
+			"template": {
+				"type": "string",
+				"default": "$:/core/save/all"
+			}
+		},
+		"required": [
+			"output"
+		]
+	},
+	"write": true
+};
+
+// MCP tool definition — advertised via mcp-handlers getToolDefinitions();
+// write:true marks tools hidden in readonly mode.
+module.exports["upload_file"].definition = {
+	"description": "Upload base64 file to files/, create canonical tiddler. tags = TW-format STRING (e.g. 'foo [[bar baz]]'), NOT array. Writes binary file + .tid sidecar with _canonical_uri.",
+	"inputSchema": {
+		"type": "object",
+		"properties": {
+			"filename": {
+				"type": "string",
+				"description": "Filename (no path separators)"
+			},
+			"data": {
+				"type": "string",
+				"description": "Base64 content"
+			},
+			"type": {
+				"type": "string",
+				"description": "MIME type"
+			},
+			"title": {
+				"type": "string",
+				"maxLength": 1024,
+				"description": "Tiddler title (max 1024 chars; defaults to filename)"
+			},
+			"tags": {
+				"type": "string"
+			},
+			"subfolder": {
+				"type": "string",
+				"description": "Subfolder in files/"
+			}
+		},
+		"required": [
+			"filename",
+			"data",
+			"type"
+		]
+	},
+	"write": true
 };

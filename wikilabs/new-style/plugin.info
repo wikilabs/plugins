@@ -1,0 +1,8 @@
+{
+	"title": "$:/plugins/wikilabs/new-style",
+	"name": "New Style",
+	"description": "Theme: Underlined Tabs - Animation Helper",
+	"author": "pmario",
+	"list": "readme license",
+	"stability": "STABILITY_2_STABLE"
+}

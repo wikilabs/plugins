@@ -1,6 +1,5 @@
 title: $:/config/custom-markup/pragma/PageTemplate
-tags: $:/tags/PageTemplate
+tags: $:/tags/Macro
+code-body: yes
 
 \importcustom [tag[$:/tags/Pragma]]
-
-<pre><$view /></pre>

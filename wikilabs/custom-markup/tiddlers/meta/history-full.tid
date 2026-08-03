@@ -1,0 +1,218 @@
+title: $:/plugins/wikilabs/custom-markup/history-full
+
+
+{{$:/plugins/wikilabs/custom-markup/history}}
+
+V 0.22.1-beta - 2024-05-23
+
+* Add stability badges
+** The development status of a plugin: deprecated, experimental, stable, or legacy
+
+V 0.22.0 - 2023-05-03
+
+''Breaking Changes in V0.22.0''
+
+* Use `❮ ❯` corner instead of `『 』`, becuase they had "strange white-spacing" as can be seen here
+* update license dates
+
+V 0.21.3 - 2021-10-18
+
+* Fix "force glyph in empty line" for add-glyph button
+
+V 0.21.2 - 2021-10-14
+
+* Fix "approx" glyph shown in button
+* Adjust default stylesheet class names
+* Improve keyboard handling for both snippet configuration dialogs
+
+V 0.21.1 - 2021-10-14
+
+* Code cleaning
+* Improve documentation
+* Add Presentation examples
+* Add global .clip and .example pragmas
+* Add bundler plugins
+** Create some bundles to export line and inline snippets
+
+! Breaking Changes in V0.20.0 and V0.21.0
+
+V 0.21.0 - 2021-09-17
+
+* renamed pragma: `\customize` to `\custom`
+* renamed pragma: `\debugcustomize` to `\debugcustom`
+
+V 0.20.0 - 2021-09-16
+
+* Rebuild the _params to be more generic
+* Removed `_1, _2, _3, _4` ... there is _no_ limit anymore
+
+------
+
+V 0.11.7 - 2021-09-16
+
+* Add inline snippet dropdown
+* Add support for inline snippets
+
+V 0.11.6 - 2021-07-22
+
+* Fixes issue #98 [[Custom Markup "in text" Parameters overwrite defaults when empty|https://github.com/wikilabs/plugins/issues/98]]
+* Changed `\\ pragma comment` to `<!-- pragma comment -->`, since the later is part of the TW core now
+
+V 0.11.5 - 2021-04-10
+
+* Add a bit more docs
+* Remove old comments from code
+
+V 0.11.4 - 2021-03-29
+
+* remove some inline html elements, that can be directly created
+* move the block html elements, into the project, to be more flexible
+* fix [ext[_use RSOD #86|https://github.com/wikilabs/plugins/issues/86]]
+* add _3 and _4
+
+V 0.11.3 - 2021-03-20
+
+* add a class `wltc-snippet-inline` and `wltc-snippet-block` to snippet dropdowns
+* Let all glyphs accept all html tags
+* fix some missing `approx` definitions
+* document the `_useGlobal` pragma attribute
+* `_use` allows us to overwrite predefined attributes
+
+V 0.11.2 - 2021-03-20
+
+* allow html tags in inline text eg: `some /°mark marked°/ text`
+** creates: `<p>some <mark class="wltc-inline wltc">marked</mark> text</p>`
+
+V 0.11.1 - 2021-03-20
+
+* custom dropdown - "snippets" got new functionality
+
+V 0.11.0 - 2021-03-18
+
+''Breaking changes''
+
+* Rename Glyph: `about` ''to'' `approx (≈)`, which is the official name of the char
+* Change the `_params` formatting to `_params=":::p1:::p2"`
+
+V 0.10.1 - 2021-02-22
+
+* fix class definition with missing pragma _classes
+
+V 0.10.0 - 2021-02-18
+
+* fix RSOD accessing cache without a check
+* Added the `corner ❮ ❯` glyphs for inline markers
+** "little was removed"
+* Added `CTRL-0` as shortcut for "toggle inline selection"
+* Added dynamic icon for inline selection
+* Added dropdown to configure inline selection
+* fixed problem with class definition applied twice
+* local params allow spaces now. eg:`XX:"a_b_c":"param with spaces"`
+* `tc-editor-toolber` is `display: flex;` now. Style setting comes with the plugin
+
+''Breaking change''
+
+* local `XX:"p1":"p2"` ''have to be covered with double qutes'' now.
+* did ''remove'' the ''little'' glyp from inline markers
+
+V 0.9.0 - 2020-12-11
+
+* Changed all keyboard shortcuts, to avoid overlapping
+
+* All toolbar buttons are visible atm. This will change in the future!
+
+* Add dynamic button "disabled" state to: $:/core/ui/EditTemplate/body/toolbar/button
+** Added button disabled CSS
+
+* There are 3 "inline" elements
+** `﹙ little﹚`, `⠒ braille⠶`, `/° slash°/`
+
+* There are 6 "block" elements
+** `pilcrow: ¶`, `about: ≈`, `angle: »`, `degree: °`, `tick: ´`, `single: ›`
+
+See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]
+
+V 0.8.1 - 2020-10-30
+
+* fix `/°slash /°slash nesting°/ nesting°/`
+
+V 0.8.0 - 2020-10-29
+
+* There are 4 "inline" elements
+** `__ underscore__`, `﹙ little﹚`, `⠒ braille⠶`, `/° slash°/`
+* There are 6 "block" elements
+** `pilcrow: ¶`, `about: ≈`, `angle: »`, `degree: °`, `tick: ´`, `single: ›`
+
+V 0.7.0 - 2020-10-23
+
+* New Inline functions
+** `_symbol.class.clsss:param:param some text__`
+** `.class` and `:param` work the same way as "block" definitions
+* Removed underscore from "block" definitions, because it's used by "inline"
+* Added: `#
+ pragma comments`
+** It's faster than HTML comments `<!-- comments -->`, since it can be used outside macro `\define x()` blocks
+
+V 0.6.0 - 2020-10-03
+
+* ''New Functionality''
+** $:/config/custom-markup/pragma/PageTemplate tagged: `$:/tags/Macro`
+*** content: `\importcustom [tag[$:/tags/Pragma]]`
+** contains global pragma definitions .. and macro definitions
+
+* ''Incompatible changes''
+** `_params` renamed to -> `_classes`
+** `_maps` renamed to -> `_params` !!
+** Adjusted the docs accordingly
+* Improved debug modes
+** `\debugcustom` new parameters: `no`, `list`, `global`, `global list`, `global ID`
+** `_debug` new parameter: `no`,
+* `angel` renamed to: `angle` + docs
+
+V 0.5.3 - 2020-09-29
+
+* new parameters: `_1, _2, _maps`
+** allows `°:param1Text:param2Text` 
+** new format `°.i.x.y:a:b`
+* [[Examples + Reference|https://wikilabs.github.io/editions/custom-markup/#test-checkbox-widget-maps-transclusion:test-checkbox-widget-maps-transclusion test-checkbox-widget-maps-variable "Custom Markup Definition"]]
+
+V 0.5.2 - 2020-09-23
+
+* fixed \importcustom
+* new parameter _srcName
+* \customize or \customise can be used
+* \debugcustomize or \debugcustomise can be used
+
+V 0.5.0 - 2020.09.20
+
+* New Plugin Name: custom-markup
+* New directory structure
+
+V 0.4.2 - 2020-09-18
+
+* docs is on the way
+* approx feature complete
+** \custominline needs to be improved
+
+V 0.4.0 2020.09.16
+
+* added IDs: single "›" and approx "≈"
+* ID comma removed 
+* new toolbar buttons
+* new keyboard shortcuts
+
+V 0.3.0 2020.09.10
+
+* pragma parameters renamed to _element, _use, _mode, ... 
+** because there was a naming problem with widget parameters
+* tick-inline uses `°°` now
+
+V 0.2.1 2020-09.12
+
+* add more IDs comma, degree, underline
+* \ticktect becomes \custom
+* \tickdebug becomes \debugcustom
+
+V 0.0.1 - 2020-08-28
+
+* initial release

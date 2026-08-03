@@ -1,0 +1,230 @@
+title: $:/plugins/wikilabs/custom-markup/history
+
+V 1.0.0-beta-49 - 2026-07-20
+
+* Updage transclusion widgets to $-modern parameters
+
+V 1.0.0-beta-48 - 2026-05-27
+
+* V 1.0.0-beta-48
+** Markdown reference-style links: define a target once with `[label]: target` and reference it anywhere with `[text][label]`. Defs must appear before usages in the source.
+
+V 1.0.0-beta-47 - 2026-05-26
+
+* V 1.0.0-beta-47
+** Markdown horizontal rules: a line of `---`, `***`, or `___` (or longer) renders as `<hr>`.
+
+* V 1.0.0-beta-45
+** Markdown autolinks via the new `autolink` marker kind: `<https://example.com>` and `<user@example.com>` shapes, both rendered as `<a href>` with `mailto:` prepended for email targets. The marker is configurable — URL and email patterns are regex fields, so DSL authors can repurpose either slot (e.g. `tel:` for phone numbers).
+
+V 1.0.0-beta-44 - 2026-05-25
+
+* V 1.0.0-beta-44
+** Markdown fenced code blocks via the new `fenced` marker kind: backtick fence with the CommonMark `language-X` class on the inner code element, plus MkDocs / Hugo style attribute metadata after the first word (`title="src/foo.py"`, `highlight="2,5"`, ...) parsed by TW's macro-parameter attribute parser and emitted as `data-*` on the outer wrapper. New marker fields: `wrapper-element`, `info-attribute`, `info-prefix`, `info-words`, `info-attrs`.
+
+* V 1.0.0-beta-43
+** `attr-X-from` is now a FALLBACK rather than an override: user-supplied body/`"tooltip"` win, source-tiddler field fills in when absent. Special rule for `alt`: short user-alt (≤2 words) yields to a 3+ word source `alt-text` for accessibility. Markdown IMAGE: body-attribute is now `alt` (was `tooltip`), so `![alt](src "title")` maps CommonMark-cleanly.
+
+* V 1.0.0-beta-42
+** Markdown links and images: TW-md-plugin syntax (`[x](#Title)`, `<#…>` brackets, `"tooltip"`); routed through `<$link>` / `<$image>` widgets via the new `linked-pair` marker kind.
+** Markdown code spans handle variable-length backtick runs (`` `x` ``, `` `` x `` ``, …) via the new `open-variable: yes` marker field.
+
+* V 1.0.0-beta-41
+** Markdown table now gates on `tables: yes` (was hard-coded to `vocab/markdown`) — derived vocabs can opt in.
+** `markdown-newline` swaps the regex scan for `indexOf("\n")` — same semantics, no per-call RegExp alloc on a hot path.
+** Refactor: 8 wikirules share `CmRegistry.ensureRegistry(parser)` instead of inlining the registry-init boilerplate.
+
+* V 1.0.0-beta-40
+** Fountain: page-break wikirule — `===` on a blank-flanked line, gated on `page-break: yes`.
+** Fountain: transition right edge now aligns with body, not 20ch short.
+
+* V 1.0.0-beta-39
+** Perf: PageTemplate is now parsed exactly once per startup. `loadGlobalPragmas` calls `parseTiddler` with `parseAsInline: true` to share TW core's cache slot, memoizes the extracted global-symbols map per PT change-count, and a new startup module installs a `wiki.parseTiddler` wrap that dedupes nested PageTemplate factory calls (TW core's `getCacheForTiddler` has no in-flight dedupe). ~50-80 ms shaved off startup.
+
+V 1.0.0-beta-38 - 2026-05-24
+
+* V 1.0.0-beta-38
+** Perf: `parseMarkerTiddler` results are cached at module level, keyed by tiddler change-count. Each parser instance re-uses identical configs across the 100+ per-parser marker reads. ~6% per-parse speedup on Fountain content (~2 ms → ~1.86 ms in a 200-call microbench).
+
+* V 1.0.0-beta-37
+** Fix: `body-class` parser wrap only fires at the outermost `parseBlocks` call. Nested calls from block-mode marker bodies (`marker-inline.js`, `marker-block.js` with `end-string`) no longer accumulate redundant wrapper `<div>`s.
+
+* V 1.0.0-beta-36
+** (P1) Per-marker flags: `no-space-bound`, `trailing-blank`, `case-insensitive` extend the marker tiddler vocabulary.
+** (P2) Generic vocab-flag store: `hasVocabFlag(name)` replaces the five named accessors; new `body-class` field wraps the parsed tree for cascade-scoped CSS.
+** (P3) `yaml.js`: multi-line scalar values and tab indentation, both required for Fountain title pages.
+** (P4) New `wikirules/fountain-flavour/`: `fountain-character.js` (uppercase cue auto-detection with parentheticals and dual dialogue wrap), `fountain-transition.js` (generic `... TO:` + forced `>` transitions).
+** (P5) Fountain styles: lyrics, cue-block with side-by-side dual layout, multi-line front-matter values, character source-case preserved.
+
+V 1.0.0-beta-35 - 2026-05-23
+
+* V 1.0.0-beta-35
+** Vocabulary meta tiddlers no longer need a `marker-tag` field. The vocabulary's title is automatically the tag its markers carry — one less field to author and keep in sync.
+
+V 1.0.0-beta-34 - 2026-05-21
+
+* V 1.0.0-beta-34
+** `debug` and `debug-string` fields on marker tiddlers: per-marker render-time codeblock. Modes `pragma`, `pragmaOnly`, `text`, `textOnly`, `both`, `no`.
+** `\debugmarker <open>=<mode>` pragma: per-tiddler override of a marker's `debug` field.
+** ControlPanel > Advanced > "Custom Markup": navigation dashboard for vocabularies, markers, global pragmas, toolbar and cascades.
+
+V 1.0.0-beta-33 - 2026-05-20
+
+* V 1.0.0-beta-33
+** Fix: global pragmas (`°clip`, `°sc`, etc. from `$:/tags/Pragma` tiddlers) no longer fall through to the marker default. Activation was replacing the marker config and dropping the `globalSymbols` bindings attached by `loadGlobalPragmas`.
+
+* V 1.0.0-beta-32
+** New marker kind `list-item`: consecutive items collapse into a `container` element (ul/ol/dl/blockquote), nesting via indent. New fields: `container`, `item-element`, `indent-unit`, `open-pattern`. Markdown's list bullets now ship as marker tiddlers; `markdown-list.js` removed.
+** View templates list fields dynamically created
+
+* V 1.0.0-beta-31
+** New `markdown-newline` inline wikirule: any intra-paragraph `\n` emits `<br>`.
+** New `markdown-table` block wikirule: pipe tables with separator row and alignment colons; cell content parses as an inline run.
+
+* V 1.0.0-beta-30
+** Inline-pair `body-raw: yes`: body is captured as a single literal text node, no recursive parsing. Enables code-span markers that preserve raw HTML and wikitext.
+** New `markdown-list` block wikirule (gated on the markdown vocab): `-`/`*`/`+` for `<ul>`, `<digits>.` for `<ol>`, 2-space indent per nesting level.
+** `CmRegistry.activeVocabs` + `isActiveVocab(title)`: lets wikirules gate on a specific vocab being active for the current parser.
+** Override the internals raw-preview template to use `$wikify` with `type={{!!type}}` so parametric types (`;vocab=...`) preview correctly.
+** `wltc-l<n>` class is now only emitted for `glyph-level` markers.
+
+* V 1.0.0-beta-29
+** Vocab activation resolves `;vocab=Name` by direct `getTiddler("vocab/" + name.toLowerCase())` instead of a `field:caption` filter walk over all shadow+tiddlers. Around 33x faster microbench (3.46 to 0.10 µs/op for one vocab; 6.80 to 0.18 µs/op for the typical two-vocab activation). Convention: vocab title must be `vocab/<lowercase-caption>`.
+
+V 1.0.0-beta-28 - 2026-05-19
+
+* V 1.0.0-beta-28
+** Inactive marker positions no longer shadow TW core rules. `cmblock` and `cminline` now override `findNextMatch` to skip matches whose marker isn't active in the current tiddler (gated by a `_cmPragmasDone` flag so pragma-activated vocabs still work). Previously a marker with a common open like `#` or `*` would eat the position via text-fallback in `parse()`, suppressing the competing core rule (e.g. TW ordered lists) for every tiddler in the wiki — even ones that didn't activate the offending vocab.
+** `\importcustom <filter>` now runs the filter over `[all[shadows+tiddlers]]` automatically, so `\importcustom [tag[Vocab/X]]` finds shadow markers without the author having to spell the shadow-inclusion prefix. Type-field activation already had this behaviour.
+** Vocab-summary ViewTemplate splits "Mode" / "Element" columns from new "Default Mode" / "Default Element" columns so the kind-implied defaults stay visible alongside any explicit overrides.
+
+* V 1.0.0-beta-27
+** Inline-pair arms sort longest-open-first so multi-char markers like `***` win over `**` and `*` at the same position.
+** Inline-pair markers honor `allow-symbol: no` (previously only block-glyph markers did); required for body-only markers like Fountain's `*italic*`.
+** `emit-open: yes` prepends a trailing space when the body is non-empty so the open literal and body don't run together (`INT. KITCHEN`, not `INT.KITCHEN`).
+** New `frontmatter` wikirule: when an active vocab declares `front-matter: yes`, a YAML block at the very top of the tiddler is consumed and rendered as `<div class="wltc-front-matter">`. Terminated by blank line or `===`. Parsing uses a vendored copy of the minimal YAML library from Jermolene's TiddlyWiki5 PR #9806 (`bidirectional-filesystem` branch).
+
+* V 1.0.0-beta-26
+** Vocab meta `disable-core-rules: <names>` suppresses listed TW core wikirules for tiddlers that activate the vocab; user `\rules` pragmas can still amend further.
+** Marker field `emit-open: yes` prepends the marker's open literal to its rendered body (for word markers where the keyword IS the content).
+
+* V 1.0.0-beta-25
+** Cross-vocab marker collisions (two vocabs with the same `open`) now resolve to the LAST activated vocab. Type field `;vocab=A,B` makes B win on overlap; `;vocab=B,A` makes A win. Previously the alphabetically-last marker tiddler always won regardless of activation.
+
+* V 1.0.0-beta-24
+** Drop redundant `(function(){ ... })()` wrappers from 7 JS modules. TW's module loader already encapsulates.
+
+* V 1.0.0-beta-23
+** Secure-by-default: iframe markers get `sandbox=""` injected (max restrictions; neutralizes srcdoc-script and external-content vectors). `object`/`embed`/`frame`/`frameset` are denied (no usable sandbox). `javascript:` URLs are stripped from `src`/`href`/`xlink:href`/`data`/`action`/`formaction`. Opt out per marker with `allow-unsafe: yes` (or pragma `_allow_unsafe=yes`).
+
+* V 1.0.0-beta-22
+** `\custom <kind>=<sym> _activate=no` opts out of the implicit marker activation. Useful for pragmas that only exist to be referenced via `_useGlobal` from other tiddlers.
+
+* V 1.0.0-beta-21
+** Plugin-side `$:/config/custom-markup/pragma/PageTemplate` corrected: tag `$:/tags/Macro`
+
+* V 1.0.0-beta-20
+** ViewTemplate body cascade split: one tiddler per clause.
+** Marker-summary: open/close glyphs in a two-column table.
+
+* V 1.0.0-beta-19
+** Vocab-summary table adds `Max-level` and `Paragraph` columns; marker-summary view adds a `paragraph-marker` row.
+
+* V 1.0.0-beta-18
+** `paragraph-marker: yes` field on marker tiddlers opts into paragraph terminator semantics (blank-line, no nested-p body parse). Shipped paragraph markers (ANGLE, APPROX, PILCROW) declare it explicitly.
+
+V 1.0.0-beta-16 - 2026-05-18
+
+* V 1.0.0-beta-16
+** Dropped orphan ShortcutInfo entries for add-angle, remove-angle, toggle-tick.
+
+* V 1.0.0-beta-15
+** Removed legacy hardcoded-glyph buttons add-tick, remove-tick, toggle-tick, add-angle, remove-angle. Use the vocab dropdowns instead.
+
+
+* V 1.0.0-beta-14
+** `\debugcustom` lists v1 markers as well as legacy kinds; lookup by `open` literal works.
+** Editor toolbar add/remove/toggle glyph and toggle-inline buttons show on `;vocab=...` types.
+
+* V 1.0.0-beta-13
+
+** Toolbar prefix and inline dropdowns are `<select>` widgets; Vocab/Default ordered Angle, Single, Dot, Degree.
+** `$:/vocab/*` tiddlers show a summary view.
+
+* V 1.0.0-beta-12
+
+** Editor toolbar add/remove glyph buttons enabled only for markers with `max-level > 1` (ANGLE, SINGLE, APPROX, PILCROW); toggle enabled for any line-prefix marker. Filter reads the marker tiddler directly.
+
+* V 1.0.0-beta-11
+
+** Internal: use TW core's `parseTiddler` for the global-pragma cache. No behaviour change.
+
+* V 1.0.0-beta-10
+
+** PageTemplate global pragmas are cached per wiki; ~3× faster wikitext parse on tiddlers with custom markup.
+
+* V 1.0.0-beta-9
+
+** `marker-icon` field on each marker tiddler; new `dot` icon.
+** Marker tiddler and `$:/tags/CustomMarkup/Marker` tag show summary views.
+** Edit-view type input widens for `;vocab=...` types.
+
+------
+
+V 1.0.0-beta-8 - 2026-05-17
+
+* V 1.0.0-beta-8
+
+** `\custom <kind>=<sym> _mode=block` on non-paragraph markers (`´`, `°`, `›`) now defaults to single-newline body termination. Tables built with `´td`-per-line work again.
+
+* V 1.0.0-beta-7
+
+** `\custom <kind>=<sym> ...` now auto-activates the marker for the tiddler — author defining custom behaviour implies the marker should fire.
+** `_endString="\n"` (and `\r`, `\t`, `\\`, `\"`, `\'`) finally interprets the JS escapes instead of matching the literal `\n` characters.
+** `_useGlobal=<sym>` switches to the global target wholesale; only local `_debug` wins, so the debug codeblock shows the resolved config.
+** Trailing newline no longer leaks into widget `src` attribute or debug `text` codeblock when the terminator is eaten.
+
+* V 1.0.0-beta-6
+
+** `_use` and `_useGlobal` pragma aliases follow through to the target.
+** `_debug=pragma|text|both|*Only|no` emits the pragma string and/or source slice as a code block.
+** `°` `›` default to single-newline body termination again; `»` `≈` `¶` to blank-line.
+
+* V 1.0.0-beta-5
+
+** `:"<arg>"` positional arguments after the symbol/class chain now feed `_params` widget attributes (`°☐:"a"` overrides the first `_params` entry from the bridged pragma).
+** Indirect / macro / filtered attribute values (`field={{!!yy}}`, `UID=<<qualify>>`) survive into the registry; previously stringified to `[object Object]`.
+** Global `\custom` pragmas from `$:/config/custom-markup/pragma/PageTemplate` are loaded into every parser, restoring wiki-wide marker shortcuts (e.g. `°clip`, `°example`).
+** `»` `≈` `¶` markers wrap as `<p class="...">...</p>` again instead of `<div><p>...</p></div>`, matching the v0.x rendering.
+** Widget `src` no longer carries a trailing newline (which became `%0A` in URL-valued attributes).
+
+------
+
+V 1.0.0-beta-4 - 2026-05-16
+
+* V 1.0.0-beta-4
+
+** `\custom <unknown-kind>` (anything outside the 9 legacy kinds) no longer crashes the parse rule.
+
+* V 1.0.0-beta-3
+
+** Bare-kind pragmas (`\custom angle _element=td`) now activate the marker's default override.
+** Block-position fires always wrap in a block element; `wltc-l<N>` level class always added.
+
+* V 1.0.0-beta-2
+
+** Editor toolbar dropdowns filter by the active vocabulary for the tiddler being edited (vocabs come from the `;vocab=` parameter on the type field; defaults to Vocab/Default).
+** New `cm-active-markers` filter operator: `[<tiddler>cm-active-markers[block|inline|word]]` returns marker titles active for that tiddler.
+** Inline-pair dropdown lists `/° °/` first (SLASH gets `order: 1`; sort chain `sort[caption]!sort[order]`).
+
+* V 1.0.0-beta-1 (Breaking changes)
+
+** Markers are now tiddlers tagged `$:/tags/CustomMarkup/Marker`, grouped into vocabularies (`Vocab/<Name>`). Default vocabulary ships `°` `.` `»` `›` (block) and `/° °/`, `❮ ❯`, `⠒ ⠶` (inline-pair). Activate extra vocabularies per tiddler via `type=text/vnd.tiddlywiki;vocab=Default,Legacy-Glyphs` or via `\importcustom [tag[Vocab/X]]`.
+** `´` `≈` `¶` moved to opt-in `Vocab/Legacy-Glyphs`. To keep using them, add `;vocab=Default,Legacy-Glyphs` to the tiddler's type field.
+** `°` and `›` now default to blank-line termination (was single-newline). Back-to-back `°foo` `°bar` lines join into one block. Set `mode: inline` on the marker tiddler or use `\custom degree=foo _mode=inline` to restore the old single-newline behaviour.
+** Editor toolbar dropdowns iterate marker tiddlers; new vocabularies appear automatically.
+** New `word` marker kind enables Fountain-flavoured DSLs. `Vocab/Presentation` (in editions) wraps the Reveal.js plugin: `PRESENTATION` / `CUT TO:` / `ANIMATE TO:` / `FADE IN:` / `FADE OUT.`.
+** `\custom <kind>=<symbol>` pragma is preserved as an in-tiddler escape hatch and bridges into the new registry via each marker's `legacy-kind` field.
+** Dropped the `pragma-comment` plugin dependency (HTML comments are in TW core).
+
+See [[full history|$:/plugins/wikilabs/custom-markup/history-full]]

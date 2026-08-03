@@ -1,0 +1,14 @@
+title: vocab/default/ANGLE
+tags: $:/tags/CustomMarkup/Marker [[vocab/default]]
+caption: Angle
+marker-icon: $:/plugins/wikilabs/custom-markup/icons/glyphs/angle
+open: »
+kind: glyph-level
+max-level: 4
+mode: inline
+element: p
+paragraph-marker: yes
+classes: .wltc-angle
+legacy-kind: angle
+order: 4
+description: Paragraph block with multi-level support. Repeat the open up to 4 times for `wltc-l1` through `wltc-l4`.

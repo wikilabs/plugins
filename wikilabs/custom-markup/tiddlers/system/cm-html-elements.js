@@ -6,7 +6,6 @@ module-type: config
 Configuration constants ... This list is plugin specific!
 
 \*/
-(function(){
 
 /*jslint node: true, browser: true */
 /*global $tw: false */
@@ -16,5 +15,3 @@ exports.cmInlineElements = "a,abbr,audio,b,bdi,bdo,br,canvas,cite,code,data,data
 
 
 exports.cmBlockElements = "address,article,aside,audio,blockquote,canvas,dd,details,div,dl,dt,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,hr,li,nav,ol,p,pre,section,table,tfoot,ul,video".split(",");
-
-})()

@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/trails/history
 
+V 1.1.2 - 2026-08-03
+
+* Trail steps skip dangling `$:/` references (system titles with no tiddler or shadow behind them) when picking the next crumb; previous behaviour is the fallback when nothing else matches.
+
 V 1.1.1 - 2024-05-23
 
 * Add stability badges
