@@ -1,0 +1,7 @@
+title: $:/plugins/wikilabs/scroll-memory/history
+
+V 0.1.0 - 2026-08-04
+
+* initial release
+* Scroll position memory, click landmarks, auto restore on close and a get to top button
+* Toggle button steps between your open drafts and the last landmark while you edit, without using the landmark up

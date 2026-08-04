@@ -21,7 +21,11 @@ While a long tiddler is scrolled beyond its own top, including right after a lan
 
 ! Toggle button
 
-Editing a tiddler no longer jumps you to its landmark: the draft opens in place and stays put. Optionally (''config'' tab: "Use toggle button instead of scroll back") the floating scroll-back button becomes a toggle that steps through your open drafts and the last landmark without consuming it. This lets you read a source at its landmark and write a summary in another tiddler, clicking to jump back and forth: to the landmark (which reopens its source if you closed it, and blinks the link) and back to each draft at the exact spot you left off.
+Editing a tiddler no longer jumps you to its landmark: the draft opens in place, the page stays put, and the landmark survives instead of being consumed. As soon as any tiddler is open for editing a toggle button appears, stepping through your open drafts in story order and then the last landmark, wrapping at the end and consuming nothing. When there is only one stop, the toggle pairs it with the place you came from: the first click takes you there, the next brings you back. This lets you read a source at its landmark and write a summary in another tiddler, clicking to jump back and forth: to the landmark (which reopens its source if you closed it, and blinks the link) and back to each draft at the exact spot you left off.
+
+While it is shown the toggle takes over from the scroll-back button, and that difference matters: the scroll-back button consumes the landmark it returns to, so each landmark works once, while the toggle consumes nothing and can revisit the same landmark indefinitely. Closing the last draft hands control back to the scroll-back button. In always active mode the arrows go on walking the landmark history and the toggle is available in addition to them.
+
+Set "Use toggle button instead of scroll back" on the ''config'' tab to keep the toggle permanently, drafts or not, as long as a landmark exists.
 
 All state is session-only. It lives under `$:/temp/volatile/scroll-memory/` and is never saved or synced.
 

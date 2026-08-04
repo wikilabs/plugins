@@ -9,11 +9,12 @@ tags: $:/tags/PageTemplate
 	smAlways={{{ [[$:/config/wikilabs/scroll-memory/always-active]get[text]else[no]] }}}
 	smTopCfg={{{ [[$:/config/wikilabs/scroll-memory/top-button]get[text]else[yes]] }}}
 	smTopTgt={{{ [{$:/temp/volatile/scroll-memory/top-target}!is[blank]then[yes]] ~[[no]] }}}
-	smAnchor={{{ [<smDraft>match[yes]then[yes]] [<smLandmark>match[yes]then[yes]] +[first[]] ~[[no]] }}}
 	smTopShow={{{ [<smTopCfg>!match[no]then<smTopTgt>match[yes]then[yes]] ~[[no]] }}}
-	smButton={{{ [<smAlways>match[yes]then<smLandmark>match[yes]then[arrows]] [<smAlways>match[no]then<smToggle>match[yes]then<smAnchor>match[yes]then[toggle]] [<smAlways>match[no]then<smToggle>match[no]then<smLandmark>match[yes]then[back]] +[first[]] }}}
+	smArrows={{{ [<smAlways>match[yes]then<smLandmark>match[yes]then[yes]] ~[[no]] }}}
+	smShowToggle={{{ [<smDraft>match[yes]then[yes]] [<smAlways>match[no]then<smToggle>match[yes]then<smLandmark>match[yes]then[yes]] +[first[]] ~[[no]] }}}
+	smShowBack={{{ [<smAlways>match[no]then<smToggle>match[no]then<smDraft>match[no]then<smLandmark>match[yes]then[yes]] ~[[no]] }}}
 >
-<%if [<smButton>!is[blank]] [<smTopShow>match[yes]] %>
+<%if [<smArrows>match[yes]] [<smShowToggle>match[yes]] [<smShowBack>match[yes]] [<smTopShow>match[yes]] %>
 <div
 	class="wltc-scroll-memory-back"
 	role="navigation"
@@ -29,7 +30,7 @@ tags: $:/tags/PageTemplate
 <span aria-hidden="true">{{$:/core/images/fold-button}}</span>
 </$button>
 <%endif%>
-<%if [<smButton>match[arrows]] %>
+<%if [<smArrows>match[yes]] %>
 <$button
 	message="tm-scroll-memory-back"
 	class="tc-btn-invisible"
@@ -38,16 +39,9 @@ tags: $:/tags/PageTemplate
 >
 <span aria-hidden="true">{{$:/core/images/left-arrow}}</span>
 </$button>
-<$button
-	message="tm-scroll-memory-forward"
-	class="tc-btn-invisible"
-	tooltip={{$:/language/wikilabs/scroll-memory/Buttons/Forward/Hint}}
-	aria-label={{$:/language/wikilabs/scroll-memory/Buttons/Forward/Hint}}
->
-<span aria-hidden="true">{{$:/core/images/right-arrow}}</span>
-</$button>
 <%endif%>
-<%if [<smButton>match[toggle]] %>
+<!-- The toggle sits between the arrows, so always-active mode reads < o > -->
+<%if [<smShowToggle>match[yes]] %>
 <$button
 	message="tm-scroll-memory-toggle"
 	class="tc-btn-invisible"
@@ -57,7 +51,17 @@ tags: $:/tags/PageTemplate
 <span aria-hidden="true">{{$:/core/images/close-others-button}}</span>
 </$button>
 <%endif%>
-<%if [<smButton>match[back]] %>
+<%if [<smArrows>match[yes]] %>
+<$button
+	message="tm-scroll-memory-forward"
+	class="tc-btn-invisible"
+	tooltip={{$:/language/wikilabs/scroll-memory/Buttons/Forward/Hint}}
+	aria-label={{$:/language/wikilabs/scroll-memory/Buttons/Forward/Hint}}
+>
+<span aria-hidden="true">{{$:/core/images/right-arrow}}</span>
+</$button>
+<%endif%>
+<%if [<smShowBack>match[yes]] %>
 <$button
 	message="tm-scroll-memory-back"
 	class="tc-btn-invisible"

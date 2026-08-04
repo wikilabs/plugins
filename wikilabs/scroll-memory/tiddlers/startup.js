@@ -27,7 +27,8 @@ var OFFSET_PREFIX = "$:/temp/volatile/scroll-memory/offset/",
 	DRAFT_OFFSET_PREFIX = "$:/temp/volatile/scroll-memory/draft-offset/",
 	STACK_TITLE = "$:/temp/volatile/scroll-memory/back-stack",
 	CURSOR_TITLE = "$:/temp/volatile/scroll-memory/cursor",
-	TOGGLE_CURSOR_TITLE = "$:/temp/volatile/scroll-memory/toggle-cursor",
+	TOGGLE_RETURN_TITLE = "$:/temp/volatile/scroll-memory/toggle-return",
+	READING_POSITION_TITLE = "$:/temp/volatile/scroll-memory/reading-position",
 	TOP_TARGET_TITLE = "$:/temp/volatile/scroll-memory/top-target",
 	STORY_LIST_TITLE = "$:/StoryList",
 	CONFIG_OFFSET_MEMORY = "$:/config/wikilabs/scroll-memory/offset-memory",
@@ -37,17 +38,12 @@ var OFFSET_PREFIX = "$:/temp/volatile/scroll-memory/offset/",
 	CONFIG_ALWAYS_ACTIVE = "$:/config/wikilabs/scroll-memory/always-active",
 	CONFIG_LANDMARK_ON_OPEN = "$:/config/wikilabs/scroll-memory/landmark-on-open",
 	CONFIG_TOP_BUTTON = "$:/config/wikilabs/scroll-memory/top-button",
-	CONFIG_USE_TOGGLE = "$:/config/wikilabs/scroll-memory/use-toggle",
 	CONFIG_MIN_OFFSET = "$:/config/wikilabs/scroll-memory/min-offset",
 	CONFIG_STACK_LIMIT = "$:/config/wikilabs/scroll-memory/stack-limit",
 	NOTIFY_FIRST = "$:/language/wikilabs/scroll-memory/Notifications/First",
 	NOTIFY_LAST = "$:/language/wikilabs/scroll-memory/Notifications/Last",
 	STICKY_TITLES_TITLE = "$:/themes/tiddlywiki/vanilla/options/stickytitles",
 	SCROLL_SETTLE_INTERVAL = 150;
-
-function useToggle() {
-	return $tw.wiki.getTiddlerText(CONFIG_USE_TOGGLE,"no").trim() === "yes";
-}
 
 // A draft carries `draft.of` (the title it edits). Its story frame is an edit
 // frame, so getStoryFrames() (view frames only) never returns it.
@@ -185,17 +181,6 @@ function clearDraftOffset(title) {
 	}
 }
 
-// Toggle cursor: the index of the last-visited slot in the toggle cycle.
-// Absent means "not started" (first click advances to slot 0 = landmark).
-function getToggleCursor() {
-	var value = parseInt($tw.wiki.getTiddlerText(TOGGLE_CURSOR_TITLE,""),10);
-	return isNaN(value) ? -1 : value;
-}
-
-function setToggleCursor(index) {
-	$tw.wiki.addTiddler(new $tw.Tiddler({title: TOGGLE_CURSOR_TITLE,text: String(index)}));
-}
-
 /*
 The cursor is the history position while walking with back/forward in
 always-active mode. Absent means "not walking", represented as one past the
@@ -241,7 +226,7 @@ goes to the top as usual. Frames elsewhere on the page keep their memory.
 */
 function recordScrollPosition() {
 	var offsetOn = isEnabled(CONFIG_OFFSET_MEMORY),
-		draftOn = useToggle();
+		draftOn = getOpenDraftTitles().length > 0;
 	if(!offsetOn && !draftOn) {
 		return;
 	}
@@ -262,7 +247,13 @@ function recordScrollPosition() {
 				if(draftOn && offset > 0) {
 					saveDraftOffset(title,offset);
 				}
-			} else if(offsetOn) {
+			} else {
+				// Not a draft: this is where you are READING. Remembered so a
+				// toggle whose only stop is your draft can bring you back here.
+				saveReadingPosition(Math.round($tw.utils.getScrollPosition(window).y));
+				if(!offsetOn) {
+					return;
+				}
 				if(rect.height > viewportHeight && offset >= minOffset) {
 					saveOffset(title,offset);
 					// Sticky titles keep the tiddler toolbar visible, so the
@@ -486,31 +477,79 @@ function scrollToDraft(frame,title) {
 }
 
 /*
-Toggle mode (config use-toggle replaces the consume-back button). Step through
-the cycle {last landmark, then each open draft in story order} one slot per
+Toggle mode replaces the consume-back button: permanently when config use-toggle
+is set, and always while at least one draft is open. Step through
+the cycle {each open draft in story order, then the last landmark} one slot per
 click, wrapping. Never consumes the landmark and never closes anything, so you
 can bounce between the source you are reading and the drafts you are writing.
-Slot 0 is the landmark, so the first click peeks at the source; toggling to a
-draft restores your remembered writing position; toggling to the landmark
-reopens its source tiddler if it was closed and blinks the clicked link.
+Toggling to a draft restores your remembered writing position; toggling to the
+landmark reopens its source tiddler if it was closed and blinks the clicked
+link.
 */
-function toggleCycle() {
+function buildToggleCycle() {
 	var stack = $tw.wiki.getTiddlerData(STACK_TITLE,[]),
 		lastLandmark = stack.length ? stack[stack.length - 1] : null,
 		drafts = getOpenDraftTitles(),
 		cycle = [];
-	if(lastLandmark) {
-		cycle.push({kind: "landmark",landmark: lastLandmark});
-	}
 	for(var d=0; d<drafts.length; d++) {
 		cycle.push({kind: "draft",title: drafts[d]});
 	}
-	if(cycle.length === 0) {
-		return;
+	if(lastLandmark) {
+		cycle.push({kind: "landmark",landmark: lastLandmark});
 	}
-	var next = (getToggleCursor() + 1) % cycle.length,
-		slot = cycle[next];
-	setToggleCursor(next);
+	return cycle;
+}
+
+// The story title a slot scrolls to. For a landmark that is its source
+// tiddler, which is the frame you end up looking at.
+function toggleSlotTitle(slot) {
+	return slot.kind === "draft" ? slot.title : slot.landmark.from;
+}
+
+/*
+The document scroll position a stop would take you to, clamped to what the
+page can actually reach. The last tiddler in the story can never be brought to
+the reference line, because the page runs out of scroll first, so every
+"where am I" and "can this click move me" question is answered by comparing
+clamped targets rather than frame positions.
+*/
+function toggleSlotTargetY(slot) {
+	var frame = findAnyFrame(toggleSlotTitle(slot));
+	if(!frame) {
+		return null;
+	}
+	var rect = frame.getBoundingClientRect(),
+		scrollY = $tw.utils.getScrollPosition(window).y,
+		target;
+	if(slot.kind === "landmark") {
+		target = rect.top + scrollY + slot.landmark["link-offset"] - slot.landmark["viewport-y"];
+	} else {
+		target = rect.top + scrollY + getDraftOffset(slot.title) - getToolbarOffset();
+	}
+	return Math.min(Math.max(Math.round(target),0),
+		Math.max(0,document.documentElement.scrollHeight - window.innerHeight));
+}
+
+/*
+Which slot the reader is on: the one whose target is where we already are.
+Derived on every click rather than kept in a stored index, because the cycle
+is rebuilt each time and opening or closing a draft shifts every index in it.
+Returns -1 when the reader is somewhere else, so the next step is the first
+stop.
+*/
+function currentToggleIndex(cycle,here) {
+	for(var c=0; c<cycle.length; c++) {
+		var target = toggleSlotTargetY(cycle[c]);
+		if(target !== null && Math.abs(target - here) <= 4) {
+			return c;
+		}
+	}
+	return -1;
+}
+
+// Scroll to one slot. Returns false when the slot turned out to be
+// unreachable, so the caller can try the next one instead of wasting the click.
+function gotoToggleSlot(slot) {
 	if(slot.kind === "landmark") {
 		var frame = findFrame(slot.landmark.from);
 		if(frame) {
@@ -519,10 +558,108 @@ function toggleCycle() {
 			// blinks via scrollToLandmark once the reopened frame renders
 			reopenThenScroll(slot.landmark);
 		}
-	} else {
-		var draftFrame = findAnyFrame(slot.title);
-		if(draftFrame) {
-			scrollToDraft(draftFrame,slot.title);
+		return true;
+	}
+	var draftFrame = findAnyFrame(slot.title);
+	if(!draftFrame) {
+		return false;
+	}
+	scrollToDraft(draftFrame,slot.title);
+	return true;
+}
+
+/*
+The position to come back to when the cycle has only one stop. Without it a
+one-stop cycle is a dead button: the first click takes you to the stop, and
+every click after that re-scrolls to where you already are. Cleared as soon as
+the cycle has two stops of its own.
+*/
+/*
+The last place you were reading: the scroll position while a non-draft frame
+sat under the reference line. This is the other half of the toggle when your
+only stop is a draft you are already standing in.
+*/
+function saveReadingPosition(y) {
+	var existing = $tw.wiki.getTiddlerText(READING_POSITION_TITLE,"");
+	if(existing !== String(y)) {
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: READING_POSITION_TITLE,text: String(y)}));
+	}
+}
+
+function getReadingPosition() {
+	var value = parseInt($tw.wiki.getTiddlerText(READING_POSITION_TITLE,""),10);
+	return isNaN(value) ? null : value;
+}
+
+function getToggleReturn() {
+	var value = parseInt($tw.wiki.getTiddlerText(TOGGLE_RETURN_TITLE,""),10);
+	return isNaN(value) ? null : value;
+}
+
+function setToggleReturn(y) {
+	$tw.wiki.addTiddler(new $tw.Tiddler({title: TOGGLE_RETURN_TITLE,text: String(y)}));
+}
+
+function clearToggleReturn() {
+	if($tw.wiki.tiddlerExists(TOGGLE_RETURN_TITLE)) {
+		$tw.wiki.deleteTiddler(TOGGLE_RETURN_TITLE);
+	}
+}
+
+// Scroll to an absolute document position, animated like every other jump.
+// PageScroller re-reads the callback each frame and turns client bounds into a
+// document position, so the callback undoes that conversion.
+function scrollToDocumentY(y) {
+	$tw.pageScroller.scrollIntoView(null,function() {
+		return {
+			left: 0,
+			top: y - $tw.utils.getScrollPosition(window).y + getToolbarOffset(),
+			width: 0,
+			height: 0
+		};
+	});
+}
+
+function toggleCycle() {
+	var cycle = buildToggleCycle();
+	if(cycle.length === 0) {
+		return;
+	}
+	var here = Math.round($tw.utils.getScrollPosition(window).y),
+		start = currentToggleIndex(cycle,here);
+	// One stop is not a toggle by itself, so pair it with the position you
+	// jumped from: out on the first click, back on the second.
+	if(cycle.length === 1) {
+		if(start === 0) {
+			// Standing on the only stop, so the other half of the toggle is
+			// the place you came from, or failing that where you last read
+			var back = getToggleReturn();
+			if(back === null) {
+				back = getReadingPosition();
+			}
+			clearToggleReturn();
+			if(back !== null && Math.abs(back - here) > 4) {
+				scrollToDocumentY(back);
+			}
+			return;
+		}
+		if(gotoToggleSlot(cycle[0])) {
+			setToggleReturn(here);
+		}
+		return;
+	}
+	// Walk forward from where the reader actually is until a slot accepts the
+	// jump. A stop that would land on the position we are already at cannot
+	// move anything, so skip it rather than let it swallow the click.
+	clearToggleReturn();
+	for(var step=1; step<=cycle.length; step++) {
+		var slot = cycle[(start + step + cycle.length) % cycle.length],
+			target = toggleSlotTargetY(slot);
+		if(target !== null && Math.abs(target - here) <= 4) {
+			continue;
+		}
+		if(gotoToggleSlot(slot)) {
+			return;
 		}
 	}
 }
@@ -596,8 +733,9 @@ exports.startup = function() {
 		}
 		return false;
 	});
-	// Toggle button (replaces the consume-back button when use-toggle is on):
-	// step through the open-drafts + last-landmark cycle without consuming
+	// Toggle button (replaces the consume-back button while a draft is open, or
+	// permanently when use-toggle is on): step through the open-drafts +
+	// last-landmark cycle without consuming
 	$tw.rootWidget.addEventListener("tm-scroll-memory-toggle",function(event) {
 		toggleCycle();
 		return false;
@@ -640,11 +778,14 @@ exports.startup = function() {
 		// draft leaves and X returns. Neither transition should fire a landmark
 		// restore. Collect the underlying titles on both sides so the close /
 		// open logic below can skip them.
-		var editOpenUnderlying = Object.create(null), // X whose draft just opened
+		var editOpenUnderlying = Object.create(null), // X currently being edited
 			draftClosedUnderlying = Object.create(null); // X returning from a saved/cancelled draft
-		added.forEach(function(title) {
-			var of = newDraftMap[title];
-			if(of) { editOpenUnderlying[of] = true; }
+		// Every title with a draft in the story right now, not merely the ones
+		// whose draft just appeared: editing a tiddler whose draft was already
+		// open re-inserts that draft, so `added` comes back empty and the
+		// vanishing view frame would otherwise read as a real close.
+		Object.keys(newDraftMap).forEach(function(draftTitle) {
+			editOpenUnderlying[newDraftMap[draftTitle]] = true;
 		});
 		removed.forEach(function(title) {
 			var of = prevDraftMap[title];
