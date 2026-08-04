@@ -1,0 +1,72 @@
+title: $:/plugins/wikilabs/scroll-memory/styles
+tags: $:/tags/Stylesheet
+code-body: yes
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline html
+.wltc-scroll-memory-back {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 900;
+	display: flex;
+}
+
+.wltc-scroll-memory-back button + button {
+	margin-left: 8px;
+}
+
+.wltc-scroll-memory-back button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: <<colour primary>>;
+	fill: <<colour background>>;
+	box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+	cursor: pointer;
+}
+
+.wltc-scroll-memory-back button svg {
+	width: 22px;
+	height: 22px;
+	display: block;
+}
+
+.wltc-scroll-memory-back button:focus {
+	outline: 2px solid <<colour foreground>>;
+	outline-offset: 2px;
+}
+
+/* Optical centering: the arrow and fold glyphs sit off-center in their viewBox */
+.wltc-scroll-memory-back button svg.tc-image-left-arrow,
+.wltc-scroll-memory-back button svg.tc-image-right-arrow {
+	position: relative;
+	left: 2px;
+}
+
+.wltc-scroll-memory-back button svg.tc-image-fold {
+	position: relative;
+	top: 2px;
+}
+
+/* Hard on/off wave, self-contained: no dependency on the core tc-pulse
+   class, whose CSS only exists since 5.5.0 and is a debug fade anyway */
+@keyframes wltc-scroll-memory-blink {
+	0% { opacity: 1; }
+	49% { opacity: 1; }
+	50% { opacity: 0; }
+	100% { opacity: 0; }
+}
+
+.wltc-scroll-memory-blink {
+	background: lightgreen;
+	animation: wltc-scroll-memory-blink 0.5s linear 3;
+}
+
+@media print {
+	.wltc-scroll-memory-back {
+		display: none;
+	}
+}

@@ -1,0 +1,21 @@
+title: $:/plugins/wikilabs/scroll-memory/config
+caption: Scroll Memory
+tags: $:/tags/ControlPanel/WikiLabs
+
+! Scroll Memory Settings
+
+"Long tiddler" always means: a tiddler taller than the browser window. All remembered positions are kept for the browser session only; nothing is saved to the wiki.
+
+|! Active |! Description |h
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/landmarks" field="text" checked="yes" unchecked="no" default="yes"/> |''Record click landmarks'': Following a link out of a long tiddler records where you clicked. A floating back button appears at the bottom right; it restores the exact view you had when you followed the link. By itself this records long tiddlers only; ''Always active'' below extends it to every click in the story river. This is the master switch: off disables all landmark features, including scroll back on close and the landmark on reopening. |
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/offset-memory" field="text" checked="yes" unchecked="no" default="yes"/> |''Remember the scroll position of long tiddlers'': When you scroll within a long tiddler, the position is remembered. Navigating to that tiddler again restores the position instead of jumping to its top. |
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/blink" field="text" checked="yes" unchecked="no" default="yes"/> |''Blink the clicked link'': After scrolling back to a landmark, the link you had clicked blinks three times to mark the spot. |
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/auto-restore-on-close" field="text" checked="yes" unchecked="no" default="yes"/> |''Scroll back on close'': Closing the tiddler that a link opened scrolls back to the click location automatically, instead of leaving you at an arbitrary position. |
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/landmark-on-open" field="text" checked="yes" unchecked="no" default="yes"/> |''Return to the landmark on reopening'': Opening a tiddler that has a recorded landmark (from the sidebar, search, or a link) scrolls to the landmark instead of the tiddler's top. |
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/always-active" field="text" checked="yes" unchecked="no" default="no"/> |''Always active'': Record every link click in the story river, not only clicks in long tiddlers, and walk the history with back and forward buttons without consuming it. Reaching the first or last entry shows a notification; the next step wraps around. When off, only long tiddlers record clicks and the single back button consumes each entry. |
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/top-button" field="text" checked="yes" unchecked="no" default="yes"/> |''Get to top button'': While a long tiddler is scrolled beyond its top, a button appears that scrolls to the top of that tiddler. Not shown when sticky titles are active, because the tiddler toolbar is always visible there. |
+|<$checkbox tiddler="$:/config/wikilabs/scroll-memory/use-toggle" field="text" checked="yes" unchecked="no" default="no"/> |''Use toggle button instead of scroll back'': Replaces the floating scroll-back button with a toggle that steps through your open drafts and the last landmark ''without consuming it''. Jump back and forth between a source you are reading and a tiddler you are writing: click to peek at the landmark, click again to return to your draft at the exact spot you left. Only affects the single-back mode (not the always-active back and forward arrows). |
+
+|! Value |! Description |h
+|<$edit-text tiddler="$:/config/wikilabs/scroll-memory/min-offset" default="100" tag="input" type="number"/> |''Minimum scroll depth'': How far (in pixels) you must scroll into a long tiddler before the position is remembered. |
+|<$edit-text tiddler="$:/config/wikilabs/scroll-memory/stack-limit" default="50" tag="input" type="number"/> |''History size'': Maximum number of recorded click positions. The oldest entries are dropped first. The history only exists while the wiki is open in the browser; reloading the page starts with an empty history. |

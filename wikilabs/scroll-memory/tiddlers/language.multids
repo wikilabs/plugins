@@ -1,0 +1,10 @@
+title: $:/language/wikilabs/scroll-memory/
+
+Buttons/Top/Hint: Get to the top of the tiddler
+Buttons/Toggle/Hint: Toggle between the last landmark and your open drafts
+Buttons/Back/Hint: Back to the previous recorded position
+Buttons/Forward/Hint: Forward to the next recorded position
+Buttons/BackConsume/Hint: Scroll back to the last link you followed
+NavigationLabel: Scroll memory navigation
+Notifications/First: Scroll memory: first entry reached
+Notifications/Last: Scroll memory: last entry reached

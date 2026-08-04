@@ -1,0 +1,14 @@
+title: $:/plugins/wikilabs/scroll-memory/icon
+
+<svg width="22pt" height="22pt" version="1.1" viewBox="0 0 128 128">
+<path fill-rule="evenodd" d="M20 8h48a8 8 0 0 1 8 8v96a8 8 0 0 1-8 8H20a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8zm4 10a4 4 0 0 0-4 4v84a4 4 0 0 0 4 4h40a4 4 0 0 0 4-4V22a4 4 0 0 0-4-4H24z"/>
+<rect x="26" y="26" width="36" height="6" rx="3" opacity=".45"/>
+<rect x="26" y="38" width="36" height="6" rx="3" opacity=".45"/>
+<rect x="26" y="50" width="36" height="6" rx="3" opacity=".45"/>
+<rect x="26" y="62" width="36" height="6" rx="3"/>
+<rect x="26" y="74" width="36" height="6" rx="3" opacity=".45"/>
+<rect x="26" y="86" width="36" height="6" rx="3" opacity=".45"/>
+<rect x="26" y="98" width="36" height="6" rx="3" opacity=".45"/>
+<rect x="90" y="61" width="26" height="8" rx="3"/>
+<path d="M92 51v28L78 65z"/>
+</svg>

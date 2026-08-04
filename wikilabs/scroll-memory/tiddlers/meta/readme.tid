@@ -1,0 +1,28 @@
+title: $:/plugins/wikilabs/scroll-memory/readme
+caption: readme
+
+This plugin addresses the loss of one's reading position when navigating between tiddlers in the story river. It applies to "long" tiddlers, meaning tiddlers taller than the viewport. It has three cooperating behaviours:
+
+# ''Scroll position memory'': when you scroll within a long tiddler, the position is remembered. Navigating to that tiddler again restores the position instead of jumping to its top.
+# ''Click landmarks'': when you follow a link out of a long tiddler, the click location is recorded. A floating back button appears at the bottom right; clicking it restores the exact view you had when you followed the link, and the link you had clicked blinks three times to mark the spot. Landmarks form a stack, so chained navigation can be walked back step by step.
+# ''Auto restore on close'': closing the tiddler that a link opened scrolls back to the click location automatically, instead of leaving you at an arbitrary position.
+
+! Always active mode
+
+With the ''always active'' setting (default off) every link click in the story river is recorded, not just clicks in long tiddlers, and up to 50 positions are kept (configurable). The floating button becomes a back and forward pair that walks the recorded history without consuming it. Landing on the first or last entry shows a notification; the next step in the same direction wraps around to the other end. Closing a tiddler opened by a link jumps to its landmark but keeps it in the history.
+
+! Closed tiddlers
+
+Landmarks survive closing their tiddler. Walking to a landmark whose tiddler has been closed reopens it at the top of the story river and then scrolls to the recorded position. Independently of the buttons, opening a tiddler that has a recorded landmark (from the sidebar, search, or a link) returns to the landmark instead of the tiddler's top; this can be disabled on the config tab.
+
+! Get to top
+
+While a long tiddler is scrolled beyond its own top, including right after a landmark restore, an additional button appears; it navigates to the top of that tiddler. It can be disabled on the config tab. With sticky titles the button is never shown, because the tiddler toolbar is always visible there.
+
+! Toggle button
+
+Editing a tiddler no longer jumps you to its landmark: the draft opens in place and stays put. Optionally (''config'' tab: "Use toggle button instead of scroll back") the floating scroll-back button becomes a toggle that steps through your open drafts and the last landmark without consuming it. This lets you read a source at its landmark and write a summary in another tiddler, clicking to jump back and forth: to the landmark (which reopens its source if you closed it, and blinks the link) and back to each draft at the exact spot you left off.
+
+All state is session-only. It lives under `$:/temp/volatile/scroll-memory/` and is never saved or synced.
+
+Each behaviour can be disabled on the ''config'' tab, which also sets the minimum scroll depth before a position is remembered and the history size.
