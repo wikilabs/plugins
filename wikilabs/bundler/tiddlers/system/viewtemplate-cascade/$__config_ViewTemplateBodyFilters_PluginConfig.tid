@@ -1,0 +1,8 @@
+created: 20260423143300000
+list-before: $:/config/ViewTemplateBodyFilters/code-body
+modified: 20260423143300000
+tags: $:/tags/ViewTemplateBodyFilter
+title: $:/config/ViewTemplateBodyFilters/PluginConfig
+type: text/vnd.tiddlywiki
+
+[tag[$:/tags/PluginConfig]then[$:/plugins/wikilabs/bundler/ui/plugin-config/canvas]]
