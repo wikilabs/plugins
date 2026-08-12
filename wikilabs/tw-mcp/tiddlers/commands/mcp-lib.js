@@ -129,6 +129,20 @@ function jsonrpcError(id, code, message, data) {
 	return JSON.stringify(err);
 }
 
+// Returns null when the line is not valid JSON. A SyntaxError is the one
+// anticipated failure here; anything else is a bug and must propagate rather
+// than be silently reinterpreted as "unparseable".
+function parseJsonRpc(line) {
+	try {
+		return JSON.parse(line);
+	} catch(e) {
+		if(e instanceof SyntaxError) {
+			return null;
+		}
+		throw e;
+	}
+}
+
 // --- MCP Server ---
 
 // --- Shared message dispatcher (used by stdio and pipe transports) ---
@@ -804,11 +818,9 @@ function transitionToProxy(newPrimary) {
 // Stamps the token on EVERY relayed message rather than only the first, because
 // the primary now re-checks it per request. A message without it is rejected.
 function injectAuth(line, token, label, role) {
-	var msg;
-	try {
-		msg = JSON.parse(line);
-	} catch(e) {
-		return line; // not valid JSON — let the primary reject it
+	var msg = parseJsonRpc(line);
+	if(!msg) {
+		return line; // not valid JSON, let the primary reject it
 	}
 	msg.params = msg.params || {};
 	msg.params._meta = msg.params._meta || {};
@@ -1155,32 +1167,32 @@ function startProxyMode(discovery) {
 
 	function relayToPrimary(line) {
 		var modified = injectAuth(line, token, serverLabel);
-		// Intercept requests that need proxy-side handling
-		try {
-			var msg = JSON.parse(line);
-			if(msg.id !== undefined) {
-				if(msg.method === "server/discover") {
-					discoverId = msg.id;
-				}
-				// Track tools/list requests for readonly filtering of responses
-				if(readonlyMode && msg.method === "tools/list") {
-					toolsListIds[msg.id] = true;
-				}
-				// Block write tool calls locally when proxy is readonly
-				if(readonlyMode && msg.method === "tools/call") {
-					var toolName = msg.params && msg.params.name;
-					if(toolName && writeToolNames[toolName]) {
-						var errResp = jsonrpcResponse(msg.id, {
-							isError: true,
-							content: [{ type: "text", text: "Tool '" + toolName + "' is disabled in readonly mode" }]
-						});
-						process.stdout.write(errResp + "\n");
-						return; // don't forward to primary
-					}
+		// Inspect requests that need proxy-side handling. This runs OUTSIDE any
+		// catch on purpose: the readonly block below decides whether a write
+		// call reaches the primary, and the early return is the only thing that
+		// stops it. Swallowing a throw from here would forward the very call we
+		// just refused.
+		var msg = parseJsonRpc(line);
+		if(msg && msg.id !== undefined) {
+			if(msg.method === "server/discover") {
+				discoverId = msg.id;
+			}
+			// Track tools/list requests for readonly filtering of responses
+			if(readonlyMode && msg.method === "tools/list") {
+				toolsListIds[msg.id] = true;
+			}
+			// Block write tool calls locally when proxy is readonly
+			if(readonlyMode && msg.method === "tools/call") {
+				var toolName = msg.params && msg.params.name;
+				if(toolName && writeToolNames[toolName]) {
+					var errResp = jsonrpcResponse(msg.id, {
+						isError: true,
+						content: [{ type: "text", text: "Tool '" + toolName + "' is disabled in readonly mode" }]
+					});
+					process.stdout.write(errResp + "\n");
+					return; // don't forward to primary
 				}
 			}
-		} catch(e) {
-			// Ignore parse errors
 		}
 		if(connected && pipeSocket && !pipeSocket.destroyed) {
 			pipeSocket.write(modified + "\n");
@@ -1328,3 +1340,6 @@ function startMCPServer(options) {
 
 exports.startMCPServer = startMCPServer;
 exports.readDiscoveryFile = readDiscoveryFile;
+// Test seam. The protocol contract (discovery, version gate, result shape) is
+// worth pinning without standing up a transport to reach it.
+exports.dispatchMessage = dispatchMessage;
