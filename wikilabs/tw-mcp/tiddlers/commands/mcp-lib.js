@@ -307,10 +307,6 @@ function dispatchMessage(line, send) {
 			}
 			break;
 
-		case "ping":
-			send(jsonrpcResponse(id, {}));
-			break;
-
 		case "tools/list":
 			// ttlMs and cacheScope are required on list results. private, because
 			// the list is specific to this wiki and this readonly mode and must
