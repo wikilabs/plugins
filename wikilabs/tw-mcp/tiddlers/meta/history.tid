@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.15.0 - 2026-08-12
+
+* ''BREAKING'': the server now speaks MCP `2026-07-28`, which is stateless — there is no `initialize` handshake. Modern clients find the server with `server/discover`; a client that only supports `2025-11-25` or earlier can no longer connect and gets an error naming the supported version.
+* Pipe transport: the auth token moved into per-request `_meta` and is verified on every message instead of once per connection.
+* Pear mode (`--mcp pear=`) is unchanged and still serves the previous revision.
+
 V 0.14.3 - 2026-08-03
 
 * Browser tabs surface their SSE connection state: the adaptor writes `$:/state/wikilabs/tw-mcp/sse-connection` (`open` / `reconnecting` / `closed`), shown as a "Connection (this tab)" row in ControlPanel > WikiLabs > MCP SSE.

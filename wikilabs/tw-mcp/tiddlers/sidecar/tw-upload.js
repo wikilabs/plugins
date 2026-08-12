@@ -35,6 +35,22 @@ var ALLOWED_TYPES = {
 
 var MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
+// This file is a standalone CLI and cannot require mcp-lib.js, which is a
+// TiddlyWiki module tiddler, so the version string is necessarily a second
+// copy. Keep it in step with PROTOCOL_VERSION there.
+var PROTOCOL_VERSION = "2026-07-28";
+
+// The protocol is stateless: there is no handshake to authenticate once, so
+// every request carries its version, its identity and the pipe token.
+function buildMeta(token) {
+	var meta = {};
+	meta["io.modelcontextprotocol/protocolVersion"] = PROTOCOL_VERSION;
+	meta["io.modelcontextprotocol/clientInfo"] = { name: "tw-upload", version: "1.0.0" };
+	meta["wikilabs.tw-mcp/auth"] = token;
+	meta["wikilabs.tw-mcp/pid"] = process.pid;
+	return meta;
+}
+
 // Strip terminal escape sequences from server responses to prevent terminal injection
 function sanitizeOutput(text) {
 	if(typeof text !== "string") return "";
@@ -183,12 +199,21 @@ function main() {
 
 	var socket = net.createConnection(pipePath, function() {
 		console.log("Connected.");
-		// Send initialize request with auth token
-		sendJsonRpc(socket, 1, "initialize", {
-			protocolVersion: "2025-03-26",
-			capabilities: {},
-			clientInfo: { name: "tw-upload", version: "1.0.0" },
-			_auth_token: authToken
+		// No handshake to wait for — the call goes out immediately, carrying
+		// its own protocol version, identity and pipe token in _meta.
+		var toolArgs = {
+			filename: filename,
+			data: data,
+			type: mimeType
+		};
+		if(args.title) toolArgs.title = args.title;
+		if(args.tags) toolArgs.tags = args.tags;
+		if(args.subfolder) toolArgs.subfolder = args.subfolder;
+		console.log("Uploading...");
+		sendJsonRpc(socket, 1, "tools/call", {
+			_meta: buildMeta(authToken),
+			name: "upload_file",
+			arguments: toolArgs
 		});
 	});
 
@@ -207,23 +232,8 @@ function main() {
 				var response = JSON.parse(line);
 				messageCount++;
 				if(messageCount === 1) {
-					// Response to initialize — send notification, then upload
-					sendJsonRpc(socket, null, "notifications/initialized");
-					var toolArgs = {
-						filename: filename,
-						data: data,
-						type: mimeType
-					};
-					if(args.title) toolArgs.title = args.title;
-					if(args.tags) toolArgs.tags = args.tags;
-					if(args.subfolder) toolArgs.subfolder = args.subfolder;
-					console.log("Uploading...");
-					sendJsonRpc(socket, 2, "tools/call", {
-						name: "upload_file",
-						arguments: toolArgs
-					});
-				} else if(messageCount === 2) {
-					// Response to upload_file
+					// Response to upload_file. It is the first message now:
+					// the handshake that used to precede it is gone.
 					if(response.result && response.result.content) {
 						response.result.content.forEach(function(c) {
 							var text = sanitizeOutput(c.text);

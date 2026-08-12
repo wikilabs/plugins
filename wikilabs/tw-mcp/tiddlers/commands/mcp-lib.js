@@ -19,9 +19,29 @@ var fs = $tw.node ? require("fs") : null,
 
 var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
 
-var PROTOCOL_VERSION = "2025-03-26";
+var PROTOCOL_VERSION = "2026-07-28";
+var SUPPORTED_VERSIONS = [PROTOCOL_VERSION];
 var SERVER_NAME = "tiddlywiki-mcp";
 var PLUGIN_TITLE = "$:/plugins/wikilabs/tw-mcp";
+
+// Spec-defined _meta keys. 2026-07-28 has no handshake, so a request carries
+// its own version and identity and a result carries the server's.
+var META_VERSION = "io.modelcontextprotocol/protocolVersion";
+var META_CLIENT_INFO = "io.modelcontextprotocol/clientInfo";
+var META_SERVER_INFO = "io.modelcontextprotocol/serverInfo";
+
+// tw-mcp's own pipe-transport metadata. Statelessness removes the single
+// initialize that used to carry the token and identify the connecting process,
+// so every message over the pipe now carries both.
+var TW_AUTH = "wikilabs.tw-mcp/auth";
+var TW_PID = "wikilabs.tw-mcp/pid";
+var TW_LABEL = "wikilabs.tw-mcp/label";
+var TW_ROLE = "wikilabs.tw-mcp/role";
+
+// Freshness hint for list results. Deliberately short: the tool list is not
+// static here, since it varies with readonly mode and reload_mcp_modules can
+// change it mid-process, and we advertise no listChanged notification.
+var LIST_TTL_MS = 60000;
 
 function getServerVersion() {
 	var pluginTiddler = $tw.wiki.getTiddler(PLUGIN_TITLE);
@@ -71,8 +91,34 @@ function checkPathAllowed(targetPath) {
 
 // --- JSON-RPC helpers ---
 
+function serverIdentity() {
+	return { name: SERVER_NAME, version: getServerVersion() };
+}
+
+// The _meta of an inbound request, or an empty object when it carries none.
+function getMeta(parsed) {
+	return (parsed && parsed.params && parsed.params._meta) || {};
+}
+
+// A proxy front-end is itself a client of the primary, so its own requests must
+// declare version and identity exactly like any other client's.
+function buildRequestMeta() {
+	var params = { _meta: {} };
+	params._meta[META_VERSION] = PROTOCOL_VERSION;
+	params._meta[META_CLIENT_INFO] = serverIdentity();
+	return params;
+}
+
+// Every result MUST carry resultType and SHOULD identify the server, so both
+// are stamped here rather than at each call site.
 function jsonrpcResponse(id, result) {
-	return JSON.stringify({ jsonrpc: "2.0", id: id, result: result });
+	var payload = result || {};
+	if(payload.resultType === undefined) {
+		payload.resultType = "complete";
+	}
+	payload._meta = payload._meta || {};
+	payload._meta[META_SERVER_INFO] = serverIdentity();
+	return JSON.stringify({ jsonrpc: "2.0", id: id, result: payload });
 }
 
 function jsonrpcError(id, code, message, data) {
@@ -117,6 +163,16 @@ var suppressNextInitLog = false;
 // Render READONLY prominently so users notice when writes are disabled.
 function fmtMode() {
 	return "mode: " + (readonlyMode ? "READONLY" : "readwrite");
+}
+
+// Clients identify themselves per request now, so there is no stored session
+// to name them from — read it off whichever message we happen to be handling.
+function describeClient(parsed) {
+	var info = getMeta(parsed)[META_CLIENT_INFO];
+	if(info && info.name) {
+		return info.name + (info.version ? " " + info.version : "");
+	}
+	return "unidentified client";
 }
 
 // Rolling history of recent requests so we can identify what was cancelled.
@@ -171,16 +227,31 @@ function dispatchMessage(line, send) {
 	var toolName = (method === "tools/call" && parsed.params) ? parsed.params.name : null;
 	recordRequest(id, method, toolName);
 
+	// A legacy client has no way to fall forward, so name the versions we speak
+	// rather than returning a bare "method not found".
+	if(method === "initialize") {
+		send(jsonrpcError(id, -32022,
+			"This server implements MCP " + SUPPORTED_VERSIONS.join(", ") + ", which has no initialize handshake. Call server/discover instead.",
+			{ supported: SUPPORTED_VERSIONS, requested: (parsed.params && parsed.params.protocolVersion) || null }));
+		return;
+	}
+
+	// There is no handshake, so every request declares its own version.
+	// server/discover is exempt: it is how a client learns what we support.
+	if(method !== "server/discover") {
+		var clientVersion = getMeta(parsed)[META_VERSION];
+		if(SUPPORTED_VERSIONS.indexOf(clientVersion) < 0) {
+			send(jsonrpcError(id, -32022, "Unsupported protocol version",
+				{ supported: SUPPORTED_VERSIONS, requested: clientVersion || null }));
+			return;
+		}
+	}
 	switch(method) {
-		case "initialize":
+		case "server/discover":
 			send(jsonrpcResponse(id, {
-				protocolVersion: PROTOCOL_VERSION,
+				supportedVersions: SUPPORTED_VERSIONS,
 				capabilities: {
 					tools: {}
-				},
-				serverInfo: {
-					name: SERVER_NAME,
-					version: getServerVersion()
 				},
 				instructions: "TiddlyWiki MCP server." +
 					(readonlyMode ? " READONLY mode — writes disabled." : "") +
@@ -218,7 +289,7 @@ function dispatchMessage(line, send) {
 			if(suppressNextInitLog) {
 				suppressNextInitLog = false;
 			} else {
-				log("Initialized (protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ")");
+				log("Discovered by " + describeClient(parsed) + " (protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ")");
 			}
 			break;
 
@@ -227,8 +298,13 @@ function dispatchMessage(line, send) {
 			break;
 
 		case "tools/list":
+			// ttlMs and cacheScope are required on list results. private, because
+			// the list is specific to this wiki and this readonly mode and must
+			// never be reused by a shared intermediary.
 			send(jsonrpcResponse(id, {
-				tools: handlers.getToolDefinitions(readonlyMode)
+				tools: handlers.getToolDefinitions(readonlyMode),
+				ttlMs: LIST_TTL_MS,
+				cacheScope: "private"
 			}));
 			break;
 
@@ -425,14 +501,12 @@ function startPipeServer() {
 			}
 		};
 
-		// Pipe clients must authenticate via token in the initialize request.
-		// The dispatch wrapper intercepts messages until auth succeeds.
+		// Statelessness removes the one initialize that used to carry the token,
+		// so EVERY message must present it. The registry is keyed to the socket,
+		// which is still a real connection even though the protocol above it is
+		// not: identity is recorded from the first message that authenticates.
 		var authenticated = false;
 		var authenticatedDispatch = function(line, sendFn) {
-			if(authenticated) {
-				return dispatchMessage(line, sendFn);
-			}
-			// Not yet authenticated — parse and check
 			var parsed;
 			try {
 				parsed = JSON.parse(line);
@@ -440,15 +514,11 @@ function startPipeServer() {
 				sendFn(jsonrpcError(null, -32700, "Parse error"));
 				return;
 			}
-			// First message must be initialize with a valid _auth_token
-			if(parsed.method !== "initialize" || parsed.id === undefined || parsed.id === null) {
-				sendFn(jsonrpcError(parsed.id || null, -32600, "Authentication required: first message must be initialize with _auth_token"));
-				socket.destroy();
-				return;
-			}
-			var clientToken = parsed.params && parsed.params._auth_token;
+			var meta = getMeta(parsed);
+			var replyId = (parsed.id === undefined) ? null : parsed.id;
+			var clientToken = meta[TW_AUTH];
 			if(!clientToken || typeof clientToken !== "string") {
-				sendFn(jsonrpcError(parsed.id, -32600, "Authentication failed: missing _auth_token"));
+				sendFn(jsonrpcError(replyId, -32600, "Authentication failed: missing " + TW_AUTH + " in _meta"));
 				socket.destroy();
 				return;
 			}
@@ -456,31 +526,32 @@ function startPipeServer() {
 			var tokenBuf = Buffer.from(authToken, "utf8");
 			var clientBuf = Buffer.from(clientToken, "utf8");
 			if(tokenBuf.length !== clientBuf.length || !crypto.timingSafeEqual(tokenBuf, clientBuf)) {
-				sendFn(jsonrpcError(parsed.id, -32600, "Authentication failed: invalid token"));
+				sendFn(jsonrpcError(replyId, -32600, "Authentication failed: invalid token"));
 				log("Auth failed for client " + clientId + " — invalid token" + clientSuffix);
 				socket.destroy();
 				return;
 			}
-			authenticated = true;
-			// Append PID to clientId, keep label/role separate so they're always last
-			var clientPid = parsed.params && parsed.params._pid;
-			var clientLabel = parsed.params && parsed.params._label;
-			var clientRole = parsed.params && parsed.params._role;
-			if(clientPid) {
-				clientId = clientId + " (PID " + clientPid + ")";
+			if(!authenticated) {
+				authenticated = true;
+				// Append PID to clientId, keep label/role separate so they're always last
+				var clientPid = meta[TW_PID];
+				var clientLabel = meta[TW_LABEL];
+				var clientRole = meta[TW_ROLE];
+				if(clientPid) {
+					clientId = clientId + " (PID " + clientPid + ")";
+				}
+				if(clientLabel) {
+					clientSuffix = " @" + clientLabel;
+				}
+				if(clientRole) {
+					clientSuffix = clientSuffix + " [" + clientRole + "]";
+				}
+				log("Client ready: " + clientId + clientSuffix + " (protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ")");
+				// Register in client registry for broadcast
+				pipeClients[clientId] = { send: sendFn, socket: socket };
+				// Suppress the redundant per-client discovery log — the line above already covers it
+				suppressNextInitLog = true;
 			}
-			if(clientLabel) {
-				clientSuffix = " @" + clientLabel;
-			}
-			if(clientRole) {
-				clientSuffix = clientSuffix + " [" + clientRole + "]";
-			}
-			log("Client ready: " + clientId + clientSuffix + " (protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ")");
-			// Register in client registry for broadcast
-			pipeClients[clientId] = { send: sendFn, socket: socket };
-			// Suppress the redundant per-client "Initialized" log — the line above already covers it
-			suppressNextInitLog = true;
-			// Forward the initialize message to the normal dispatcher
 			dispatchMessage(line, sendFn);
 		};
 
@@ -662,20 +733,16 @@ function transitionToProxy(newPrimary) {
 	// Connect to new primary's pipe
 	var proxySocket = net.createConnection(newPrimary.pipe, function() {
 		log("Transition: connected to new primary");
-		// Send initialize with auth token to authenticate.
-		// _role: "former-primary" tells the new primary we're the old one reconnecting as proxy.
-		var initMsg = JSON.stringify({
+		// There is no handshake to authenticate with, so the message that
+		// registers us with the new primary is an ordinary server/discover
+		// carrying auth. The former-primary role marks us as the one stepping
+		// down rather than a freshly started proxy.
+		var initMsg = injectAuth(JSON.stringify({
 			jsonrpc: "2.0",
 			id: "transition-init",
-			method: "initialize",
-			params: {
-				protocolVersion: PROTOCOL_VERSION,
-				_auth_token: newPrimary.token,
-				_pid: process.pid,
-				_label: serverLabel,
-				_role: "former-primary"
-			}
-		});
+			method: "server/discover",
+			params: buildRequestMeta()
+		}), newPrimary.token, serverLabel, "former-primary");
 		proxySocket.write(initMsg + "\n");
 		// Flush any pending stdin lines
 		for(var i = 0; i < pendingRelay.length; i++) {
@@ -734,22 +801,26 @@ function transitionToProxy(newPrimary) {
 
 // --- Proxy mode helpers ---
 
-function injectAuth(line, token, label) {
+// Stamps the token on EVERY relayed message rather than only the first, because
+// the primary now re-checks it per request. A message without it is rejected.
+function injectAuth(line, token, label, role) {
+	var msg;
 	try {
-		var msg = JSON.parse(line);
-		if(msg.method === "initialize") {
-			msg.params = msg.params || {};
-			msg.params._auth_token = token;
-			msg.params._pid = process.pid;
-			if(label) {
-				msg.params._label = label;
-			}
-			return JSON.stringify(msg);
-		}
+		msg = JSON.parse(line);
 	} catch(e) {
-		// Not valid JSON — pass through
+		return line; // not valid JSON — let the primary reject it
 	}
-	return line;
+	msg.params = msg.params || {};
+	msg.params._meta = msg.params._meta || {};
+	msg.params._meta[TW_AUTH] = token;
+	msg.params._meta[TW_PID] = process.pid;
+	if(label) {
+		msg.params._meta[TW_LABEL] = label;
+	}
+	if(role) {
+		msg.params._meta[TW_ROLE] = role;
+	}
+	return JSON.stringify(msg);
 }
 
 function startProxyMode(discovery) {
@@ -758,7 +829,7 @@ function startProxyMode(discovery) {
 	var pipeSocket = null;
 	var connected = false;
 	var pendingStdio = [];
-	var initializeId = null;
+	var discoverId = null;
 	var toolsListIds = {}; // track tools/list request ids for readonly filtering
 	// Build write tool name set for readonly enforcement (discovered from
 	// the handler definitions' write flag)
@@ -779,15 +850,16 @@ function startProxyMode(discovery) {
 	pipeSocket = net.createConnection(pipePath, function() {
 		connected = true;
 		log("Proxy: connected to primary");
-		// Send our own initialize to authenticate with the primary's pipe
+		// Our own server/discover both authenticates us with the primary's pipe
+		// and confirms it is alive, which is what the self-init used to do.
 		var selfInit = injectAuth(JSON.stringify({
 			jsonrpc: "2.0",
 			id: selfInitId,
-			method: "initialize",
-			params: { protocolVersion: PROTOCOL_VERSION }
+			method: "server/discover",
+			params: buildRequestMeta()
 		}), token, serverLabel);
 		pipeSocket.write(selfInit + "\n");
-		// Flush buffered client messages (client's initialize will be a second init — harmless)
+		// Flush buffered client messages (the client's own discover is a second one — harmless)
 		for(var i = 0; i < pendingStdio.length; i++) {
 			pipeSocket.write(pendingStdio[i] + "\n");
 		}
@@ -836,16 +908,17 @@ function startProxyMode(discovery) {
 					} catch(e) {}
 				}
 				// Intercept responses that need proxy-side modification
-				if(initializeId !== null || (readonlyMode && Object.keys(toolsListIds).length > 0)) {
+				if(discoverId !== null || (readonlyMode && Object.keys(toolsListIds).length > 0)) {
 					try {
 						var resp = JSON.parse(line);
 						if(resp.id !== undefined) {
-							// Annotate initialize response with proxy info
-							if(resp.id === initializeId && resp.result && resp.result.serverInfo) {
-								resp.result.serverInfo.proxy = true;
-								resp.result.serverInfo.primaryPid = discovery.pid;
-								resp.result.serverInfo.primaryLabel = discovery.label || null;
-								initializeId = null;
+							// Annotate the discover response with proxy info. serverInfo lives
+								// in _meta now that there is no handshake result to carry it.
+							if(resp.id === discoverId && resp.result && resp.result._meta && resp.result._meta[META_SERVER_INFO]) {
+								resp.result._meta[META_SERVER_INFO].proxy = true;
+								resp.result._meta[META_SERVER_INFO].primaryPid = discovery.pid;
+								resp.result._meta[META_SERVER_INFO].primaryLabel = discovery.label || null;
+								discoverId = null;
 								line = JSON.stringify(resp);
 							}
 							// Filter write tools from tools/list response when proxy is readonly
@@ -914,9 +987,10 @@ function startProxyMode(discovery) {
 		pipeSocket = net.createConnection(params.pipe, function() {
 			connected = true;
 			log("Proxy: reconnected to new primary (PID " + params.pid + ")");
-			// Flush any pending messages
+			// Flush any pending messages. They were stamped with the previous
+			// primary's token, which this one would reject, so re-stamp them.
 			for(var i = 0; i < pendingStdio.length; i++) {
-				pipeSocket.write(pendingStdio[i] + "\n");
+				pipeSocket.write(injectAuth(pendingStdio[i], params.token, serverLabel) + "\n");
 			}
 			pendingStdio = [];
 		});
@@ -957,12 +1031,13 @@ function startProxyMode(discovery) {
 			handlePrimaryDisconnect();
 		});
 
-		// Send initialize with auth to authenticate with new primary
+		// Re-authenticate with the new primary the same way: a plain
+		// server/discover carrying the new primary's token.
 		var initMsg = injectAuth(JSON.stringify({
 			jsonrpc: "2.0",
 			id: "reconnect-init-" + Date.now(),
-			method: "initialize",
-			params: { protocolVersion: PROTOCOL_VERSION }
+			method: "server/discover",
+			params: buildRequestMeta()
 		}), params.token, serverLabel);
 
 		if(connected) {
@@ -1003,15 +1078,16 @@ function startProxyMode(discovery) {
 		log("   old primary: PID " + currentPrimaryPid);
 		log("   new primary: PID " + process.pid + (serverLabel ? " @" + serverLabel : ""));
 
-		// Send takeover request to current primary
-		var request = JSON.stringify({
+		// Send takeover request to current primary. It needs the token like any
+		// other message now — an unauthenticated one gets the socket destroyed.
+		var request = injectAuth(JSON.stringify({
 			jsonrpc: "2.0",
 			method: "notifications/takeover-request",
 			params: {
 				pid: process.pid,
 				label: serverLabel
 			}
-		});
+		}), token, serverLabel);
 		if(connected && pipeSocket && !pipeSocket.destroyed) {
 			pipeSocket.write(request + "\n");
 		}
@@ -1083,8 +1159,8 @@ function startProxyMode(discovery) {
 		try {
 			var msg = JSON.parse(line);
 			if(msg.id !== undefined) {
-				if(msg.method === "initialize") {
-					initializeId = msg.id;
+				if(msg.method === "server/discover") {
+					discoverId = msg.id;
 				}
 				// Track tools/list requests for readonly filtering of responses
 				if(readonlyMode && msg.method === "tools/list") {
