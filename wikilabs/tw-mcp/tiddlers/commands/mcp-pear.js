@@ -26,9 +26,20 @@ var net = $tw.node ? require("net") : null;
 var os = $tw.node ? require("os") : null;
 var ncrypto = $tw.node ? require("crypto") : null;
 
-var PROTOCOL_VERSION = "2025-03-26";
+var PROTOCOL_VERSION = "2026-07-28";
+var SUPPORTED_VERSIONS = [PROTOCOL_VERSION];
 var SERVER_NAME = "tiddlywiki-mcp";
 var CALL_TIMEOUT_MS = 20000;
+
+// Spec-defined _meta keys. The revision has no handshake, so a request carries
+// its own version and a result carries the server's identity.
+var META_VERSION = "io.modelcontextprotocol/protocolVersion";
+var META_SERVER_INFO = "io.modelcontextprotocol/serverInfo";
+var META_SUBSCRIPTION_ID = "io.modelcontextprotocol/subscriptionId";
+
+// Freshness hint for tools/list. Short, because the advertised set depends on
+// whether the app is reachable and on the scope the handshake settled on.
+var LIST_TTL_MS = 30000;
 
 // Every tool forwards VERBATIM (feature parity, ruled 2026-07-17): the app
 // runs the real tw-mcp handler in its headless engine over the composed
@@ -72,12 +83,24 @@ function getServerVersion() {
 	return (plugin && plugin.fields.version) || "unknown";
 }
 
+// Every result must carry resultType and should identify the server, so both
+// are stamped here rather than at each call site.
 function jsonrpcResponse(id, result) {
-	return JSON.stringify({ jsonrpc: "2.0", id: id, result: result });
+	var payload = result || {};
+	if(payload.resultType === undefined) {
+		payload.resultType = "complete";
+	}
+	payload._meta = payload._meta || {};
+	payload._meta[META_SERVER_INFO] = { name: SERVER_NAME, version: getServerVersion() };
+	return JSON.stringify({ jsonrpc: "2.0", id: id, result: payload });
 }
 
-function jsonrpcError(id, code, message) {
-	return JSON.stringify({ jsonrpc: "2.0", id: id, error: { code: code, message: message } });
+function jsonrpcError(id, code, message, data) {
+	var err = { jsonrpc: "2.0", id: id, error: { code: code, message: message } };
+	if(data !== undefined) {
+		err.error.data = data;
+	}
+	return JSON.stringify(err);
 }
 
 function textResult(msg) {
@@ -112,14 +135,36 @@ function startPearMode(options) {
 	// later handshake lands in a different effective scope (the app came up,
 	// the enrollment was approved, the agent was revoked) notify the client so
 	// it re-fetches — the write set appears exactly when it becomes callable.
+	// Delivery rides an open subscriptions/listen. This revision forbids an
+	// unsolicited notification, and every one must name the subscription that
+	// asked for it, so nothing is sent until a client opts in.
 	var lastAdvertisedRw = null;
+	var toolsListSubscribers = {}; // String(listen request id) -> the id itself
 	function effectiveRw() {
 		return (authScope === "rw") && (authState === "full-trust" || authState === "authenticated");
+	}
+	function notifyOnSubscription(subscriptionId, method, params) {
+		var body = params || {};
+		body._meta = body._meta || {};
+		body._meta[META_SUBSCRIPTION_ID] = subscriptionId;
+		send(JSON.stringify({ jsonrpc: "2.0", method: method, params: body }));
 	}
 	function maybeNotifyListChanged() {
 		if(lastAdvertisedRw === null || effectiveRw() === lastAdvertisedRw) return;
 		lastAdvertisedRw = effectiveRw();
-		send(JSON.stringify({ jsonrpc: "2.0", method: "notifications/tools/list_changed" }));
+		for(var key in toolsListSubscribers) {
+			notifyOnSubscription(toolsListSubscribers[key], "notifications/tools/list_changed");
+		}
+	}
+	// Graceful closure: answer each open subscriptions/listen so the client can
+	// tell a clean shutdown from a dropped transport.
+	function closeSubscriptions() {
+		for(var key in toolsListSubscribers) {
+			var payload = { _meta: {} };
+			payload._meta[META_SUBSCRIPTION_ID] = toolsListSubscribers[key];
+			send(jsonrpcResponse(toolsListSubscribers[key], payload));
+		}
+		toolsListSubscribers = {};
 	}
 
 	function readDiscovery() {
@@ -303,16 +348,38 @@ function startPearMode(options) {
 			return send(jsonrpcError(null, -32700, "Parse error"));
 		}
 		if(parsed.id === undefined || parsed.id === null) {
+			// On stdio there is no stream to close, so a client ends a
+			// subscription by cancelling the request that opened it.
+			if(parsed.method === "notifications/cancelled" && parsed.params) {
+				delete toolsListSubscribers[String(parsed.params.requestId)];
+			}
 			return; // notifications need no reply
 		}
 		var id = parsed.id;
+
+		// A legacy client cannot fall forward, so name the version we speak
+		// rather than answering a bare "method not found".
+		if(parsed.method === "initialize") {
+			return send(jsonrpcError(id, -32022,
+				"This server implements MCP " + SUPPORTED_VERSIONS.join(", ") + ", which has no initialize handshake. Call server/discover instead.",
+				{ supported: SUPPORTED_VERSIONS, requested: (parsed.params && parsed.params.protocolVersion) || null }));
+		}
+		// There is no handshake, so every request declares its own version.
+		// server/discover is exempt: it is how a client learns what we speak.
+		if(parsed.method !== "server/discover") {
+			var clientVersion = parsed.params && parsed.params._meta && parsed.params._meta[META_VERSION];
+			if(SUPPORTED_VERSIONS.indexOf(clientVersion) < 0) {
+				return send(jsonrpcError(id, -32022, "Unsupported protocol version",
+					{ supported: SUPPORTED_VERSIONS, requested: clientVersion || null }));
+			}
+		}
+
 		switch(parsed.method) {
-			case "initialize": {
+			case "server/discover": {
 				var disco = readDiscovery();
 				return send(jsonrpcResponse(id, {
-					protocolVersion: PROTOCOL_VERSION,
+					supportedVersions: SUPPORTED_VERSIONS,
 					capabilities: { tools: { listChanged: true } },
-					serverInfo: { name: SERVER_NAME, version: getServerVersion() },
 					instructions: "TiddlyWiki MCP server — PEAR MODE: tools answer from a RUNNING Facets app" +
 						(disco ? " (group '" + (disco.name || disco.group) + "', " + disco.mode + ")" : " (NOT currently reachable)") +
 						", not from this process's wiki.\n" +
@@ -326,14 +393,29 @@ function startPearMode(options) {
 						"- 'Facets app not reachable' errors mean the app is not running (or mcp.flag is absent); ask the user to start it."
 				}));
 			}
-			case "ping":
-				return send(jsonrpcResponse(id, {}));
+			case "subscriptions/listen": {
+				// The request stays OPEN: the acknowledgement is a notification,
+				// and the JSON-RPC response is sent only when the subscription
+				// ends. The acknowledged filter reports what we actually honour,
+				// so unsupported types are omitted rather than silently implied.
+				var wanted = (parsed.params && parsed.params.notifications) || {};
+				var honoured = {};
+				if(wanted.toolsListChanged) {
+					toolsListSubscribers[String(id)] = id;
+					honoured.toolsListChanged = true;
+				}
+				return notifyOnSubscription(id, "notifications/subscriptions/acknowledged", { notifications: honoured });
+			}
 			case "tools/list":
 				// resolve the connection (and enrollment) first so the write
 				// tools appear exactly when they are actually callable
 				return ready(function() {
 					lastAdvertisedRw = effectiveRw();
-					send(jsonrpcResponse(id, { tools: pearToolDefinitions() }));
+					send(jsonrpcResponse(id, {
+						tools: pearToolDefinitions(),
+						ttlMs: LIST_TTL_MS,
+						cacheScope: "private"
+					}));
 				});
 			case "tools/call": {
 				var toolName = parsed.params && parsed.params.name;
@@ -359,6 +441,7 @@ function startPearMode(options) {
 		}
 	});
 	process.stdin.on("end", function() {
+		closeSubscriptions();
 		process.exit(0);
 	});
 	var disco = readDiscovery();

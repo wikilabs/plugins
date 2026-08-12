@@ -5,7 +5,7 @@ V 0.15.0 - 2026-08-12
 * ''BREAKING'': the server now speaks MCP `2026-07-28`, which is stateless — there is no `initialize` handshake. Modern clients find the server with `server/discover`; a client that only supports `2025-11-25` or earlier can no longer connect and gets an error naming the supported version.
 * Pipe transport: the auth token moved into per-request `_meta` and is verified on every message instead of once per connection.
 * Fixed: a readonly proxy could forward a write tool call it had already refused, if an error was thrown while refusing it.
-* Pear mode (`--mcp pear=`) is unchanged and still serves the previous revision.
+* Pear mode (`--mcp pear=`) speaks the new revision too. Its self-healing tool list now rides a `subscriptions/listen` stream the client opens, because an unsolicited `notifications/tools/list_changed` is no longer allowed.
 
 V 0.14.3 - 2026-08-03
 
