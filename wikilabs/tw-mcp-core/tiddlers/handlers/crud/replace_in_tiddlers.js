@@ -126,10 +126,19 @@ module.exports = {
 		if(modified.length === 0) {
 			return shared.textResult("(no matches)");
 		}
-		if(dryRun) {
-			return shared.textResult(crudShared.formatReplaceDryRun(modified, totalReplacements, truncated));
-		}
-		return shared.textResult(crudShared.applyReplacements(modified, totalReplacements, truncated));
+		// Machine-readable impact alongside the human diff. A filter string does
+		// not reveal how many tiddlers it resolves to, so a caller that has to
+		// decide whether this is a big change should not have to parse prose.
+		var impact = {
+			affectedTitles: modified.map(function(m) { return m.title; }),
+			totalReplacements: totalReplacements,
+			truncated: truncated
+		};
+		var result = dryRun
+			? shared.textResult(crudShared.formatReplaceDryRun(modified, totalReplacements, truncated))
+			: shared.textResult(crudShared.applyReplacements(modified, totalReplacements, truncated));
+		result.structuredContent = impact;
+		return result;
 	}
 };
 

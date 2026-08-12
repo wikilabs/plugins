@@ -28,6 +28,7 @@ var PLUGIN_TITLE = "$:/plugins/wikilabs/tw-mcp";
 // its own version and identity and a result carries the server's.
 var META_VERSION = "io.modelcontextprotocol/protocolVersion";
 var META_CLIENT_INFO = "io.modelcontextprotocol/clientInfo";
+var META_CLIENT_CAPS = "io.modelcontextprotocol/clientCapabilities";
 var META_SERVER_INFO = "io.modelcontextprotocol/serverInfo";
 
 // tw-mcp's own pipe-transport metadata. Statelessness removes the single
@@ -106,6 +107,9 @@ function buildRequestMeta() {
 	var params = { _meta: {} };
 	params._meta[META_VERSION] = PROTOCOL_VERSION;
 	params._meta[META_CLIENT_INFO] = serverIdentity();
+	// Empty rather than absent: a proxy front-end relays, so it declares no
+	// capabilities of its own. A relayed client message keeps the client's.
+	params._meta[META_CLIENT_CAPS] = {};
 	return params;
 }
 
@@ -211,6 +215,115 @@ function describeRequest(id) {
 	var elapsed = Date.now() - entry.at;
 	var name = entry.toolName ? entry.method + " " + entry.toolName : entry.method;
 	return name + " (id=" + id + ", " + elapsed + "ms ago)";
+}
+
+// --- Confirmation gate (MRTR) ---
+
+// Tools whose blast radius is invisible in their arguments. A filter string
+// does not tell anyone it resolves to 43 tiddlers, so these are confirmed
+// against the RESOLVED set instead of the arguments. Tools whose argument IS
+// the consequence (delete_tiddler names one title) are deliberately absent:
+// the client already prompts for them and would only ask the same thing twice.
+var CONFIRM_TOOLS = { replace_in_tiddlers: true };
+var CONFIRM_THRESHOLD = 1; // confirm when MORE than this many tiddlers change
+var CONFIRM_KEY = "confirm_bulk_write";
+var CONFIRM_TTL_MS = 5 * 60 * 1000;
+var CONFIRM_TITLE_SAMPLE = 20;
+
+// Per-process secret. requestState travels through the client, which the spec
+// treats as attacker-controlled, so it is signed and verified on return.
+var confirmSecret = crypto ? crypto.randomBytes(32) : null;
+
+function signRequestState(payload) {
+	var body = Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
+	return body + "." + crypto.createHmac("sha256", confirmSecret).update(body).digest("hex");
+}
+
+// Valid only if the signature holds, the TTL has not lapsed, AND the impact
+// digest still matches. A target set that shifted between round trips fails
+// here, which forces a fresh confirmation rather than applying to a set the
+// user never saw.
+function verifyRequestState(state, expectedDigest) {
+	if(typeof state !== "string") return false;
+	var parts = state.split(".");
+	if(parts.length !== 2) return false;
+	var expectedMac = Buffer.from(crypto.createHmac("sha256", confirmSecret).update(parts[0]).digest("hex"), "utf8");
+	var actualMac = Buffer.from(parts[1], "utf8");
+	if(expectedMac.length !== actualMac.length || !crypto.timingSafeEqual(expectedMac, actualMac)) {
+		return false;
+	}
+	var payload = JSON.parse(Buffer.from(parts[0], "base64").toString("utf8"));
+	return payload.exp > Date.now() && payload.digest === expectedDigest;
+}
+
+function impactDigest(toolName, toolArgs, titles) {
+	return crypto.createHash("sha256").update(JSON.stringify({
+		tool: toolName,
+		rules: toolArgs.rules,
+		filter: toolArgs.filter,
+		fields: toolArgs.fields,
+		titles: titles.slice().sort()
+	}), "utf8").digest("hex");
+}
+
+function confirmMessage(titles, impact) {
+	var shown = titles.slice(0, CONFIRM_TITLE_SAMPLE);
+	var more = titles.length - shown.length;
+	return "Apply " + impact.totalReplacements + " replacement(s) across " + titles.length + " tiddlers?\n\n" +
+		shown.join("\n") + (more > 0 ? "\n... and " + more + " more" : "") +
+		(impact.truncated ? "\n\n(the preview was truncated by a limit, so more may match)" : "");
+}
+
+// Returns true when it has answered the request itself and the caller must not
+// run the tool. Returns false to let the call proceed normally.
+function confirmationHandled(parsed, toolName, toolArgs, id, send) {
+	if(!CONFIRM_TOOLS[toolName] || !crypto) return false;
+	// dry_run defaults true, so only an explicit apply is destructive.
+	if(toolArgs.dry_run !== false) return false;
+	// The spec forbids sending an input request a client has not declared.
+	// Without elicitation there is no way to ask, so behaviour is unchanged.
+	var caps = getMeta(parsed)[META_CLIENT_CAPS];
+	if(!caps || !caps.elicitation) return false;
+
+	// Resolve the real impact by previewing. This is what we confirm against.
+	var previewArgs = $tw.utils.extend({}, toolArgs);
+	previewArgs.dry_run = true;
+	var preview = handlers.handleToolCall(toolName, previewArgs);
+	var impact = preview && preview.structuredContent;
+	if(!impact || !impact.affectedTitles || impact.affectedTitles.length <= CONFIRM_THRESHOLD) {
+		return false; // narrow enough to need no confirmation
+	}
+
+	var digest = impactDigest(toolName, toolArgs, impact.affectedTitles);
+	var responses = parsed.params && parsed.params.inputResponses;
+	var answer = responses && responses[CONFIRM_KEY];
+	if(answer && verifyRequestState(parsed.params && parsed.params.requestState, digest)) {
+		if(answer.action === "accept" && answer.content && answer.content.confirm === true) {
+			return false; // confirmed against this exact set — proceed
+		}
+		send(jsonrpcResponse(id, {
+			isError: true,
+			content: [{ type: "text", text: toolName + ": cancelled, not confirmed. Nothing was written." }]
+		}));
+		return true;
+	}
+
+	var request = { method: "elicitation/create", params: {
+		mode: "form",
+		message: confirmMessage(impact.affectedTitles, impact),
+		requestedSchema: {
+			type: "object",
+			properties: { confirm: { type: "boolean", description: "Apply these changes" } },
+			required: ["confirm"]
+		}
+	}};
+	var result = { resultType: "input_required", inputRequests: {}, requestState: signRequestState({
+		digest: digest,
+		exp: Date.now() + CONFIRM_TTL_MS
+	})};
+	result.inputRequests[CONFIRM_KEY] = request;
+	send(jsonrpcResponse(id, result));
+	return true;
 }
 
 function dispatchMessage(line, send) {
@@ -321,6 +434,9 @@ function dispatchMessage(line, send) {
 		case "tools/call": {
 			var toolName = parsed.params && parsed.params.name;
 			var toolArgs = (parsed.params && parsed.params.arguments) || {};
+			if(confirmationHandled(parsed, toolName, toolArgs, id, send)) {
+				break;
+			}
 			var result = handlers.handleToolCall(toolName, toolArgs);
 			if(result === null) {
 				send(jsonrpcError(id, -32602, "Unknown tool: " + toolName));
