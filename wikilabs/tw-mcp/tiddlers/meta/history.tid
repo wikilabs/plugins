@@ -2,7 +2,7 @@ title: $:/plugins/wikilabs/tw-mcp/history
 
 V 0.16.0 - 2026-09-09
 
-* New `--lsp` command: an editor connected to it completes tiddler titles inside `[[...]]`, warns about links whose target does not exist, opens the `.tid` file behind a link on ctrl-click, and shows what a filter resolves to when you hover it. Runs in the same process as `--mcp`, so both answer from one wiki.
+* New `--lsp` command: an editor connected to it completes tiddler titles inside `[[...]]`, warns about links whose target does not exist, opens the `.tid` file behind a link on ctrl-click, and on hover shows what a filter resolves to and what a `<<macro>>` call binds each of its parameters to. Runs in the same process as `--mcp`, so both answer from one wiki.
 
 V 0.15.0 - 2026-08-12
 

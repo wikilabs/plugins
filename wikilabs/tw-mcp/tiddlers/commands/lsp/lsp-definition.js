@@ -61,38 +61,18 @@ function targetAt(uri, text, position) {
 	return best ? best.target : null;
 }
 
-// LSP speaks URIs, and a Windows path is not one: the separators are wrong and
-// a space in a title's filename must be escaped.
-function pathToUri(filepath) {
-	var slashed = filepath.replace(/\\/g, "/");
-	if(slashed.charAt(0) !== "/") {
-		slashed = "/" + slashed;
-	}
-	return "file://" + encodeURI(slashed).replace(/[?#]/g, function(ch) {
-		return "%" + ch.charCodeAt(0).toString(16).toUpperCase();
-	});
-}
-
-// Where a title lives on disk, or null when it has no file of its own. A shadow
-// tiddler is the ordinary case of that: it is supplied by a plugin, and neither
-// $tw.boot.files nor the plugin tiddler records the folder it came from.
-function fileOfTitle(title) {
-	var entry = ($tw.boot.files || {})[title];
-	return entry && entry.filepath ? entry.filepath : null;
-}
-
 function definition(uri, text, position) {
 	var target = targetAt(uri, text, position);
 	if(!target) {
 		return null;
 	}
-	var filepath = fileOfTitle(links.titleOfTarget(target));
-	if(!filepath) {
+	var fileUri = source.uriOfTitle(links.titleOfTarget(target));
+	if(!fileUri) {
 		return null;
 	}
 	// The whole file is the definition, so the range is its first character.
 	return {
-		uri: pathToUri(filepath),
+		uri: fileUri,
 		range: {
 			start: { line: 0, character: 0 },
 			end: { line: 0, character: 0 }
@@ -102,4 +82,3 @@ function definition(uri, text, position) {
 
 exports.definition = definition;
 exports.targetAt = targetAt;
-exports.pathToUri = pathToUri;

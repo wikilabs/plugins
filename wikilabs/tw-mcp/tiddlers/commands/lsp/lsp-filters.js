@@ -15,7 +15,8 @@ cannot help with: a filter still being typed produces no node at all.
 
 "use strict";
 
-var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
+var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js");
 
 // Titles listed in one hover. A filter over a large wiki would otherwise render
 // its whole result set into a popup.
@@ -102,6 +103,26 @@ function filterInAttribute(lineText, character) {
 	return null;
 }
 
+// --- The last resort: a line that is nothing but a filter ---
+
+// A bare [tag[X]] carries no syntax saying it is a filter, so it is recognised
+// by shape instead: the whole line, trimmed, opens with "[" and closes with "]"
+// and nothing else is on it. That covers a filter inside a documentation code
+// block and a filter-valued system tiddler such as $:/config/FileSystemPaths,
+// where the text IS a filter with no wikitext around it.
+function bareFilterOnLine(lineText, character) {
+	var trimmed = lineText.trim();
+	if(trimmed.length < 2 || trimmed.charAt(0) !== "[" || trimmed.charAt(trimmed.length - 1) !== "]") {
+		return null;
+	}
+	var start = lineText.indexOf(trimmed),
+		end = start + trimmed.length;
+	if(character < start || character > end) {
+		return null;
+	}
+	return { text: trimmed, start: start, end: end };
+}
+
 // --- Running and describing ---
 
 // A filter still being typed is the normal state under a cursor, and it must
@@ -135,6 +156,23 @@ function runFilter(filterString) {
 	return { titles: results };
 }
 
+// Markdown link syntax is fragile about characters a real path holds. A ")" in
+// the URL ends the link early, and a filename with parentheses is ordinary,
+// while encodeURI leaves both alone. Brackets in the text end it too.
+function markdownLink(text, uri) {
+	return "[" + text.replace(/[[\]]/g, "\\$&") + "](" + uri.replace(/[()]/g, function(ch) {
+		return "%" + ch.charCodeAt(0).toString(16).toUpperCase();
+	}) + ")";
+}
+
+// A title in the hover, linked to its own file so the reader can open it. A
+// shadow tiddler has no file, so it stays plain text rather than becoming a
+// link that goes nowhere.
+function titleLink(title) {
+	var uri = source.uriOfTitle(title);
+	return uri ? markdownLink(title, uri) : title;
+}
+
 function describeFilter(filterString) {
 	var trimmed = filterString.trim();
 	if(!trimmed) {
@@ -155,7 +193,7 @@ function describeFilter(filterString) {
 	var shown = titles.slice(0, MAX_HOVER_TITLES),
 		body = head + "**" + titles.length + (titles.length === 1 ? " tiddler**\n\n" : " tiddlers**\n\n");
 	for(var i = 0; i < shown.length; i++) {
-		body += "* " + shown[i] + "\n";
+		body += "* " + titleLink(shown[i]) + "\n";
 	}
 	if(titles.length > shown.length) {
 		body += "\n... and " + (titles.length - shown.length) + " more.";
@@ -163,13 +201,76 @@ function describeFilter(filterString) {
 	return body;
 }
 
+// A call is described whole, arguments and filter results together, so it wins
+// over the filter argument nested inside it. Hovering a filter attribute of an
+// ordinary widget still reports just the filter, because that is no call.
+function describeCall(site, bodyText) {
+	var definition = macros.findDefinition(site.name, bodyText),
+		head = "```\n" + site.name + "\n```\n\n";
+	if(!definition) {
+		return head + "**Not defined.** No macro, procedure or function of that name is in scope.";
+	}
+	var where = definition.title === null
+			? (definition.kind === "javascript" ? "a JavaScript macro" : "defined in this tiddler")
+			: "defined in " + definitionLink(definition.title),
+		body = "**" + definition.kind + "** `" + site.name + "`, " + where + "\n\n",
+		bound = macros.bindArguments(definition.params, site.args);
+	if(!bound.length) {
+		body += "Takes no parameters.\n";
+	} else {
+		// Markdown, not wikitext: hover contents are declared as markdown, and a
+		// markdown table is nothing without its header separator row.
+		body += "| Parameter | Value | Given as |\n| --- | --- | --- |\n";
+		for(var i = 0; i < bound.length; i++) {
+			body += "| " + cell(bound[i].name) + " | `" + cell(bound[i].value) + "` | " + bound[i].origin + " |\n";
+		}
+	}
+	// A parameter holding a filter is the one a reader wants evaluated, and it
+	// is why this hover exists rather than just naming the macro.
+	for(var f = 0; f < bound.length; f++) {
+		if(looksLikeFilter(bound[f].value)) {
+			body += "\n" + describeFilter(bound[f].value);
+			break;
+		}
+	}
+	return head + body;
+}
+
+// A "|" in a cell ends the column, and a filter is free to contain one.
+function cell(value) {
+	return String(value === undefined ? "" : value).replace(/\|/g, "\\|");
+}
+
+function looksLikeFilter(value) {
+	var trimmed = String(value || "").trim();
+	return trimmed.startsWith("[") && trimmed.endsWith("]") && bracketsBalanced(trimmed);
+}
+
+// The definition may be a shadow, which has no file. The browser can still open
+// it, so a core macro is reachable even though nothing on disk holds it.
+function definitionLink(title) {
+	var uri = source.browsableUri(title);
+	return uri ? markdownLink(title, uri) : "`" + title + "`";
+}
+
 function hover(uri, text, position) {
 	var body = source.bodyOf(uri, text);
 	if(position.line < body.firstLine) {
 		return null;
 	}
-	var cursor = source.offsetAt(body.starts, position) - body.offset;
-	var site = innermostSite(filterSites(source.parseBody(body.text), body.text), cursor);
+	var cursor = source.offsetAt(body.starts, position) - body.offset,
+		tree = source.parseBody(body.text);
+	var call = innermostSite(macros.callSites(tree), cursor);
+	if(call) {
+		return {
+			contents: { kind: "markdown", value: describeCall(call, body.text) },
+			range: {
+				start: source.positionAt(body.starts, body.offset + call.start),
+				end: source.positionAt(body.starts, body.offset + call.end)
+			}
+		};
+	}
+	var site = innermostSite(filterSites(tree, body.text), cursor);
 	if(site) {
 		return {
 			contents: { kind: "markdown", value: describeFilter(site.filter) },
@@ -182,12 +283,24 @@ function hover(uri, text, position) {
 	// A filter still being typed produces no node at all, so the parser cannot
 	// see it. That is exactly when a reader most wants to know it is unfinished,
 	// so the hand-scanner still covers the line under the cursor.
-	var context = filterContext(body.lines[position.line] || "", position.character);
-	if(!context) {
+	var lineText = body.lines[position.line] || "",
+		context = filterContext(lineText, position.character);
+	if(context) {
+		return lineHover(position, context, describeFilter(context.text));
+	}
+	// Last, a line that is nothing but a filter. Nothing here says it is one, so
+	// it must prove itself: an unbalanced or unparseable run stays silent rather
+	// than reporting an error about text that was probably never a filter.
+	var bare = bareFilterOnLine(lineText, position.character);
+	if(!bare || !bracketsBalanced(bare.text) || runFilter(bare.text).error) {
 		return null;
 	}
+	return lineHover(position, bare, describeFilter(bare.text));
+}
+
+function lineHover(position, context, markdown) {
 	return {
-		contents: { kind: "markdown", value: describeFilter(context.text) },
+		contents: { kind: "markdown", value: markdown },
 		range: {
 			start: { line: position.line, character: context.start },
 			end: { line: position.line, character: context.end }
@@ -198,3 +311,4 @@ function hover(uri, text, position) {
 exports.hover = hover;
 exports.filterContext = filterContext;
 exports.bracketsBalanced = bracketsBalanced;
+exports.markdownLink = markdownLink;

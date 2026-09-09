@@ -90,6 +90,50 @@ function parseBody(bodyText) {
 	return $tw.wiki.parseText(WIKITEXT_TYPE, bodyText).tree;
 }
 
+// --- Tiddlers on disk ---
+
+// LSP speaks URIs, and a Windows path is not one: the separators are wrong and
+// a space in a title's filename must be escaped.
+function pathToUri(filepath) {
+	var slashed = filepath.replace(/\\/g, "/");
+	if(slashed.charAt(0) !== "/") {
+		slashed = "/" + slashed;
+	}
+	return "file://" + encodeURI(slashed).replace(/[?#]/g, function(ch) {
+		return "%" + ch.charCodeAt(0).toString(16).toUpperCase();
+	});
+}
+
+// Where a title lives on disk, or null when it has no file of its own. A shadow
+// tiddler is the ordinary case of that: it is supplied by a plugin, and neither
+// $tw.boot.files nor the plugin tiddler records the folder it came from.
+function fileOfTitle(title) {
+	var entry = ($tw.boot.files || {})[title];
+	return entry && entry.filepath ? entry.filepath : null;
+}
+
+// The file URI for a title, or null when it has no file to open.
+function uriOfTitle(title) {
+	var filepath = fileOfTitle(title);
+	return filepath ? pathToUri(filepath) : null;
+}
+
+// Somewhere the reader can open this title: its own file, or failing that the
+// wiki in the browser. A shadow has no file, and a core macro is exactly the
+// definition a reader most wants to look at, so the browser is the answer
+// there whenever this process is also serving HTTP.
+function browsableUri(title) {
+	var fileUri = uriOfTitle(title);
+	if(fileUri) {
+		return fileUri;
+	}
+	var address = $tw.httpServer && $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();
+	if(!address || !address.port) {
+		return null;
+	}
+	return "http://127.0.0.1:" + address.port + "/#" + encodeURIComponent(title);
+}
+
 exports.WIKITEXT_TYPE = WIKITEXT_TYPE;
 exports.bodyStartLine = bodyStartLine;
 exports.isTidUri = isTidUri;
@@ -99,3 +143,7 @@ exports.positionAt = positionAt;
 exports.bodyOf = bodyOf;
 exports.eachNode = eachNode;
 exports.parseBody = parseBody;
+exports.pathToUri = pathToUri;
+exports.fileOfTitle = fileOfTitle;
+exports.uriOfTitle = uriOfTitle;
+exports.browsableUri = browsableUri;
