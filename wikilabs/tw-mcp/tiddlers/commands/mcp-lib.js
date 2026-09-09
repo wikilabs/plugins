@@ -20,7 +20,18 @@ var fs = $tw.node ? require("fs") : null,
 var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
 
 var PROTOCOL_VERSION = "2026-07-28";
-var SUPPORTED_VERSIONS = [PROTOCOL_VERSION];
+var MODERN_VERSIONS = [PROTOCOL_VERSION];
+
+// Handshake-era revisions, still served. The trigger is not a legacy client:
+// a DUAL-era client falls back to initialize when server/discover does not
+// answer inside its own probe window, and a slow wiki boot is enough to cause
+// that. Measured 2026-08-16 — a cold tw5.com boot took 18.6s to reach
+// startMCPServer, the client had already fallen back, and answering -32022 to
+// the fallback turned a slow start into a hard connection failure.
+var LEGACY_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26"];
+var LEGACY_DEFAULT_VERSION = LEGACY_VERSIONS[0];
+
+var SUPPORTED_VERSIONS = MODERN_VERSIONS.concat(LEGACY_VERSIONS);
 var SERVER_NAME = "tiddlywiki-mcp";
 var PLUGIN_TITLE = "$:/plugins/wikilabs/tw-mcp";
 
@@ -113,15 +124,20 @@ function buildRequestMeta() {
 	return params;
 }
 
-// Every result MUST carry resultType and SHOULD identify the server, so both
-// are stamped here rather than at each call site.
-function jsonrpcResponse(id, result) {
+// Under 2026-07-28 every result MUST carry resultType and SHOULD identify the
+// server, so both are stamped here rather than at each call site. A
+// handshake-era result carries neither: it has no resultType in its schema and
+// it was already given the server's identity once, at initialize. Era defaults
+// to modern so a call site that omits it cannot silently downgrade a response.
+function jsonrpcResponse(id, result, era) {
 	var payload = result || {};
-	if(payload.resultType === undefined) {
-		payload.resultType = "complete";
+	if(era !== "legacy") {
+		if(payload.resultType === undefined) {
+			payload.resultType = "complete";
+		}
+		payload._meta = payload._meta || {};
+		payload._meta[META_SERVER_INFO] = serverIdentity();
 	}
-	payload._meta = payload._meta || {};
-	payload._meta[META_SERVER_INFO] = serverIdentity();
 	return JSON.stringify({ jsonrpc: "2.0", id: id, result: payload });
 }
 
@@ -183,14 +199,46 @@ function fmtMode() {
 	return "mode: " + (readonlyMode ? "READONLY" : "readwrite");
 }
 
-// Clients identify themselves per request now, so there is no stored session
+// Modern clients identify themselves per request, so there is no stored session
 // to name them from — read it off whichever message we happen to be handling.
+// A handshake-era client puts the same thing in params.clientInfo instead, and
+// only once, on initialize.
 function describeClient(parsed) {
-	var info = getMeta(parsed)[META_CLIENT_INFO];
+	var info = getMeta(parsed)[META_CLIENT_INFO] || (parsed && parsed.params && parsed.params.clientInfo);
 	if(info && info.name) {
 		return info.name + (info.version ? " " + info.version : "");
 	}
 	return "unidentified client";
+}
+
+// Which revision a message belongs to: "modern", "legacy", or null when it
+// declares a version we do not speak.
+//
+// This stays a pure function of the message, so serving two eras adds no
+// per-connection state — which matters, because the pipe transport multiplexes
+// clients and 2026-07-28 removed the handshake that per-connection state used
+// to hang off. A modern request declares its version in _meta; a handshake-era
+// one has nowhere to put it, so an ABSENT version means legacy rather than an
+// error. server/discover is the era probe itself and is always answered as
+// modern, since a client that speaks it needs no handshake.
+function eraOfMessage(parsed) {
+	if(parsed.method === "server/discover") {
+		return "modern";
+	}
+	if(parsed.method === "initialize") {
+		return "legacy";
+	}
+	var declared = getMeta(parsed)[META_VERSION];
+	if(declared === undefined || declared === null) {
+		return "legacy";
+	}
+	if(MODERN_VERSIONS.indexOf(declared) >= 0) {
+		return "modern";
+	}
+	if(LEGACY_VERSIONS.indexOf(declared) >= 0) {
+		return "legacy";
+	}
+	return null;
 }
 
 // Rolling history of recent requests so we can identify what was cancelled.
@@ -326,6 +374,43 @@ function confirmationHandled(parsed, toolName, toolArgs, id, send) {
 	return true;
 }
 
+// The guidance a client is given about this wiki. Both eras hand it over, one
+// on server/discover and one on initialize, so it lives in one place.
+function buildInstructions() {
+	return "TiddlyWiki MCP server." +
+		(readonlyMode ? " READONLY mode — writes disabled." : "") +
+		($tw.wiki.getTiddler("$:/temp/mcp/html-import") && $tw.wiki.getTiddler("$:/temp/mcp/html-import").fields.status === "pending" ?
+			"\n\n## HTML import pending\n" +
+			"$:/temp/mcp/html-import staged but not on disk. Read it for analysis, let user review/edit $:/config/FileSystemPaths, then call extract_html_wiki."
+			: "") +
+		"\n\n## Safety\n" +
+		"- Never write tiddlers without explicit user request (create/edit/update/delete/rename/tag/untag). 'list','show','find','search' = read-only.\n" +
+		"- Bulk ops: list affected tiddlers and confirm first.\n" +
+		"- get_tiddler before overwriting.\n" +
+		"\n## System tiddlers\n" +
+		"- Default-exclude '$:/' — prepend '!is[system]' to filters unless user asks for system/shadow tiddlers.\n" +
+		"- Shadow fallback: if 2-3 searches return empty, retry with '[all[shadows+tiddlers]]'. Many important tiddlers are shadows.\n" +
+		"- Don't fetch '$:/core/modules/...' unless user names one.\n" +
+		"\n## Token use\n" +
+		"- Tool results are pre-formatted; pass through, don't reformat.\n" +
+		"- Render/filter/wiki-info → MCP. Code search → Read/Grep/Glob.\n" +
+		"\n## Tool choice (trigger words)\n" +
+		"- WRITE (create/edit/update/change/fix/delete/rename/tag/untag): get_tiddler(detailed=true) → edit_tiddler for small edits (LINE#HASH anchors), put_tiddler for new tiddlers or full rewrites.\n" +
+		"- READ (show/list/find/search/what/how many/which): get_tiddler(detailed=true); format='tid' only when plain text needed.\n" +
+		"- RENDER (render/preview/'what does X look like'): render_tiddler (whole), render_field (one field), render_text (raw wikitext). get_tiddler returns SOURCE, not rendered output.\n" +
+		"- put_tiddler resends full text — never use for small edits.\n" +
+		"- Omit type when it's text/vnd.tiddlywiki (default).\n" +
+		"\n## Filters\n" +
+		"- Narrow first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers]prefix[$:/config/]]'.\n" +
+		"\n## Single-file HTML wiki import\n" +
+		"- import_html_wiki(path) into an empty wiki folder, then extract_html_wiki() once user approves FileSystemPaths.\n" +
+		"\n## Hot reload (no server restart)\n" +
+		"- Edition tiddlers on disk → reload_tiddlers (scope='tiddlers').\n" +
+		"- Non-JS plugin subtiddler in tw-mcp → reload_mcp_modules. Other plugins: user re-adds plugin tiddler so TW auto-reloads.\n" +
+		"- tw-mcp JS handler → reload_mcp_modules (disk re-read + JS re-exec).\n" +
+		"- mcp.js / mcp-lib.js / shared.js / filesystem.js → full server restart.";
+}
+
 function dispatchMessage(line, send) {
 	var parsed;
 	try {
@@ -354,65 +439,41 @@ function dispatchMessage(line, send) {
 	var toolName = (method === "tools/call" && parsed.params) ? parsed.params.name : null;
 	recordRequest(id, method, toolName);
 
-	// A legacy client has no way to fall forward, so name the versions we speak
-	// rather than returning a bare "method not found".
-	if(method === "initialize") {
-		send(jsonrpcError(id, -32022,
-			"This server implements MCP " + SUPPORTED_VERSIONS.join(", ") + ", which has no initialize handshake. Call server/discover instead.",
-			{ supported: SUPPORTED_VERSIONS, requested: (parsed.params && parsed.params.protocolVersion) || null }));
+	// A message that names a version we do not speak is refused in both eras.
+	// An ABSENT version is not that case — it is how a handshake-era client
+	// looks — so eraOfMessage reports legacy for it rather than null.
+	var era = eraOfMessage(parsed);
+	if(era === null) {
+		send(jsonrpcError(id, -32022, "Unsupported protocol version",
+			{ supported: SUPPORTED_VERSIONS, requested: getMeta(parsed)[META_VERSION] || null }));
 		return;
 	}
-
-	// There is no handshake, so every request declares its own version.
-	// server/discover is exempt: it is how a client learns what we support.
-	if(method !== "server/discover") {
-		var clientVersion = getMeta(parsed)[META_VERSION];
-		if(SUPPORTED_VERSIONS.indexOf(clientVersion) < 0) {
-			send(jsonrpcError(id, -32022, "Unsupported protocol version",
-				{ supported: SUPPORTED_VERSIONS, requested: clientVersion || null }));
-			return;
-		}
-	}
 	switch(method) {
+		case "initialize": {
+			// The handshake spec says to echo the requested version when we speak
+			// it and to name one we do speak otherwise, letting the client decide
+			// whether to continue. A client arriving here has already given up on
+			// server/discover, so refusing it strands the connection.
+			var requested = (parsed.params && parsed.params.protocolVersion) || null;
+			var negotiated = LEGACY_VERSIONS.indexOf(requested) >= 0 ? requested : LEGACY_DEFAULT_VERSION;
+			send(jsonrpcResponse(id, {
+				protocolVersion: negotiated,
+				capabilities: { tools: {} },
+				serverInfo: serverIdentity(),
+				instructions: buildInstructions()
+			}, era));
+			log("Initialized by " + describeClient(parsed) + " (protocol " + negotiated + ", " + fmtMode() + ")");
+			break;
+		}
+
 		case "server/discover":
 			send(jsonrpcResponse(id, {
 				supportedVersions: SUPPORTED_VERSIONS,
 				capabilities: {
 					tools: {}
 				},
-				instructions: "TiddlyWiki MCP server." +
-					(readonlyMode ? " READONLY mode — writes disabled." : "") +
-					($tw.wiki.getTiddler("$:/temp/mcp/html-import") && $tw.wiki.getTiddler("$:/temp/mcp/html-import").fields.status === "pending" ?
-						"\n\n## HTML import pending\n" +
-						"$:/temp/mcp/html-import staged but not on disk. Read it for analysis, let user review/edit $:/config/FileSystemPaths, then call extract_html_wiki."
-						: "") +
-					"\n\n## Safety\n" +
-					"- Never write tiddlers without explicit user request (create/edit/update/delete/rename/tag/untag). 'list','show','find','search' = read-only.\n" +
-					"- Bulk ops: list affected tiddlers and confirm first.\n" +
-					"- get_tiddler before overwriting.\n" +
-					"\n## System tiddlers\n" +
-					"- Default-exclude '$:/' — prepend '!is[system]' to filters unless user asks for system/shadow tiddlers.\n" +
-					"- Shadow fallback: if 2-3 searches return empty, retry with '[all[shadows+tiddlers]]'. Many important tiddlers are shadows.\n" +
-					"- Don't fetch '$:/core/modules/...' unless user names one.\n" +
-					"\n## Token use\n" +
-					"- Tool results are pre-formatted; pass through, don't reformat.\n" +
-					"- Render/filter/wiki-info → MCP. Code search → Read/Grep/Glob.\n" +
-					"\n## Tool choice (trigger words)\n" +
-					"- WRITE (create/edit/update/change/fix/delete/rename/tag/untag): get_tiddler(detailed=true) → edit_tiddler for small edits (LINE#HASH anchors), put_tiddler for new tiddlers or full rewrites.\n" +
-					"- READ (show/list/find/search/what/how many/which): get_tiddler(detailed=true); format='tid' only when plain text needed.\n" +
-					"- RENDER (render/preview/'what does X look like'): render_tiddler (whole), render_field (one field), render_text (raw wikitext). get_tiddler returns SOURCE, not rendered output.\n" +
-					"- put_tiddler resends full text — never use for small edits.\n" +
-					"- Omit type when it's text/vnd.tiddlywiki (default).\n" +
-					"\n## Filters\n" +
-					"- Narrow first: '[!is[system]search[x]]'. Shadows: '[all[shadows+tiddlers]prefix[$:/config/]]'.\n" +
-					"\n## Single-file HTML wiki import\n" +
-					"- import_html_wiki(path) into an empty wiki folder, then extract_html_wiki() once user approves FileSystemPaths.\n" +
-					"\n## Hot reload (no server restart)\n" +
-					"- Edition tiddlers on disk → reload_tiddlers (scope='tiddlers').\n" +
-					"- Non-JS plugin subtiddler in tw-mcp → reload_mcp_modules. Other plugins: user re-adds plugin tiddler so TW auto-reloads.\n" +
-					"- tw-mcp JS handler → reload_mcp_modules (disk re-read + JS re-exec).\n" +
-					"- mcp.js / mcp-lib.js / shared.js / filesystem.js → full server restart."
-			}));
+				instructions: buildInstructions()
+			}, era));
 			if(suppressNextInitLog) {
 				suppressNextInitLog = false;
 			} else {
@@ -420,16 +481,31 @@ function dispatchMessage(line, send) {
 			}
 			break;
 
-		case "tools/list":
-			// ttlMs and cacheScope are required on list results. private, because
-			// the list is specific to this wiki and this readonly mode and must
-			// never be reused by a shared intermediary.
-			send(jsonrpcResponse(id, {
-				tools: handlers.getToolDefinitions(readonlyMode),
-				ttlMs: LIST_TTL_MS,
-				cacheScope: "private"
-			}));
+		case "ping":
+			// 2026-07-28 removed ping, but every handshake-era revision has it and
+			// a legacy client may use it as a liveness check. Answer it for those
+			// and keep it absent for modern ones, rather than serving one method
+			// under two contradicting contracts.
+			if(era === "legacy") {
+				send(jsonrpcResponse(id, {}, era));
+			} else {
+				send(jsonrpcError(id, -32601, "Method not found: " + method));
+			}
 			break;
+
+		case "tools/list": {
+			// ttlMs and cacheScope are required on 2026-07-28 list results.
+			// private, because the list is specific to this wiki and this readonly
+			// mode and must never be reused by a shared intermediary. Neither
+			// field exists in the handshake era, so neither is sent there.
+			var listResult = { tools: handlers.getToolDefinitions(readonlyMode) };
+			if(era === "modern") {
+				listResult.ttlMs = LIST_TTL_MS;
+				listResult.cacheScope = "private";
+			}
+			send(jsonrpcResponse(id, listResult, era));
+			break;
+		}
 
 		case "tools/call": {
 			var toolName = parsed.params && parsed.params.name;
@@ -441,7 +517,7 @@ function dispatchMessage(line, send) {
 			if(result === null) {
 				send(jsonrpcError(id, -32602, "Unknown tool: " + toolName));
 			} else {
-				send(jsonrpcResponse(id, result));
+				send(jsonrpcResponse(id, result, era));
 			}
 			break;
 		}
@@ -954,6 +1030,7 @@ function startProxyMode(discovery) {
 	var connected = false;
 	var pendingStdio = [];
 	var discoverId = null;
+	var initializeId = null; // handshake-era counterpart of discoverId
 	var toolsListIds = {}; // track tools/list request ids for readonly filtering
 	// Build write tool name set for readonly enforcement (discovered from
 	// the handler definitions' write flag)
@@ -966,6 +1043,14 @@ function startProxyMode(discovery) {
 
 	$tw.mcp.role = "proxy";
 	log("Server started as PROXY (PID " + process.pid + ", " + fmtMode() + ") → primary (PID " + discovery.pid + ") at " + fmtPipe(pipePath) + (serverLabel ? " @" + serverLabel : ""));
+
+	// A relayed answer comes from the primary, not from us — say so, so the
+	// client's logs name the process that actually holds the wiki.
+	function annotateProxyOrigin(info) {
+		info.proxy = true;
+		info.primaryPid = discovery.pid;
+		info.primaryLabel = discovery.label || null;
+	}
 
 	// --- Pipe connection to primary ---
 	var proxyAuthenticated = false; // true after our self-init is ack'd
@@ -1032,17 +1117,23 @@ function startProxyMode(discovery) {
 					} catch(e) {}
 				}
 				// Intercept responses that need proxy-side modification
-				if(discoverId !== null || (readonlyMode && Object.keys(toolsListIds).length > 0)) {
+				if(discoverId !== null || initializeId !== null || (readonlyMode && Object.keys(toolsListIds).length > 0)) {
 					try {
 						var resp = JSON.parse(line);
 						if(resp.id !== undefined) {
-							// Annotate the discover response with proxy info. serverInfo lives
-								// in _meta now that there is no handshake result to carry it.
+							// Annotate the discover response with proxy info. Under
+							// 2026-07-28 serverInfo lives in _meta, because there is no
+							// handshake result to carry it.
 							if(resp.id === discoverId && resp.result && resp.result._meta && resp.result._meta[META_SERVER_INFO]) {
-								resp.result._meta[META_SERVER_INFO].proxy = true;
-								resp.result._meta[META_SERVER_INFO].primaryPid = discovery.pid;
-								resp.result._meta[META_SERVER_INFO].primaryLabel = discovery.label || null;
+								annotateProxyOrigin(resp.result._meta[META_SERVER_INFO]);
 								discoverId = null;
+								line = JSON.stringify(resp);
+							}
+							// Same annotation for the handshake era, where the client
+							// learns who answered from the initialize result instead.
+							if(resp.id === initializeId && resp.result && resp.result.serverInfo) {
+								annotateProxyOrigin(resp.result.serverInfo);
+								initializeId = null;
 								line = JSON.stringify(resp);
 							}
 							// Filter write tools from tools/list response when proxy is readonly
@@ -1289,6 +1380,9 @@ function startProxyMode(discovery) {
 			if(msg.method === "server/discover") {
 				discoverId = msg.id;
 			}
+			if(msg.method === "initialize") {
+				initializeId = msg.id;
+			}
 			// Track tools/list requests for readonly filtering of responses
 			if(readonlyMode && msg.method === "tools/list") {
 				toolsListIds[msg.id] = true;
@@ -1297,10 +1391,12 @@ function startProxyMode(discovery) {
 			if(readonlyMode && msg.method === "tools/call") {
 				var toolName = msg.params && msg.params.name;
 				if(toolName && writeToolNames[toolName]) {
+					// The refusal is ours, not the primary's, so it must be shaped
+					// for whichever era the client is speaking.
 					var errResp = jsonrpcResponse(msg.id, {
 						isError: true,
 						content: [{ type: "text", text: "Tool '" + toolName + "' is disabled in readonly mode" }]
-					});
+					}, eraOfMessage(msg));
 					process.stdout.write(errResp + "\n");
 					return; // don't forward to primary
 				}
@@ -1371,7 +1467,7 @@ function startAsPrimary(options) {
 	currentPipeServer = startPipeServer();
 
 	$tw.mcp.role = "primary";
-	log("Server started as PRIMARY (v" + getServerVersion() + ", PID " + process.pid + ", protocol " + PROTOCOL_VERSION + ", " + fmtMode() + ", filesystem: " + !!$tw.syncadaptor + ")" + (serverLabel ? " @" + serverLabel : ""));
+	log("Server started as PRIMARY (v" + getServerVersion() + ", PID " + process.pid + ", protocol " + PROTOCOL_VERSION + " +legacy, " + fmtMode() + ", filesystem: " + !!$tw.syncadaptor + ")" + (serverLabel ? " @" + serverLabel : ""));
 	if(allowedPaths) {
 		log("Allowed paths:\n  - " + allowedPaths.join("\n  - "));
 	}

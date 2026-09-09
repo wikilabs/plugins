@@ -27,7 +27,16 @@ var os = $tw.node ? require("os") : null;
 var ncrypto = $tw.node ? require("crypto") : null;
 
 var PROTOCOL_VERSION = "2026-07-28";
-var SUPPORTED_VERSIONS = [PROTOCOL_VERSION];
+var MODERN_VERSIONS = [PROTOCOL_VERSION];
+
+// Handshake-era revisions, still served for the same reason as in mcp-lib.js:
+// a dual-era client falls back to initialize when server/discover does not
+// answer inside its probe window, and refusing that fallback turns a slow
+// start into a hard connection failure.
+var LEGACY_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26"];
+var LEGACY_DEFAULT_VERSION = LEGACY_VERSIONS[0];
+
+var SUPPORTED_VERSIONS = MODERN_VERSIONS.concat(LEGACY_VERSIONS);
 var SERVER_NAME = "tiddlywiki-mcp";
 var CALL_TIMEOUT_MS = 20000;
 
@@ -83,16 +92,42 @@ function getServerVersion() {
 	return (plugin && plugin.fields.version) || "unknown";
 }
 
-// Every result must carry resultType and should identify the server, so both
-// are stamped here rather than at each call site.
-function jsonrpcResponse(id, result) {
+// Under 2026-07-28 every result must carry resultType and should identify the
+// server, so both are stamped here rather than at each call site. A
+// handshake-era result carries neither: it got the identity at initialize.
+function jsonrpcResponse(id, result, era) {
 	var payload = result || {};
-	if(payload.resultType === undefined) {
-		payload.resultType = "complete";
+	if(era !== "legacy") {
+		if(payload.resultType === undefined) {
+			payload.resultType = "complete";
+		}
+		payload._meta = payload._meta || {};
+		payload._meta[META_SERVER_INFO] = { name: SERVER_NAME, version: getServerVersion() };
 	}
-	payload._meta = payload._meta || {};
-	payload._meta[META_SERVER_INFO] = { name: SERVER_NAME, version: getServerVersion() };
 	return JSON.stringify({ jsonrpc: "2.0", id: id, result: payload });
+}
+
+// Which revision a message belongs to: "modern", "legacy", or null when it
+// names a version we do not speak. Pure function of the message, so no
+// per-connection state is needed. See eraOfMessage in mcp-lib.js.
+function eraOfMessage(parsed) {
+	if(parsed.method === "server/discover") {
+		return "modern";
+	}
+	if(parsed.method === "initialize") {
+		return "legacy";
+	}
+	var declared = parsed.params && parsed.params._meta && parsed.params._meta[META_VERSION];
+	if(declared === undefined || declared === null) {
+		return "legacy";
+	}
+	if(MODERN_VERSIONS.indexOf(declared) >= 0) {
+		return "modern";
+	}
+	if(LEGACY_VERSIONS.indexOf(declared) >= 0) {
+		return "legacy";
+	}
+	return null;
 }
 
 function jsonrpcError(id, code, message, data) {
@@ -340,6 +375,23 @@ function startPearMode(options) {
 	function send(line) {
 		process.stdout.write(line + "\n");
 	}
+	// Handed over on server/discover and on initialize alike, so it lives in one
+	// place. Read fresh each time: what the app is doing can change between calls.
+	function pearInstructions() {
+		var disco = readDiscovery();
+		return "TiddlyWiki MCP server — PEAR MODE: tools answer from a RUNNING Facets app" +
+			(disco ? " (group '" + (disco.name || disco.group) + "', " + disco.mode + ")" : " (NOT currently reachable)") +
+			", not from this process's wiki.\n" +
+			"- run_filter / render_* execute in the app's headless engine over the member's composed view (bag + staged edits).\n" +
+			"- get_tiddler / list_tiddlers reflect the shared bag; staged-only edits appear in the engine view.\n" +
+			((disco && disco.mode === "rw")
+				? "- Writes land like member saves: with staging armed they stay PRIVATE until the member commits them.\n"
+				: (disco && disco.mode === "agent")
+					? "- AGENT MODE: this client enrolls with its own device identity; the member must approve it in the app's Agents panel before any tool works. A 'PENDING' error means approval is still needed.\n"
+					: "- READONLY: the app's mcp.flag does not say rw — write tools are not offered.\n") +
+			"- 'Facets app not reachable' errors mean the app is not running (or mcp.flag is absent); ask the user to start it.";
+	}
+
 	function dispatch(line) {
 		var parsed;
 		try {
@@ -357,42 +409,47 @@ function startPearMode(options) {
 		}
 		var id = parsed.id;
 
-		// A legacy client cannot fall forward, so name the version we speak
-		// rather than answering a bare "method not found".
-		if(parsed.method === "initialize") {
-			return send(jsonrpcError(id, -32022,
-				"This server implements MCP " + SUPPORTED_VERSIONS.join(", ") + ", which has no initialize handshake. Call server/discover instead.",
-				{ supported: SUPPORTED_VERSIONS, requested: (parsed.params && parsed.params.protocolVersion) || null }));
-		}
-		// There is no handshake, so every request declares its own version.
-		// server/discover is exempt: it is how a client learns what we speak.
-		if(parsed.method !== "server/discover") {
-			var clientVersion = parsed.params && parsed.params._meta && parsed.params._meta[META_VERSION];
-			if(SUPPORTED_VERSIONS.indexOf(clientVersion) < 0) {
-				return send(jsonrpcError(id, -32022, "Unsupported protocol version",
-					{ supported: SUPPORTED_VERSIONS, requested: clientVersion || null }));
-			}
+		// A message naming a version we do not speak is refused in both eras. An
+		// ABSENT version is not that case — it is how a handshake-era client
+		// looks — so eraOfMessage reports legacy for it rather than null.
+		var era = eraOfMessage(parsed);
+		if(era === null) {
+			return send(jsonrpcError(id, -32022, "Unsupported protocol version",
+				{ supported: SUPPORTED_VERSIONS, requested: (parsed.params && parsed.params._meta && parsed.params._meta[META_VERSION]) || null }));
 		}
 
 		switch(parsed.method) {
+			case "initialize": {
+				// Echo the requested version when we speak it, otherwise name one we
+				// do and let the client decide. A client that gets here has already
+				// given up on server/discover, so refusing it strands the connection.
+				var requested = (parsed.params && parsed.params.protocolVersion) || null;
+				var negotiated = LEGACY_VERSIONS.indexOf(requested) >= 0 ? requested : LEGACY_DEFAULT_VERSION;
+				return send(jsonrpcResponse(id, {
+					protocolVersion: negotiated,
+					// NOT listChanged: the tool-list notification rides an open
+					// subscriptions/listen, which is a 2026-07-28 mechanism. Claiming
+					// it here would promise a handshake-era client a notification
+					// this dispatcher never sends.
+					capabilities: { tools: {} },
+					serverInfo: { name: SERVER_NAME, version: getServerVersion() },
+					instructions: pearInstructions()
+				}, era));
+			}
 			case "server/discover": {
-				var disco = readDiscovery();
 				return send(jsonrpcResponse(id, {
 					supportedVersions: SUPPORTED_VERSIONS,
 					capabilities: { tools: { listChanged: true } },
-					instructions: "TiddlyWiki MCP server — PEAR MODE: tools answer from a RUNNING Facets app" +
-						(disco ? " (group '" + (disco.name || disco.group) + "', " + disco.mode + ")" : " (NOT currently reachable)") +
-						", not from this process's wiki.\n" +
-						"- run_filter / render_* execute in the app's headless engine over the member's composed view (bag + staged edits).\n" +
-						"- get_tiddler / list_tiddlers reflect the shared bag; staged-only edits appear in the engine view.\n" +
-						((disco && disco.mode === "rw")
-							? "- Writes land like member saves: with staging armed they stay PRIVATE until the member commits them.\n"
-							: (disco && disco.mode === "agent")
-								? "- AGENT MODE: this client enrolls with its own device identity; the member must approve it in the app's Agents panel before any tool works. A 'PENDING' error means approval is still needed.\n"
-								: "- READONLY: the app's mcp.flag does not say rw — write tools are not offered.\n") +
-						"- 'Facets app not reachable' errors mean the app is not running (or mcp.flag is absent); ask the user to start it."
-				}));
+					instructions: pearInstructions()
+				}, era));
 			}
+			case "ping":
+				// Removed in 2026-07-28 but present in every handshake-era revision,
+				// where a client may use it as a liveness check.
+				if(era === "legacy") {
+					return send(jsonrpcResponse(id, {}, era));
+				}
+				return send(jsonrpcError(id, -32601, "Method not found: " + parsed.method));
 			case "subscriptions/listen": {
 				// The request stays OPEN: the acknowledgement is a notification,
 				// and the JSON-RPC response is sent only when the subscription
@@ -411,18 +468,21 @@ function startPearMode(options) {
 				// tools appear exactly when they are actually callable
 				return ready(function() {
 					lastAdvertisedRw = effectiveRw();
-					send(jsonrpcResponse(id, {
-						tools: pearToolDefinitions(),
-						ttlMs: LIST_TTL_MS,
-						cacheScope: "private"
-					}));
+					// The cache hints are 2026-07-28 fields; the handshake era has
+					// no such thing, so they are sent only to modern clients.
+					var listResult = { tools: pearToolDefinitions() };
+					if(era === "modern") {
+						listResult.ttlMs = LIST_TTL_MS;
+						listResult.cacheScope = "private";
+					}
+					send(jsonrpcResponse(id, listResult, era));
 				});
 			case "tools/call": {
 				var toolName = parsed.params && parsed.params.name;
 				var toolArgs = (parsed.params && parsed.params.arguments) || {};
 				return handlePearTool(toolName, toolArgs, function(result) {
 					if(result === null) return send(jsonrpcError(id, -32602, "Unknown tool: " + toolName));
-					send(jsonrpcResponse(id, result));
+					send(jsonrpcResponse(id, result, era));
 				});
 			}
 			default:

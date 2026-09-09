@@ -2,7 +2,7 @@ title: $:/plugins/wikilabs/tw-mcp/history
 
 V 0.15.0 - 2026-08-12
 
-* ''BREAKING'': the server now speaks MCP `2026-07-28`, which is stateless — there is no `initialize` handshake. Modern clients find the server with `server/discover`; a client that only supports `2025-11-25` or earlier can no longer connect and gets an error naming the supported version.
+* The server speaks MCP `2026-07-28`, which is stateless: no `initialize` handshake, and clients find it with `server/discover`. The handshake-era revisions are still served alongside it, so a client that falls back to `initialize` (as one does when a slow wiki boot outruns its probe window) still connects.
 * Pipe transport: the auth token moved into per-request `_meta` and is verified on every message instead of once per connection.
 * Applying `replace_in_tiddlers` to more than one tiddler now asks you to confirm first, listing exactly which tiddlers would change. The model cannot answer for you, and if the set changes before you answer, it asks again. Clients without elicitation support are unaffected.
 * Fixed: a readonly proxy could forward a write tool call it had already refused, if an error was thrown while refusing it.
