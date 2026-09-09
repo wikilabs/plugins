@@ -134,15 +134,22 @@ function completions(uri, text, position) {
 		start: { line: position.line, character: context.start },
 		end: { line: position.line, character: position.character }
 	};
+	// What the editor considers the word being completed: the same span the edit
+	// replaces. Every item claims exactly this as its filter text.
+	var typed = lineText.slice(context.start, position.character);
 	for(var i = 0; i < limit; i++) {
 		var title = ranked[i],
 			tiddler = $tw.wiki.getTiddler(title);
 		items.push({
 			label: title,
 			kind: KIND_REFERENCE,
-			// A title holds spaces, which the client's own word matching would
-			// split on, so both the filter text and the edit are stated outright.
-			filterText: title,
+			// The server has already decided which titles match, so the editor
+			// must not decide again. Its matching stops at the space in a title
+			// and silently drops most of the list; handing every item the text
+			// the user typed makes each an exact match, and sortText carries the
+			// ranking chosen above.
+			filterText: typed,
+			sortText: ("0000" + i).slice(-4),
 			textEdit: { range: range, newText: title },
 			detail: tiddler && tiddler.fields.type ? tiddler.fields.type : undefined
 		});
