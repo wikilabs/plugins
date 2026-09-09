@@ -1,5 +1,5 @@
 /*\
-title: $:/core/modules/commands/inspect/mcp-pear.js
+title: $:/core/modules/commands/inspect/mcp/mcp-pear.js
 type: application/javascript
 module-type: library
 

@@ -38,7 +38,7 @@ If both "sse" and "listen" are given, sse wins (no error).
 
 "use strict";
 
-var startMCPServer = require("$:/core/modules/commands/inspect/mcp-lib.js").startMCPServer;
+var startMCPServer = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js").startMCPServer;
 var Server = require("$:/core/modules/server/server.js").Server;
 
 exports.info = {
@@ -53,6 +53,11 @@ var Command = function(params, commander, callback) {
 };
 
 Command.prototype.execute = function() {
+	// --lsp has the same guard, so the collision is refused whichever command
+	// the user listed first.
+	if($tw.lsp && $tw.lsp.transport === "stdio") {
+		return "--mcp cannot run beside --lsp stdio: both would read stdin, and their framings differ. Use --lsp port=<n> instead.";
+	}
 	var options = { readonly: true }; // readonly by default
 	var listenMode = false;
 	var sseMode = false;
@@ -84,7 +89,7 @@ Command.prototype.execute = function() {
 	// handlers, no HTTP, no primary/proxy machinery. Everything below is the
 	// local-wiki path and does not apply.
 	if(options.pearDir) {
-		require("$:/core/modules/commands/inspect/mcp-pear.js").startPearMode(options);
+		require("$:/core/modules/commands/inspect/mcp/mcp-pear.js").startPearMode(options);
 		return null;
 	}
 	// Load the filesystem plugin if not already present (needed for disk persistence)
@@ -95,7 +100,7 @@ Command.prototype.execute = function() {
 	}
 	// Start HTTP server if listen mode is enabled
 	if(listenMode) {
-		var mcpLib = require("$:/core/modules/commands/inspect/mcp-lib.js");
+		var mcpLib = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js");
 		var discovery = mcpLib.readDiscoveryFile();
 		if(discovery && discovery.listen) {
 			console.error("Primary already serves HTTP — skipping local HTTP server");

@@ -20,7 +20,7 @@ var PLUGIN_NAMES = ["wikilabs/tw-mcp-core", "wikilabs/tw-mcp"];
 // running connections, init context, or change listeners.
 var EXCLUDE_FROM_RELOAD = {
 	"$:/core/modules/commands/mcp.js": "command module, runs once at boot",
-	"$:/core/modules/commands/inspect/mcp-lib.js": "holds dispatcher, pipe server, stdin listener",
+	"$:/core/modules/commands/inspect/mcp/mcp-lib.js": "holds dispatcher, pipe server, stdin listener",
 	"$:/core/modules/commands/inspect/handlers/shared.js": "holds readonlyMode and checkPathAllowed init context",
 	"$:/core/modules/commands/inspect/handlers/filesystem.js": "holds reload_tiddlers change listener"
 };

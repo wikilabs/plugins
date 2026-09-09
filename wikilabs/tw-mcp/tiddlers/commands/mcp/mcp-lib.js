@@ -1,5 +1,5 @@
 /*\
-title: $:/core/modules/commands/inspect/mcp-lib.js
+title: $:/core/modules/commands/inspect/mcp/mcp-lib.js
 type: application/javascript
 module-type: library
 
