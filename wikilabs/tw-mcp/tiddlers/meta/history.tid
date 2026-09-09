@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.16.0 - 2026-09-09
+
+* New `--lsp` command: an editor connected to it completes tiddler titles inside `[[...]]`, warns about links whose target does not exist, opens the `.tid` file behind a link on ctrl-click, and shows what a filter resolves to when you hover it. Runs in the same process as `--mcp`, so both answer from one wiki.
+
 V 0.15.0 - 2026-08-12
 
 * The server speaks MCP `2026-07-28`, which is stateless: no `initialize` handshake, and clients find it with `server/discover`. The handshake-era revisions are still served alongside it, so a client that falls back to `initialize` (as one does when a slow wiki boot outruns its probe window) still connects.
