@@ -146,10 +146,10 @@ function bracketsBalanced(filterString) {
 // compileFilter does not throw on a malformed filter: it returns a function
 // whose single result is the error message. Told apart from a real tiddler of
 // that title by asking the wiki whether one exists.
-function runFilter(filterString) {
+function runFilter(filterString, context) {
 	var errorTiddler = $tw.wiki.getTiddler(FILTER_ERROR_TITLE),
 		prefix = ((errorTiddler && errorTiddler.fields.text) || "Filter error") + ": ",
-		results = $tw.wiki.filterTiddlers(filterString);
+		results = $tw.wiki.filterTiddlers(filterString, context || undefined);
 	if(results.length === 1 && results[0].startsWith(prefix) && !$tw.wiki.tiddlerExists(results[0])) {
 		return { error: results[0].slice(prefix.length) };
 	}
@@ -173,7 +173,7 @@ function titleLink(title) {
 	return uri ? markdownLink(title, uri) : title;
 }
 
-function describeFilter(filterString) {
+function describeFilter(filterString, context) {
 	var trimmed = filterString.trim();
 	if(!trimmed) {
 		return "Empty filter.";
@@ -182,7 +182,7 @@ function describeFilter(filterString) {
 	if(!bracketsBalanced(trimmed)) {
 		return head + "Unfinished filter (unbalanced brackets), so it has not been run.";
 	}
-	var outcome = runFilter(trimmed);
+	var outcome = runFilter(trimmed, context);
 	if(outcome.error) {
 		return head + "**Filter error:** " + outcome.error;
 	}
@@ -204,7 +204,7 @@ function describeFilter(filterString) {
 // A call is described whole, arguments and filter results together, so it wins
 // over the filter argument nested inside it. Hovering a filter attribute of an
 // ordinary widget still reports just the filter, because that is no call.
-function describeCall(site, bodyText) {
+function describeCall(site, bodyText, context) {
 	var definition = macros.findDefinition(site.name, bodyText),
 		head = "```\n" + site.name + "\n```\n\n";
 	if(!definition) {
@@ -229,7 +229,7 @@ function describeCall(site, bodyText) {
 	// is why this hover exists rather than just naming the macro.
 	for(var f = 0; f < bound.length; f++) {
 		if(looksLikeFilter(bound[f].value)) {
-			body += "\n" + describeFilter(bound[f].value);
+			body += "\n" + describeFilter(bound[f].value, context);
 			break;
 		}
 	}
@@ -259,11 +259,15 @@ function hover(uri, text, position) {
 		return null;
 	}
 	var cursor = source.offsetAt(body.starts, position) - body.offset,
-		tree = source.parseBody(body.text);
+		tree = source.parseBody(body.text),
+		// What the wiki would mean at this exact position: the document's own
+		// tiddler, unless an enclosing <$let> or <$set> says otherwise. Built
+		// once, since it renders and one hover may run two filters.
+		context = source.renderContext(source.titleOfDocument(uri, text), body.text, cursor);
 	var call = innermostSite(macros.callSites(tree), cursor);
 	if(call) {
 		return {
-			contents: { kind: "markdown", value: describeCall(call, body.text) },
+			contents: { kind: "markdown", value: describeCall(call, body.text, context) },
 			range: {
 				start: source.positionAt(body.starts, body.offset + call.start),
 				end: source.positionAt(body.starts, body.offset + call.end)
@@ -273,7 +277,7 @@ function hover(uri, text, position) {
 	var site = innermostSite(filterSites(tree, body.text), cursor);
 	if(site) {
 		return {
-			contents: { kind: "markdown", value: describeFilter(site.filter) },
+			contents: { kind: "markdown", value: describeFilter(site.filter, context) },
 			range: {
 				start: source.positionAt(body.starts, body.offset + site.start),
 				end: source.positionAt(body.starts, body.offset + site.end)
@@ -284,18 +288,18 @@ function hover(uri, text, position) {
 	// see it. That is exactly when a reader most wants to know it is unfinished,
 	// so the hand-scanner still covers the line under the cursor.
 	var lineText = body.lines[position.line] || "",
-		context = filterContext(lineText, position.character);
-	if(context) {
-		return lineHover(position, context, describeFilter(context.text));
+		onLine = filterContext(lineText, position.character);
+	if(onLine) {
+		return lineHover(position, onLine, describeFilter(onLine.text, context));
 	}
 	// Last, a line that is nothing but a filter. Nothing here says it is one, so
 	// it must prove itself: an unbalanced or unparseable run stays silent rather
 	// than reporting an error about text that was probably never a filter.
 	var bare = bareFilterOnLine(lineText, position.character);
-	if(!bare || !bracketsBalanced(bare.text) || runFilter(bare.text).error) {
+	if(!bare || !bracketsBalanced(bare.text) || runFilter(bare.text, context).error) {
 		return null;
 	}
-	return lineHover(position, bare, describeFilter(bare.text));
+	return lineHover(position, bare, describeFilter(bare.text, context));
 }
 
 function lineHover(position, context, markdown) {
