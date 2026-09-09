@@ -16,13 +16,17 @@ cannot help with: a filter still being typed produces no node at all.
 "use strict";
 
 var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
-	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js");
+	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
+	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js");
 
 // Titles listed in one hover. A filter over a large wiki would otherwise render
 // its whole result set into a popup.
 var MAX_HOVER_TITLES = 50;
 
 var FILTER_ERROR_TITLE = "$:/language/Error/Filter";
+
+// A rendered body can be a whole page; a hover is not the place for it.
+var MAX_RENDER_CHARS = 600;
 
 // --- Locating filters through the parser ---
 
@@ -56,7 +60,7 @@ function innermostSite(sites, offset) {
 	var best = null;
 	for(var i = 0; i < sites.length; i++) {
 		var site = sites[i];
-		if(offset >= site.start && offset <= site.end) {
+		if(offset >= site.start && offset < site.end) {
 			if(!best || (site.end - site.start) < (best.end - best.start)) {
 				best = site;
 			}
@@ -236,6 +240,54 @@ function describeCall(site, bodyText, context) {
 	return head + body;
 }
 
+// A widget hover: what it is, whether anything registers it, and what each
+// attribute is worth here rather than as written.
+function describeWidget(site, context, widget) {
+	var head = "```\n<$" + site.name + ">\n```\n\n",
+		module = widgets.moduleOfWidget(site.name),
+		body;
+	if(!widgets.isRegistered(site.name)) {
+		// TiddlyWiki renders an unregistered widget as nothing at all, so a
+		// misspelt name is otherwise silent.
+		body = "**No widget named** `$" + site.name + "` **is registered.** It will render as nothing.\n";
+	} else {
+		body = "**widget** `$" + site.name + "`" +
+			(module ? ", defined in " + definitionLink(module) : "") + "\n";
+	}
+	if(site.attributes.length) {
+		body += "\n| Attribute | Written | Value |\n| --- | --- | --- |\n";
+		for(var i = 0; i < site.attributes.length; i++) {
+			var resolved = widgets.resolveAttribute(site.attributes[i], context),
+				value = resolved.value === undefined ? "(undefined)" : String(resolved.value);
+			body += "| " + cell(site.attributes[i].name) +
+				" | `" + cell(resolved.written) + "`" + (resolved.kind === "string" ? "" : " _(" + resolved.kind + ")_") +
+				" | `" + cell(value) + "` |\n";
+		}
+	} else {
+		body += "\nNo attributes.\n";
+	}
+	var introduced = widgets.variablesOf(site);
+	if(introduced.length) {
+		body += "\nBinds " + introduced.map(function(n) { return "`" + n + "`"; }).join(", ") +
+			" for everything inside it.\n";
+	}
+	// A filter attribute is NOT run here. Point at the filter and it reports
+	// itself; a widget hover is about the widget, and running its filter as well
+	// duplicated the answer and buried the render underneath it.
+	//
+	// What it actually renders, body and all, kept last: the output is the least
+	// predictable part and the longest.
+	var output = source.renderedTextOf(widget);
+	if(output) {
+		body += "\n\n**Renders as**\n\n```\n" + truncate(output, MAX_RENDER_CHARS) + "\n```\n";
+	}
+	return head + body;
+}
+
+function truncate(text, limit) {
+	return text.length > limit ? text.slice(0, limit) + "\n... (" + text.length + " characters)" : text;
+}
+
 // A "|" in a cell ends the column, and a filter is free to contain one.
 function cell(value) {
 	return String(value === undefined ? "" : value).replace(/\|/g, "\\|");
@@ -263,7 +315,8 @@ function hover(uri, text, position) {
 		// What the wiki would mean at this exact position: the document's own
 		// tiddler, unless an enclosing <$let> or <$set> says otherwise. Built
 		// once, since it renders and one hover may run two filters.
-		context = source.renderContext(source.titleOfDocument(uri, text), body.text, cursor);
+		at = source.renderAt(source.titleOfDocument(uri, text), body.text, cursor),
+		context = at.context;
 	var call = innermostSite(macros.callSites(tree), cursor);
 	if(call) {
 		return {
@@ -274,10 +327,19 @@ function hover(uri, text, position) {
 			}
 		};
 	}
-	var site = innermostSite(filterSites(tree, body.text), cursor);
+	// Filters and widgets compete on range, so a filter attribute wins over the
+	// widget holding it: the narrower thing is the one being pointed at.
+	var filters = filterSites(tree, body.text),
+		widgetsHere = widgets.widgetSites(tree),
+		site = innermostSite(filters.concat(widgetsHere), cursor);
 	if(site) {
 		return {
-			contents: { kind: "markdown", value: describeFilter(site.filter, context) },
+			contents: {
+				kind: "markdown",
+				value: site.filter === undefined
+					? describeWidget(site, context, at.widget)
+					: describeFilter(site.filter, context)
+			},
 			range: {
 				start: source.positionAt(body.starts, body.offset + site.start),
 				end: source.positionAt(body.starts, body.offset + site.end)

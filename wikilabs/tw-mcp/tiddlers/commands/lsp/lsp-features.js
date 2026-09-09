@@ -23,6 +23,7 @@ var links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
 	filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js"),
 	definition = require("$:/core/modules/commands/inspect/lsp/lsp-definition.js"),
 	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
+	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
 	source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
 
 exports.diagnostics = links.diagnostics;
@@ -42,6 +43,9 @@ exports.targetAt = definition.targetAt;
 exports.pathToUri = source.pathToUri;
 exports.uriOfTitle = source.uriOfTitle;
 exports.markdownLink = filters.markdownLink;
+exports.widgetSites = widgets.widgetSites;
+exports.resolveAttribute = widgets.resolveAttribute;
+exports.variablesOf = widgets.variablesOf;
 exports.callSites = macros.callSites;
 exports.findDefinition = macros.findDefinition;
 exports.bindArguments = macros.bindArguments;

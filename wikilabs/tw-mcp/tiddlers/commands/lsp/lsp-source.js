@@ -129,19 +129,22 @@ function titleOfUri(uri) {
 //
 // A variable is visible to a widget's children, never to the widget that set
 // it, so what is handed out is always a child.
-function renderContext(title, bodyText, offset) {
+function renderAt(title, bodyText, offset) {
 	if(!title) {
-		return null;
+		return { context: null, widget: null };
 	}
 	var shared = require("$:/core/modules/commands/inspect/handlers/shared.js"),
 		rendered = shared.parseAndRender(bodyText || "", WIKITEXT_TYPE, title);
 	if(!rendered || !rendered.widgetNode) {
-		return null;
+		return { context: null, widget: null };
 	}
 	var own = ownNodes(rendered.parser && rendered.parser.tree),
 		innermost = innermostWidget(rendered.widgetNode, own, offset);
 	if(innermost) {
-		return innermost.makeChildWidget({ type: "widget", children: [] });
+		return {
+			context: innermost.makeChildWidget({ type: "widget", children: [] }),
+			widget: innermost
+		};
 	}
 	// Nothing in the document encloses the cursor, so the context is the
 	// document itself: walk to the foot of the wrapper chain that holds
@@ -150,7 +153,39 @@ function renderContext(title, bodyText, offset) {
 	while(node.children && node.children.length) {
 		node = node.children[0];
 	}
-	return node.makeChildWidget({ type: "widget", children: [] });
+	return { context: node.makeChildWidget({ type: "widget", children: [] }), widget: null };
+}
+
+function renderContext(title, bodyText, offset) {
+	return renderAt(title, bodyText, offset).context;
+}
+
+// What a widget actually produced. A widget that creates no element of its own
+// has empty domNodes and its children hold the output, so the whole subtree is
+// gathered. This is the render the document already did, not a second one.
+function renderedTextOf(widget) {
+	if(!widget) {
+		return null;
+	}
+	var parts = [];
+	(function gather(node) {
+		var doms = node.domNodes || [];
+		if(doms.length) {
+			// A DOM node's text already contains its descendants', so taking a
+			// child's nodes as well would count every item twice.
+			for(var i = 0; i < doms.length; i++) {
+				parts.push(doms[i].formattedTextContent !== undefined
+					? doms[i].formattedTextContent
+					: (doms[i].textContent || ""));
+			}
+			return;
+		}
+		for(var c = 0; c < (node.children || []).length; c++) {
+			gather(node.children[c]);
+		}
+	})(widget);
+	var text = parts.join("").replace(/\n{3,}/g, "\n\n").trim();
+	return text || null;
 }
 
 // Identities, not ranges: two nodes from different texts can share a range.
@@ -172,7 +207,7 @@ function innermostWidget(root, own, offset) {
 	}
 	(function walk(widget) {
 		var node = widget.parseTreeNode;
-		if(node && node.start !== undefined && offset >= node.start && offset <= node.end && own.includes(node)) {
+		if(node && node.start !== undefined && offset >= node.start && offset < node.end && own.includes(node)) {
 			if(!best || (node.end - node.start) < (best.parseTreeNode.end - best.parseTreeNode.start)) {
 				best = widget;
 			}
@@ -250,3 +285,5 @@ exports.uriOfTitle = uriOfTitle;
 exports.browsableUri = browsableUri;
 exports.titleOfDocument = titleOfDocument;
 exports.renderContext = renderContext;
+exports.renderAt = renderAt;
+exports.renderedTextOf = renderedTextOf;
