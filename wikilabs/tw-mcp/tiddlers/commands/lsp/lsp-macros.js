@@ -30,20 +30,29 @@ var GLOBAL_MACROS_FILTER = "[all[shadows+tiddlers]tag[$:/tags/Macro]]";
 // a hover can describe the widget as well.
 function callSites(tree) {
 	var sites = [];
-	source.eachNode(tree, function(node) {
-		var attributes = node.attributes || {},
-			named = node.type === "macrocall" ? attributes.$name : (node.type === "transclude" ? attributes.$variable : null);
-		if(!named || named.type !== "string" || node.start === undefined) {
-			return;
+	(function visit(nodes) {
+		for(var i = 0; i < (nodes || []).length; i++) {
+			var node = nodes[i],
+				attributes = node.attributes || {},
+				named = node.type === "macrocall" ? attributes.$name : (node.type === "transclude" ? attributes.$variable : null);
+			if(named && named.type === "string" && node.start !== undefined) {
+				sites.push({
+					name: named.value,
+					start: node.start,
+					end: node.end,
+					tag: node.tag || null,
+					args: argumentsOf(attributes, !!node.tag)
+				});
+			}
+			// A <<var>> attribute value is a call of its own, inside the attribute.
+			for(var key in attributes) {
+				if(attributes[key].type === "macro" && attributes[key].value) {
+					visit([attributes[key].value]);
+				}
+			}
+			visit(node.children);
 		}
-		sites.push({
-			name: named.value,
-			start: node.start,
-			end: node.end,
-			tag: node.tag || null,
-			args: argumentsOf(attributes, !!node.tag)
-		});
-	});
+	})(tree);
 	return sites;
 }
 
@@ -101,8 +110,9 @@ function definitionIn(tree, name) {
 
 // A call resolves against the document's own pragmas first, exactly as the
 // wiki resolves it: a local definition shadows a global one of the same name.
+// Definitions nested inside another's body count as local too.
 function findDefinition(name, bodyText) {
-	var local = definitionIn(source.parseBody(bodyText), name);
+	var local = definitionIn(source.parseWithBodies(bodyText), name);
 	if(local) {
 		local.title = null;
 		return local;

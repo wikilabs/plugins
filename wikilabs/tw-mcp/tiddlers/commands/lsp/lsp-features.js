@@ -11,6 +11,7 @@ Each feature lives in its own module, split by what it can rely on:
 	lsp-completion.js  title completion, necessarily hand-scanned
 	lsp-filters.js     filter hover, parser-driven with a scanner fallback
 	lsp-references.js  find references, over tw-mcp-core's calls.js
+	lsp-scope.js       what binds a name at a position
 
 Everything here is a pure function of a document's text plus the booted
 $tw.wiki. Transport and protocol live in lsp-lib.js.

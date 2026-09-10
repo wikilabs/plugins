@@ -14,10 +14,13 @@ this position, which only a booted wiki can say.
 
 "use strict";
 
-var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
+var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	calls = require("$:/core/modules/commands/inspect/calls.js");
 
-// Widgets whose every attribute becomes a variable of the same name.
-var VARIABLE_WIDGETS = { let: true, vars: true };
+// Widgets whose every attribute becomes a variable of the same name, and those
+// naming one variable in an attribute.
+var VARIABLE_WIDGETS = { let: true, vars: true, parameters: true };
+var NAMING_ATTRIBUTE = { set: "name", qualify: "name", wikify: "name" };
 
 // The module that exports each widget name, built once. The widget modules
 // have already been executed at boot to build widgetClasses, so this only
@@ -60,10 +63,14 @@ function customWidgetOf(name, context) {
 // Every widget written in angle-bracket syntax. A node's tag is what the author
 // typed, so a widget nobody registered still appears here, which is the point:
 // a misspelt widget name is silent in TiddlyWiki.
-function widgetSites(tree) {
+function widgetSites(tree, text) {
 	var sites = [];
 	source.eachNode(tree, function(node) {
 		if(!node.tag || node.tag.charAt(0) !== "$" || node.start === undefined) {
+			return;
+		}
+		// An <%if%> block is a $list nobody wrote; it gets a hover of its own.
+		if(text !== undefined && calls.conditionalClauses(node, text)) {
 			return;
 		}
 		sites.push({
@@ -145,21 +152,32 @@ function currentOf(context) {
 
 // The variables this widget introduces, so a <$let> says what it binds.
 function variablesOf(site) {
-	var names = [];
+	var byName = {};
+	site.attributes.forEach(function(attribute) {
+		byName[attribute.name] = attribute;
+	});
 	if(VARIABLE_WIDGETS[site.name]) {
-		for(var i = 0; i < site.attributes.length; i++) {
-			names.push(site.attributes[i].name);
+		// On $parameters a $ attribute configures the widget rather than naming one.
+		return site.attributes.map(function(a) { return a.name; }).filter(function(name) {
+			return site.name !== "parameters" || name.charAt(0) !== "$";
+		});
+	}
+	var naming = NAMING_ATTRIBUTE[site.name];
+	if(naming) {
+		return literal(byName[naming]) ? [literal(byName[naming])] : [];
+	}
+	if(site.name === "list") {
+		var names = [literal(byName.variable) || "currentTiddler"];
+		if(literal(byName.counter)) {
+			names.push(literal(byName.counter));
 		}
 		return names;
 	}
-	if(site.name === "set" || site.name === "setmultiplevariables") {
-		for(var s = 0; s < site.attributes.length; s++) {
-			if(site.attributes[s].name === "name") {
-				names.push(site.attributes[s].value);
-			}
-		}
-	}
-	return names;
+	return site.name === "tiddler" ? ["currentTiddler"] : [];
+}
+
+function literal(attribute) {
+	return attribute && attribute.type === "string" ? attribute.value : null;
 }
 
 exports.widgetSites = widgetSites;

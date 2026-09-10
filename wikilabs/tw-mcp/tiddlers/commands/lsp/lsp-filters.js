@@ -17,7 +17,12 @@ cannot help with: a filter still being typed produces no node at all.
 
 var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
-	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js");
+	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
+	scope = require("$:/core/modules/commands/inspect/lsp/lsp-scope.js"),
+	calls = require("$:/core/modules/commands/inspect/calls.js");
+
+// Variables TiddlyWiki itself sets, which no definition in the wiki declares.
+var CORE_VARIABLES = ["currentTiddler", "..currentTiddler", "storyTiddler", "thisTiddler", "transclusion", "actionTiddler", "modifier", "condition", "namespace"];
 
 // Titles listed in one hover. A filter over a large wiki would otherwise render
 // its whole result set into a popup.
@@ -34,21 +39,34 @@ var MAX_RENDER_CHARS = 600;
 
 // --- Locating filters through the parser ---
 
-// Every filter the parser can locate, in offsets relative to the body.
+// Every filter the parser can locate, in offsets relative to the body: a filter
+// attribute in any quoting, a {{{ }}} value of any attribute, a \function body,
+// and each condition of an <%if%> block.
 function filterSites(tree, body) {
 	var sites = [];
 	source.eachNode(tree, function(node) {
-		var attributes = node.attributes || {},
-			filter = attributes.filter;
-		if(filter && (filter.type === "string" || filter.type === "substituted") && filter.start !== undefined) {
-			sites.push({
-				filter: filter.type === "string" ? filter.value : filter.rawValue,
-				substituted: filter.type === "substituted",
-				start: filter.start,
-				end: filter.end
-			});
-			return;
+		var attributes = node.attributes || {};
+		for(var key in attributes) {
+			var attribute = attributes[key];
+			if(attribute.start === undefined) {
+				continue;
+			}
+			if(calls.isFilterAttribute(key) && (attribute.type === "string" || attribute.type === "substituted")) {
+				sites.push({
+					filter: attribute.type === "string" ? attribute.value : attribute.rawValue,
+					substituted: attribute.type === "substituted",
+					start: attribute.start,
+					end: attribute.end
+				});
+			} else if(attribute.type === "filtered") {
+				sites.push({ filter: attribute.filter, start: attribute.start, end: attribute.end });
+			}
 		}
+		(calls.conditionalClauses(node, body) || []).forEach(function(clause) {
+			if(clause.filter) {
+				sites.push({ filter: clause.filter, condition: true, start: clause.start, end: clause.end });
+			}
+		});
 		// A \function body IS a filter, where a \procedure body is wikitext, and
 		// both parse to a set node. The value attribute carries no offsets, so
 		// the body is located inside the pragma's own source range.
@@ -61,6 +79,18 @@ function filterSites(tree, body) {
 		}
 	});
 	return sites;
+}
+
+// Each <%if%> block, for the hover that says which clause renders.
+function conditionalBlocks(tree, body) {
+	var blocks = [];
+	source.eachNode(tree, function(node) {
+		var clauses = calls.conditionalClauses(node, body);
+		if(clauses) {
+			blocks.push({ clauses: clauses, start: node.start, end: node.end });
+		}
+	});
+	return blocks;
 }
 
 // The smallest site containing the cursor, so an inner filter wins over the
@@ -224,13 +254,18 @@ function describeFilter(filterString, context, substituted) {
 }
 
 // A call is described whole, arguments and filter results together, so it wins
-// over the filter argument nested inside it. Hovering a filter attribute of an
-// ordinary widget still reports just the filter, because that is no call.
-function describeCall(site, bodyText, context) {
-	var definition = macros.findDefinition(site.name, bodyText),
-		head = "```\n" + site.name + "\n```\n\n";
+// over the filter argument nested inside it. A name a parameter or an enclosing
+// widget binds is that binding, whatever definition shares the name.
+function describeCall(site, body, context, tree) {
+	var head = "```\n" + site.name + "\n```\n\n",
+		binding = scope.resolve(site.name, site.start, tree, body.text);
+	if(binding) {
+		return head + describeBinding(binding, body, context);
+	}
+	var bodyText = body.text,
+		definition = macros.findDefinition(site.name, bodyText);
 	if(!definition) {
-		return head + "**Not defined.** No macro, procedure or function of that name is in scope.";
+		return head + describeUnbound(site.name, context);
 	}
 	var where = definition.title === null
 			? (definition.kind === "javascript" ? "a JavaScript macro" : "defined in this tiddler")
@@ -256,6 +291,71 @@ function describeCall(site, bodyText, context) {
 		}
 	}
 	return head + body;
+}
+
+function describeBinding(binding, body, context) {
+	if(binding.kind === "parameter") {
+		return "**parameter** `" + binding.name + "` of `" + binding.of + "`" +
+			(binding.value === undefined ? ", no default" : ", default `" + cell(binding.value) + "`") +
+			"\n\nEach call gives it a value; where the definition is written it is not set.\n";
+	}
+	var line = source.positionAt(body.starts, body.offset + binding.scope.node.start).line + 1,
+		value = context ? context.getVariable(binding.name) : undefined;
+	return "**variable** `" + binding.name + "`, set by `" + binding.by + "` on line " + line +
+		(value === undefined ? "" : "\n\nHere: `" + cell(value) + "`") + "\n";
+}
+
+// Neither bound here nor defined anywhere: a variable TiddlyWiki sets itself, one
+// the rendering context supplies, or a name only a caller can provide.
+function describeUnbound(name, context) {
+	var value = context ? context.getVariable(name) : undefined,
+		here = value === undefined ? "" : ", here `" + cell(value) + "`";
+	if(CORE_VARIABLES.includes(name) || name.startsWith("tv-")) {
+		return "**core variable** `" + name + "`" + here + "\n";
+	}
+	if(value !== undefined) {
+		return "**variable** `" + name + "`, set outside this tiddler" + here + "\n";
+	}
+	return "**Not set here.** No definition, parameter or enclosing widget binds `" + name +
+		"` at this position, so only a caller can give it a value.\n";
+}
+
+// An <%if%> block: each clause in order, and which one renders here.
+function describeConditional(block, context) {
+	var out = "```\n<%if%>\n```\n\n**conditional**: the first clause whose filter yields a result renders, and `<<condition>>` holds that result.\n\n" +
+			"| Clause | Filter | Here |\n| --- | --- | --- |\n",
+		decided = false;
+	block.clauses.forEach(function(clause) {
+		var here;
+		if(decided) {
+			here = "not reached";
+		} else if(!clause.filter) {
+			here = "**renders**";
+			decided = true;
+		} else if(!bracketsBalanced(clause.filter)) {
+			here = "unfinished";
+		} else {
+			var outcome = runFilter(clause.filter, context);
+			decided = !!(outcome.error || outcome.titles.length);
+			here = decided ? "**renders**" + (outcome.error ? " (an error message counts as a result)" : "") : "false";
+		}
+		out += "| `" + clause.keyword + "` | " + (clause.filter ? "`" + cell(clause.filter) + "`" : "") + " | " + here + " |\n";
+	});
+	return decided ? out : out + "\nNo clause holds, so nothing renders here.\n";
+}
+
+// What one condition decides, below its filter hover.
+function conditionVerdict(filter, context) {
+	if(!bracketsBalanced(filter.trim())) {
+		return "";
+	}
+	var outcome = runFilter(filter.trim(), context);
+	if(outcome.error) {
+		return "\n\nAs a condition it holds anyway: the error message is a result.";
+	}
+	return outcome.titles.length
+		? "\n\nAs a condition: **true**, so its branch renders, with `<<condition>>` = `" + cell(outcome.titles[0]) + "`."
+		: "\n\nAs a condition: **false**, so the next clause is tried.";
 }
 
 // A widget hover: what it is, whether anything registers it, and what each
@@ -347,12 +447,12 @@ function hover(uri, text, position) {
 		at = source.renderAt(source.titleOfDocument(uri, text), body.text, cursor),
 		context = at.context;
 	var call = innermostSite(macros.callSites(tree), cursor),
-		widgetsHere = widgets.widgetSites(tree);
+		widgetsHere = widgets.widgetSites(tree, body.text);
 	if(call) {
 		// A <$transclude> or <$macrocall> is a widget as well as a call, so the
 		// widget is described and the call it makes follows.
 		var asWidget = call.tag && widgetsHere.find(function(w) { return w.start === call.start; }),
-			described = describeCall(call, body.text, context);
+			described = describeCall(call, body, context, tree);
 		return {
 			contents: {
 				kind: "markdown",
@@ -364,18 +464,22 @@ function hover(uri, text, position) {
 			}
 		};
 	}
-	// Filters and widgets compete on range, so a filter attribute wins over the
-	// widget holding it: the narrower thing is the one being pointed at.
+	// Filters, widgets and <%if%> blocks compete on range, so the narrowest thing
+	// under the cursor is the one described.
 	var filters = filterSites(tree, body.text),
-		site = innermostSite(filters.concat(widgetsHere), cursor);
+		site = innermostSite(filters.concat(widgetsHere, conditionalBlocks(tree, body.text)), cursor),
+		unbound = at.widget && !renderedWidget(at.widget) ? UNBOUND_NOTE : "",
+		value;
 	if(site) {
+		if(site.clauses) {
+			value = describeConditional(site, context) + unbound;
+		} else if(site.filter === undefined) {
+			value = describeWidget(site, context, renderedWidget(at.widget), body.text);
+		} else {
+			value = describeFilter(site.filter, context, site.substituted) + (site.condition ? conditionVerdict(site.filter, context) : "") + unbound;
+		}
 		return {
-			contents: {
-				kind: "markdown",
-				value: site.filter === undefined
-					? describeWidget(site, context, renderedWidget(at.widget), body.text)
-					: describeFilter(site.filter, context, site.substituted) + (at.widget && !renderedWidget(at.widget) ? UNBOUND_NOTE : "")
-			},
+			contents: { kind: "markdown", value: value },
 			range: {
 				start: source.positionAt(body.starts, body.offset + site.start),
 				end: source.positionAt(body.starts, body.offset + site.end)
@@ -418,6 +522,7 @@ function lineHover(position, context, markdown) {
 }
 
 exports.hover = hover;
+exports.filterSites = filterSites;
 exports.filterContext = filterContext;
 exports.bracketsBalanced = bracketsBalanced;
 exports.markdownLink = markdownLink;
