@@ -242,11 +242,18 @@ function describeCall(site, bodyText, context) {
 
 // A widget hover: what it is, whether anything registers it, and what each
 // attribute is worth here rather than as written.
-function describeWidget(site, context, widget) {
+function describeWidget(site, context, widget, bodyText) {
 	var head = "```\n<$" + site.name + ">\n```\n\n",
 		module = widgets.moduleOfWidget(site.name),
 		body;
-	if(!widgets.isRegistered(site.name)) {
+	if(widgets.customWidgetOf(site.name, context)) {
+		// Checked first, because TiddlyWiki lets a \widget take over the tag
+		// before any JavaScript widget gets it.
+		var definition = macros.findDefinition("$" + site.name, bodyText),
+			where = !definition ? "defined outside this tiddler"
+				: (definition.title === null ? "defined in this tiddler" : "defined in " + definitionLink(definition.title));
+		body = "**custom widget** `$" + site.name + "`, " + where + "\n";
+	} else if(!widgets.isRegistered(site.name)) {
 		// TiddlyWiki renders an unregistered widget as nothing at all, so a
 		// misspelt name is otherwise silent.
 		body = "**No widget named** `$" + site.name + "` **is registered.** It will render as nothing.\n";
@@ -311,7 +318,7 @@ function hover(uri, text, position) {
 		return null;
 	}
 	var cursor = source.offsetAt(body.starts, position) - body.offset,
-		tree = source.parseBody(body.text),
+		tree = source.parseWithBodies(body.text),
 		// What the wiki would mean at this exact position: the document's own
 		// tiddler, unless an enclosing <$let> or <$set> says otherwise. Built
 		// once, since it renders and one hover may run two filters.
@@ -337,7 +344,7 @@ function hover(uri, text, position) {
 			contents: {
 				kind: "markdown",
 				value: site.filter === undefined
-					? describeWidget(site, context, at.widget)
+					? describeWidget(site, context, renderedWidget(at.widget), body.text)
 					: describeFilter(site.filter, context)
 			},
 			range: {
@@ -362,6 +369,13 @@ function hover(uri, text, position) {
 		return null;
 	}
 	return lineHover(position, bare, describeFilter(bare.text, context));
+}
+
+// A definition is not rendered where it is written, so for a widget inside its
+// body the render at that position is the rest of the document, not its output.
+function renderedWidget(widget) {
+	var node = widget && widget.parseTreeNode;
+	return node && (node.isMacroDefinition || node.isProcedureDefinition || node.isFunctionDefinition || node.isWidgetDefinition) ? null : widget;
 }
 
 function lineHover(position, context, markdown) {

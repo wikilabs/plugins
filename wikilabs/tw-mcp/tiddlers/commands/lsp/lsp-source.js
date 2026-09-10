@@ -11,6 +11,8 @@ in, and walking a parse tree.
 
 "use strict";
 
+var calls = require("$:/core/modules/commands/inspect/calls.js");
+
 var WIKITEXT_TYPE = "text/vnd.tiddlywiki";
 
 // Index of the first body line. A .tid file's fields run until the first blank
@@ -88,6 +90,50 @@ function eachNode(nodes, callback) {
 
 function parseBody(bodyText) {
 	return $tw.wiki.parseText(WIKITEXT_TYPE, bodyText).tree;
+}
+
+// The parse tree with each \procedure, \define and \widget body parsed in place
+// and moved into document offsets, so what is written inside a body can be
+// hovered. A \function body is a filter, which its caller locates itself.
+function parseWithBodies(bodyText) {
+	var tree = parseBody(bodyText);
+	eachNode(tree, function(node) {
+		var body = calls.definitionBody(node, bodyText);
+		if(body && body.kind !== "function") {
+			var inner = parseBody(body.text);
+			shift(inner, body.start);
+			node.children = inner.concat(node.children || []);
+		}
+	});
+	return tree;
+}
+
+// Moves every range in a parsed tree by delta. An attribute is reachable both
+// through attributes and orderedAttributes, so each object is moved once.
+function shift(nodes, delta) {
+	var moved = [];
+	function move(item) {
+		if(item.start !== undefined && !moved.includes(item)) {
+			moved.push(item);
+			item.start += delta;
+			item.end += delta;
+		}
+	}
+	(function walk(list) {
+		for(var i = 0; i < (list || []).length; i++) {
+			var node = list[i],
+				named = node.attributes || {},
+				attributes = (node.orderedAttributes || []).concat(Object.keys(named).map(function(key) { return named[key]; }));
+			move(node);
+			attributes.forEach(function(attribute) {
+				move(attribute);
+				if(attribute.type === "macro" && attribute.value) {
+					walk([attribute.value]);
+				}
+			});
+			walk(node.children);
+		}
+	})(nodes);
 }
 
 // --- The tiddler a document is, and the context it gives a filter ---
@@ -279,6 +325,7 @@ exports.positionAt = positionAt;
 exports.bodyOf = bodyOf;
 exports.eachNode = eachNode;
 exports.parseBody = parseBody;
+exports.parseWithBodies = parseWithBodies;
 exports.pathToUri = pathToUri;
 exports.fileOfTitle = fileOfTitle;
 exports.uriOfTitle = uriOfTitle;

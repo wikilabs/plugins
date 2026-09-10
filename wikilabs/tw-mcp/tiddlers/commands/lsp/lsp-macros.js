@@ -63,6 +63,9 @@ function argumentsOf(attributes) {
 // --- Definitions ---
 
 function definitionKind(node) {
+	if(node.isWidgetDefinition) {
+		return "widget";
+	}
 	if(node.isFunctionDefinition) {
 		return "function";
 	}

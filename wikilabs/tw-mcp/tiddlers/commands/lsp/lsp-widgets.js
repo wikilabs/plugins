@@ -45,6 +45,18 @@ function isRegistered(name) {
 	return !!(classes && classes[name]);
 }
 
+// A \widget definition in scope takes over a tag the way makeChildWidget in
+// core widget.js decides: always for a dotted name, and for a registered
+// widget's name unless the wiki runs in safe mode.
+function customWidgetOf(name, context) {
+	if(!context || (name.indexOf(".") === -1 && !(isRegistered(name) && !$tw.safeMode))) {
+		return null;
+	}
+	var info = context.getVariableInfo("$" + name, { allowSelfAssigned: true }),
+		variable = info && info.srcVariable;
+	return variable && variable.value && variable.isWidgetDefinition ? variable : null;
+}
+
 // Every widget written in angle-bracket syntax. A node's tag is what the author
 // typed, so a widget nobody registered still appears here, which is the point:
 // a misspelt widget name is silent in TiddlyWiki.
@@ -131,3 +143,4 @@ exports.resolveAttribute = resolveAttribute;
 exports.variablesOf = variablesOf;
 exports.moduleOfWidget = moduleOfWidget;
 exports.isRegistered = isRegistered;
+exports.customWidgetOf = customWidgetOf;
