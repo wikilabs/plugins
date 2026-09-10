@@ -92,10 +92,21 @@ function parseBody(bodyText) {
 	return $tw.wiki.parseText(WIKITEXT_TYPE, bodyText).tree;
 }
 
+// The trees of the last few texts: every request on an unchanged buffer needs
+// the same one, and parsing each definition body is the cost.
+var recentTrees = [],
+	RECENT_MAX = 8;
+
 // The parse tree with each \procedure, \define and \widget body parsed in place
 // and moved into document offsets, so what is written inside a body can be
-// hovered. A \function body is a filter, which its caller locates itself.
+// hovered. A \function body is a filter, which its caller locates itself. The
+// tree is shared between callers: read it, never change it.
 function parseWithBodies(bodyText) {
+	for(var i = 0; i < recentTrees.length; i++) {
+		if(recentTrees[i].text === bodyText) {
+			return recentTrees[i].tree;
+		}
+	}
 	var tree = parseBody(bodyText);
 	eachNode(tree, function(node) {
 		var body = calls.definitionBody(node, bodyText);
@@ -105,6 +116,8 @@ function parseWithBodies(bodyText) {
 			node.children = inner.concat(node.children || []);
 		}
 	});
+	recentTrees.unshift({ text: bodyText, tree: tree });
+	recentTrees.length = Math.min(recentTrees.length, RECENT_MAX);
 	return tree;
 }
 
@@ -358,11 +371,16 @@ function virtualDocument(uri) {
 // Where the editor can open title: its own file when that file holds exactly
 // the tiddler, else the read-only view; null for no such tiddler.
 function documentUriOf(title) {
-	var entry = ($tw.boot.files || {})[title];
-	if(entry && entry.filepath && (isTidUri(entry.filepath) || entry.hasMetaFile)) {
-		return pathToUri(entry.filepath);
+	if(hasFile(title)) {
+		return pathToUri($tw.boot.files[title].filepath);
 	}
 	return $tw.wiki.getTiddler(title) ? virtualUri(title) : null;
+}
+
+// Whether the editor opens title as a file of its own: a .tid, or a file with a .meta sidecar.
+function hasFile(title) {
+	var entry = ($tw.boot.files || {})[title];
+	return !!(entry && entry.filepath && (isTidUri(entry.filepath) || entry.hasMetaFile));
 }
 
 // Somewhere the reader can open this title: its own file, or failing that the
@@ -409,6 +427,7 @@ exports.titleOfVirtualUri = titleOfVirtualUri;
 exports.virtualText = virtualText;
 exports.virtualDocument = virtualDocument;
 exports.documentUriOf = documentUriOf;
+exports.hasFile = hasFile;
 exports.titleOfDocument = titleOfDocument;
 exports.renderContext = renderContext;
 exports.renderAt = renderAt;

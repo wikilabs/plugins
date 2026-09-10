@@ -27,6 +27,12 @@ var fileCache = Object.create(null);
 // Sites of a tiddler's read-only view, in the wiki's own per-tiddler cache.
 var VIEW_CACHE_KEY = "tw-lsp-view-sites";
 
+// The views a walk visits, in the wiki's global cache.
+var VIEWS_CACHE_KEY = "tw-lsp-views";
+
+// URI and comparison key per file path (see fileDocument).
+var fileDocuments = Object.create(null);
+
 // Every call and definition in a document, with protocol ranges, calls in its
 // .tid header fields included. A document holding no wikitext has none.
 function sitesOfDocument(uri, text) {
@@ -173,8 +179,8 @@ function mentions(title, name) {
 // since parsing is the expensive part.
 function eachDocument(openDocuments, visit) {
 	var seen = Object.create(null);
-	function offer(docUri, title, sites) {
-		seen[sameFileKey(docUri)] = true;
+	function offer(docUri, title, sites, key) {
+		seen[key || sameFileKey(docUri)] = true;
 		visit(docUri, title, sites);
 	}
 	Object.keys(openDocuments || {}).forEach(function(openUri) {
@@ -185,15 +191,39 @@ function eachDocument(openDocuments, visit) {
 	var files = $tw.boot.files || {};
 	for(var title in files) {
 		var filepath = files[title].filepath;
-		if(filepath && source.isTidUri(filepath) && !seen[sameFileKey(source.pathToUri(filepath))]) {
-			offer(source.pathToUri(filepath), title, sitesOfFile.bind(null, filepath));
+		if(filepath && source.isTidUri(filepath)) {
+			var file = fileDocument(filepath);
+			if(!seen[file.key]) {
+				offer(file.uri, title, sitesOfFile.bind(null, filepath), file.key);
+			}
 		}
 	}
-	wikiOnlyTitles().forEach(function(title) {
-		var viewUri = source.virtualUri(title);
-		if(!seen[sameFileKey(viewUri)]) {
-			offer(viewUri, title, sitesOfView.bind(null, title));
+	// A title filed since the views were listed is a file now.
+	wikiOnlyViews().forEach(function(view) {
+		if(!seen[view.key] && !source.hasFile(view.title)) {
+			offer(view.uri, view.title, sitesOfView.bind(null, view.title), view.key);
 		}
+	});
+}
+
+// A file's URI and comparison key, which depend on its path alone.
+function fileDocument(filepath) {
+	if(!fileDocuments[filepath]) {
+		var fileUri = source.pathToUri(filepath);
+		fileDocuments[filepath] = { uri: fileUri, key: sameFileKey(fileUri) };
+	}
+	return fileDocuments[filepath];
+}
+
+// The views of wikitext tiddlers no file holds, as { title, uri, key }. Finding
+// them walks every tiddler, so the list waits in the wiki's global cache, which
+// every change to the wiki clears.
+function wikiOnlyViews() {
+	return $tw.wiki.getGlobalCache(VIEWS_CACHE_KEY, function() {
+		return wikiOnlyTitles().map(function(title) {
+			var viewUri = source.virtualUri(title);
+			return { title: title, uri: viewUri, key: sameFileKey(viewUri) };
+		});
 	});
 }
 

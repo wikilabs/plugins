@@ -24,14 +24,27 @@ var CACHE_KEY = "tw-mcp-calls";
 // Lists the tiddlers whose definitions the page imports for everyone.
 var GLOBAL_IMPORT_FILTER = "$:/core/config/GlobalImportFilter";
 
+// The sites of the last few texts: an editor asks several questions of one
+// unchanged text, and parsing every definition body is the cost.
+var recentSites = [],
+	RECENT_MAX = 8;
+
 // Every call and definition in a wikitext, as { calls, definitions }. Each site
 // is { name, start, end } around the NAME plus the call's form, or for a
-// definition its kind, params, range, body and parent (see addDefinition).
+// definition its kind, params, range, body and parent (see addDefinition). The
+// result is shared between callers: read it, never change it.
 function sitesIn(text) {
-	var sites = { calls: [], definitions: [] };
 	text = text || "";
+	for(var i = 0; i < recentSites.length; i++) {
+		if(recentSites[i].text === text) {
+			return recentSites[i].sites;
+		}
+	}
+	var sites = { calls: [], definitions: [] };
 	collect($tw.wiki.parseText(WIKITEXT_TYPE, text).tree, text, 0, sites);
 	nestDefinitions(sites.definitions);
+	recentSites.unshift({ text: text, sites: sites });
+	recentSites.length = Math.min(recentSites.length, RECENT_MAX);
 	return sites;
 }
 
