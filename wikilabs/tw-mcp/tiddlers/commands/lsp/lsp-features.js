@@ -13,6 +13,7 @@ Each feature lives in its own module, split by what it can rely on:
 	lsp-files.js       call sites of every document the editor can open
 	lsp-references.js  find references, over tw-mcp-core's calls.js
 	lsp-definition.js  go to definition, for links and calls
+	lsp-symbols.js     the outline: definitions, then headings
 	lsp-scope.js       what binds a name at a position
 
 Everything here is a pure function of a document's text plus the booted
@@ -29,6 +30,7 @@ var links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
 	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
 	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
 	references = require("$:/core/modules/commands/inspect/lsp/lsp-references.js"),
+	symbols = require("$:/core/modules/commands/inspect/lsp/lsp-symbols.js"),
 	source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
 
 exports.diagnostics = links.diagnostics;
@@ -36,6 +38,7 @@ exports.completions = completion.completions;
 exports.hover = filters.hover;
 exports.definition = definition.definition;
 exports.references = references.references;
+exports.documentSymbols = symbols.documentSymbols;
 exports.virtualDocument = source.virtualDocument;
 exports.isVirtualUri = source.isVirtualUri;
 

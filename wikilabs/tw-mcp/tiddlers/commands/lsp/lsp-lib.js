@@ -70,7 +70,8 @@ function serverCapabilities() {
 		completionProvider: { triggerCharacters: ["[", "{"] },
 		hoverProvider: true,
 		definitionProvider: true,
-		referencesProvider: true
+		referencesProvider: true,
+		documentSymbolProvider: true
 	};
 }
 
@@ -84,7 +85,8 @@ function createSession(send, options) {
 		pending = Object.create(null),
 		initialized = false,
 		shuttingDown = false,
-		linkSupport = false;
+		linkSupport = false,
+		hierarchicalSymbols = false;
 	// Injectable so a test can run the timer synchronously rather than sleeping.
 	var schedule = options.schedule || function(fn, ms) { return setTimeout(fn, ms); },
 		cancel = options.cancel || clearTimeout,
@@ -166,6 +168,8 @@ function createSession(send, options) {
 				initialized = true;
 				// A client that reads LocationLinks gets the whole definition to peek at.
 				linkSupport = !!(params.capabilities && params.capabilities.textDocument && params.capabilities.textDocument.definition && params.capabilities.textDocument.definition.linkSupport);
+				// The protocol's rule: a client that does not say it nests symbols gets a flat list.
+				hierarchicalSymbols = !!(params.capabilities && params.capabilities.textDocument && params.capabilities.textDocument.documentSymbol && params.capabilities.textDocument.documentSymbol.hierarchicalDocumentSymbolSupport);
 				log("Initialized by " + describeClient(params) + " (v" + getServerVersion() + ")");
 				send(response(id, {
 					capabilities: serverCapabilities(),
@@ -209,6 +213,13 @@ function createSession(send, options) {
 				var refUri = params.textDocument.uri,
 					refText = documents[refUri];
 				send(response(id, refText === undefined ? null : features.references(refUri, refText, params.position, params.context, documents)));
+				break;
+			}
+
+			case "textDocument/documentSymbol": {
+				var symbolUri = params.textDocument.uri,
+					symbolText = documents[symbolUri];
+				send(response(id, symbolText === undefined ? null : features.documentSymbols(symbolUri, symbolText, { hierarchical: hierarchicalSymbols })));
 				break;
 			}
 

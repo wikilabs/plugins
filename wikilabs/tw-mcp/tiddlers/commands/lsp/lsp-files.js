@@ -200,6 +200,7 @@ function sitesNamed(name, openDocuments) {
 }
 
 exports.sitesOfDocument = sitesOfDocument;
+exports.isWikitext = isWikitext;
 exports.sitesOfFile = sitesOfFile;
 exports.sitesOfView = sitesOfView;
 exports.siteAt = siteAt;
