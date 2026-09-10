@@ -89,6 +89,10 @@ function scanAttributes(attributes, text, base, sites) {
 			scanFilterAt(attribute.filter, attribute, text, base, sites);
 		} else if(attribute.type === "string" && FILTER_ATTRIBUTE.test(key)) {
 			scanFilterAt(attribute.value, attribute, text, base, sites);
+		} else if(attribute.type === "substituted" && FILTER_ATTRIBUTE.test(key) && !/\$[({]/.test(attribute.rawValue)) {
+			// A backtick value holding $(variable)$ or ${ filter }$ is a filter only
+			// once filled in, and filling in needs a position references lack.
+			scanFilterAt(attribute.rawValue, attribute, text, base, sites);
 		}
 	}
 }
