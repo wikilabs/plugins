@@ -153,6 +153,9 @@ function titleOfDocument(uri, text) {
 }
 
 function titleOfUri(uri) {
+	if(isVirtualUri(uri)) {
+		return titleOfVirtualUri(uri);
+	}
 	var files = $tw.boot.files || {};
 	for(var title in files) {
 		if(files[title].filepath && pathToUri(files[title].filepath) === uri) {
@@ -293,6 +296,69 @@ function uriOfTitle(title) {
 	return filepath ? pathToUri(filepath) : null;
 }
 
+// --- Read-only views of tiddlers without a file of their own ---
+
+// Shadows, and tiddlers packed into .json or .multids files, open under this
+// scheme; the extension asks for their text with the tiddlywiki/tiddler request.
+var VIRTUAL_SCHEME = "tiddlywiki:";
+
+function isVirtualUri(uri) {
+	return uri.startsWith(VIRTUAL_SCHEME);
+}
+
+// The path is the whole title plus an extension naming the editor's language:
+// a wikitext view is always .tid, other types keep an extension they end in.
+function virtualUri(title) {
+	var tiddler = $tw.wiki.getTiddler(title),
+		type = (tiddler && tiddler.fields.type) || WIKITEXT_TYPE,
+		info = $tw.config.contentTypeInfo[type],
+		extension = type !== WIKITEXT_TYPE && info && info.extension ? info.extension : ".tid",
+		suffix = type !== WIKITEXT_TYPE && title.endsWith(extension) ? "" : extension;
+	return VIRTUAL_SCHEME + "/" + encodeURIComponent(title) + suffix;
+}
+
+// The editor re-encodes a URI it was given (%2F comes back as /), so the title is
+// decoded from the whole path; null when no such tiddler exists.
+function titleOfVirtualUri(uri) {
+	var path = decodeURIComponent(uri.slice(VIRTUAL_SCHEME.length)).replace(/^\/+/, ""),
+		stripped = path.replace(/\.tid$/, ""),
+		strippedTiddler = stripped !== path ? $tw.wiki.getTiddler(stripped) : null;
+	if(strippedTiddler && (strippedTiddler.fields.type || WIKITEXT_TYPE) === WIKITEXT_TYPE) {
+		return stripped;
+	}
+	return $tw.wiki.getTiddler(path) ? path : null;
+}
+
+// A wikitext view reads as a .tid file, fields as get_tiddler format=tid gives
+// them, so every .tid rule applies; any other type is its text alone.
+function virtualText(title) {
+	var crud = require("$:/core/modules/commands/inspect/handlers/crud/_shared.js"),
+		tiddler = $tw.wiki.getTiddler(title);
+	if(!tiddler) {
+		return null;
+	}
+	var text = tiddler.fields.text || "";
+	if((tiddler.fields.type || WIKITEXT_TYPE) !== WIKITEXT_TYPE || crud.hasUnsafeFields(tiddler)) {
+		return text;
+	}
+	return crud.formatFieldsBlock(tiddler, { exclude: ["text"] }) + "\n\n" + text;
+}
+
+function virtualDocument(uri) {
+	var title = isVirtualUri(uri) ? titleOfVirtualUri(uri) : null;
+	return title === null ? null : virtualText(title);
+}
+
+// Where the editor can open title: its own file when that file holds exactly
+// the tiddler, else the read-only view; null for no such tiddler.
+function documentUriOf(title) {
+	var entry = ($tw.boot.files || {})[title];
+	if(entry && entry.filepath && (isTidUri(entry.filepath) || entry.hasMetaFile)) {
+		return pathToUri(entry.filepath);
+	}
+	return $tw.wiki.getTiddler(title) ? virtualUri(title) : null;
+}
+
 // Somewhere the reader can open this title: its own file, or failing that the
 // wiki in the browser. A shadow has no file, and a core macro is exactly the
 // definition a reader most wants to look at, so the browser is the answer
@@ -330,6 +396,12 @@ exports.pathToUri = pathToUri;
 exports.fileOfTitle = fileOfTitle;
 exports.uriOfTitle = uriOfTitle;
 exports.browsableUri = browsableUri;
+exports.isVirtualUri = isVirtualUri;
+exports.virtualUri = virtualUri;
+exports.titleOfVirtualUri = titleOfVirtualUri;
+exports.virtualText = virtualText;
+exports.virtualDocument = virtualDocument;
+exports.documentUriOf = documentUriOf;
 exports.titleOfDocument = titleOfDocument;
 exports.renderContext = renderContext;
 exports.renderAt = renderAt;

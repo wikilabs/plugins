@@ -22,27 +22,6 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 var VARIABLE_WIDGETS = { let: true, vars: true, parameters: true };
 var NAMING_ATTRIBUTE = { set: "name", qualify: "name", wikify: "name" };
 
-// The module that exports each widget name, built once. The widget modules
-// have already been executed at boot to build widgetClasses, so this only
-// reads what is cached.
-var moduleByWidget = null;
-
-function moduleOfWidget(name) {
-	if(!moduleByWidget) {
-		moduleByWidget = Object.create(null);
-		var modules = $tw.modules.types.widget || {};
-		for(var title in modules) {
-			var exported = $tw.modules.execute(title);
-			for(var key in exported) {
-				if(!moduleByWidget[key]) {
-					moduleByWidget[key] = title;
-				}
-			}
-		}
-	}
-	return moduleByWidget[name] || null;
-}
-
 function isRegistered(name) {
 	var classes = $tw.rootWidget && $tw.rootWidget.widgetClasses;
 	return !!(classes && classes[name]);
@@ -184,6 +163,5 @@ exports.widgetSites = widgetSites;
 exports.resolveAttribute = resolveAttribute;
 exports.writtenOf = writtenOf;
 exports.variablesOf = variablesOf;
-exports.moduleOfWidget = moduleOfWidget;
 exports.isRegistered = isRegistered;
 exports.customWidgetOf = customWidgetOf;

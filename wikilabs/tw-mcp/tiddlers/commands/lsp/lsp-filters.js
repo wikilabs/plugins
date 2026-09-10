@@ -19,7 +19,8 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
 	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
 	scope = require("$:/core/modules/commands/inspect/lsp/lsp-scope.js"),
-	calls = require("$:/core/modules/commands/inspect/calls.js");
+	calls = require("$:/core/modules/commands/inspect/calls.js"),
+	modules = require("$:/core/modules/commands/inspect/modules.js");
 
 // Variables TiddlyWiki itself sets, which no definition in the wiki declares.
 var CORE_VARIABLES = ["currentTiddler", "..currentTiddler", "storyTiddler", "thisTiddler", "transclusion", "actionTiddler", "modifier", "condition", "namespace"];
@@ -362,7 +363,7 @@ function conditionVerdict(filter, context) {
 // attribute is worth here rather than as written.
 function describeWidget(site, context, widget, bodyText, callText) {
 	var head = "```\n<$" + site.name + ">\n```\n\n",
-		module = widgets.moduleOfWidget(site.name),
+		module = modules.moduleOfWidget(site.name),
 		body;
 	if(widgets.customWidgetOf(site.name, context)) {
 		// Checked first, because TiddlyWiki lets a \widget take over the tag
@@ -427,11 +428,15 @@ function looksLikeFilter(value) {
 	return trimmed.startsWith("[") && trimmed.endsWith("]") && bracketsBalanced(trimmed);
 }
 
-// The definition may be a shadow, which has no file. The browser can still open
-// it, so a core macro is reachable even though nothing on disk holds it.
+// A definition's home: its file, else the wiki in the browser, plus the editor's
+// read-only view of a tiddler with no file, and the plugin supplying it, if any.
 function definitionLink(title) {
-	var uri = source.browsableUri(title);
-	return uri ? markdownLink(title, uri) : "`" + title + "`";
+	var uri = source.browsableUri(title),
+		view = source.documentUriOf(title),
+		from = modules.provenance(title);
+	return (uri ? markdownLink(title, uri) : "`" + title + "`") +
+		(view && source.isVirtualUri(view) ? " (" + markdownLink("open in editor", view) + ")" : "") +
+		(from ? ", " + from : "");
 }
 
 function hover(uri, text, position) {

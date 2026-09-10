@@ -25,32 +25,59 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 // Sites per file path, kept while the file's mtime and size are unchanged.
 var fileCache = Object.create(null);
 
-// Every call and definition in a document, with protocol ranges. A .tid whose
-// header declares another type holds no wikitext, so it has none.
+// Sites of a tiddler's read-only view, in the wiki's own per-tiddler cache.
+var VIEW_CACHE_KEY = "tw-lsp-view-sites";
+
+// Every call and definition in a document, with protocol ranges, calls in its
+// .tid header fields included. A document holding no wikitext has none.
 function sitesOfDocument(uri, text) {
 	var body = source.bodyOf(uri, text);
-	if(!isWikitext(body)) {
+	if(!isWikitext(uri, body)) {
 		return [];
 	}
 	var found = calls.sitesIn(body.text),
 		located = [];
-	function add(site, definition) {
+	// base is where the scanned text starts in the document; start stays in body
+	// coordinates, the ones scope resolution works in.
+	function add(site, definition, base) {
 		located.push({
 			name: site.name,
-			start: site.start,
+			start: base - body.offset + site.start,
 			definition: definition,
 			range: {
-				start: source.positionAt(body.starts, body.offset + site.start),
-				end: source.positionAt(body.starts, body.offset + site.end)
+				start: source.positionAt(body.starts, base + site.start),
+				end: source.positionAt(body.starts, base + site.end)
 			}
 		});
 	}
-	found.calls.forEach(function(site) { add(site, false); });
-	found.definitions.forEach(function(site) { add(site, true); });
+	found.calls.forEach(function(site) { add(site, false, body.offset); });
+	found.definitions.forEach(function(site) { add(site, true, body.offset); });
+	headerFields(body).forEach(function(field) {
+		calls.sitesIn(field.value).calls.forEach(function(site) { add(site, false, field.start); });
+	});
 	return located;
 }
 
-function isWikitext(body) {
+// The value of each .tid header field but the title, and where it starts.
+function headerFields(body) {
+	var fields = [];
+	for(var i = 0; i < body.firstLine - 1; i++) {
+		var match = /^([^:\s]+):\s?/.exec(body.lines[i]);
+		if(match && match[1] !== "title") {
+			fields.push({ value: body.lines[i].slice(match[0].length), start: body.starts[i] + match[0].length });
+		}
+	}
+	return fields;
+}
+
+// A view of a wiki tiddler takes its type from the wiki; a .tid file takes it
+// from its own type: line, since the wiki's copy may be stale.
+function isWikitext(uri, body) {
+	if(source.isVirtualUri(uri)) {
+		var title = source.titleOfVirtualUri(uri),
+			tiddler = title === null ? null : $tw.wiki.getTiddler(title);
+		return !!tiddler && (tiddler.fields.type || source.WIKITEXT_TYPE) === source.WIKITEXT_TYPE;
+	}
 	for(var i = 0; i < body.firstLine; i++) {
 		var match = /^type:\s*(.*)$/.exec(body.lines[i]);
 		if(match) {
@@ -91,6 +118,9 @@ function siteAt(sites, position) {
 // (file:///e%3A/...), where a path from $tw.boot.files gives file:///E:/...,
 // so two spellings of one file must compare equal.
 function sameFileKey(uri) {
+	if(source.isVirtualUri(uri)) {
+		return "tiddlywiki:" + source.titleOfVirtualUri(uri);
+	}
 	return decodeURIComponent(uri).replace(/^file:\/\/\/([a-zA-Z]):/, function(match, drive) {
 		return "file:///" + drive.toLowerCase() + ":";
 	});
@@ -136,7 +166,45 @@ function references(uri, text, position, context, openDocuments) {
 			add(fileUri, sitesOfFile(filepath));
 		}
 	}
+	// Last, tiddlers with no file of their own, as the read-only view the editor
+	// opens for them.
+	wikiOnlyTitles().forEach(function(title) {
+		var viewUri = source.virtualUri(title);
+		if(!seen[sameFileKey(viewUri)] && mentions(title, target.name)) {
+			seen[sameFileKey(viewUri)] = true;
+			add(viewUri, $tw.wiki.getCacheForTiddler(title, VIEW_CACHE_KEY, function() {
+				return sitesOfDocument(viewUri, source.virtualText(title));
+			}));
+		}
+	});
 	return locations.sort(byPosition);
+}
+
+// Wikitext tiddlers the editor can only open as a view: real ones no file holds
+// exactly, and shadows that no real tiddler overrides, since only the running
+// text counts.
+function wikiOnlyTitles() {
+	var titles = [];
+	function consider(tiddler, title) {
+		if((tiddler.fields.type || source.WIKITEXT_TYPE) === source.WIKITEXT_TYPE && source.isVirtualUri(source.documentUriOf(title) || "")) {
+			titles.push(title);
+		}
+	}
+	$tw.wiki.each(consider);
+	$tw.wiki.eachShadow(function(tiddler, title) {
+		if(!$tw.wiki.tiddlerExists(title)) {
+			consider(tiddler, title);
+		}
+	});
+	return titles;
+}
+
+// A cheap test before a tiddler is parsed: the name appears in some field.
+function mentions(title, name) {
+	var tiddler = $tw.wiki.getTiddler(title);
+	return Object.keys(tiddler.fields).some(function(key) {
+		return key !== "title" && tiddler.getFieldString(key).includes(name);
+	});
 }
 
 // A parameter or a widget's variable is that name only inside its own scope in

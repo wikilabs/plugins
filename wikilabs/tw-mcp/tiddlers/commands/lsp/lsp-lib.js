@@ -35,6 +35,7 @@ var DIAGNOSTIC_DEBOUNCE_MS = 300;
 var PARSE_ERROR = -32700;
 var INVALID_REQUEST = -32600;
 var METHOD_NOT_FOUND = -32601;
+var INVALID_PARAMS = -32602;
 var INTERNAL_ERROR = -32603;
 var SERVER_NOT_INITIALIZED = -32002;
 
@@ -89,7 +90,8 @@ function createSession(send, options) {
 		debounceMs = options.debounceMs === undefined ? DIAGNOSTIC_DEBOUNCE_MS : options.debounceMs;
 
 	function publishDiagnostics(uri, version) {
-		var params = { uri: uri, diagnostics: features.diagnostics(uri, documents[uri] || "") };
+		// A read-only view gets no squiggles: nothing in it can be fixed from there.
+		var params = { uri: uri, diagnostics: features.isVirtualUri(uri) ? [] : features.diagnostics(uri, documents[uri] || "") };
 		if(version !== undefined && version !== null) {
 			params.version = version;
 		}
@@ -204,6 +206,14 @@ function createSession(send, options) {
 				var refUri = params.textDocument.uri,
 					refText = documents[refUri];
 				send(response(id, refText === undefined ? null : features.references(refUri, refText, params.position, params.context, documents)));
+				break;
+			}
+
+			// Not in the protocol: the extension's content provider asks for the text
+			// of a tiddler that has no file of its own, to show it read-only.
+			case "tiddlywiki/tiddler": {
+				var viewText = features.virtualDocument(params.uri || "");
+				send(viewText === null ? errorResponse(id, INVALID_PARAMS, "No tiddler for " + params.uri) : response(id, { text: viewText }));
 				break;
 			}
 

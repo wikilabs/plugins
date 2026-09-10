@@ -34,6 +34,8 @@ exports.completions = completion.completions;
 exports.hover = filters.hover;
 exports.definition = definition.definition;
 exports.references = references.references;
+exports.virtualDocument = source.virtualDocument;
+exports.isVirtualUri = source.isVirtualUri;
 
 // Test seams. Each is a pure function worth pinning without a document or a
 // transport to reach it.
@@ -54,3 +56,7 @@ exports.callSites = macros.callSites;
 exports.findDefinition = macros.findDefinition;
 exports.bindArguments = macros.bindArguments;
 exports.sameFileKey = references.sameFileKey;
+exports.virtualUri = source.virtualUri;
+exports.titleOfVirtualUri = source.titleOfVirtualUri;
+exports.virtualText = source.virtualText;
+exports.documentUriOf = source.documentUriOf;
