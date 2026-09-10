@@ -198,7 +198,7 @@ function createSession(send, options) {
 			case "textDocument/hover": {
 				var hoverUri = params.textDocument.uri,
 					hoverText = documents[hoverUri];
-				send(response(id, hoverText === undefined ? null : features.hover(hoverUri, hoverText, params.position)));
+				send(response(id, hoverText === undefined ? null : features.hover(hoverUri, hoverText, params.position, documents)));
 				break;
 			}
 

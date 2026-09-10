@@ -20,7 +20,8 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
 	scope = require("$:/core/modules/commands/inspect/lsp/lsp-scope.js"),
 	calls = require("$:/core/modules/commands/inspect/calls.js"),
-	modules = require("$:/core/modules/commands/inspect/modules.js");
+	modules = require("$:/core/modules/commands/inspect/modules.js"),
+	pragmas = require("$:/core/modules/commands/inspect/lsp/lsp-pragmas.js");
 
 // Variables TiddlyWiki itself sets, which no definition in the wiki declares.
 var CORE_VARIABLES = ["currentTiddler", "..currentTiddler", "storyTiddler", "thisTiddler", "transclusion", "actionTiddler", "modifier", "condition", "namespace"];
@@ -439,7 +440,12 @@ function definitionLink(title) {
 		(from ? ", " + from : "");
 }
 
-function hover(uri, text, position) {
+function hover(uri, text, position, openDocuments) {
+	// A pragma line hovers as its keyword, name or parameter, which nothing below knows.
+	var pragma = pragmas.hover(uri, text, position, openDocuments);
+	if(pragma) {
+		return pragma;
+	}
 	var body = source.bodyOf(uri, text);
 	if(position.line < body.firstLine) {
 		return null;

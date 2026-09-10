@@ -193,6 +193,11 @@ function nestDefinitions(definitions) {
 	});
 }
 
+// Whether the wiki imports title's top-level definitions for everyone.
+function importedGlobally(title) {
+	return $tw.wiki.filterTiddlers($tw.wiki.getTiddlerText(GLOBAL_IMPORT_FILTER, "")).includes(title);
+}
+
 // The definition of name the wiki imports globally, as { title, definition }, or
 // null. Only a top-level definition is imported, and a later title overwrites an
 // earlier one (core importvariables.js), so the last match wins.
@@ -330,6 +335,7 @@ function parseFilter(filter) {
 exports.sitesIn = sitesIn;
 exports.sitesOfTiddler = sitesOfTiddler;
 exports.globalDefinition = globalDefinition;
+exports.importedGlobally = importedGlobally;
 exports.definitionBody = definitionBody;
 exports.conditionalClauses = conditionalClauses;
 exports.isFilterAttribute = isFilterAttribute;
