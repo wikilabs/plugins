@@ -58,6 +58,17 @@ function visit(node, text, base, sites) {
 	if(node.start === undefined) {
 		return;
 	}
+	// <%if%> builds a $list whose conditions record no offsets, so they are found
+	// in the block's own source, and no $list tag was ever written.
+	var clauses = conditionalClauses(node, text);
+	if(clauses) {
+		clauses.forEach(function(clause) {
+			if(clause.filter) {
+				scanFilter(clause.filter, base + clause.start, sites);
+			}
+		});
+		return;
+	}
 	var kind = definitionKind(node);
 	if(kind) {
 		addDefinition(node, kind, text, base, sites);
@@ -176,6 +187,47 @@ function bodyOffset(slice, body) {
 	return slice.lastIndexOf(body, limit - body.length);
 }
 
+// --- Conditionals ---
+
+// The clauses of an <%if%> block, as { keyword, filter, start, end } in text
+// offsets, or null for any other node. The block is a $list whose range covers
+// everything up to <%endif%>; clauses of a nested block are its own.
+function conditionalClauses(node, text) {
+	if(node.tag !== "$list" || node.start === undefined || !/^<%\s*if\s/.test(text.slice(node.start, node.start + 8))) {
+		return null;
+	}
+	var slice = text.slice(node.start, node.end),
+		pattern = /<%\s*(if|elseif|else|endif)\b([\s\S]*?)%>/g,
+		clauses = [],
+		depth = 0,
+		match;
+	while((match = pattern.exec(slice)) !== null) {
+		var keyword = match[1];
+		if(keyword === "if") {
+			depth++;
+		}
+		if(depth === 1 && keyword !== "endif") {
+			var clause = { keyword: keyword, filter: null };
+			if(keyword !== "else") {
+				var group = match[2],
+					lead = group.length - group.replace(/^\s+/, "").length;
+				clause.filter = group.trim();
+				clause.start = node.start + match.index + match[0].indexOf(keyword) + keyword.length + lead;
+				clause.end = clause.start + clause.filter.length;
+			}
+			clauses.push(clause);
+		}
+		if(keyword === "endif" && --depth === 0) {
+			break;
+		}
+	}
+	return clauses;
+}
+
+function isFilterAttribute(name) {
+	return FILTER_ATTRIBUTE.test(name);
+}
+
 // --- Filters ---
 
 function scanFilterAt(filter, attribute, text, base, sites) {
@@ -235,3 +287,5 @@ function parseFilter(filter) {
 exports.sitesIn = sitesIn;
 exports.sitesOfTiddler = sitesOfTiddler;
 exports.definitionBody = definitionBody;
+exports.conditionalClauses = conditionalClauses;
+exports.isFilterAttribute = isFilterAttribute;
