@@ -77,7 +77,8 @@ function serverCapabilities() {
 		documentHighlightProvider: true,
 		foldingRangeProvider: true,
 		// A space starts the next argument, ":" and "=" its value; a quote may close one.
-		signatureHelpProvider: { triggerCharacters: [" ", ":", "="], retriggerCharacters: ["\""] }
+		signatureHelpProvider: { triggerCharacters: [" ", ":", "="], retriggerCharacters: ["\""] },
+		inlayHintProvider: true
 	};
 }
 
@@ -254,6 +255,13 @@ function createSession(send, options) {
 				var helpUri = params.textDocument.uri,
 					helpText = documents[helpUri];
 				send(response(id, helpText === undefined ? null : features.signatureHelp(helpUri, helpText, params.position)));
+				break;
+			}
+
+			case "textDocument/inlayHint": {
+				var hintUri = params.textDocument.uri,
+					hintText = documents[hintUri];
+				send(response(id, hintText === undefined ? null : features.inlayHints(hintUri, hintText, params.range)));
 				break;
 			}
 

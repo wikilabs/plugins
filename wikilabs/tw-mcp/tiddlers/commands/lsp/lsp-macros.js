@@ -68,7 +68,9 @@ function argumentsOf(attributes, isWidget) {
 			// As written: a <<var>>, {{ref}} or {{{ filter }}} value is a parse
 			// node, not text, and only text can be shown or run as a filter.
 			value: widgets.writtenOf(attribute),
-			positional: !!attribute.isPositional
+			positional: !!attribute.isPositional,
+			// Where the argument is written, whitespace before its value included.
+			start: attribute.start
 		});
 	}
 	return args;
