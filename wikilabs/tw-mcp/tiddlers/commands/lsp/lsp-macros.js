@@ -24,30 +24,35 @@ var GLOBAL_MACROS_FILTER = "[all[shadows+tiddlers]tag[$:/tags/Macro]]";
 
 // --- Calls ---
 
-// Every <<name ...>> call the parser located, in body offsets.
+// Every call the parser located, in body offsets: <<name ...>>, and the widget
+// forms <$transclude $variable> and <$macrocall $name>, which keep their tag so
+// a hover can describe the widget as well.
 function callSites(tree) {
 	var sites = [];
 	source.eachNode(tree, function(node) {
-		var attributes = node.attributes || {};
-		if(node.type !== "transclude" || !attributes.$variable || node.start === undefined) {
+		var attributes = node.attributes || {},
+			named = node.type === "macrocall" ? attributes.$name : (node.type === "transclude" ? attributes.$variable : null);
+		if(!named || named.type !== "string" || node.start === undefined) {
 			return;
 		}
 		sites.push({
-			name: attributes.$variable.value,
+			name: named.value,
 			start: node.start,
 			end: node.end,
-			args: argumentsOf(attributes)
+			tag: node.tag || null,
+			args: argumentsOf(attributes, !!node.tag)
 		});
 	});
 	return sites;
 }
 
-// $variable is the call itself, not an argument; everything else was written by
-// the author, positionally when its name is the index.
-function argumentsOf(attributes) {
+// $variable is the call itself, not an argument, and on a widget form every $
+// attribute configures the widget. The rest are arguments, positional when the
+// name is the index.
+function argumentsOf(attributes, isWidget) {
 	var args = [];
 	for(var key in attributes) {
-		if(key === "$variable") {
+		if(key === "$variable" || (isWidget && key.charAt(0) === "$")) {
 			continue;
 		}
 		var attribute = attributes[key];

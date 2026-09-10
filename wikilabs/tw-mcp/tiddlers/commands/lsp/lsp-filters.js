@@ -242,7 +242,7 @@ function describeCall(site, bodyText, context) {
 
 // A widget hover: what it is, whether anything registers it, and what each
 // attribute is worth here rather than as written.
-function describeWidget(site, context, widget, bodyText) {
+function describeWidget(site, context, widget, bodyText, callText) {
 	var head = "```\n<$" + site.name + ">\n```\n\n",
 		module = widgets.moduleOfWidget(site.name),
 		body;
@@ -284,6 +284,10 @@ function describeWidget(site, context, widget, bodyText) {
 	//
 	// What it actually renders, body and all, kept last: the output is the least
 	// predictable part and the longest.
+	// The call a <$transclude> or <$macrocall> makes still comes before the render.
+	if(callText) {
+		body += "\n---\n\n" + callText;
+	}
 	var output = source.renderedTextOf(widget);
 	if(output) {
 		body += "\n\n**Renders as**\n\n```\n" + truncate(output, MAX_RENDER_CHARS) + "\n```\n";
@@ -324,10 +328,18 @@ function hover(uri, text, position) {
 		// once, since it renders and one hover may run two filters.
 		at = source.renderAt(source.titleOfDocument(uri, text), body.text, cursor),
 		context = at.context;
-	var call = innermostSite(macros.callSites(tree), cursor);
+	var call = innermostSite(macros.callSites(tree), cursor),
+		widgetsHere = widgets.widgetSites(tree);
 	if(call) {
+		// A <$transclude> or <$macrocall> is a widget as well as a call, so the
+		// widget is described and the call it makes follows.
+		var asWidget = call.tag && widgetsHere.find(function(w) { return w.start === call.start; }),
+			described = describeCall(call, body.text, context);
 		return {
-			contents: { kind: "markdown", value: describeCall(call, body.text, context) },
+			contents: {
+				kind: "markdown",
+				value: asWidget ? describeWidget(asWidget, context, renderedWidget(at.widget), body.text, described) : described
+			},
 			range: {
 				start: source.positionAt(body.starts, body.offset + call.start),
 				end: source.positionAt(body.starts, body.offset + call.end)
@@ -337,7 +349,6 @@ function hover(uri, text, position) {
 	// Filters and widgets compete on range, so a filter attribute wins over the
 	// widget holding it: the narrower thing is the one being pointed at.
 	var filters = filterSites(tree, body.text),
-		widgetsHere = widgets.widgetSites(tree),
 		site = innermostSite(filters.concat(widgetsHere), cursor);
 	if(site) {
 		return {
