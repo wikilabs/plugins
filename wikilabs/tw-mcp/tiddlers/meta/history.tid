@@ -5,6 +5,13 @@ V 0.16.0 - 2026-09-09
 * New `--lsp` command: an editor connected to it completes tiddler titles inside `[[...]]`, warns about links whose target does not exist, opens the `.tid` file behind a link on ctrl-click, and on hover shows what a filter resolves to and what a `<<macro>>` call binds each of its parameters to. Runs in the same process as `--mcp`, so both answer from one wiki.
 * Find references in the editor: every call of the macro, procedure, function or widget under the cursor, across the wiki's `.tid` files, in any call form including filters and definition bodies.
 * New `find_calls` MCP tool: the same answer for an AI client, per tiddler with edit anchors, shadow tiddlers included.
+* Go to definition follows calls, parameters, variables, filter operators and run prefixes, into other files, shadow tiddlers (opened read-only) and the JavaScript that runs.
+* Hover explains filter operators, run prefixes and pragma lines, and flags a name that silently becomes a field test.
+* Completion offers the names of calls, parameters, widgets, variables and operators, not only titles.
+* New in the editor: the outline, Ctrl+T search by name, highlighting a name where it means the same, folding, signature help, inlay hints for positional arguments, and rename across files.
+* Find references also lists calls in shadow tiddlers and in `.tid` header fields.
+* Saving a `.tid` in the editor updates the running wiki.
+* New `find_definition` MCP tool: where a name is defined, the JavaScript behind widgets, operators and macros included.
 
 V 0.15.0 - 2026-08-12
 
