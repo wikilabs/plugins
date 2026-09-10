@@ -326,6 +326,82 @@ function scanFilter(filter, base, sites) {
 	});
 }
 
+// Core filters.js parseFilter's own pattern for the start of a run.
+var RUN_START = /((?:\+|\-|~|(?:=>?)|\:(\w+)(?:\:([\w\:, ]*))?)?)(?:(\[)|(?:"([^"]*)")|(?:'([^']*)')|([^\s\[\]]+))/mg;
+
+// The closing bracket of each operand opener, as core parseFilterOperation reads them.
+var OPERAND_CLOSE = { "[": "]", "{": "}", "<": ">", "(": ")" };
+
+// Every run prefix and operator name written in a filter, with offsets into it,
+// as { prefixes: [{prefix, named, start, end}], operators: [{operator, suffix,
+// negated, start, end, step}] }, step being the operator with its operands. It
+// walks core parseFilter's grammar, which keeps no offsets; null if unparsable.
+function filterParts(filter) {
+	if(!parseFilter(filter)) {
+		return null;
+	}
+	var parts = { prefixes: [], operators: [] },
+		run = new RegExp(RUN_START.source, "mg"),
+		p = 0,
+		match;
+	while(p < filter.length) {
+		while(/\s/.test(filter.charAt(p))) {
+			p++;
+		}
+		if(p >= filter.length) {
+			break;
+		}
+		run.lastIndex = p;
+		match = run.exec(filter);
+		if(match && match.index === p) {
+			if(match[1]) {
+				parts.prefixes.push({ prefix: match[1], named: match[2] || null, start: p, end: p + match[1].length });
+				p += match[1].length;
+			}
+			p = match[4] ? stepsOf(filter, p, parts.operators) : match.index + match[0].length;
+		} else {
+			p = stepsOf(filter, p, parts.operators);
+		}
+	}
+	return parts;
+}
+
+// The steps of the run whose "[" is at p; returns the offset after its "]".
+function stepsOf(filter, p, operators) {
+	p++;
+	do {
+		var negated = filter.charAt(p) === "!";
+		if(negated) {
+			p++;
+		}
+		var start = p,
+			bracket = p + filter.substring(p).search(/[\[\{<\/\(]/),
+			written = filter.substring(p, bracket),
+			colon = written.indexOf(":"),
+			name = colon < 0 ? written : written.substring(0, colon);
+		p = operandEnd(filter, bracket);
+		while(filter.charAt(p) === ",") {
+			p = operandEnd(filter, p + 1);
+		}
+		// An unwritten name runs title, or field with a suffix: nothing to point at.
+		if(name) {
+			operators.push({ operator: name, suffix: colon < 0 ? null : written.substring(colon + 1), negated: negated, start: start, end: start + name.length, step: filter.substring(start, p) });
+		}
+	} while(filter.charAt(p) !== "]");
+	return p + 1;
+}
+
+// Just past the operand opening at p; a deprecated /regexp/ operand still parses.
+function operandEnd(filter, p) {
+	var open = filter.charAt(p);
+	if(open === "/") {
+		var rex = /^((?:[^\\\/]|\\.)*)\/(?:\(([mygi]+)\))?/g;
+		rex.exec(filter.substring(p + 1));
+		return p + 1 + rex.lastIndex;
+	}
+	return filter.indexOf(OPERAND_CLOSE[open], p + 1) + 1;
+}
+
 // compileFilter caches a filter only when it parses (core filters.js), which is
 // the one test for a malformed filter that does not throw.
 function parseFilter(filter) {
@@ -340,3 +416,4 @@ exports.importedGlobally = importedGlobally;
 exports.definitionBody = definitionBody;
 exports.conditionalClauses = conditionalClauses;
 exports.isFilterAttribute = isFilterAttribute;
+exports.filterParts = filterParts;

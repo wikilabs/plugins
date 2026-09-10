@@ -32,6 +32,26 @@ var MAX_HOVER_TITLES = 50;
 
 var FILTER_ERROR_TITLE = "$:/language/Error/Filter";
 
+// Each named run prefix: its page on tiddlywiki.com and what it does.
+var RUN_PREFIXES = {
+	or: { page: "Or", does: "adds its results to the output, without duplicates" },
+	and: { page: "And", does: "runs on the output so far and replaces it with its result" },
+	except: { page: "Except", does: "removes its results from the output so far" },
+	"else": { page: "Else", does: "runs only when the output so far is empty" },
+	all: { page: "All", does: "adds its results, duplicates included" },
+	"let": { page: "Let", does: "assigns the output so far to a variable named by its own first result, and empties the output" },
+	filter: { page: "Filter", does: "keeps each title for which the run yields anything" },
+	map: { page: "Map", does: "replaces each title with the run's first result for it" },
+	reduce: { page: "Reduce", does: "folds the output into one value, the result so far in `accumulator`" },
+	sort: { page: "Sort", does: "sorts the output by the run's result for each title" },
+	cascade: { page: "Cascade", does: "replaces each title with the first result of the filters its run lists" },
+	intersection: { page: "Intersection", does: "keeps only the titles its run also yields" },
+	then: { page: "then", does: "replaces a non-empty output with its result, unless that is empty" }
+};
+
+// The named prefix each shorthand runs (core filters.js compileFilter).
+var SHORTHAND_PREFIXES = { "+": "and", "-": "except", "~": "else", "=": "all", "=>": "let" };
+
 // A definition's parameters exist only in a call, so a filter evaluated where the
 // definition is written sees them empty.
 var UNBOUND_NOTE = "\n\n_Evaluated where it is written: the enclosing definition's parameters are not set here._";
@@ -108,6 +128,26 @@ function innermostSite(sites, offset) {
 		}
 	}
 	return best;
+}
+
+// The run prefix or operator name under the cursor in a filter site, as
+// { part, start, end } in body offsets (part from calls.filterParts), or null.
+function partIn(site, bodyText, cursor) {
+	var at = site.start + bodyText.slice(site.start, site.end).lastIndexOf(site.filter),
+		parts = calls.filterParts(site.filter),
+		hit = parts ? parts.prefixes.concat(parts.operators).filter(function(part) {
+			return cursor >= at + part.start && cursor < at + part.end;
+		})[0] : null;
+	return hit ? { part: hit, start: at + hit.start, end: at + hit.end } : null;
+}
+
+function filterPartAt(tree, bodyText, cursor) {
+	var site = innermostSite(filterSites(tree, bodyText), cursor);
+	return site ? partIn(site, bodyText, cursor) : null;
+}
+
+function runPrefixName(part) {
+	return part.named || SHORTHAND_PREFIXES[part.prefix];
 }
 
 // --- The fallback, for a filter that does not parse yet ---
@@ -253,6 +293,44 @@ function describeFilter(filterString, context, substituted) {
 		body += "\n... and " + (titles.length - shown.length) + " more.";
 	}
 	return body;
+}
+
+// A run prefix or operator: the JavaScript that runs it, or for a name no
+// operator has, the field test TiddlyWiki silently makes instead (unknown.js).
+function describePart(part, bodyText, offset) {
+	if(part.prefix !== undefined) {
+		var name = runPrefixName(part),
+			known = RUN_PREFIXES[name],
+			prefixModule = modules.moduleOfRunPrefix(name);
+		if(!prefixModule) {
+			return "**Unknown run prefix** `" + part.prefix + "`: the filter yields an error message instead of titles.\n";
+		}
+		return "**run prefix** `" + part.prefix + "`" + (part.named ? "" : ", short for `:" + name + "`") + (known ? ": " + known.does : "") +
+			"\n\nDefined in " + definitionLink(prefixModule) + (known ? coreDoc(prefixModule, known.page + " Filter Run Prefix") : "") + "\n";
+	}
+	var module = modules.moduleOfFilterOperator(part.operator);
+	if(module) {
+		return "**filter operator** `" + part.operator + "`" + (part.suffix === null ? "" : ", suffix `" + part.suffix + "`") + (part.negated ? ", negated by `!`" : "") +
+			"\n\nDefined in " + definitionLink(module) + coreDoc(module, part.operator + " Operator") + "\n";
+	}
+	var field = part.suffix || part.operator,
+		operands = part.step.slice(part.operator.length + (part.suffix === null ? 0 : part.suffix.length + 1)),
+		test = "TiddlyWiki tests the field `" + field + "` instead, as `[" + (part.negated ? "!" : "") + "field:" + field + operands + "]`.";
+	if(part.operator.includes(".")) {
+		var found = macros.findDefinition(part.operator, bodyText, offset);
+		if(found) {
+			return "**" + found.kind + "** `" + part.operator + "`, called as a filter operator, " + (found.title === null ? "defined in this tiddler" : "defined in " + definitionLink(found.title)) + "\n";
+		}
+		return "**No definition of** `" + part.operator + "` **is visible here.** Unless a caller supplies one, " + test + "\n";
+	}
+	return "**Not a filter operator.** " + test + " A misspelt operator looks exactly like this.\n";
+}
+
+// Core's operators and prefixes are documented on tiddlywiki.com; a plugin's are not.
+function coreDoc(module, page) {
+	return $tw.wiki.getShadowSource(module) === "$:/core" && !$tw.wiki.tiddlerExists(module)
+		? ", documented at " + markdownLink("tiddlywiki.com", "https://tiddlywiki.com/#" + encodeURIComponent(page))
+		: "";
 }
 
 // A call is described whole, arguments and filter results together, so it wins
@@ -480,7 +558,8 @@ function hover(uri, text, position, openDocuments) {
 	var filters = filterSites(tree, body.text),
 		site = innermostSite(filters.concat(widgetsHere, conditionalBlocks(tree, body.text)), cursor),
 		unbound = at.widget && !renderedWidget(at.widget) ? UNBOUND_NOTE : "",
-		value;
+		value,
+		span = site;
 	if(site) {
 		if(site.clauses) {
 			value = describeConditional(site, context) + unbound;
@@ -488,12 +567,18 @@ function hover(uri, text, position, openDocuments) {
 			value = describeWidget(site, context, renderedWidget(at.widget), body.text);
 		} else {
 			value = describeFilter(site.filter, context, site.substituted) + (site.condition ? conditionVerdict(site.filter, context) : "") + unbound;
+			// An operator or run prefix explains itself, then the filter it is part of.
+			var part = partIn(site, body.text, cursor);
+			if(part) {
+				value = describePart(part.part, body.text, part.start) + "\n---\n\n" + value;
+				span = part;
+			}
 		}
 		return {
 			contents: { kind: "markdown", value: value },
 			range: {
-				start: source.positionAt(body.starts, body.offset + site.start),
-				end: source.positionAt(body.starts, body.offset + site.end)
+				start: source.positionAt(body.starts, body.offset + span.start),
+				end: source.positionAt(body.starts, body.offset + span.end)
 			}
 		};
 	}
@@ -534,6 +619,8 @@ function lineHover(position, context, markdown) {
 
 exports.hover = hover;
 exports.filterSites = filterSites;
+exports.filterPartAt = filterPartAt;
+exports.runPrefixName = runPrefixName;
 exports.filterContext = filterContext;
 exports.bracketsBalanced = bracketsBalanced;
 exports.markdownLink = markdownLink;

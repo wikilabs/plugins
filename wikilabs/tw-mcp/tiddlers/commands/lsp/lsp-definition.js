@@ -19,6 +19,7 @@ come out right.
 
 var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
+	filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js"),
 	scope = require("$:/core/modules/commands/inspect/lsp/lsp-scope.js"),
 	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
 	files = require("$:/core/modules/commands/inspect/lsp/lsp-files.js"),
@@ -113,6 +114,20 @@ function callTargets(uri, text, position, openDocuments) {
 	};
 }
 
+// The JavaScript behind the filter operator or run prefix under the cursor. A
+// dotted operator is a call, which callTargets answers first.
+function operatorTargets(uri, text, position) {
+	var body = source.bodyOf(uri, text),
+		hit = filters.filterPartAt(source.parseWithBodies(body.text), body.text, source.offsetAt(body.starts, position) - body.offset);
+	if(!hit) {
+		return null;
+	}
+	var isPrefix = hit.part.prefix !== undefined,
+		name = isPrefix ? filters.runPrefixName(hit.part) : hit.part.operator,
+		target = moduleTarget(isPrefix ? modules.moduleOfRunPrefix(name) : modules.moduleOfFilterOperator(name), name);
+	return target ? { origin: rangeIn(body, hit.start, hit.end), targets: [target] } : null;
+}
+
 function rangeIn(body, start, end) {
 	return { start: source.positionAt(body.starts, body.offset + start), end: source.positionAt(body.starts, body.offset + end) };
 }
@@ -177,6 +192,10 @@ function definition(uri, text, position, options, openDocuments) {
 	var call = callTargets(uri, text, position, openDocuments);
 	if(call) {
 		return call.targets.length ? respond(call, options) : null;
+	}
+	var operator = operatorTargets(uri, text, position);
+	if(operator) {
+		return respond(operator, options);
 	}
 	var target = targetAt(uri, text, position);
 	if(!target) {
