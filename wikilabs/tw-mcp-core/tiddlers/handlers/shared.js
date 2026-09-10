@@ -649,6 +649,7 @@ function addToWikiSilently(tiddlerFields) {
 }
 
 exports.init = init;
+exports.addToWikiSilently = addToWikiSilently;
 exports.checkWritable = checkWritable;
 exports.isReadonly = isReadonly;
 exports.getCheckPathAllowed = getCheckPathAllowed;

@@ -11,6 +11,7 @@ Each feature lives in its own module, split by what it can rely on:
 	lsp-completion.js  title and name completion, necessarily hand-scanned
 	lsp-typing.js      the call or filter being typed, before it parses
 	lsp-signature.js   the parameter list of the call being typed
+	lsp-reload.js      a .tid saved in the editor, read into the running wiki
 	lsp-filters.js     filter hover, parser-driven with a scanner fallback
 	lsp-pragmas.js     hover on pragma keywords, definition names and parameters
 	lsp-files.js       call sites of every document the editor can open
@@ -39,6 +40,7 @@ var links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
 	highlight = require("$:/core/modules/commands/inspect/lsp/lsp-highlight.js"),
 	folding = require("$:/core/modules/commands/inspect/lsp/lsp-folding.js"),
 	signature = require("$:/core/modules/commands/inspect/lsp/lsp-signature.js"),
+	reload = require("$:/core/modules/commands/inspect/lsp/lsp-reload.js"),
 	source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
 
 exports.diagnostics = links.diagnostics;
@@ -51,6 +53,7 @@ exports.workspaceSymbols = symbols.workspaceSymbols;
 exports.documentHighlights = highlight.documentHighlights;
 exports.foldingRanges = folding.foldingRanges;
 exports.signatureHelp = signature.signatureHelp;
+exports.reloadSaved = reload.reloadSaved;
 exports.virtualDocument = source.virtualDocument;
 exports.isVirtualUri = source.isVirtualUri;
 

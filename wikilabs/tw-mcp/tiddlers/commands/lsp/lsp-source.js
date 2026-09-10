@@ -285,6 +285,12 @@ function pathToUri(filepath) {
 // Where a title lives on disk, or null when it has no file of its own. A shadow
 // tiddler is the ordinary case of that: it is supplied by a plugin, and neither
 // $tw.boot.files nor the plugin tiddler records the folder it came from.
+// A file URI's path, the inverse of pathToUri: /E:/x becomes E:/x.
+function uriToPath(uri) {
+	var decoded = decodeURIComponent(uri.replace(/^file:\/\//, ""));
+	return /^\/[a-zA-Z]:/.test(decoded) ? decoded.slice(1) : decoded;
+}
+
 function fileOfTitle(title) {
 	var entry = ($tw.boot.files || {})[title];
 	return entry && entry.filepath ? entry.filepath : null;
@@ -393,6 +399,7 @@ exports.eachNode = eachNode;
 exports.parseBody = parseBody;
 exports.parseWithBodies = parseWithBodies;
 exports.pathToUri = pathToUri;
+exports.uriToPath = uriToPath;
 exports.fileOfTitle = fileOfTitle;
 exports.uriOfTitle = uriOfTitle;
 exports.browsableUri = browsableUri;

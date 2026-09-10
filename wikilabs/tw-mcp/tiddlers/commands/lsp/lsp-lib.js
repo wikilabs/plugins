@@ -64,7 +64,8 @@ function notification(method, params) {
 
 function serverCapabilities() {
 	return {
-		textDocumentSync: { openClose: true, change: SYNC_FULL },
+		// Told of saves, not their text: the saved file is read from disk.
+		textDocumentSync: { openClose: true, change: SYNC_FULL, save: { includeText: false } },
 		// "[" and "{" fire on the second character of "[[" and "{{", where a title
 		// starts; the rest where a call, widget, variable or argument name starts.
 		completionProvider: { triggerCharacters: ["[", "{", "<", "$", "\"", "=", " "] },
@@ -150,6 +151,13 @@ function createSession(send, options) {
 					documents[changed.uri] = changes[changes.length - 1].text;
 				}
 				scheduleDiagnostics(changed.uri, changed.version);
+				break;
+			}
+			case "textDocument/didSave": {
+				var reloaded = features.reloadSaved(params.textDocument.uri);
+				if(reloaded && reloaded.length) {
+					log("Reloaded " + reloaded.join(", "));
+				}
 				break;
 			}
 			case "textDocument/didClose": {
