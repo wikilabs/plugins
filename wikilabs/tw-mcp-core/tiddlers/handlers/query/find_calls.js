@@ -19,27 +19,6 @@ var shared = require("$:/core/modules/commands/inspect/handlers/shared.js"),
 
 var SNIPPET_CAP = 200;
 
-// The 1-based line holding offset, its text and the offset's column in it.
-function lineAt(text, offset) {
-	var start = text.lastIndexOf("\n", offset - 1) + 1,
-		end = text.indexOf("\n", offset);
-	return {
-		number: text.slice(0, start).split("\n").length,
-		text: text.slice(start, end < 0 ? text.length : end),
-		column: offset - start
-	};
-}
-
-// A long line is shown around the call rather than from its start.
-function snippet(line) {
-	if(line.text.length <= SNIPPET_CAP) {
-		return line.text;
-	}
-	var from = Math.max(0, line.column - 60),
-		cut = line.text.slice(from, from + SNIPPET_CAP);
-	return (from > 0 ? "..." : "") + cut + (from + SNIPPET_CAP < line.text.length ? "..." : "");
-}
-
 // One tiddler's matching sites as output lines, one per source line, with every
 // form found on that line.
 function linesOf(title, name, includeDefinitions) {
@@ -57,7 +36,7 @@ function linesOf(title, name, includeDefinitions) {
 		byLine = Object.create(null),
 		order = [];
 	found.sort(function(a, b) { return a.start - b.start; }).forEach(function(site) {
-		var line = lineAt(text, site.start);
+		var line = shared.lineAt(text, site.start);
 		if(!byLine[line.number]) {
 			byLine[line.number] = { line: line, forms: [] };
 			order.push(line.number);
@@ -71,7 +50,7 @@ function linesOf(title, name, includeDefinitions) {
 		definitions: found.filter(function(s) { return s.form === "definition"; }).length,
 		lines: order.map(function(n) {
 			var entry = byLine[n];
-			return "  " + hashline.formatLineTag(n, entry.line.text) + " [" + entry.forms.join(", ") + "]: " + snippet(entry.line);
+			return "  " + hashline.formatLineTag(n, entry.line.text) + " [" + entry.forms.join(", ") + "]: " + shared.lineSnippet(entry.line, SNIPPET_CAP);
 		})
 	};
 }

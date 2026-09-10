@@ -363,6 +363,27 @@ function scopedTitles(args) {
 	}
 }
 
+// The 1-based line holding offset in text, its text and the offset's column.
+function lineAt(text, offset) {
+	var start = text.lastIndexOf("\n", offset - 1) + 1,
+		end = text.indexOf("\n", offset);
+	return {
+		number: text.slice(0, start).split("\n").length,
+		text: text.slice(start, end < 0 ? text.length : end),
+		column: offset - start
+	};
+}
+
+// A line longer than cap, shown around the column rather than from its start.
+function lineSnippet(line, cap) {
+	if(line.text.length <= cap) {
+		return line.text;
+	}
+	var from = Math.max(0, line.column - 60),
+		cut = line.text.slice(from, from + cap);
+	return (from > 0 ? "..." : "") + cut + (from + cap < line.text.length ? "..." : "");
+}
+
 // Strip characters that would break filter-operand embedding when an arg
 // is interpolated into a TW filter expression like `[tag[...]]`. The strip
 // list covers the TW-core forbidden title chars (`|`, `[`, `]`, `{`, `}`)
@@ -647,6 +668,8 @@ exports.checkTitle = checkTitle;
 exports.textResult = textResult;
 exports.errorResult = errorResult;
 exports.scopedTitles = scopedTitles;
+exports.lineAt = lineAt;
+exports.lineSnippet = lineSnippet;
 exports.compileSearchRegex = compileSearchRegex;
 exports.loadFspFseFilters = loadFspFseFilters;
 exports.checkNotBundled = checkNotBundled;
