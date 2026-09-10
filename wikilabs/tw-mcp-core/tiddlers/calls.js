@@ -221,17 +221,11 @@ function scanFilter(filter, base, sites) {
 	});
 }
 
-// parseFilter signals a malformed filter only by throwing a string, which is
-// what compileFilter itself relies on. Anything else is a bug and propagates.
+// compileFilter caches a filter only when it parses (core filters.js), which is
+// the one test for a malformed filter that does not throw.
 function parseFilter(filter) {
-	try {
-		return $tw.wiki.parseFilter(filter);
-	} catch(e) {
-		if(typeof e !== "string") {
-			throw e;
-		}
-		return null;
-	}
+	$tw.wiki.compileFilter(filter);
+	return $tw.wiki.filterCache && $tw.wiki.filterCache[filter] !== undefined ? $tw.wiki.parseFilter(filter) : null;
 }
 
 exports.sitesIn = sitesIn;
