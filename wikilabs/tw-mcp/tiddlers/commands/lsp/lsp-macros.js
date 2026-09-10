@@ -17,11 +17,8 @@ argument be reported by the name it binds to.
 
 "use strict";
 
-var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
-	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js");
-
-// Where global macros live, the same set the wiki itself imports.
-var GLOBAL_MACROS_FILTER = "[all[shadows+tiddlers]tag[$:/tags/Macro]]";
+var widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
+	calls = require("$:/core/modules/commands/inspect/calls.js");
 
 // --- Calls ---
 
@@ -79,81 +76,84 @@ function argumentsOf(attributes, isWidget) {
 
 // --- Definitions ---
 
-function definitionKind(node) {
-	if(node.isWidgetDefinition) {
-		return "widget";
-	}
-	if(node.isFunctionDefinition) {
-		return "function";
-	}
-	if(node.isProcedureDefinition) {
-		return "procedure";
-	}
-	return node.isMacroDefinition ? "macro" : null;
-}
-
-// The definition of name inside one parsed tree, or null.
-function definitionIn(tree, name) {
-	var found = null;
-	source.eachNode(tree, function(node) {
-		if(found || node.type !== "set") {
-			return;
-		}
-		var kind = definitionKind(node),
-			attributes = node.attributes || {};
-		if(kind && attributes.name && attributes.name.value === name) {
-			found = { kind: kind, params: node.params || [], body: attributes.value ? attributes.value.value : "" };
-		}
-	});
-	return found;
-}
-
-// A call resolves against the document's own pragmas first, exactly as the
-// wiki resolves it: a local definition shadows a global one of the same name.
-// Definitions nested inside another's body count as local too.
-function findDefinition(name, bodyText) {
-	var local = definitionIn(source.parseWithBodies(bodyText), name);
+// What a call at offset (body coordinates) resolves to, the way the wiki resolves
+// it: a definition of this document, nested ones innermost first, then a global,
+// then a JavaScript macro. site is the definition's entry from calls.js.
+function findDefinition(name, bodyText, offset) {
+	var local = localDefinition(name, calls.sitesIn(bodyText).definitions, offset);
 	if(local) {
-		local.title = null;
-		return local;
+		return { kind: local.kind, params: local.params, title: null, site: local };
 	}
-	var globals = $tw.wiki.filterTiddlers(GLOBAL_MACROS_FILTER);
-	for(var i = 0; i < globals.length; i++) {
-		var text = $tw.wiki.getTiddlerText(globals[i], ""),
-			hit = text ? definitionIn(source.parseBody(text), name) : null;
-		if(hit) {
-			hit.title = globals[i];
-			return hit;
-		}
+	var global = calls.globalDefinition(name);
+	if(global) {
+		return { kind: global.definition.kind, params: global.definition.params, title: global.title, site: global.definition };
 	}
 	if($tw.macros && $tw.macros[name]) {
-		return { kind: "javascript", params: $tw.macros[name].params || [], body: "", title: null };
+		return { kind: "javascript", params: $tw.macros[name].params || [], title: null };
 	}
 	return null;
+}
+
+// A top-level definition is visible anywhere in the document, a nested one from
+// where it is written to the end of its parent's body; the deepest visible one
+// wins, of equals the last. Without an offset, a top-level one is preferred.
+function localDefinition(name, definitions, offset) {
+	var best = null,
+		bestRank = -1;
+	definitions.forEach(function(definition) {
+		if(definition.name !== name) {
+			return;
+		}
+		var depth = depthOf(definition, definitions),
+			parent = definition.parent === null ? null : definitions[definition.parent],
+			visible = !parent || offset === undefined || (offset >= definition.range.start && offset < parent.body.end),
+			rank = offset === undefined ? (depth === 0 ? 1 : 0) : depth;
+		if(visible && rank >= bestRank) {
+			best = definition;
+			bestRank = rank;
+		}
+	});
+	return best;
+}
+
+function depthOf(definition, definitions) {
+	var depth = 0;
+	while(definition.parent !== null) {
+		definition = definitions[definition.parent];
+		depth++;
+	}
+	return depth;
 }
 
 // --- Binding arguments to parameters ---
 
 // What each declared parameter is worth at this call: the argument given by
-// name, else the one given by position, else the declared default.
-function bindArguments(params, args) {
+// name, else a positional one, else the declared default. A procedure or custom
+// widget gives parameter i the positional argument numbered i (core
+// transclude.js), a macro or function the next one not yet taken (core widget.js).
+function bindArguments(params, args, kind) {
 	var positional = args.filter(function(arg) { return arg.positional; }),
 		named = args.filter(function(arg) { return !arg.positional; }),
+		byIndex = kind === "procedure" || kind === "widget",
+		taken = [],
 		bound = [],
 		nextPositional = 0;
 	for(var i = 0; i < params.length; i++) {
 		var param = params[i],
 			match = null,
-			origin = "default";
+			origin = "default",
+			slot = byIndex ? i : nextPositional;
 		for(var n = 0; n < named.length; n++) {
 			if(named[n].name === param.name) {
 				match = named[n].value;
 				origin = "named";
 			}
 		}
-		if(match === null && nextPositional < positional.length) {
-			match = positional[nextPositional++].value;
+		if(match === null && slot < positional.length) {
+			match = positional[slot].value;
 			origin = "positional";
+			taken[slot] = true;
+			nextPositional = slot + 1;
 		}
 		if(match === null) {
 			match = param["default"];
@@ -170,10 +170,15 @@ function bindArguments(params, args) {
 			bound.push({ name: named[u].name, value: named[u].value, origin: "undeclared" });
 		}
 	}
+	// TiddlyWiki drops a positional argument no parameter takes, without a word.
+	positional.forEach(function(arg, index) {
+		if(!taken[index]) {
+			bound.push({ name: null, value: arg.value, origin: "ignored" });
+		}
+	});
 	return bound;
 }
 
 exports.callSites = callSites;
 exports.findDefinition = findDefinition;
 exports.bindArguments = bindArguments;
-exports.definitionIn = definitionIn;

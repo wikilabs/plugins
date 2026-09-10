@@ -263,7 +263,7 @@ function describeCall(site, body, context, tree) {
 		return head + describeBinding(binding, body, context);
 	}
 	var bodyText = body.text,
-		definition = macros.findDefinition(site.name, bodyText);
+		definition = macros.findDefinition(site.name, bodyText, site.start);
 	if(!definition) {
 		return head + describeUnbound(site.name, context);
 	}
@@ -271,7 +271,7 @@ function describeCall(site, body, context, tree) {
 			? (definition.kind === "javascript" ? "a JavaScript macro" : "defined in this tiddler")
 			: "defined in " + definitionLink(definition.title),
 		body = "**" + definition.kind + "** `" + site.name + "`, " + where + "\n\n",
-		bound = macros.bindArguments(definition.params, site.args);
+		bound = macros.bindArguments(definition.params, site.args, definition.kind);
 	if(!bound.length) {
 		body += "Takes no parameters.\n";
 	} else {
@@ -279,7 +279,7 @@ function describeCall(site, body, context, tree) {
 		// markdown table is nothing without its header separator row.
 		body += "| Parameter | Value | Given as |\n| --- | --- | --- |\n";
 		for(var i = 0; i < bound.length; i++) {
-			body += "| " + cell(bound[i].name) + " | `" + cell(bound[i].value) + "` | " + bound[i].origin + " |\n";
+			body += "| " + cell(bound[i].name === null ? "" : bound[i].name) + " | `" + cell(bound[i].value) + "` | " + bound[i].origin + " |\n";
 		}
 	}
 	// A parameter holding a filter is the one a reader wants evaluated, and it
@@ -367,7 +367,7 @@ function describeWidget(site, context, widget, bodyText, callText) {
 	if(widgets.customWidgetOf(site.name, context)) {
 		// Checked first, because TiddlyWiki lets a \widget take over the tag
 		// before any JavaScript widget gets it.
-		var definition = macros.findDefinition("$" + site.name, bodyText),
+		var definition = macros.findDefinition("$" + site.name, bodyText, site.start),
 			where = !definition ? "defined outside this tiddler"
 				: (definition.title === null ? "defined in this tiddler" : "defined in " + definitionLink(definition.title));
 		body = "**custom widget** `$" + site.name + "`, " + where + "\n";

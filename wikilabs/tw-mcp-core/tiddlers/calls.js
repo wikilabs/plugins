@@ -21,13 +21,17 @@ var FILTER_ATTRIBUTE = /^\$?(?:sub)?filter$/;
 
 var CACHE_KEY = "tw-mcp-calls";
 
+// Lists the tiddlers whose definitions the page imports for everyone.
+var GLOBAL_IMPORT_FILTER = "$:/core/config/GlobalImportFilter";
+
 // Every call and definition in a wikitext, as { calls, definitions }. Each site
-// is { name, start, end } around the NAME, plus the call's form or the
-// definition's kind.
+// is { name, start, end } around the NAME plus the call's form, or for a
+// definition its kind, params, range, body and parent (see addDefinition).
 function sitesIn(text) {
 	var sites = { calls: [], definitions: [] };
 	text = text || "";
 	collect($tw.wiki.parseText(WIKITEXT_TYPE, text).tree, text, 0, sites);
+	nestDefinitions(sites.definitions);
 	return sites;
 }
 
@@ -146,16 +150,25 @@ function definitionKind(node) {
 }
 
 // Neither the name nor the body carries offsets, so both are located inside the
-// pragma's own source range.
+// pragma's own source range, which runs from the keyword to \end or the line end.
 function addDefinition(node, kind, text, base, sites) {
 	var slice = text.slice(node.start, node.end),
 		name = node.attributes.name ? node.attributes.name.value : "",
-		keyword = /^\\\w+\s+/.exec(slice);
+		keyword = /^\\\w+\s+/.exec(slice),
+		body = definitionBody(node, text);
 	if(name && keyword && slice.substr(keyword[0].length, name.length) === name) {
 		var nameStart = base + node.start + keyword[0].length;
-		sites.definitions.push({ name: name, kind: kind, start: nameStart, end: nameStart + name.length });
+		sites.definitions.push({
+			name: name,
+			kind: kind,
+			start: nameStart,
+			end: nameStart + name.length,
+			params: node.params || [],
+			range: { start: base + node.start, end: base + node.end },
+			body: body ? { start: base + body.start, end: base + body.start + body.text.length } : null,
+			parent: null
+		});
 	}
-	var body = definitionBody(node, text);
 	if(!body) {
 		return;
 	}
@@ -164,6 +177,36 @@ function addDefinition(node, kind, text, base, sites) {
 	} else {
 		collect($tw.wiki.parseText(WIKITEXT_TYPE, body.text).tree, body.text, base + body.start, sites);
 	}
+}
+
+// parent is the index of the definition whose body holds this one, innermost
+// first, or null for a top-level definition.
+function nestDefinitions(definitions) {
+	definitions.forEach(function(inner) {
+		definitions.forEach(function(outer, index) {
+			var holds = outer !== inner && outer.body && inner.range.start >= outer.body.start && inner.range.start < outer.body.end,
+				current = inner.parent === null ? null : definitions[inner.parent];
+			if(holds && (!current || outer.body.end - outer.body.start < current.body.end - current.body.start)) {
+				inner.parent = index;
+			}
+		});
+	});
+}
+
+// The definition of name the wiki imports globally, as { title, definition }, or
+// null. Only a top-level definition is imported, and a later title overwrites an
+// earlier one (core importvariables.js), so the last match wins.
+function globalDefinition(name) {
+	var titles = $tw.wiki.filterTiddlers($tw.wiki.getTiddlerText(GLOBAL_IMPORT_FILTER, "")),
+		found = null;
+	titles.forEach(function(title) {
+		sitesOfTiddler(title).definitions.forEach(function(definition) {
+			if(definition.name === name && definition.parent === null) {
+				found = { title: title, definition: definition };
+			}
+		});
+	});
+	return found;
 }
 
 // A definition's body and where it starts in text, or null. The body is a plain
@@ -286,6 +329,7 @@ function parseFilter(filter) {
 
 exports.sitesIn = sitesIn;
 exports.sitesOfTiddler = sitesOfTiddler;
+exports.globalDefinition = globalDefinition;
 exports.definitionBody = definitionBody;
 exports.conditionalClauses = conditionalClauses;
 exports.isFilterAttribute = isFilterAttribute;
