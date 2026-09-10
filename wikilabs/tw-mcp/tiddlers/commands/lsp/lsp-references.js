@@ -19,6 +19,7 @@ it is what the reader is looking at.
 var fs = $tw.node ? require("fs") : null;
 
 var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	scope = require("$:/core/modules/commands/inspect/lsp/lsp-scope.js"),
 	calls = require("$:/core/modules/commands/inspect/calls.js");
 
 // Sites per file path, kept while the file's mtime and size are unchanged.
@@ -36,6 +37,7 @@ function sitesOfDocument(uri, text) {
 	function add(site, definition) {
 		located.push({
 			name: site.name,
+			start: site.start,
 			definition: definition,
 			range: {
 				start: source.positionAt(body.starts, body.offset + site.start),
@@ -101,7 +103,13 @@ function references(uri, text, position, context, openDocuments) {
 		return null;
 	}
 	var includeDeclaration = !!(context && context.includeDeclaration),
-		documents = Object.assign({}, openDocuments),
+		body = source.bodyOf(uri, text),
+		tree = source.parseWithBodies(body.text),
+		binding = target.definition ? null : scope.resolve(target.name, target.start, tree, body.text);
+	if(binding) {
+		return scopedReferences(uri, here, binding, tree, body, includeDeclaration);
+	}
+	var documents = Object.assign({}, openDocuments),
 		seen = Object.create(null),
 		locations = [];
 	documents[uri] = text;
@@ -127,6 +135,30 @@ function references(uri, text, position, context, openDocuments) {
 			seen[sameFileKey(fileUri)] = true;
 			add(fileUri, sitesOfFile(filepath));
 		}
+	}
+	return locations.sort(byPosition);
+}
+
+// A parameter or a widget's variable is that name only inside its own scope in
+// this document, and an inner binding of the same name hides it.
+function scopedReferences(uri, sites, binding, tree, body, includeDeclaration) {
+	var locations = sites.filter(function(site) {
+		if(site.definition || site.name !== binding.name) {
+			return false;
+		}
+		var own = scope.resolve(site.name, site.start, tree, body.text);
+		return own && own.scope.node === binding.scope.node;
+	}).map(function(site) {
+		return { uri: uri, range: site.range };
+	});
+	if(includeDeclaration && binding.declaration) {
+		locations.push({
+			uri: uri,
+			range: {
+				start: source.positionAt(body.starts, body.offset + binding.declaration.start),
+				end: source.positionAt(body.starts, body.offset + binding.declaration.end)
+			}
+		});
 	}
 	return locations.sort(byPosition);
 }
