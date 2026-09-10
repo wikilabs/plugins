@@ -25,6 +25,10 @@ var MAX_HOVER_TITLES = 50;
 
 var FILTER_ERROR_TITLE = "$:/language/Error/Filter";
 
+// A definition's parameters exist only in a call, so a filter evaluated where the
+// definition is written sees them empty.
+var UNBOUND_NOTE = "\n\n_Evaluated where it is written: the enclosing definition's parameters are not set here._";
+
 // A rendered body can be a whole page; a hover is not the place for it.
 var MAX_RENDER_CHARS = 600;
 
@@ -36,8 +40,13 @@ function filterSites(tree, body) {
 	source.eachNode(tree, function(node) {
 		var attributes = node.attributes || {},
 			filter = attributes.filter;
-		if(filter && filter.type === "string" && filter.start !== undefined) {
-			sites.push({ filter: filter.value, start: filter.start, end: filter.end });
+		if(filter && (filter.type === "string" || filter.type === "substituted") && filter.start !== undefined) {
+			sites.push({
+				filter: filter.type === "string" ? filter.value : filter.rawValue,
+				substituted: filter.type === "substituted",
+				start: filter.start,
+				end: filter.end
+			});
 			return;
 		}
 		// A \function body IS a filter, where a \procedure body is wikitext, and
@@ -177,12 +186,21 @@ function titleLink(title) {
 	return uri ? markdownLink(title, uri) : title;
 }
 
-function describeFilter(filterString, context) {
+function describeFilter(filterString, context, substituted) {
 	var trimmed = filterString.trim();
 	if(!trimmed) {
 		return "Empty filter.";
 	}
 	var head = "```\n" + trimmed + "\n```\n\n";
+	// A backtick value runs only once $(variable)$ and ${ filter }$ are filled
+	// in, so that is the filter shown and run.
+	if(substituted && context) {
+		var resolved = $tw.wiki.getSubstitutedText(filterString, context).trim();
+		if(resolved !== trimmed) {
+			head += "Substituted here:\n\n```\n" + resolved + "\n```\n\n";
+			trimmed = resolved;
+		}
+	}
 	if(!bracketsBalanced(trimmed)) {
 		return head + "Unfinished filter (unbalanced brackets), so it has not been run.";
 	}
@@ -356,7 +374,7 @@ function hover(uri, text, position) {
 				kind: "markdown",
 				value: site.filter === undefined
 					? describeWidget(site, context, renderedWidget(at.widget), body.text)
-					: describeFilter(site.filter, context)
+					: describeFilter(site.filter, context, site.substituted) + (at.widget && !renderedWidget(at.widget) ? UNBOUND_NOTE : "")
 			},
 			range: {
 				start: source.positionAt(body.starts, body.offset + site.start),

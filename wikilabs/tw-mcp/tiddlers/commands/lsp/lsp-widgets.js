@@ -85,6 +85,24 @@ function toOrdered(attributes) {
 	return out;
 }
 
+// An attribute as the author wrote it, whatever its kind.
+function writtenOf(attribute) {
+	switch(attribute.type) {
+		case "indirect":
+			return "{{" + attribute.textReference + "}}";
+		case "macro": {
+			var variable = attribute.value && attribute.value.attributes && attribute.value.attributes.$variable;
+			return "<<" + (variable ? variable.value : "") + ">>";
+		}
+		case "filtered":
+			return "{{{" + attribute.filter + "}}}";
+		case "substituted":
+			return "`" + attribute.rawValue + "`";
+		default:
+			return attribute.value;
+	}
+}
+
 // What an attribute is worth here. Only a string is its own value; the other
 // three kinds are the ones a reader cannot evaluate by eye.
 function resolveAttribute(attribute, context) {
@@ -92,7 +110,7 @@ function resolveAttribute(attribute, context) {
 		case "indirect":
 			return {
 				kind: "indirect",
-				written: "{{" + attribute.textReference + "}}",
+				written: writtenOf(attribute),
 				value: $tw.wiki.getTextReference(attribute.textReference, "", currentOf(context))
 			};
 		case "macro": {
@@ -100,18 +118,24 @@ function resolveAttribute(attribute, context) {
 			var name = variable ? variable.value : "";
 			return {
 				kind: "macro",
-				written: "<<" + name + ">>",
+				written: writtenOf(attribute),
 				value: context && name ? context.getVariable(name) : undefined
 			};
 		}
 		case "filtered":
 			return {
 				kind: "filtered",
-				written: "{{{" + attribute.filter + "}}}",
+				written: writtenOf(attribute),
 				value: $tw.wiki.filterTiddlers(attribute.filter, context || undefined).join(" ")
 			};
+		case "substituted":
+			return {
+				kind: "substituted",
+				written: writtenOf(attribute),
+				value: context ? $tw.wiki.getSubstitutedText(attribute.rawValue, context) : undefined
+			};
 		default:
-			return { kind: "string", written: attribute.value, value: attribute.value };
+			return { kind: attribute.type || "string", written: writtenOf(attribute), value: attribute.value };
 	}
 }
 
@@ -140,6 +164,7 @@ function variablesOf(site) {
 
 exports.widgetSites = widgetSites;
 exports.resolveAttribute = resolveAttribute;
+exports.writtenOf = writtenOf;
 exports.variablesOf = variablesOf;
 exports.moduleOfWidget = moduleOfWidget;
 exports.isRegistered = isRegistered;

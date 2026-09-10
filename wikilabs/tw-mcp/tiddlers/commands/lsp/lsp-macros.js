@@ -17,7 +17,8 @@ argument be reported by the name it binds to.
 
 "use strict";
 
-var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
+var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js");
 
 // Where global macros live, the same set the wiki itself imports.
 var GLOBAL_MACROS_FILTER = "[all[shadows+tiddlers]tag[$:/tags/Macro]]";
@@ -58,7 +59,9 @@ function argumentsOf(attributes, isWidget) {
 		var attribute = attributes[key];
 		args.push({
 			name: attribute.isPositional ? null : attribute.name,
-			value: attribute.value,
+			// As written: a <<var>>, {{ref}} or {{{ filter }}} value is a parse
+			// node, not text, and only text can be shown or run as a filter.
+			value: widgets.writtenOf(attribute),
 			positional: !!attribute.isPositional
 		});
 	}
