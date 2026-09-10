@@ -52,7 +52,7 @@ function moduleOfMacro(name) {
 function exportedAt(title, name) {
 	var text = $tw.wiki.getTiddlerText(title, ""),
 		escaped = $tw.utils.escapeRegExp(name),
-		exported = new RegExp("^exports(?:\\." + escaped + "\\b|\\[\\s*([\"'])" + escaped + "\\1\\s*\\])\\s*=\\s*([A-Za-z_$][\\w$]*)?", "m").exec(text);
+		exported = new RegExp("^exports(?:\\." + escaped + "|\\[\\s*([\"'])" + escaped + "\\1\\s*\\])\\s*=\\s*([A-Za-z_$][\\w$]*)?", "m").exec(text);
 	if(!exported) {
 		return null;
 	}

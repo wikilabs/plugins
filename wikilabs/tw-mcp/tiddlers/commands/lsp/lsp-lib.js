@@ -83,7 +83,8 @@ function createSession(send, options) {
 	var documents = Object.create(null),
 		pending = Object.create(null),
 		initialized = false,
-		shuttingDown = false;
+		shuttingDown = false,
+		linkSupport = false;
 	// Injectable so a test can run the timer synchronously rather than sleeping.
 	var schedule = options.schedule || function(fn, ms) { return setTimeout(fn, ms); },
 		cancel = options.cancel || clearTimeout,
@@ -163,6 +164,8 @@ function createSession(send, options) {
 		switch(method) {
 			case "initialize":
 				initialized = true;
+				// A client that reads LocationLinks gets the whole definition to peek at.
+				linkSupport = !!(params.capabilities && params.capabilities.textDocument && params.capabilities.textDocument.definition && params.capabilities.textDocument.definition.linkSupport);
 				log("Initialized by " + describeClient(params) + " (v" + getServerVersion() + ")");
 				send(response(id, {
 					capabilities: serverCapabilities(),
@@ -198,7 +201,7 @@ function createSession(send, options) {
 			case "textDocument/definition": {
 				var defUri = params.textDocument.uri,
 					defText = documents[defUri];
-				send(response(id, defText === undefined ? null : features.definition(defUri, defText, params.position)));
+				send(response(id, defText === undefined ? null : features.definition(defUri, defText, params.position, { linkSupport: linkSupport }, documents)));
 				break;
 			}
 

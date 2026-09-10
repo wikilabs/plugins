@@ -3,21 +3,28 @@ title: $:/core/modules/commands/inspect/lsp/lsp-definition.js
 type: application/javascript
 module-type: library
 
-Go to definition: ctrl-click a [[link]] and open the .tid file that holds it.
+Go to definition. On a call: the definition the wiki would use at that call, or
+for a parameter or a widget's variable the place it is declared. On a link: the
+.tid file that holds the tiddler.
 
-The file is not searched for. $tw.boot.files is the same map TiddlyWiki uses to
-save a tiddler back to disk, so it is authoritative: it survives a filename that
-does not match the title, a FileSystemPaths rule that files the tiddler in a
-subfolder, and a .tid whose fields live in a .meta sidecar. A regex over
-"title:" would be wrong on all three, and would also match a title merely
-mentioned in another tiddler's body.
+A definition may live in this document, in another .tid file, in a shadow or
+in the JavaScript behind a widget or macro; the last two open as read-only
+views. No file is searched for: $tw.boot.files is the map TiddlyWiki saves
+through, so a renamed file, a FileSystemPaths subfolder and a .meta sidecar all
+come out right.
 
 \*/
 
 "use strict";
 
 var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
-	links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js");
+	links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
+	scope = require("$:/core/modules/commands/inspect/lsp/lsp-scope.js"),
+	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
+	files = require("$:/core/modules/commands/inspect/lsp/lsp-files.js"),
+	modules = require("$:/core/modules/commands/inspect/modules.js");
+
+// --- Links ---
 
 // Every link under the cursor, as {target, from, to} in document offsets.
 // Both spellings are gathered: the hand-scanner sees [[X]] and {{X}}, and the
@@ -61,7 +68,116 @@ function targetAt(uri, text, position) {
 	return best ? best.target : null;
 }
 
-function definition(uri, text, position) {
+// --- Calls ---
+
+// The call under the cursor and where it is defined, as { origin, targets },
+// each target { uri, range, full }; null when the cursor is on no call.
+function callTargets(uri, text, position, openDocuments) {
+	var site = files.siteAt(files.sitesOfDocument(uri, text), position);
+	if(!site || site.definition) {
+		return null;
+	}
+	var body = source.bodyOf(uri, text),
+		binding = scope.resolve(site.name, site.start, source.parseWithBodies(body.text), body.text);
+	if(binding) {
+		return { origin: site.range, targets: [declarationTarget(uri, body, binding)] };
+	}
+	var found = macros.findDefinition(site.name, body.text, site.start),
+		target = null;
+	if(found && found.kind === "javascript") {
+		target = moduleTarget(modules.moduleOfMacro(site.name), "run");
+	} else if(found && found.title === null) {
+		target = {
+			uri: uri,
+			range: rangeIn(body, found.site.start, found.site.end),
+			full: rangeIn(body, found.site.range.start, found.site.range.end)
+		};
+	} else if(found) {
+		target = tiddlerTarget(found.title, site.name);
+	} else if(site.name.charAt(0) === "$") {
+		// A widget that no \widget definition takes over is the JavaScript one.
+		target = moduleTarget(modules.moduleOfWidget(site.name.slice(1)), site.name.slice(1));
+	}
+	if(target) {
+		return { origin: site.range, targets: [target] };
+	}
+	// TiddlyWiki would find nothing here, so every definition of the name is
+	// offered: a caller may be what brings one into scope.
+	var documents = Object.assign({}, openDocuments);
+	documents[uri] = text;
+	return {
+		origin: site.range,
+		targets: files.sitesNamed(site.name, documents).filter(function(hit) { return hit.site.definition; }).map(function(hit) {
+			return { uri: hit.uri, range: hit.site.range, full: hit.site.full };
+		})
+	};
+}
+
+function rangeIn(body, start, end) {
+	return { start: source.positionAt(body.starts, body.offset + start), end: source.positionAt(body.starts, body.offset + end) };
+}
+
+// A declared name, or for a variable no attribute names (the currentTiddler of
+// a <$list>) the tag of the widget that sets it.
+function declarationTarget(uri, body, binding) {
+	var start, end;
+	if(binding.declaration) {
+		start = binding.declaration.start;
+		end = binding.declaration.end;
+	} else {
+		start = binding.scope.node.start;
+		end = start + 1 + (binding.scope.node.tag || "").length;
+	}
+	var range = rangeIn(body, start, end);
+	return { uri: uri, range: range, full: range };
+}
+
+// A global's definition in the document the editor opens for its tiddler, read
+// from that document: a file saved from the editor can be ahead of the wiki.
+function tiddlerTarget(title, name) {
+	var where = source.documentUriOf(title),
+		sites;
+	if(!where) {
+		return null;
+	}
+	if(!source.isVirtualUri(where)) {
+		sites = files.sitesOfFile(source.fileOfTitle(title));
+	} else {
+		sites = files.sitesOfView(title);
+	}
+	// The last top-level one, since a later definition overwrites an earlier.
+	var hit = sites.filter(function(site) { return site.definition && site.topLevel && site.name === name; }).pop();
+	return hit ? { uri: where, range: hit.range, full: hit.full } : null;
+}
+
+// The JavaScript behind a widget or macro, at its constructor or its export.
+function moduleTarget(title, exportName) {
+	var at = title ? modules.exportedAt(title, exportName) : null;
+	if(!at) {
+		return null;
+	}
+	var starts = source.lineStarts($tw.wiki.getTiddlerText(title, "")),
+		range = { start: source.positionAt(starts, at.start), end: source.positionAt(starts, at.end) };
+	return { uri: source.documentUriOf(title), range: range, full: range };
+}
+
+// A client that understands LocationLink is given the whole definition to peek
+// at and the name that was clicked; any other gets the definition's name.
+function respond(call, options) {
+	if(options && options.linkSupport) {
+		return call.targets.map(function(target) {
+			return { originSelectionRange: call.origin, targetUri: target.uri, targetRange: target.full, targetSelectionRange: target.range };
+		});
+	}
+	var locations = call.targets.map(function(target) { return { uri: target.uri, range: target.range }; });
+	return locations.length === 1 ? locations[0] : locations;
+}
+
+function definition(uri, text, position, options, openDocuments) {
+	var call = callTargets(uri, text, position, openDocuments);
+	if(call) {
+		return call.targets.length ? respond(call, options) : null;
+	}
 	var target = targetAt(uri, text, position);
 	if(!target) {
 		return null;
