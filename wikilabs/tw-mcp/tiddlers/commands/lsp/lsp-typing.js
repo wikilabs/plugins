@@ -12,6 +12,8 @@ cursor, the way title completion reads an open [[.
 
 "use strict";
 
+var filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js");
+
 // How far back an unclosed call is looked for, at most.
 var MAX_LOOKBACK = 4000;
 
@@ -106,11 +108,17 @@ function describeFrame(text, offset, frame) {
 		// The attribute or parameter whose value the cursor is typing.
 		var naming = (frame.form === "macro" ? /([^\s:"'>]+)\s*:\s*$/ : /([^\s=\/>"']+)\s*=\s*$/).exec(written);
 		context.inValue = { attribute: naming ? naming[1] : null, start: frame.quoteAt + quoteAt(text, frame.quoteAt)[0].length };
+		context.args = argumentsIn(written.slice(head[0].length, naming ? naming.index : written.length), frame.form);
 	} else if(!context.inName) {
-		var typed = /\s([^\s=:"'>\/]*)$/.exec(written);
+		var typed = /\s([^\s=:"'>\/]*)$/.exec(written),
+			value = (frame.form === "macro" ? /\s([^\s:"'>]+)\s*:\s*([^\s"'>]*)$/ : /\s([^\s=\/>"']+)\s*=\s*([^\s"'>]*)$/).exec(written);
 		if(typed) {
 			context.argument = typed[1];
 			context.args = argumentsIn(written.slice(head[0].length, written.length - typed[1].length), frame.form);
+		} else if(value) {
+			// An unquoted value, or none yet after name: or name=.
+			context.inValue = { attribute: value[1], start: offset - value[2].length };
+			context.args = argumentsIn(written.slice(head[0].length, value.index), frame.form);
 		}
 	}
 	return context;
@@ -133,6 +141,36 @@ function argumentsIn(rest, form) {
 	return args;
 }
 
+// What a call context calls: a <<call>>'s name, a widget form's $variable or
+// $name, else the \widget of its tag (a JavaScript widget declares nothing).
+function calleeOf(context) {
+	if(context.form === "macro") {
+		return context.name;
+	}
+	var named = function(name) {
+		var arg = context.args.filter(function(a) { return a.name === name; })[0];
+		return arg ? arg.value : null;
+	};
+	if(context.name === "transclude") {
+		return named("$variable");
+	}
+	if(context.name === "macrocall") {
+		return named("$name");
+	}
+	return "$" + context.name;
+}
+
+// The filter typed so far on a line, up to the cursor: a filter attribute, a
+// {{{ }}}, an <%if%> condition or a \function body; null elsewhere.
+function filterBefore(upto) {
+	var context = filters.filterContext(upto, upto.length);
+	if(context) {
+		return upto.slice(context.start);
+	}
+	var match = /<%\s*(?:else)?if\s((?:(?!%>).)*)$/.exec(upto) || /^\s*\\function\s+[^\s(]+\([^)]*\)\s(.*)$/.exec(upto);
+	return match ? match[1] : null;
+}
+
 function unquote(value) {
 	var quote = quoteAt(value, 0);
 	return quote && value.endsWith(quote[1]) ? value.slice(quote[0].length, value.length - quote[1].length) : value;
@@ -140,12 +178,14 @@ function unquote(value) {
 
 // Where the cursor stands at the end of upto, a filter typed so far:
 // { state: "name", word } while an operator is named, { state: "operand",
-// opener, operator, word } inside an operand, else { state: "other" }.
+// opener, operator, word, index } inside its index-th operand, else
+// { state: "other" }.
 function filterPosition(upto) {
 	var state = "outside",
 		word = "",
 		operator = "",
-		opener = null;
+		opener = null,
+		index = 0;
 	for(var i = 0; i < upto.length; i++) {
 		var ch = upto.charAt(i);
 		if(state === "outside") {
@@ -165,6 +205,7 @@ function filterPosition(upto) {
 				opener = ch;
 				operator = word;
 				word = "";
+				index = 0;
 			} else if(ch === "]") {
 				state = "outside";
 			} else {
@@ -190,6 +231,7 @@ function filterPosition(upto) {
 				state = "operand";
 				opener = ch;
 				word = "";
+				index++;
 			}
 		}
 	}
@@ -197,10 +239,13 @@ function filterPosition(upto) {
 		return { state: "name", word: word };
 	}
 	if(state === "operand") {
-		return { state: "operand", opener: opener, operator: operator, word: word };
+		return { state: "operand", opener: opener, operator: operator, word: word, index: index };
 	}
 	return { state: "other" };
 }
 
 exports.callContext = callContext;
+exports.calleeOf = calleeOf;
+exports.argumentsIn = argumentsIn;
+exports.filterBefore = filterBefore;
 exports.filterPosition = filterPosition;

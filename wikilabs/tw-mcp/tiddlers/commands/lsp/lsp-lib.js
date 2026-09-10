@@ -74,7 +74,9 @@ function serverCapabilities() {
 		documentSymbolProvider: true,
 		workspaceSymbolProvider: true,
 		documentHighlightProvider: true,
-		foldingRangeProvider: true
+		foldingRangeProvider: true,
+		// A space starts the next argument, ":" and "=" its value; a quote may close one.
+		signatureHelpProvider: { triggerCharacters: [" ", ":", "="], retriggerCharacters: ["\""] }
 	};
 }
 
@@ -237,6 +239,13 @@ function createSession(send, options) {
 				var foldUri = params.textDocument.uri,
 					foldText = documents[foldUri];
 				send(response(id, foldText === undefined ? null : features.foldingRanges(foldUri, foldText)));
+				break;
+			}
+
+			case "textDocument/signatureHelp": {
+				var helpUri = params.textDocument.uri,
+					helpText = documents[helpUri];
+				send(response(id, helpText === undefined ? null : features.signatureHelp(helpUri, helpText, params.position)));
 				break;
 			}
 

@@ -138,7 +138,7 @@ function rankTitles(titles, prefix) {
 // call's or widget's name, a name given as $variable or $name, or a parameter
 // the call has not been given yet.
 function wanted(body, offset, upto) {
-	var filter = filterBefore(upto);
+	var filter = typing.filterBefore(upto);
 	if(filter !== null) {
 		var at = typing.filterPosition(filter);
 		if(at.state === "name" && /^!?[\w.\-]*$/.test(at.word)) {
@@ -168,17 +168,6 @@ function wanted(body, offset, upto) {
 		return { start: offset - call.argument.length, candidates: parameterCandidates(call, body.text, offset) };
 	}
 	return null;
-}
-
-// The filter typed so far on this line, up to the cursor: a filter attribute,
-// a {{{ }}}, an <%if%> condition or a \function body; null elsewhere.
-function filterBefore(upto) {
-	var context = filters.filterContext(upto, upto.length);
-	if(context) {
-		return upto.slice(context.start);
-	}
-	var match = /<%\s*(?:else)?if\s((?:(?!%>).)*)$/.exec(upto) || /^\s*\\function\s+[^\s(]+\([^)]*\)\s(.*)$/.exec(upto);
-	return match ? match[1] : null;
 }
 
 function notWidget(candidate) {
@@ -244,7 +233,7 @@ function operatorCandidates(bodyText, offset) {
 // The parameters a call has not been given, by name or by position, written
 // the way the call's form names them: tag: in <<call>>, tag= in a widget.
 function parameterCandidates(call, bodyText, offset) {
-	var callee = call.form === "macro" ? call.name : widgetCallee(call),
+	var callee = typing.calleeOf(call),
 		found = callee ? macros.findDefinition(callee, bodyText, offset) : null;
 	if(!found) {
 		return [];
@@ -262,22 +251,6 @@ function parameterCandidates(call, bodyText, offset) {
 			detail: param["default"] === undefined ? "no default" : "default " + param["default"]
 		};
 	});
-}
-
-// What a widget-form call calls: its $variable or $name, else the \widget of its
-// tag; a JavaScript widget declares no attributes to offer.
-function widgetCallee(call) {
-	var named = function(name) {
-		var arg = call.args.filter(function(a) { return a.name === name; })[0];
-		return arg ? arg.value : null;
-	};
-	if(call.name === "transclude") {
-		return named("$variable");
-	}
-	if(call.name === "macrocall") {
-		return named("$name");
-	}
-	return "$" + call.name;
 }
 
 // Ranked like titles, with the same protocol rules: the typed text as every
