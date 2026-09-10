@@ -237,9 +237,10 @@ function bodyOffset(slice, body) {
 
 // --- Conditionals ---
 
-// The clauses of an <%if%> block, as { keyword, filter, start, end } in text
-// offsets, or null for any other node. The block is a $list whose range covers
-// everything up to <%endif%>; clauses of a nested block are its own.
+// The clauses of an <%if%> block, as { keyword, filter, start, end, at } in text
+// offsets (at is where the clause's <% begins), or null for any other node. The
+// block is a $list whose range ends after <%endif%>; a nested block's clauses are
+// its own.
 function conditionalClauses(node, text) {
 	if(node.tag !== "$list" || node.start === undefined || !/^<%\s*if\s/.test(text.slice(node.start, node.start + 8))) {
 		return null;
@@ -255,7 +256,7 @@ function conditionalClauses(node, text) {
 			depth++;
 		}
 		if(depth === 1 && keyword !== "endif") {
-			var clause = { keyword: keyword, filter: null };
+			var clause = { keyword: keyword, filter: null, at: node.start + match.index };
 			if(keyword !== "else") {
 				var group = match[2],
 					lead = group.length - group.replace(/^\s+/, "").length;

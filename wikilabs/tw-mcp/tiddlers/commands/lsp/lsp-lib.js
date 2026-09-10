@@ -73,7 +73,8 @@ function serverCapabilities() {
 		referencesProvider: true,
 		documentSymbolProvider: true,
 		workspaceSymbolProvider: true,
-		documentHighlightProvider: true
+		documentHighlightProvider: true,
+		foldingRangeProvider: true
 	};
 }
 
@@ -229,6 +230,13 @@ function createSession(send, options) {
 				var highlightUri = params.textDocument.uri,
 					highlightText = documents[highlightUri];
 				send(response(id, highlightText === undefined ? null : features.documentHighlights(highlightUri, highlightText, params.position)));
+				break;
+			}
+
+			case "textDocument/foldingRange": {
+				var foldUri = params.textDocument.uri,
+					foldText = documents[foldUri];
+				send(response(id, foldText === undefined ? null : features.foldingRanges(foldUri, foldText)));
 				break;
 			}
 
