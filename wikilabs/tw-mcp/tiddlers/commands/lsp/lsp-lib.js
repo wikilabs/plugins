@@ -38,6 +38,7 @@ var METHOD_NOT_FOUND = -32601;
 var INVALID_PARAMS = -32602;
 var INTERNAL_ERROR = -32603;
 var SERVER_NOT_INITIALIZED = -32002;
+var REQUEST_FAILED = -32803;
 
 function getServerVersion() {
 	var pluginTiddler = $tw.wiki.getTiddler(PLUGIN_TITLE);
@@ -78,7 +79,9 @@ function serverCapabilities() {
 		foldingRangeProvider: true,
 		// A space starts the next argument, ":" and "=" its value; a quote may close one.
 		signatureHelpProvider: { triggerCharacters: [" ", ":", "="], retriggerCharacters: ["\""] },
-		inlayHintProvider: true
+		inlayHintProvider: true,
+		// prepareRename says why a name cannot be renamed before a new one is typed.
+		renameProvider: { prepareProvider: true }
 	};
 }
 
@@ -93,7 +96,8 @@ function createSession(send, options) {
 		initialized = false,
 		shuttingDown = false,
 		linkSupport = false,
-		hierarchicalSymbols = false;
+		hierarchicalSymbols = false,
+		changeAnnotations = false;
 	// Injectable so a test can run the timer synchronously rather than sleeping.
 	var schedule = options.schedule || function(fn, ms) { return setTimeout(fn, ms); },
 		cancel = options.cancel || clearTimeout,
@@ -184,6 +188,9 @@ function createSession(send, options) {
 				linkSupport = !!(params.capabilities && params.capabilities.textDocument && params.capabilities.textDocument.definition && params.capabilities.textDocument.definition.linkSupport);
 				// The protocol's rule: a client that does not say it nests symbols gets a flat list.
 				hierarchicalSymbols = !!(params.capabilities && params.capabilities.textDocument && params.capabilities.textDocument.documentSymbol && params.capabilities.textDocument.documentSymbol.hierarchicalDocumentSymbolSupport);
+				// A client that annotates changes can be made to preview a rename.
+				var workspaceEdit = params.capabilities && params.capabilities.workspace && params.capabilities.workspace.workspaceEdit;
+				changeAnnotations = !!(workspaceEdit && workspaceEdit.documentChanges && workspaceEdit.changeAnnotationSupport);
 				log("Initialized by " + describeClient(params) + " (v" + getServerVersion() + ")");
 				send(response(id, {
 					capabilities: serverCapabilities(),
@@ -262,6 +269,22 @@ function createSession(send, options) {
 				var hintUri = params.textDocument.uri,
 					hintText = documents[hintUri];
 				send(response(id, hintText === undefined ? null : features.inlayHints(hintUri, hintText, params.range)));
+				break;
+			}
+
+			case "textDocument/prepareRename": {
+				var prepareUri = params.textDocument.uri,
+					prepareText = documents[prepareUri],
+					prepared = prepareText === undefined ? null : features.prepareRename(prepareUri, prepareText, params.position, documents);
+				send(prepared && prepared.error ? errorResponse(id, REQUEST_FAILED, prepared.error) : response(id, prepared));
+				break;
+			}
+
+			case "textDocument/rename": {
+				var renameUri = params.textDocument.uri,
+					renameText = documents[renameUri],
+					renamed = renameText === undefined ? null : features.rename(renameUri, renameText, params.position, params.newName, { annotations: changeAnnotations }, documents);
+				send(renamed && renamed.error ? errorResponse(id, REQUEST_FAILED, renamed.error) : response(id, renamed));
 				break;
 			}
 
