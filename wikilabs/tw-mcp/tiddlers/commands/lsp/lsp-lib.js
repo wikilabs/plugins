@@ -72,7 +72,8 @@ function serverCapabilities() {
 		definitionProvider: true,
 		referencesProvider: true,
 		documentSymbolProvider: true,
-		workspaceSymbolProvider: true
+		workspaceSymbolProvider: true,
+		documentHighlightProvider: true
 	};
 }
 
@@ -221,6 +222,13 @@ function createSession(send, options) {
 				var symbolUri = params.textDocument.uri,
 					symbolText = documents[symbolUri];
 				send(response(id, symbolText === undefined ? null : features.documentSymbols(symbolUri, symbolText, { hierarchical: hierarchicalSymbols })));
+				break;
+			}
+
+			case "textDocument/documentHighlight": {
+				var highlightUri = params.textDocument.uri,
+					highlightText = documents[highlightUri];
+				send(response(id, highlightText === undefined ? null : features.documentHighlights(highlightUri, highlightText, params.position)));
 				break;
 			}
 

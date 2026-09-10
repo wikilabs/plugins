@@ -181,4 +181,5 @@ function bindArguments(params, args, kind) {
 
 exports.callSites = callSites;
 exports.findDefinition = findDefinition;
+exports.localDefinition = localDefinition;
 exports.bindArguments = bindArguments;

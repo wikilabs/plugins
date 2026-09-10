@@ -43,25 +43,38 @@ function references(uri, text, position, context, openDocuments) {
 // A parameter or a widget's variable is that name only inside its own scope in
 // this document, and an inner binding of the same name hides it.
 function scopedReferences(uri, sites, binding, tree, body, includeDeclaration) {
-	var locations = sites.filter(function(site) {
+	var locations = scopedUses(sites, binding, tree, body).map(function(range) {
+			return { uri: uri, range: range };
+		}),
+		declared = declarationRange(binding, body);
+	if(includeDeclaration && declared) {
+		locations.push({ uri: uri, range: declared });
+	}
+	return locations.sort(byPosition);
+}
+
+// The ranges of every use of a binding in its own scope.
+function scopedUses(sites, binding, tree, body) {
+	return sites.filter(function(site) {
 		if(site.definition || site.name !== binding.name) {
 			return false;
 		}
 		var own = scope.resolve(site.name, site.start, tree, body.text);
 		return own && own.scope.node === binding.scope.node;
 	}).map(function(site) {
-		return { uri: uri, range: site.range };
+		return site.range;
 	});
-	if(includeDeclaration && binding.declaration) {
-		locations.push({
-			uri: uri,
-			range: {
-				start: source.positionAt(body.starts, body.offset + binding.declaration.start),
-				end: source.positionAt(body.starts, body.offset + binding.declaration.end)
-			}
-		});
+}
+
+// Where a binding is declared, or null for a variable no attribute names.
+function declarationRange(binding, body) {
+	if(!binding.declaration) {
+		return null;
 	}
-	return locations.sort(byPosition);
+	return {
+		start: source.positionAt(body.starts, body.offset + binding.declaration.start),
+		end: source.positionAt(body.starts, body.offset + binding.declaration.end)
+	};
 }
 
 function byPosition(a, b) {
@@ -72,4 +85,6 @@ function byPosition(a, b) {
 }
 
 exports.references = references;
+exports.scopedUses = scopedUses;
+exports.declarationRange = declarationRange;
 exports.sameFileKey = files.sameFileKey;
