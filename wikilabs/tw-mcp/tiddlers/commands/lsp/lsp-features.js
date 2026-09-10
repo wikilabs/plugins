@@ -40,6 +40,7 @@ exports.hover = filters.hover;
 exports.definition = definition.definition;
 exports.references = references.references;
 exports.documentSymbols = symbols.documentSymbols;
+exports.workspaceSymbols = symbols.workspaceSymbols;
 exports.virtualDocument = source.virtualDocument;
 exports.isVirtualUri = source.isVirtualUri;
 

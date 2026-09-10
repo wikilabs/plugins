@@ -71,7 +71,8 @@ function serverCapabilities() {
 		hoverProvider: true,
 		definitionProvider: true,
 		referencesProvider: true,
-		documentSymbolProvider: true
+		documentSymbolProvider: true,
+		workspaceSymbolProvider: true
 	};
 }
 
@@ -220,6 +221,11 @@ function createSession(send, options) {
 				var symbolUri = params.textDocument.uri,
 					symbolText = documents[symbolUri];
 				send(response(id, symbolText === undefined ? null : features.documentSymbols(symbolUri, symbolText, { hierarchical: hierarchicalSymbols })));
+				break;
+			}
+
+			case "workspace/symbol": {
+				send(response(id, features.workspaceSymbols(params.query || "", documents)));
 				break;
 			}
 

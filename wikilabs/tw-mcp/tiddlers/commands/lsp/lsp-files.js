@@ -49,6 +49,7 @@ function sitesOfDocument(uri, text) {
 			// The whole pragma, for a peek that shows the definition entire.
 			entry.full = rangeOf(body, base + site.range.start, base + site.range.end);
 			entry.topLevel = site.parent === null;
+			entry.kind = site.kind;
 		}
 		located.push(entry);
 	}
@@ -166,35 +167,49 @@ function mentions(title, name) {
 	});
 }
 
-// Every site named name in every document the editor can open, as { uri, site }:
-// open buffers first, then the wiki's .tid files, then views. A document is
-// visited once, under whichever spelling of its URI came first.
-function sitesNamed(name, openDocuments) {
-	var seen = Object.create(null),
-		found = [];
-	function visit(docUri, sites) {
+// Every document the editor can open, once each, under whichever spelling of
+// its URI came first: open buffers, then the wiki's .tid files, then views.
+// visit(uri, title, sites) is handed sites() to call only if it needs them,
+// since parsing is the expensive part.
+function eachDocument(openDocuments, visit) {
+	var seen = Object.create(null);
+	function offer(docUri, title, sites) {
 		seen[sameFileKey(docUri)] = true;
-		sites.forEach(function(site) {
-			if(site.name === name) {
-				found.push({ uri: docUri, site: site });
-			}
-		});
+		visit(docUri, title, sites);
 	}
 	Object.keys(openDocuments || {}).forEach(function(openUri) {
-		visit(openUri, sitesOfDocument(openUri, openDocuments[openUri]));
+		offer(openUri, source.titleOfDocument(openUri, openDocuments[openUri]), function() {
+			return sitesOfDocument(openUri, openDocuments[openUri]);
+		});
 	});
 	var files = $tw.boot.files || {};
 	for(var title in files) {
 		var filepath = files[title].filepath;
 		if(filepath && source.isTidUri(filepath) && !seen[sameFileKey(source.pathToUri(filepath))]) {
-			visit(source.pathToUri(filepath), sitesOfFile(filepath));
+			offer(source.pathToUri(filepath), title, sitesOfFile.bind(null, filepath));
 		}
 	}
 	wikiOnlyTitles().forEach(function(title) {
 		var viewUri = source.virtualUri(title);
-		if(!seen[sameFileKey(viewUri)] && mentions(title, name)) {
-			visit(viewUri, sitesOfView(title));
+		if(!seen[sameFileKey(viewUri)]) {
+			offer(viewUri, title, sitesOfView.bind(null, title));
 		}
+	});
+}
+
+// Every site named name in every document the editor can open, as { uri, site }.
+function sitesNamed(name, openDocuments) {
+	var found = [];
+	eachDocument(openDocuments, function(docUri, title, sites) {
+		// A view is parsed only when its tiddler mentions the name.
+		if(source.isVirtualUri(docUri) && !mentions(title, name)) {
+			return;
+		}
+		sites().forEach(function(site) {
+			if(site.name === name) {
+				found.push({ uri: docUri, site: site });
+			}
+		});
 	});
 	return found;
 }
@@ -206,3 +221,4 @@ exports.sitesOfView = sitesOfView;
 exports.siteAt = siteAt;
 exports.sameFileKey = sameFileKey;
 exports.sitesNamed = sitesNamed;
+exports.eachDocument = eachDocument;

@@ -22,6 +22,17 @@ var KIND = { procedure: 12, macro: 12, "function": 25, widget: 5 };
 // String, as markdown outlines show headings.
 var KIND_HEADING = 15;
 
+// A tiddler itself, found by its title.
+var KIND_FILE = 1;
+
+// Cap on one workspace answer: an empty query would otherwise list every title.
+var MAX_WORKSPACE_SYMBOLS = 200;
+
+// Only a tiddler that writes one of these is worth parsing for definitions.
+var DEFINES = /^\s*\\(?:procedure|function|define|widget)\b/m;
+
+var DOCUMENT_START = { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } };
+
 // The outline as nested DocumentSymbols, or as a flat SymbolInformation list for
 // a client that cannot nest them.
 function documentSymbols(uri, text, options) {
@@ -103,4 +114,51 @@ function flatten(uri, symbols, container) {
 	return flat;
 }
 
+// Ctrl+T: every definition in every document the editor can open, and every
+// tiddler by its title, whose name matches query. A name starting with the
+// query ranks first, then one holding its letters in order.
+function workspaceSymbols(query, openDocuments) {
+	var needle = (query || "").toLowerCase(),
+		starts = [],
+		within = [];
+	function consider(symbol) {
+		var name = symbol.name.toLowerCase();
+		if(name.startsWith(needle)) {
+			starts.push(symbol);
+		} else if(isSubsequence(needle, name)) {
+			within.push(symbol);
+		}
+	}
+	files.eachDocument(openDocuments, function(uri, title, sites) {
+		if(title) {
+			consider({ name: title, kind: KIND_FILE, location: { uri: uri, range: DOCUMENT_START } });
+		}
+		if(source.isVirtualUri(uri) && !DEFINES.test($tw.wiki.getTiddlerText(title, ""))) {
+			return;
+		}
+		sites().forEach(function(site) {
+			if(site.definition) {
+				consider({ name: site.name, kind: KIND[site.kind], containerName: title || undefined, location: { uri: uri, range: site.range } });
+			}
+		});
+	});
+	return starts.sort(byLength).concat(within.sort(byLength)).slice(0, MAX_WORKSPACE_SYMBOLS);
+}
+
+function isSubsequence(needle, name) {
+	var at = 0;
+	for(var i = 0; i < name.length && at < needle.length; i++) {
+		if(name.charAt(i) === needle.charAt(at)) {
+			at++;
+		}
+	}
+	return at === needle.length;
+}
+
+// The shorter of two matching names is the closer match.
+function byLength(a, b) {
+	return (a.name.length - b.name.length) || (a.name < b.name ? -1 : (a.name > b.name ? 1 : 0));
+}
+
 exports.documentSymbols = documentSymbols;
+exports.workspaceSymbols = workspaceSymbols;
