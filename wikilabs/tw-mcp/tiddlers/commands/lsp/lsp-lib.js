@@ -65,9 +65,9 @@ function notification(method, params) {
 function serverCapabilities() {
 	return {
 		textDocumentSync: { openClose: true, change: SYNC_FULL },
-		// "[" and "{" fire on the second character of "[[" and "{{", which is
-		// where a title starts.
-		completionProvider: { triggerCharacters: ["[", "{"] },
+		// "[" and "{" fire on the second character of "[[" and "{{", where a title
+		// starts; the rest where a call, widget, variable or argument name starts.
+		completionProvider: { triggerCharacters: ["[", "{", "<", "$", "\"", "=", " "] },
 		hoverProvider: true,
 		definitionProvider: true,
 		referencesProvider: true,

@@ -162,3 +162,4 @@ function byLength(a, b) {
 
 exports.documentSymbols = documentSymbols;
 exports.workspaceSymbols = workspaceSymbols;
+exports.signature = signature;

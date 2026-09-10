@@ -214,6 +214,24 @@ function globalDefinition(name) {
 	return found;
 }
 
+// Every definition the wiki imports globally, one per name as globalDefinition
+// finds it, in the order the names first appear.
+function globalDefinitions() {
+	var byName = Object.create(null),
+		order = [];
+	$tw.wiki.filterTiddlers($tw.wiki.getTiddlerText(GLOBAL_IMPORT_FILTER, "")).forEach(function(title) {
+		sitesOfTiddler(title).definitions.forEach(function(definition) {
+			if(definition.parent === null) {
+				if(!byName[definition.name]) {
+					order.push(definition.name);
+				}
+				byName[definition.name] = { title: title, definition: definition };
+			}
+		});
+	});
+	return order.map(function(name) { return byName[name]; });
+}
+
 // A definition's body and where it starts in text, or null. The body is a plain
 // string that TiddlyWiki does not parse with the tiddler.
 function definitionBody(node, text) {
@@ -412,6 +430,7 @@ function parseFilter(filter) {
 exports.sitesIn = sitesIn;
 exports.sitesOfTiddler = sitesOfTiddler;
 exports.globalDefinition = globalDefinition;
+exports.globalDefinitions = globalDefinitions;
 exports.importedGlobally = importedGlobally;
 exports.definitionBody = definitionBody;
 exports.conditionalClauses = conditionalClauses;

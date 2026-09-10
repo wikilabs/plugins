@@ -116,6 +116,17 @@ function localDefinition(name, definitions, offset) {
 	return best;
 }
 
+// Every definition of this document visible at a cursor, the deepest first; a
+// cursor at the very end of a body is still inside it.
+function visibleDefinitions(definitions, offset) {
+	return definitions.filter(function(definition) {
+		var parent = definition.parent === null ? null : definitions[definition.parent];
+		return !parent || (offset >= definition.range.start && offset <= parent.body.end);
+	}).sort(function(a, b) {
+		return depthOf(b, definitions) - depthOf(a, definitions);
+	});
+}
+
 function depthOf(definition, definitions) {
 	var depth = 0;
 	while(definition.parent !== null) {
@@ -182,4 +193,5 @@ function bindArguments(params, args, kind) {
 exports.callSites = callSites;
 exports.findDefinition = findDefinition;
 exports.localDefinition = localDefinition;
+exports.visibleDefinitions = visibleDefinitions;
 exports.bindArguments = bindArguments;

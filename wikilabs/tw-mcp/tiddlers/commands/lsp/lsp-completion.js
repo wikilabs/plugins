@@ -3,16 +3,32 @@ title: $:/core/modules/commands/inspect/lsp/lsp-completion.js
 type: application/javascript
 module-type: library
 
-Tiddler title completion inside [[...]] and {{...}}.
+Completion: tiddler titles inside [[...]] and {{...}}, and names where
+TiddlyWiki expects one (calls, widgets, parameters, variables, operators).
 
 This one cannot use the parser, and that is not a compromise: at the moment
 completion is asked for, the text reads "[[LSP Ser" with no closing bracket, and
 TiddlyWiki parses that as a single text node. Incomplete input is the whole
-point of completion, so the cursor context is read from the raw line.
+point of completion, so the cursor context is read from the raw text.
 
 \*/
 
 "use strict";
+
+var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	scope = require("$:/core/modules/commands/inspect/lsp/lsp-scope.js"),
+	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
+	filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js"),
+	symbols = require("$:/core/modules/commands/inspect/lsp/lsp-symbols.js"),
+	typing = require("$:/core/modules/commands/inspect/lsp/lsp-typing.js"),
+	calls = require("$:/core/modules/commands/inspect/calls.js");
+
+// LSP CompletionItemKind.
+var KIND_FUNCTION = 3,
+	KIND_VARIABLE = 6,
+	KIND_CLASS = 7,
+	KIND_PROPERTY = 10,
+	KIND_OPERATOR = 24;
 
 // Cap on one response. A wiki of any size would otherwise send its whole title
 // list on the first "[[".
@@ -115,12 +131,198 @@ function rankTitles(titles, prefix) {
 	return starts.concat(wordwise);
 }
 
+// --- Names ---
+
+// What the cursor is naming, as { start, candidates } with start in body
+// offsets: an operator, variable or function in a filter on this line; else a
+// call's or widget's name, a name given as $variable or $name, or a parameter
+// the call has not been given yet.
+function wanted(body, offset, upto) {
+	var filter = filterBefore(upto);
+	if(filter !== null) {
+		var at = typing.filterPosition(filter);
+		if(at.state === "name" && /^!?[\w.\-]*$/.test(at.word)) {
+			return { start: offset - at.word.replace(/^!/, "").length, candidates: operatorCandidates(body.text, offset) };
+		}
+		if(at.state === "operand" && (at.opener === "<" || (at.opener === "[" && at.operator === "function"))) {
+			return {
+				start: offset - at.word.length,
+				candidates: nameCandidates(body.text, offset).filter(function(candidate) {
+					return at.opener === "<" ? candidate.definition !== "widget" : candidate.definition === "function";
+				})
+			};
+		}
+		return null;
+	}
+	var call = typing.callContext(body.text, offset);
+	if(!call) {
+		return null;
+	}
+	if(call.inName) {
+		return { start: call.nameStart, candidates: call.form === "widget" ? widgetCandidates(body.text, offset) : nameCandidates(body.text, offset).filter(notWidget) };
+	}
+	if(call.inValue && call.form === "widget" && ((call.name === "transclude" && call.inValue.attribute === "$variable") || (call.name === "macrocall" && call.inValue.attribute === "$name"))) {
+		return { start: call.inValue.start, candidates: nameCandidates(body.text, offset).filter(notWidget) };
+	}
+	if(call.argument !== null) {
+		return { start: offset - call.argument.length, candidates: parameterCandidates(call, body.text, offset) };
+	}
+	return null;
+}
+
+// The filter typed so far on this line, up to the cursor: a filter attribute,
+// a {{{ }}}, an <%if%> condition or a \function body; null elsewhere.
+function filterBefore(upto) {
+	var context = filters.filterContext(upto, upto.length);
+	if(context) {
+		return upto.slice(context.start);
+	}
+	var match = /<%\s*(?:else)?if\s((?:(?!%>).)*)$/.exec(upto) || /^\s*\\function\s+[^\s(]+\([^)]*\)\s(.*)$/.exec(upto);
+	return match ? match[1] : null;
+}
+
+function notWidget(candidate) {
+	return candidate.definition !== "widget";
+}
+
+// Every name a call could reach here, in the order TiddlyWiki looks: what an
+// enclosing definition or widget binds, this document's definitions, the global
+// ones, JavaScript macros, then the variables core sets.
+function nameCandidates(bodyText, offset) {
+	var out = [];
+	scope.bindingsAt(offset, source.parseWithBodies(bodyText), bodyText).forEach(function(binding) {
+		out.push({ label: binding.name, kind: KIND_VARIABLE, detail: binding.kind, documentation: binding.kind === "parameter" ? "parameter of " + binding.of : "set by " + binding.by });
+	});
+	macros.visibleDefinitions(calls.sitesIn(bodyText).definitions, offset).forEach(function(definition) {
+		out.push(definitionCandidate(definition, "defined in this tiddler"));
+	});
+	calls.globalDefinitions().forEach(function(global) {
+		out.push(definitionCandidate(global.definition, "defined in " + global.title));
+	});
+	Object.keys($tw.macros || {}).forEach(function(name) {
+		out.push({ label: name, kind: KIND_FUNCTION, detail: "javascript " + symbols.signature($tw.macros[name].params || []), documentation: "a JavaScript macro", definition: "javascript" });
+	});
+	filters.CORE_VARIABLES.forEach(function(name) {
+		out.push({ label: name, kind: KIND_VARIABLE, detail: "core variable" });
+	});
+	return out;
+}
+
+function definitionCandidate(definition, where) {
+	return {
+		label: definition.name,
+		kind: definition.kind === "widget" ? KIND_CLASS : KIND_FUNCTION,
+		detail: definition.kind + " " + symbols.signature(definition.params),
+		documentation: where,
+		definition: definition.kind
+	};
+}
+
+// A widget's tag: \widget definitions in reach first, then every registered widget.
+function widgetCandidates(bodyText, offset) {
+	var custom = nameCandidates(bodyText, offset).filter(function(candidate) {
+		return candidate.definition === "widget";
+	}).map(function(candidate) {
+		return Object.assign({}, candidate, { label: candidate.label.slice(1) });
+	});
+	return custom.concat(Object.keys(($tw.rootWidget && $tw.rootWidget.widgetClasses) || {}).sort().map(function(name) {
+		return { label: name, kind: KIND_CLASS, detail: "widget" };
+	}));
+}
+
+// A filter step: every operator, then dotted functions in reach, which run as operators.
+function operatorCandidates(bodyText, offset) {
+	return Object.keys($tw.wiki.getFilterOperators()).filter(function(name) {
+		return name !== "[unknown]";
+	}).sort().map(function(name) {
+		return { label: name, kind: KIND_OPERATOR, detail: "filter operator" };
+	}).concat(nameCandidates(bodyText, offset).filter(function(candidate) {
+		return candidate.definition === "function" && candidate.label.includes(".");
+	}));
+}
+
+// The parameters a call has not been given, by name or by position, written
+// the way the call's form names them: tag: in <<call>>, tag= in a widget.
+function parameterCandidates(call, bodyText, offset) {
+	var callee = call.form === "macro" ? call.name : widgetCallee(call),
+		found = callee ? macros.findDefinition(callee, bodyText, offset) : null;
+	if(!found) {
+		return [];
+	}
+	var args = call.args.filter(function(arg) { return call.form === "macro" || arg.name.charAt(0) !== "$"; }),
+		given = macros.bindArguments(found.params, args, found.kind === "javascript" ? "macro" : found.kind).filter(function(bound) {
+			return bound.origin === "named" || bound.origin === "positional";
+		}).map(function(bound) { return bound.name; });
+	return found.params.filter(function(param) {
+		return !given.includes(param.name);
+	}).map(function(param) {
+		return {
+			label: param.name + (call.form === "macro" ? ":" : "="),
+			kind: KIND_PROPERTY,
+			detail: param["default"] === undefined ? "no default" : "default " + param["default"]
+		};
+	});
+}
+
+// What a widget-form call calls: its $variable or $name, else the \widget of its
+// tag; a JavaScript widget declares no attributes to offer.
+function widgetCallee(call) {
+	var named = function(name) {
+		var arg = call.args.filter(function(a) { return a.name === name; })[0];
+		return arg ? arg.value : null;
+	};
+	if(call.name === "transclude") {
+		return named("$variable");
+	}
+	if(call.name === "macrocall") {
+		return named("$name");
+	}
+	return "$" + call.name;
+}
+
+// Ranked like titles, with the same protocol rules: the typed text as every
+// item's filterText, an explicit range, and always incomplete.
+function nameCompletions(uri, text, position, lineText) {
+	var body = source.bodyOf(uri, text);
+	if(position.line < body.firstLine) {
+		return null;
+	}
+	var offset = source.offsetAt(body.starts, position) - body.offset,
+		want = wanted(body, offset, lineText.slice(0, position.character));
+	if(!want) {
+		return null;
+	}
+	var byLabel = Object.create(null),
+		typed = body.text.slice(want.start, offset);
+	want.candidates.forEach(function(candidate) {
+		if(!byLabel[candidate.label]) {
+			byLabel[candidate.label] = candidate;
+		}
+	});
+	var range = { start: source.positionAt(body.starts, body.offset + want.start), end: position };
+	return {
+		isIncomplete: true,
+		items: rankTitles(Object.keys(byLabel), typed).slice(0, MAX_COMPLETIONS).map(function(label, index) {
+			var candidate = byLabel[label];
+			return {
+				label: label,
+				kind: candidate.kind,
+				detail: candidate.detail,
+				documentation: candidate.documentation,
+				filterText: typed,
+				sortText: ("0000" + index).slice(-4),
+				textEdit: { range: range, newText: label }
+			};
+		})
+	};
+}
+
 function completions(uri, text, position) {
 	var lines = text.split(/\r?\n/),
 		lineText = lines[position.line] || "",
 		context = linkContext(lineText, position.character);
 	if(!context) {
-		return { isIncomplete: false, items: [] };
+		return nameCompletions(uri, text, position, lineText) || { isIncomplete: false, items: [] };
 	}
 	// Reported as incomplete rather than complete, so the editor asks again on
 	// the next keystroke instead of caching this emptiness.

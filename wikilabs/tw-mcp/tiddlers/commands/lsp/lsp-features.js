@@ -8,7 +8,8 @@ Each feature lives in its own module, split by what it can rely on:
 
 	lsp-source.js      offsets, .tid headers, parse tree walking
 	lsp-links.js       link diagnostics, hand-scanned (see the note in that file)
-	lsp-completion.js  title completion, necessarily hand-scanned
+	lsp-completion.js  title and name completion, necessarily hand-scanned
+	lsp-typing.js      the call or filter being typed, before it parses
 	lsp-filters.js     filter hover, parser-driven with a scanner fallback
 	lsp-pragmas.js     hover on pragma keywords, definition names and parameters
 	lsp-files.js       call sites of every document the editor can open

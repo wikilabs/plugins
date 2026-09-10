@@ -621,6 +621,7 @@ exports.hover = hover;
 exports.filterSites = filterSites;
 exports.filterPartAt = filterPartAt;
 exports.runPrefixName = runPrefixName;
+exports.CORE_VARIABLES = CORE_VARIABLES;
 exports.filterContext = filterContext;
 exports.bracketsBalanced = bracketsBalanced;
 exports.markdownLink = markdownLink;

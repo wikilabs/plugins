@@ -31,14 +31,15 @@ function firstStart(nodes) {
 
 // Every definition body and widget content holding offset, innermost first. A
 // widget's own attributes lie outside its scope: what it binds reaches its
-// content only.
-function scopesAt(tree, text, offset) {
+// content only. A cursor, unlike a name, is inside a body at its very end too.
+function scopesAt(tree, text, offset, atCursor) {
 	var scopes = [];
 	(function walk(nodes) {
 		for(var i = 0; i < (nodes || []).length; i++) {
 			var node = nodes[i],
-				body = calls.definitionBody(node, text);
-			if(body && offset >= body.start && offset < body.start + body.text.length) {
+				body = calls.definitionBody(node, text),
+				end = body ? body.start + body.text.length : 0;
+			if(body && offset >= body.start && (offset < end || (atCursor && offset === end))) {
 				scopes.push({ node: node, definition: true, start: body.start, end: body.start + body.text.length });
 			} else if(node.tag && node.start !== undefined && offset < node.end) {
 				var content = firstStart(node.children);
@@ -84,6 +85,25 @@ function resolve(name, offset, tree, text) {
 	return null;
 }
 
+// Every name bound at a cursor, innermost scope first, as { name, kind, of } for
+// a parameter or { name, kind, by } for a widget's variable.
+function bindingsAt(offset, tree, text) {
+	var found = [];
+	scopesAt(tree, text, offset, true).forEach(function(scope) {
+		var node = scope.node;
+		if(scope.definition) {
+			(node.params || []).forEach(function(param) {
+				found.push({ name: param.name, kind: "parameter", of: node.attributes.name.value });
+			});
+		} else {
+			widgets.variablesOf({ name: node.tag.slice(1), attributes: node.orderedAttributes || [] }).forEach(function(name) {
+				found.push({ name: name, kind: "variable", by: calls.conditionalClauses(node, text) ? "<%if%>" : "<" + node.tag + ">" });
+			});
+		}
+	});
+	return found;
+}
+
 // A parameter is declared between the parentheses on the pragma's first line.
 function parameterDeclaration(node, text, name) {
 	var line = text.slice(node.start, node.end).split("\n")[0],
@@ -110,3 +130,4 @@ function variableDeclaration(node, text, name) {
 }
 
 exports.resolve = resolve;
+exports.bindingsAt = bindingsAt;
