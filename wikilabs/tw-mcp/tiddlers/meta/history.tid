@@ -4,6 +4,7 @@ V 0.16.0 - 2026-09-09
 
 * New `--lsp` command: an editor connected to it completes tiddler titles inside `[[...]]`, warns about links whose target does not exist, opens the `.tid` file behind a link on ctrl-click, and on hover shows what a filter resolves to and what a `<<macro>>` call binds each of its parameters to. Runs in the same process as `--mcp`, so both answer from one wiki.
 * Find references in the editor: every call of the macro, procedure, function or widget under the cursor, across the wiki's `.tid` files, in any call form including filters and definition bodies.
+* New `find_calls` MCP tool: the same answer for an AI client, per tiddler with edit anchors, shadow tiddlers included.
 
 V 0.15.0 - 2026-08-12
 
