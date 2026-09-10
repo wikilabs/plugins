@@ -337,15 +337,15 @@ function coreDoc(module, page) {
 // over the filter argument nested inside it. A name a parameter or an enclosing
 // widget binds is that binding, whatever definition shares the name.
 function describeCall(site, body, context, tree) {
-	var head = "```\n" + site.name + "\n```\n\n",
-		binding = scope.resolve(site.name, site.start, tree, body.text);
+	// Each description names the call itself, so no heading repeats it.
+	var binding = scope.resolve(site.name, site.start, tree, body.text);
 	if(binding) {
-		return head + describeBinding(binding, body, context);
+		return describeBinding(binding, body, context);
 	}
 	var bodyText = body.text,
 		definition = macros.findDefinition(site.name, bodyText, site.start);
 	if(!definition) {
-		return head + describeUnbound(site.name, context);
+		return describeUnbound(site.name, context);
 	}
 	var where = definition.title === null
 			? (definition.kind === "javascript" ? "a JavaScript macro" : "defined in this tiddler")
@@ -370,7 +370,7 @@ function describeCall(site, body, context, tree) {
 			break;
 		}
 	}
-	return head + body;
+	return body;
 }
 
 function describeBinding(binding, body, context) {
@@ -402,7 +402,7 @@ function describeUnbound(name, context) {
 
 // An <%if%> block: each clause in order, and which one renders here.
 function describeConditional(block, context) {
-	var out = "```\n<%if%>\n```\n\n**conditional**: the first clause whose filter yields a result renders, and `<<condition>>` holds that result.\n\n" +
+	var out = "**conditional**: the first clause whose filter yields a result renders, and `<<condition>>` holds that result.\n\n" +
 			"| Clause | Filter | Here |\n| --- | --- | --- |\n",
 		decided = false;
 	block.clauses.forEach(function(clause) {
@@ -441,8 +441,7 @@ function conditionVerdict(filter, context) {
 // A widget hover: what it is, whether anything registers it, and what each
 // attribute is worth here rather than as written.
 function describeWidget(site, context, widget, bodyText, callText) {
-	var head = "```\n<$" + site.name + ">\n```\n\n",
-		module = modules.moduleOfWidget(site.name),
+	var module = modules.moduleOfWidget(site.name),
 		body;
 	if(widgets.customWidgetOf(site.name, context)) {
 		// Checked first, because TiddlyWiki lets a \widget take over the tag
@@ -490,7 +489,7 @@ function describeWidget(site, context, widget, bodyText, callText) {
 	if(output) {
 		body += "\n\n**Renders as**\n\n```\n" + truncate(output, MAX_RENDER_CHARS) + "\n```\n";
 	}
-	return head + body;
+	return body;
 }
 
 function truncate(text, limit) {

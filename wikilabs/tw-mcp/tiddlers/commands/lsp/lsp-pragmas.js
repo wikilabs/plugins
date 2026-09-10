@@ -82,7 +82,7 @@ function nameHover(uri, text, definition, definitions, openDocuments) {
 		parent = definition.parent === null ? null : definitions[definition.parent],
 		reach = parent ? "local to `" + parent.name + "`" : (calls.importedGlobally(title) ? "global" : "local to this tiddler"),
 		hidden = parent ? null : calls.globalDefinition(definition.name),
-		value = "```\n" + definition.name + "\n```\n\n**" + definition.kind + "** `" + definition.name + "`, defined here, " + reach + "\n\n";
+		value = "**" + definition.kind + "** `" + definition.name + "`, defined here, " + reach + "\n\n";
 	if(hidden && hidden.title !== title) {
 		value += "`" + hidden.title + "` defines it globally too; inside this tiddler this one wins.\n\n";
 	}
@@ -112,7 +112,7 @@ function parameterHover(uri, text, body, definition, param) {
 	} else {
 		uses = bodyUses(uri, text, body, definition, param);
 	}
-	return "```\n" + param.name + "\n```\n\n**parameter** `" + param.name + "` of `" + definition.name + "`" +
+	return "**parameter** `" + param.name + "` of `" + definition.name + "`" +
 		(param["default"] === undefined ? ", no default" : ", default `" + cell(param["default"]) + "`") +
 		"\n\nNamed " + plural(uses, "time") + " in its body. Definitions it calls can read it too, so no count shows it unused.";
 }
