@@ -16,7 +16,8 @@ what the parser-driven version looks like.
 
 "use strict";
 
-var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
+var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js");
 
 var SEVERITY_WARNING = 2;
 
@@ -133,10 +134,14 @@ function scanLinks(lines, firstLine) {
 function diagnostics(uri, text) {
 	var body = source.bodyOf(uri, text),
 		links = scanLinks(body.lines, body.firstLine),
+		// [[X]] in a filter names a title rather than linking to it, so a \function
+		// body, a filter attribute or an <%if%> condition is left alone.
+		inFilter = filters.filterSites(source.parseWithBodies(body.text), body.text),
 		out = [];
 	for(var i = 0; i < links.length; i++) {
-		var link = links[i];
-		if(!isCheckable(link.target)) {
+		var link = links[i],
+			offset = body.starts[link.line] + link.start - body.offset;
+		if(!isCheckable(link.target) || inFilter.some(function(site) { return offset >= site.start && offset < site.end; })) {
 			continue;
 		}
 		var title = titleOfTarget(link.target);
