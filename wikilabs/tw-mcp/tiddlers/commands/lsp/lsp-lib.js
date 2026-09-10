@@ -68,7 +68,8 @@ function serverCapabilities() {
 		// where a title starts.
 		completionProvider: { triggerCharacters: ["[", "{"] },
 		hoverProvider: true,
-		definitionProvider: true
+		definitionProvider: true,
+		referencesProvider: true
 	};
 }
 
@@ -196,6 +197,13 @@ function createSession(send, options) {
 				var defUri = params.textDocument.uri,
 					defText = documents[defUri];
 				send(response(id, defText === undefined ? null : features.definition(defUri, defText, params.position)));
+				break;
+			}
+
+			case "textDocument/references": {
+				var refUri = params.textDocument.uri,
+					refText = documents[refUri];
+				send(response(id, refText === undefined ? null : features.references(refUri, refText, params.position, params.context, documents)));
 				break;
 			}
 

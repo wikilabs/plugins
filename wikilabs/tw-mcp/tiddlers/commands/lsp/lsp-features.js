@@ -10,6 +10,7 @@ Each feature lives in its own module, split by what it can rely on:
 	lsp-links.js       link diagnostics, hand-scanned (see the note in that file)
 	lsp-completion.js  title completion, necessarily hand-scanned
 	lsp-filters.js     filter hover, parser-driven with a scanner fallback
+	lsp-references.js  find references, over tw-mcp-core's calls.js
 
 Everything here is a pure function of a document's text plus the booted
 $tw.wiki. Transport and protocol live in lsp-lib.js.
@@ -24,12 +25,14 @@ var links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
 	definition = require("$:/core/modules/commands/inspect/lsp/lsp-definition.js"),
 	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
 	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
+	references = require("$:/core/modules/commands/inspect/lsp/lsp-references.js"),
 	source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
 
 exports.diagnostics = links.diagnostics;
 exports.completions = completion.completions;
 exports.hover = filters.hover;
 exports.definition = definition.definition;
+exports.references = references.references;
 
 // Test seams. Each is a pure function worth pinning without a document or a
 // transport to reach it.
@@ -49,3 +52,4 @@ exports.variablesOf = widgets.variablesOf;
 exports.callSites = macros.callSites;
 exports.findDefinition = macros.findDefinition;
 exports.bindArguments = macros.bindArguments;
+exports.sameFileKey = references.sameFileKey;
