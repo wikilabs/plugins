@@ -1548,6 +1548,7 @@ function startMCPServer(options) {
 
 exports.startMCPServer = startMCPServer;
 exports.readDiscoveryFile = readDiscoveryFile;
+exports.getCanonicalWikiPath = getCanonicalWikiPath;
 // Test seam. The protocol contract (discovery, version gate, result shape) is
 // worth pinning without standing up a transport to reach it.
 exports.dispatchMessage = dispatchMessage;

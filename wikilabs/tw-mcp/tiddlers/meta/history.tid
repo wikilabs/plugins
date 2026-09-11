@@ -12,6 +12,7 @@ V 0.16.0 - 2026-09-09
 * Find references also lists calls in shadow tiddlers and in `.tid` header fields.
 * Saving a `.tid` in the editor updates the running wiki.
 * New `find_definition` MCP tool: where a name is defined, the JavaScript behind widgets, operators and macros included.
+* `--lsp` records its port in `.tw-mcp/lsp` and takes a free port when 6009 is in use, so several wikis can serve editors at once.
 
 V 0.15.0 - 2026-08-12
 

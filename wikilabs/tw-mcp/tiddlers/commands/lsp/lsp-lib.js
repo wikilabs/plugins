@@ -18,7 +18,8 @@ and answers every message on its own.
 
 var net = $tw.node ? require("net") : null;
 
-var features = require("$:/core/modules/commands/inspect/lsp/lsp-features.js");
+var features = require("$:/core/modules/commands/inspect/lsp/lsp-features.js"),
+	discovery = require("$:/core/modules/commands/inspect/lsp/lsp-discovery.js");
 
 var SERVER_NAME = "tiddlywiki-lsp";
 var PLUGIN_TITLE = "$:/plugins/wikilabs/tw-mcp";
@@ -434,8 +435,11 @@ function framedWriter(stream) {
 
 // --- Startup ---
 
+// Without a port= of its own, a second wiki finds 6009 taken and takes any free
+// port instead; the discovery file tells the editor which.
 function startSocketServer(options) {
-	var port = options.port || DEFAULT_PORT,
+	var explicit = options.port !== undefined,
+		port = explicit ? options.port : (options.defaultPort || DEFAULT_PORT),
 		host = options.host || DEFAULT_HOST;
 	var server = net.createServer(function(socket) {
 		var send = framedWriter(socket);
@@ -448,13 +452,52 @@ function startSocketServer(options) {
 		});
 		log("Client connected from " + socket.remoteAddress);
 	});
-	server.listen(port, host, function() {
-		log("Listening on " + host + ":" + port + " (v" + getServerVersion() + ", PID " + process.pid + ")");
+	server.on("listening", function() {
+		var actual = server.address().port;
+		if($tw.lsp) {
+			$tw.lsp.port = actual;
+		}
+		log("Listening on " + host + ":" + actual + " (v" + getServerVersion() + ", PID " + process.pid + ")");
+		if(options.discoveryDir) {
+			publish(options.discoveryDir, { pid: process.pid, host: host, port: actual, version: getServerVersion(), wiki: $tw.boot.wikiPath });
+		}
 	});
 	server.on("error", function(err) {
+		if(err.code === "EADDRINUSE" && !explicit && port !== 0) {
+			log("Port " + port + " is in use, listening on a free port instead");
+			port = 0;
+			server.listen(port, host);
+			return;
+		}
 		log("Server error: " + err.message);
 	});
+	server.listen(port, host);
 	return server;
+}
+
+// A wiki folder the server may not write to still serves the configured port.
+function publish(wikiDir, data) {
+	try {
+		discovery.writeDiscovery(wikiDir, data);
+		log("Port recorded in " + discovery.discoveryFile(wikiDir));
+	} catch(err) {
+		if(err.code !== "EACCES" && err.code !== "EPERM" && err.code !== "EROFS") {
+			throw err;
+		}
+		log("Could not record the port in " + discovery.discoveryFile(wikiDir) + ": " + err.message);
+	}
+}
+
+function forgetOnExit(wikiDir) {
+	function forget() {
+		// Best-effort teardown: a file left behind names a dead PID, which readers skip.
+		try {
+			discovery.removeDiscovery(wikiDir, process.pid);
+		} catch(err) {}
+	}
+	process.on("exit", forget);
+	process.on("SIGINT", function() { process.exit(0); });
+	process.on("SIGTERM", function() { process.exit(0); });
 }
 
 function startStdioServer() {
@@ -482,10 +525,16 @@ function startLSPServer(options) {
 		startStdioServer();
 		return;
 	}
-	$tw.lsp.server = startSocketServer(options);
+	// The folder .tw-mcp/connect uses, so every edition of one wiki converges there.
+	var wikiDir = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js").getCanonicalWikiPath();
+	if(wikiDir) {
+		forgetOnExit(wikiDir);
+	}
+	$tw.lsp.server = startSocketServer(Object.assign({}, options, { discoveryDir: wikiDir }));
 }
 
 exports.startLSPServer = startLSPServer;
+exports.startSocketServer = startSocketServer;
 // Test seam. The lifecycle rules (initialize gate, capabilities, sync, shutdown)
 // are the contract worth pinning, and none of it needs a socket to reach.
 exports.createSession = createSession;

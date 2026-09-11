@@ -17,6 +17,10 @@ boot their own wiki and drift.
 
   tiddlywiki ./wiki --mcp rw listen --lsp port=6009
 
+Without port=, the server takes 6009, or any free port when 6009 is in use. The
+port it got is written to .tw-mcp/lsp in the wiki folder, where the editor
+extension looks for it.
+
 Socket is the default because --mcp already owns stdio when both are given, and
 the two protocols do not share a framing: MCP is newline-delimited JSON, LSP
 counts bytes in a Content-Length header. "stdio" is therefore refused when an
@@ -54,8 +58,8 @@ Command.prototype.execute = function() {
 	if(options.stdio && $tw.mcp) {
 		return "--lsp stdio cannot run beside --mcp: both would read the same pipe, and their framings differ. Use --lsp port=<n> instead.";
 	}
-	if(options.port !== undefined && !(options.port > 0 && options.port < 65536)) {
-		return "--lsp port must be a number between 1 and 65535";
+	if(options.port !== undefined && !(options.port >= 0 && options.port < 65536)) {
+		return "--lsp port must be a number between 0 (any free port) and 65535";
 	}
 	startLSPServer(options);
 	return null;
