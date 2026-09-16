@@ -77,7 +77,8 @@ function codeActions(uri, text, range, context) {
 	unknownSites(uri, text).filter(function(site) {
 		return overlaps(site.range, range);
 	}).forEach(function(site) {
-		var ranges = [site.range].concat(closingTagRange(site, body, tree) || []);
+		var ranges = [site.range].concat(closingTagRange(site, body, tree) || []),
+			diagnostic = reportedAs(diagnosticOf(site), context);
 		closestNames(site.name, candidatesFor(site, body, tree)).forEach(function(name, index) {
 			var changes = {};
 			changes[uri] = ranges.map(function(where) {
@@ -86,13 +87,21 @@ function codeActions(uri, text, range, context) {
 			actions.push({
 				title: "Change to " + name,
 				kind: "quickfix",
-				diagnostics: [diagnosticOf(site)],
+				diagnostics: [diagnostic],
 				isPreferred: index === 0,
 				edit: { changes: changes }
 			});
 		});
 	});
 	return actions;
+}
+
+// The editor's own copy of the diagnostic, which a check of all tiddlers reported
+// as information, so the fix attaches to the entry the editor shows.
+function reportedAs(diagnostic, context) {
+	return ((context && context.diagnostics) || []).filter(function(given) {
+		return given.message === diagnostic.message && !before(given.range.start, diagnostic.range.start) && !before(diagnostic.range.start, given.range.start);
+	})[0] || diagnostic;
 }
 
 function overlaps(a, b) {

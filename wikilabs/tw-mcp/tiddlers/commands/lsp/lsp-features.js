@@ -9,6 +9,7 @@ Each feature lives in its own module, split by what it can rely on:
 	lsp-source.js      offsets, .tid headers, parse tree walking
 	lsp-links.js       link diagnostics, hand-scanned (see the note in that file)
 	lsp-names.js       hints and quick fixes for calls whose name nothing defines
+	lsp-check.js       one document's diagnostics, or every .tid file's at once
 	lsp-completion.js  title and name completion, necessarily hand-scanned
 	lsp-typing.js      the call or filter being typed, before it parses
 	lsp-signature.js   the parameter list of the call being typed
@@ -47,11 +48,13 @@ var links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
 	inlay = require("$:/core/modules/commands/inspect/lsp/lsp-inlay.js"),
 	rename = require("$:/core/modules/commands/inspect/lsp/lsp-rename.js"),
 	source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
-	names = require("$:/core/modules/commands/inspect/lsp/lsp-names.js");
+	names = require("$:/core/modules/commands/inspect/lsp/lsp-names.js"),
+	check = require("$:/core/modules/commands/inspect/lsp/lsp-check.js");
 
-exports.diagnostics = function(uri, text) {
-	return links.diagnostics(uri, text).concat(names.hints(uri, text));
-};
+exports.diagnostics = check.diagnostics;
+exports.checkAll = check.checkAll;
+exports.checkFile = check.checkFile;
+exports.summarizeCheck = check.summarize;
 exports.codeActions = names.codeActions;
 exports.completions = completion.completions;
 exports.hover = filters.hover;
