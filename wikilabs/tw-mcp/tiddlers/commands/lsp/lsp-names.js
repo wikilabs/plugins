@@ -6,8 +6,8 @@ module-type: library
 Hints for calls whose name nothing defines, since TiddlyWiki renders a misspelt
 name as silence. Variables are set while the wiki renders, out of a static
 reader's sight, so a name also counts as known when any tiddler defines it,
-declares it as a parameter or sets it with a widget, or when a shadow tiddler
-calls it: the core and plugins call what their JavaScript sets.
+declares it as a parameter or sets it with a widget, when a shadow tiddler calls
+it, or when a JavaScript module hands it to action strings.
 
 \*/
 
@@ -28,6 +28,15 @@ var KNOWN_CACHE_KEY = "tw-lsp-known-names";
 
 // The names one tiddler defines or sets, in its own cache.
 var SET_CACHE_KEY = "tw-lsp-names-set";
+
+// A JavaScript module that may hand variables to wikitext, the names it sets, and
+// the keys of its object literals.
+var JS_SETS_VARIABLES = /invokeActionString|invokeActions|setVariable\s*\(/,
+	SET_VARIABLE = /setVariable\(\s*(["'])([^"']+)\1/,
+	OBJECT_KEY = /[{,]\s*(?:(["'])([\w.\-]+)\1|([A-Za-z_$][\w$]*))\s*:(?!:)/;
+
+// A string value worth parsing as wikitext.
+var HOLDS_WIKITEXT = /<\$|<<|^\s*\\(?:procedure|define|function|widget)\s/m;
 
 // A quick fix offers names this close: typing slips, not a different name.
 var MAX_DISTANCE = 2,
@@ -96,7 +105,7 @@ function codeActions(uri, text, range, context) {
 	return actions;
 }
 
-// The editor's own copy of the diagnostic, which a check of all tiddlers reported
+// The editor's own copy of the diagnostic, which listing undefined calls reported
 // as information, so the fix attaches to the entry the editor shows.
 function reportedAs(diagnostic, context) {
 	return ((context && context.diagnostics) || []).filter(function(given) {
@@ -219,26 +228,51 @@ function inReach(site, body, tree) {
 function knownNames() {
 	return $tw.wiki.getGlobalCache(KNOWN_CACHE_KEY, function() {
 		var known = Object.create(null);
-		function note(title, isShadow) {
-			namesSetBy(title).forEach(function(name) {
-				known[name] = true;
-			});
-			if(isShadow) {
-				calls.sitesOfTiddler(title).calls.forEach(function(site) {
-					known[site.name] = true;
-				});
-			}
+		function add(name) {
+			known[name] = true;
 		}
 		$tw.wiki.each(function(tiddler, title) {
-			note(title, false);
+			namesSetBy(title).forEach(add);
 		});
 		$tw.wiki.eachShadow(function(tiddler, title) {
 			if(!$tw.wiki.tiddlerExists(title)) {
-				note(title, true);
+				namesSetBy(title).forEach(add);
+				calls.sitesOfTiddler(title).calls.forEach(function(site) {
+					add(site.name);
+				});
 			}
 		});
+		namesSetByJavaScript().forEach(add);
 		return known;
 	});
+}
+
+// Names JavaScript hands to wikitext: those given to setVariable, and the keys of
+// the object literals in a module that runs action strings, where the variables
+// they receive are built (actionValue, status, ...).
+function namesSetByJavaScript() {
+	var names = [];
+	$tw.utils.each($tw.modules.titles, function(info, title) {
+		var text = $tw.wiki.getTiddlerText(title) || info.definition;
+		if(typeof text !== "string" || !JS_SETS_VARIABLES.test(text)) {
+			return;
+		}
+		eachMatch(SET_VARIABLE, text, function(match) {
+			names.push(match[2]);
+		});
+		eachMatch(OBJECT_KEY, text, function(match) {
+			names.push(match[2] || match[3]);
+		});
+	});
+	return names;
+}
+
+function eachMatch(pattern, text, fn) {
+	var regexp = new RegExp(pattern.source, "g"),
+		match;
+	while((match = regexp.exec(text)) !== null) {
+		fn(match);
+	}
 }
 
 // Definitions, their parameters, and the variables of every widget, bodies included.
@@ -255,21 +289,45 @@ function namesSetBy(title) {
 				names.push(param.name);
 			});
 		});
-		widgetVariablesIn(tiddler.fields.text || "", names);
+		namesSetIn(tiddler.fields.text || "", names);
 		return names;
 	});
 }
 
-function widgetVariablesIn(text, names) {
+// What text defines or sets, looking into definition bodies and into string values
+// holding wikitext, such as an example's src. The attributes of <$action-sendmessage>
+// count too: tm-modal and tm-open-window hand them on as variables.
+function namesSetIn(text, names) {
 	source.eachNode($tw.wiki.parseText(source.WIKITEXT_TYPE, text).tree, function(node) {
 		var body = calls.definitionBody(node, text);
-		if(body && body.kind !== "function") {
-			widgetVariablesIn(body.text, names);
-		} else if(node.tag && node.tag.charAt(0) === "$") {
+		if(body) {
+			names.push(node.attributes.name.value);
+			(node.params || []).forEach(function(param) {
+				names.push(param.name);
+			});
+			if(body.kind !== "function") {
+				namesSetIn(body.text, names);
+			}
+			return;
+		}
+		if(node.tag && node.tag.charAt(0) === "$") {
 			widgets.variablesOf({ name: node.tag.slice(1), attributes: node.orderedAttributes || [] }).forEach(function(name) {
 				names.push(name);
 			});
+			if(node.tag === "$action-sendmessage") {
+				(node.orderedAttributes || []).forEach(function(attribute) {
+					if(attribute.name.charAt(0) !== "$") {
+						names.push(attribute.name);
+					}
+				});
+			}
 		}
+		Object.keys(node.attributes || {}).forEach(function(key) {
+			var attribute = node.attributes[key];
+			if(attribute.type === "string" && HOLDS_WIKITEXT.test(attribute.value)) {
+				namesSetIn(attribute.value, names);
+			}
+		});
 	});
 }
 
