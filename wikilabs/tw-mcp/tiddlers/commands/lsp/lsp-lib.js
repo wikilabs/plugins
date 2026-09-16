@@ -342,7 +342,9 @@ function createSession(send, options) {
 					publishDiagnostics(openUri);
 				});
 				listed.forEach(function(entry) {
-					send(notification("textDocument/publishDiagnostics", { uri: entry.uri, diagnostics: entry.diagnostics }));
+					if(!entry.open) {
+						send(notification("textDocument/publishDiagnostics", { uri: entry.uri, diagnostics: entry.diagnostics }));
+					}
 				});
 				log("Listed " + summary.undefinedCalls + " undefined calls and widgets in " + summary.files + " files in " + (Date.now() - listStarted) + " ms");
 				send(response(id, summary));

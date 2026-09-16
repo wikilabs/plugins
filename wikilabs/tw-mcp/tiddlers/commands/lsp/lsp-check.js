@@ -33,13 +33,17 @@ function undefinedCalls(uri, text) {
 }
 
 // The undefined calls and widgets of every .tid file the wiki saves to, as
-// [{ uri, diagnostics }], read from disk. A file open in the editor is left out:
-// its live diagnostics stay.
+// [{ uri, diagnostics, open }], read from disk, or for a file open in the editor
+// from its live text, marked open since its own diagnostics already show them.
 function listUndefinedCalls(openDocuments) {
 	var wikiFiles = tidFiles(),
 		listed = [];
 	Object.keys(openDocuments || {}).forEach(function(uri) {
-		delete wikiFiles[files.sameFileKey(uri)];
+		var key = files.sameFileKey(uri);
+		if(wikiFiles[key]) {
+			delete wikiFiles[key];
+			listed.push({ uri: uri, diagnostics: undefinedCalls(uri, openDocuments[uri]), open: true });
+		}
 	});
 	Object.keys(wikiFiles).forEach(function(key) {
 		var uri = source.pathToUri(wikiFiles[key]);
