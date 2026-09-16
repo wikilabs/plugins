@@ -44,6 +44,7 @@ var SERVER_NOT_INITIALIZED = -32002;
 var REQUEST_FAILED = -32803;
 
 var MESSAGE_TYPE_INFO = 3;
+var MCP_SERVER_NOTIFICATION = "tiddlywiki/mcpServer";
 
 function getServerVersion() {
 	var pluginTiddler = $tw.wiki.getTiddler(PLUGIN_TITLE);
@@ -58,10 +59,10 @@ function labelSuffix(label) {
 	return label ? " @" + label : "";
 }
 
-// label= on the command line wins over the "lsp" section of tiddlywiki.info.
+// label= on the command line wins over the "lsp" section of tiddlywiki.info, else lsp-<wiki folder name>.
 function resolveLabel(options) {
 	var section = ($tw.boot.wikiInfo || {}).lsp || {};
-	return options.label || section.label || null;
+	return options.label || section.label || ($tw.boot.wikiPath ? "lsp-" + path.basename(path.resolve($tw.boot.wikiPath)) : null);
 }
 
 // --- JSON-RPC helpers ---
@@ -150,6 +151,9 @@ function createSession(send, options) {
 			case "initialized":
 				// The client's own log is where a reader looks for which wiki answers.
 				send(notification("window/logMessage", { type: MESSAGE_TYPE_INFO, message: describeWiki() }));
+				if(options.onReady) {
+					options.onReady();
+				}
 				break;
 			case "exit":
 				// In socket mode the process serves other commands too, so exit
@@ -539,10 +543,15 @@ function startPipeClient(pipeName, options) {
 	options = options || {};
 	var exit = options.exit || process.exit,
 		connected = false,
+		ready = false,
 		socket = net.connect(pipeName),
 		send = framedWriter(socket),
 		session = createSession(send, {
 			onExit: function(cleanShutdown) { exit(cleanShutdown ? 0 : 1); },
+			onReady: function() {
+				ready = true;
+				announceMcpServer();
+			},
 			onInitialized: function(client) {
 				if($tw.lsp && $tw.lsp.mcpLink) {
 					$tw.lsp.mcpLink.update({ client: client });
@@ -559,6 +568,16 @@ function startPipeClient(pipeName, options) {
 		log(connected ? "The editor closed the pipe, shutting down" : "Could not reach the editor on " + pipeName);
 		exit(connected ? 0 : 1);
 	});
+	// Not in the protocol: the editor shows which MCP server, if any, this wiki is linked to.
+	function announceMcpServer() {
+		var link = $tw.lsp && $tw.lsp.mcpLink;
+		if(ready) {
+			send(notification(MCP_SERVER_NOTIFICATION, { server: link ? link.server() : null }));
+		}
+	}
+	if($tw.lsp) {
+		$tw.lsp.announceMcpServer = announceMcpServer;
+	}
 	return socket;
 }
 
@@ -622,6 +641,11 @@ function startLSPServer(options) {
 		log("Watching " + ($tw.lsp.watcher.roots.join(", ") || "no folders") + " for tiddler files changed on disk");
 		$tw.lsp.mcpLink = require("$:/core/modules/commands/inspect/lsp/lsp-primary.js").createLink({
 			log: log,
+			onChange: function() {
+				if($tw.lsp.announceMcpServer) {
+					$tw.lsp.announceMcpServer();
+				}
+			},
 			hello: {
 				pid: process.pid,
 				transport: "pipe",

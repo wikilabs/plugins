@@ -48,12 +48,20 @@ function isExcluded(filepath) {
 	});
 }
 
+function stripMeta(filepath) {
+	return filepath.endsWith(META_SUFFIX) ? filepath.slice(0, -META_SUFFIX.length) : filepath;
+}
+
+// One spelling per file, since Windows paths ignore case.
+function fileKey(filepath) {
+	var resolved = path.resolve(filepath);
+	return process.platform === "win32" ? resolved.toLowerCase() : resolved;
+}
+
 // Reads one changed path into the wiki and returns the titles it touched, or null
 // when the path is not a file of the wiki's.
 function fileChanged(filepath) {
-	if(filepath.endsWith(META_SUFFIX)) {
-		filepath = filepath.slice(0, -META_SUFFIX.length);
-	}
+	filepath = stripMeta(filepath);
 	if(isExcluded(filepath)) {
 		return null;
 	}
@@ -73,7 +81,23 @@ function startWatching(options) {
 		roots = watchRoots($tw.boot.wikiTiddlersPath, filepaths).filter(function(dir) {
 			return fs.existsSync(dir);
 		}),
-		timers = Object.create(null);
+		timers = Object.create(null),
+		startedAt = Date.now(),
+		loadedAtStart = new Set(filepaths.map(fileKey)),
+		lastWrite = Object.create(null);
+
+	// Windows reports a file that was only read, too; one not written since it was loaded is skipped.
+	function unwritten(filepath) {
+		var stat = fs.statSync(filepath, { throwIfNoEntry: false }),
+			key = fileKey(filepath);
+		if(!stat || !stat.isFile()) {
+			return false;
+		}
+		if(lastWrite[key] !== undefined) {
+			return stat.mtimeMs === lastWrite[key];
+		}
+		return loadedAtStart.has(fileKey(stripMeta(filepath))) && stat.mtimeMs < startedAt;
+	}
 
 	function schedule(filepath, attempt) {
 		clearTimeout(timers[filepath]);
@@ -81,7 +105,14 @@ function startWatching(options) {
 			delete timers[filepath];
 			var titles;
 			try {
+				if(unwritten(filepath)) {
+					return;
+				}
+				var stat = fs.statSync(filepath, { throwIfNoEntry: false });
 				titles = fileChanged(filepath);
+				if(stat) {
+					lastWrite[fileKey(filepath)] = stat.mtimeMs;
+				}
 			} catch(err) {
 				if(!RETRY_CODES.includes(err.code)) {
 					throw err;

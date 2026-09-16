@@ -12,7 +12,7 @@ Usage:
   tiddlywiki ./wiki --lsp pipe=<name> [label=<name>]
 
 label= names this LSP server in both its own log and the MCP server's; without
-it, "label" in the "lsp" section of tiddlywiki.info is used.
+it, "label" in the "lsp" section of tiddlywiki.info, else lsp-<wiki folder name>.
 
 pipe= is how an editor starts a wiki of its own: the process connects to the
 named pipe the editor created, serves that one session, never writes to disk,

@@ -20,10 +20,11 @@ var TIMEOUT_MS = 3000;
 // A pipe that is gone or refuses belongs to a server that stopped; the next poll looks again.
 var GONE_CODES = ["ENOENT", "ECONNREFUSED", "ECONNRESET", "EPIPE"];
 
-// options: hello (sent on connect), log, pollMs, timeoutMs, readDiscovery (test seam).
+// options: hello (sent on connect), log, onChange(server or null), pollMs, timeoutMs, readDiscovery (test seam).
 function createLink(options) {
 	options = options || {};
 	var log = options.log || function() {},
+		onChange = options.onChange || function() {},
 		readDiscovery = options.readDiscovery || mcpLib.readDiscoveryFile,
 		timeoutMs = options.timeoutMs || TIMEOUT_MS,
 		hello = Object.assign({}, options.hello),
@@ -62,6 +63,7 @@ function createLink(options) {
 			connected = true;
 			log("MCP server found: PID " + found.pid + (found.label ? " @" + found.label : "") + (found.listen && found.port ? ", browser on port " + found.port : ", no browser"));
 			sendHello();
+			onChange(describe(found));
 		});
 		socket.on("data", receive);
 		socket.on("error", function(err) {
@@ -70,7 +72,8 @@ function createLink(options) {
 			}
 		});
 		socket.on("close", function() {
-			if(connected) {
+			var wasConnected = connected;
+			if(wasConnected) {
 				log("MCP server gone: PID " + found.pid + (found.label ? " @" + found.label : ""));
 			}
 			socket = null;
@@ -78,6 +81,9 @@ function createLink(options) {
 			connected = false;
 			buffer = "";
 			failPending(new Error("the MCP server went away"));
+			if(wasConnected) {
+				onChange(null);
+			}
 		});
 	}
 
@@ -137,6 +143,11 @@ function createLink(options) {
 		}
 	}
 
+	// What an editor shows about the server: no token or pipe.
+	function describe(found) {
+		return { pid: found.pid, label: found.label || null, browserPort: found.listen && found.port ? found.port : null };
+	}
+
 	var timer = setInterval(poll, options.pollMs || POLL_MS);
 	timer.unref();
 	poll();
@@ -145,6 +156,7 @@ function createLink(options) {
 		reloadFile: reloadFile,
 		update: update,
 		isConnected: function() { return connected; },
+		server: function() { return connected ? describe(server) : null; },
 		close: function() {
 			clearInterval(timer);
 			if(socket) {
