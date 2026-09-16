@@ -4,7 +4,8 @@ type: application/javascript
 module-type: library
 
 Completion: tiddler titles inside [[...]] and {{...}}, and names where
-TiddlyWiki expects one (calls, widgets, parameters, variables, operators).
+TiddlyWiki expects one (calls, widgets, parameters, variables, operators, and
+the tags and fields a filter step names).
 
 This one cannot use the parser, and that is not a compromise: at the moment
 completion is asked for, the text reads "[[LSP Ser" with no closing bracket, and
@@ -21,10 +22,12 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js"),
 	symbols = require("$:/core/modules/commands/inspect/lsp/lsp-symbols.js"),
 	typing = require("$:/core/modules/commands/inspect/lsp/lsp-typing.js"),
-	calls = require("$:/core/modules/commands/inspect/calls.js");
+	calls = require("$:/core/modules/commands/inspect/calls.js"),
+	modules = require("$:/core/modules/commands/inspect/modules.js");
 
 // LSP CompletionItemKind.
 var KIND_FUNCTION = 3,
+	KIND_FIELD = 5,
 	KIND_VARIABLE = 6,
 	KIND_CLASS = 7,
 	KIND_PROPERTY = 10,
@@ -43,6 +46,28 @@ var KIND_REFERENCE = 18;
 // A tiddler title separates its words with more than spaces: lsp_link_target
 // and $:/core/ui/PageTemplate are each several words to a reader.
 var WORD_SEPARATORS = /[\s_\-/:.]+/;
+
+// How an operator's code uses its operand or suffix as a tag or a field name; TiddlyWiki describes
+// operators nowhere else. For core these find exactly what the tw5.com docs say (op-parameter, op-suffix).
+var OPERAND_USES = {
+	tagOperand: [/\b(?:getTiddlersWithTag|hasTag)\(\s*operator\.operand\s*\)/],
+	fieldOperand: [
+		/\b\w*field\w*\s*=\s*operator\.operand\b/i,
+		/\b(?:getFieldString|getFieldList|hasField)\(\s*operator\.operand\s*[,)]/,
+		/\bfields\s*,\s*operator\.operand\b|\bfields\[\s*operator\.operand\s*\]/,
+		/\bsortTiddlers\(\s*\w+\s*,\s*operator\.operand\b/
+	],
+	fieldSuffix: [
+		/\b\w*field\w*\s*=\s*operator\.suffix\b/i,
+		/\b(?:getFieldString|getFieldList|hasField)\(\s*operator\.suffix\s*[,)]/
+	]
+};
+
+// What each operator's code was found to use, in the wiki's global cache.
+var OPERAND_USE_CACHE_KEY = "tw-lsp-operand-uses";
+
+// Every field name with how many tiddlers have it, in the wiki's global cache, which every change clears.
+var FIELD_CACHE_KEY = "tw-lsp-field-names";
 
 // What the cursor sits inside, or null when it is not inside an open link.
 // Only an UNCLOSED opener counts, so a cursor after a finished [[link]] gets
@@ -140,7 +165,22 @@ function rankTitles(titles, prefix) {
 function wanted(body, offset, upto) {
 	var filter = typing.filterBefore(upto);
 	if(filter !== null) {
-		var at = typing.filterPosition(filter);
+		var at = typing.filterPosition(filter),
+			suffixed = at.state === "name" ? /^!?([\w\-]+):([\w.\-]*)$/.exec(at.word) : null;
+		if(suffixed && operandUse(suffixed[1]).fieldSuffix) {
+			return { start: offset - suffixed[2].length, candidates: fieldCandidates() };
+		}
+		if(at.state === "operand" && at.opener === "[" && at.index === 0) {
+			var step = /^!?([\w.\-]*)(?::(.*))?$/.exec(at.operator) || [],
+				use = operandUse(step[1] || "");
+			if(use.tagOperand) {
+				return { start: offset - at.word.length, candidates: tagCandidates(at.word) };
+			}
+			// has:index names an index, which its code tells apart only by comparing the suffix.
+			if(use.fieldOperand && !(step[1] === "has" && step[2] === "index")) {
+				return { start: offset - at.word.length, candidates: fieldCandidates() };
+			}
+		}
 		if(at.state === "name" && /^!?[\w.\-]*$/.test(at.word)) {
 			return { start: offset - at.word.replace(/^!/, "").length, candidates: operatorCandidates(body.text, offset) };
 		}
@@ -228,6 +268,73 @@ function operatorCandidates(bodyText, offset) {
 	}).concat(nameCandidates(bodyText, offset).filter(function(candidate) {
 		return candidate.definition === "function" && candidate.label.includes(".");
 	}));
+}
+
+// Whether the running operator name uses its operand as a tag or field name, or its suffix as a field name.
+function operandUse(name) {
+	var uses = $tw.wiki.getGlobalCache(OPERAND_USE_CACHE_KEY, function() { return Object.create(null); });
+	if(!uses[name]) {
+		var code = operatorSource(name);
+		uses[name] = {};
+		Object.keys(OPERAND_USES).forEach(function(kind) {
+			uses[name][kind] = OPERAND_USES[kind].some(function(pattern) { return pattern.test(code); });
+		});
+	}
+	return uses[name];
+}
+
+// An operator's function in its module's text, from its export (or the function the export names)
+// to the next line that starts a top-level definition.
+function operatorSource(name) {
+	var title = $tw.wiki.getFilterOperators()[name] ? modules.moduleOfFilterOperator(name) : null,
+		info = title && $tw.modules.titles[title],
+		text = title ? $tw.wiki.getTiddlerText(title) || (info && typeof info.definition === "string" ? info.definition : "") : "",
+		at = text ? modules.exportedAt(title, name) : null;
+	if(!at) {
+		return "";
+	}
+	var from = text.lastIndexOf("\n", at.start) + 1,
+		next = /^(?:exports\b|function\s|var\s|let\s|const\s)/gm;
+	next.lastIndex = text.indexOf("\n", at.start) + 1 || text.length;
+	var end = next.exec(text);
+	return text.slice(from, end ? end.index : text.length);
+}
+
+// The tags the wiki uses, system tags only once the typed text starts with $, and none holding
+// the ] that would end the operand.
+function tagCandidates(typed) {
+	var tagMap = $tw.wiki.getTagMap(),
+		system = typed.charAt(0) === "$";
+	return Object.keys(tagMap).sort().filter(function(tag) {
+		return !tag.includes("]") && (system || !$tw.wiki.isSystemTiddler(tag));
+	}).map(function(tag) {
+		return { label: tag, kind: KIND_REFERENCE, detail: "tag of " + tiddlerCount(tagMap[tag].length) };
+	});
+}
+
+function fieldCandidates() {
+	var counts = $tw.wiki.getGlobalCache(FIELD_CACHE_KEY, function() {
+		var found = Object.create(null);
+		function count(tiddler) {
+			Object.keys(tiddler.fields).forEach(function(name) {
+				found[name] = (found[name] || 0) + 1;
+			});
+		}
+		$tw.wiki.each(count);
+		$tw.wiki.eachShadow(function(tiddler, title) {
+			if(!$tw.wiki.tiddlerExists(title)) {
+				count(tiddler);
+			}
+		});
+		return found;
+	});
+	return Object.keys(counts).sort().map(function(name) {
+		return { label: name, kind: KIND_FIELD, detail: "field of " + tiddlerCount(counts[name]) };
+	});
+}
+
+function tiddlerCount(n) {
+	return n + (n === 1 ? " tiddler" : " tiddlers");
 }
 
 // The parameters a call has not been given, by name or by position, written
