@@ -8,6 +8,7 @@ Each feature lives in its own module, split by what it can rely on:
 
 	lsp-source.js      offsets, .tid headers, parse tree walking
 	lsp-links.js       link diagnostics, hand-scanned (see the note in that file)
+	lsp-names.js       hints for calls whose name nothing in the wiki defines
 	lsp-completion.js  title and name completion, necessarily hand-scanned
 	lsp-typing.js      the call or filter being typed, before it parses
 	lsp-signature.js   the parameter list of the call being typed
@@ -45,9 +46,12 @@ var links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
 	reload = require("$:/core/modules/commands/inspect/lsp/lsp-reload.js"),
 	inlay = require("$:/core/modules/commands/inspect/lsp/lsp-inlay.js"),
 	rename = require("$:/core/modules/commands/inspect/lsp/lsp-rename.js"),
-	source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
+	source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	names = require("$:/core/modules/commands/inspect/lsp/lsp-names.js");
 
-exports.diagnostics = links.diagnostics;
+exports.diagnostics = function(uri, text) {
+	return links.diagnostics(uri, text).concat(names.hints(uri, text));
+};
 exports.completions = completion.completions;
 exports.hover = filters.hover;
 exports.definition = definition.definition;

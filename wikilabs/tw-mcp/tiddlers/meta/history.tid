@@ -5,6 +5,7 @@ V 0.17.0 - 2026-09-16
 * VS Code starts the wiki's LSP server itself when `tiddlywiki.info` has an `lsp` section (`autostart`, `command`, `label`). It follows tiddler files changed on disk and passes saves on to a running MCP server.
 * `get_wiki_info` lists the wiki's LSP servers, and the LSP and MCP logs name each other by label, `lsp-<wiki folder>` unless one is set. VS Code shows both labels in its status bar.
 * Hovers link shadow tiddlers to the browser of a running MCP server, whose port is now recorded in `.tw-mcp/connect`.
+* A call whose name nothing in the wiki defines or sets, such as a misspelt macro or widget, gets a hint in the editor.
 
 V 0.16.0 - 2026-09-09
 

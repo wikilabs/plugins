@@ -146,9 +146,11 @@ function variablesOf(site) {
 		return literal(byName[naming]) ? [literal(byName[naming])] : [];
 	}
 	if(site.name === "list") {
-		var names = [literal(byName.variable) || "currentTiddler"];
-		if(literal(byName.counter)) {
-			names.push(literal(byName.counter));
+		var names = [literal(byName.variable) || "currentTiddler"],
+			counter = literal(byName.counter);
+		// Core list.js sets <counter>-first and <counter>-last beside the counter.
+		if(counter) {
+			names.push(counter, counter + "-first", counter + "-last");
 		}
 		return names;
 	}
