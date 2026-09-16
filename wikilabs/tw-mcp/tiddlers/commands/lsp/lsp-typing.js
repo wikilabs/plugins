@@ -20,6 +20,9 @@ var MAX_LOOKBACK = 4000;
 // A value opened inside a call runs to its closer; nothing in it opens a call.
 var QUOTES = [["\"\"\"", "\"\"\""], ["{{{", "}}}"], ["[[", "]]"], ["{{", "}}"], ["\"", "\""], ["'", "'"], ["`", "`"]];
 
+// Outside a call, code is text: a fence, then inline code in either width.
+var CODE_MARKS = ["```", "``", "`"];
+
 // The closing bracket of each filter operand opener.
 var OPERAND_CLOSE = { "[": "]", "{": "}", "<": ">", "(": ")", "/": "/" };
 
@@ -32,8 +35,19 @@ function callContext(text, offset) {
 	var frames = [],
 		i = lookbackStart(text, offset);
 	while(i < offset) {
-		var top = frames[frames.length - 1];
-		if(top && top.quote) {
+		var top = frames[frames.length - 1],
+			mark = top ? null : codeMarkAt(text, i);
+		if(mark) {
+			// A mark without a partner is a literal backtick; one closing after the cursor puts the cursor in code.
+			var end = text.indexOf(mark, i + mark.length);
+			if(end >= 0 && end < offset) {
+				i = end + mark.length;
+			} else if(end >= 0) {
+				return null;
+			} else {
+				i += mark.length;
+			}
+		} else if(top && top.quote) {
 			var close = text.indexOf(top.quote, i);
 			if(close < 0 || close + top.quote.length > offset) {
 				break;
@@ -80,6 +94,12 @@ function lookbackStart(text, offset) {
 		start = match.index + match[0].length <= offset ? match.index + match[0].length : lineStart;
 	}
 	return start;
+}
+
+function codeMarkAt(text, i) {
+	return CODE_MARKS.find(function(mark) {
+		return text.startsWith(mark, i);
+	}) || null;
 }
 
 function quoteAt(text, i) {
