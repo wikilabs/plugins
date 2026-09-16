@@ -115,8 +115,8 @@ function createSession(send, options) {
 		linkSupport = false,
 		hierarchicalSymbols = false,
 		changeAnnotations = false,
-		// Once all tiddlers were checked, undefined names stay in the problem list.
-		checkedAll = false;
+		// Once undefined calls were listed, they stay in the problem list.
+		listedUndefinedCalls = false;
 	// Injectable so a test can run the timer synchronously rather than sleeping.
 	var schedule = options.schedule || function(fn, ms) { return setTimeout(fn, ms); },
 		cancel = options.cancel || clearTimeout,
@@ -124,7 +124,7 @@ function createSession(send, options) {
 
 	function publishDiagnostics(uri, version) {
 		// A read-only view gets no squiggles: nothing in it can be fixed from there.
-		var params = { uri: uri, diagnostics: features.isVirtualUri(uri) ? [] : features.diagnostics(uri, documents[uri] || "", checkedAll) };
+		var params = { uri: uri, diagnostics: features.isVirtualUri(uri) ? [] : features.diagnostics(uri, documents[uri] || "", listedUndefinedCalls) };
 		if(version !== undefined && version !== null) {
 			params.version = version;
 		}
@@ -196,9 +196,9 @@ function createSession(send, options) {
 				var closed = params.textDocument;
 				clearPending(closed.uri);
 				delete documents[closed.uri];
-				// An empty list clears the squiggles of a closed file; after a check of all
-				// tiddlers, a wiki file gets its check result back instead.
-				send(notification("textDocument/publishDiagnostics", { uri: closed.uri, diagnostics: (checkedAll && features.checkFile(closed.uri)) || [] }));
+				// An empty list clears the squiggles of a closed file; once undefined calls
+				// were listed, a wiki file gets its listed ones back instead.
+				send(notification("textDocument/publishDiagnostics", { uri: closed.uri, diagnostics: (listedUndefinedCalls && features.undefinedCallsInFile(closed.uri)) || [] }));
 				break;
 			}
 			default:
@@ -330,21 +330,21 @@ function createSession(send, options) {
 				break;
 			}
 
-			// Not in the protocol: the extension's "Check all tiddlers" command. Every
-			// file's list is sent, an empty one clearing what an earlier check found.
-			case "tiddlywiki/checkAll": {
-				var checkStarted = Date.now(),
-					checked = features.checkAll(documents),
-					summary = features.summarizeCheck(checked);
-				checkedAll = true;
+			// Not in the protocol: the extension's "List undefined calls and widgets"
+			// command. Every file's list is sent, an empty one clearing an earlier one.
+			case "tiddlywiki/undefinedCalls": {
+				var listStarted = Date.now(),
+					listed = features.listUndefinedCalls(documents),
+					summary = features.summarizeUndefinedCalls(listed);
+				listedUndefinedCalls = true;
 				// Open files are listed too, from their live text.
 				Object.keys(documents).forEach(function(openUri) {
 					publishDiagnostics(openUri);
 				});
-				checked.forEach(function(entry) {
+				listed.forEach(function(entry) {
 					send(notification("textDocument/publishDiagnostics", { uri: entry.uri, diagnostics: entry.diagnostics }));
 				});
-				log("Checked " + summary.files + " files in " + (Date.now() - checkStarted) + " ms: " + summary.undefinedNames + " undefined names");
+				log("Listed " + summary.undefinedCalls + " undefined calls and widgets in " + summary.files + " files in " + (Date.now() - listStarted) + " ms");
 				send(response(id, summary));
 				break;
 			}
