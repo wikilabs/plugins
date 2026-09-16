@@ -29,7 +29,18 @@ var KNOWN_CACHE_KEY = "tw-lsp-known-names";
 // The names one tiddler defines or sets, in its own cache.
 var SET_CACHE_KEY = "tw-lsp-names-set";
 
+// A quick fix offers names this close: typing slips, not a different name.
+var MAX_DISTANCE = 2,
+	MAX_DISTANCE_SHORT = 1,
+	SHORT_NAME = 4,
+	MAX_FIXES = 3;
+
 function hints(uri, text) {
+	return unknownSites(uri, text).map(diagnosticOf);
+}
+
+// The calls in a document whose name nothing in reach or in the wiki defines.
+function unknownSites(uri, text) {
 	var sites = files.sitesOfDocument(uri, text).filter(function(site) {
 		return !site.definition && isCheckable(site.name);
 	});
@@ -37,22 +48,146 @@ function hints(uri, text) {
 		return [];
 	}
 	var body = source.bodyOf(uri, text),
+		tree = source.parseWithBodies(body.text);
+	return sites.filter(function(site) {
+		return !inReach(site, body, tree) && !knownNames()[site.name];
+	});
+}
+
+function diagnosticOf(site) {
+	return {
+		range: site.range,
+		severity: SEVERITY_HINT,
+		source: "tiddlywiki",
+		message: site.name.charAt(0) === "$" ?
+			"`" + site.name + "` is no widget, and no \\widget in this wiki defines it" :
+			"`" + site.name + "` is not defined or set anywhere in this wiki"
+	};
+}
+
+// Quick fixes for the hinted names inside range: each replaces the name with a
+// close one that exists, a widget's closing tag included.
+function codeActions(uri, text, range, context) {
+	if(context && context.only && !context.only.some(function(kind) { return kind === "quickfix" || kind === ""; })) {
+		return [];
+	}
+	var body = source.bodyOf(uri, text),
 		tree = source.parseWithBodies(body.text),
-		out = [];
-	sites.forEach(function(site) {
-		if(inReach(site, body, tree) || knownNames()[site.name]) {
-			return;
-		}
-		out.push({
-			range: site.range,
-			severity: SEVERITY_HINT,
-			source: "tiddlywiki",
-			message: site.name.charAt(0) === "$" ?
-				"`" + site.name + "` is no widget, and no \\widget in this wiki defines it" :
-				"`" + site.name + "` is not defined or set anywhere in this wiki"
+		actions = [];
+	unknownSites(uri, text).filter(function(site) {
+		return overlaps(site.range, range);
+	}).forEach(function(site) {
+		var ranges = [site.range].concat(closingTagRange(site, body, tree) || []);
+		closestNames(site.name, candidatesFor(site, body, tree)).forEach(function(name, index) {
+			var changes = {};
+			changes[uri] = ranges.map(function(where) {
+				return { range: where, newText: name };
+			});
+			actions.push({
+				title: "Change to " + name,
+				kind: "quickfix",
+				diagnostics: [diagnosticOf(site)],
+				isPreferred: index === 0,
+				edit: { changes: changes }
+			});
 		});
 	});
-	return out;
+	return actions;
+}
+
+function overlaps(a, b) {
+	return !before(a.end, b.start) && !before(b.end, a.start);
+}
+
+function before(p, q) {
+	return p.line < q.line || (p.line === q.line && p.character < q.character);
+}
+
+// The name in </$name> when the widget written at site has a closing tag.
+function closingTagRange(site, body, tree) {
+	if(site.name.charAt(0) !== "$") {
+		return null;
+	}
+	var found = null,
+		closing = "</" + site.name + ">";
+	source.eachNode(tree, function(node) {
+		if(node.tag === site.name && node.start === site.start - 1 && body.text.slice(node.end - closing.length, node.end) === closing) {
+			var at = body.offset + node.end - closing.length + 2;
+			found = { start: source.positionAt(body.starts, at), end: source.positionAt(body.starts, at + site.name.length) };
+		}
+	});
+	return found;
+}
+
+// Names the call could mean, what is in reach first: a widget tag is offered
+// widgets, any other call the names the wiki defines or sets.
+function candidatesFor(site, body, tree) {
+	var near = [],
+		far = Object.keys(knownNames());
+	if(site.name.charAt(0) === "$") {
+		near = Object.keys(($tw.rootWidget && $tw.rootWidget.widgetClasses) || {}).map(function(name) { return "$" + name; });
+	} else {
+		near = scope.bindingsAt(site.start, tree, body.text).map(function(binding) { return binding.name; })
+			.concat(calls.sitesIn(body.text).definitions.map(function(definition) { return definition.name; }))
+			.concat(calls.globalDefinitions().map(function(global) { return global.definition.name; }))
+			.concat(Object.keys($tw.macros || {}), filters.CORE_VARIABLES);
+	}
+	return near.concat(far).filter(function(name) {
+		return (name.charAt(0) === "$") === (site.name.charAt(0) === "$");
+	});
+}
+
+// The closest candidates within reach of a typing slip, nearer first, then in
+// candidate order; each name once.
+function closestNames(name, candidates) {
+	var limit = name.length <= SHORT_NAME ? MAX_DISTANCE_SHORT : MAX_DISTANCE,
+		scored = [],
+		seen = Object.create(null);
+	candidates.forEach(function(candidate, order) {
+		if(seen[candidate] || candidate === name) {
+			return;
+		}
+		seen[candidate] = true;
+		var distance = editDistance(name, candidate, limit);
+		if(distance <= limit) {
+			scored.push({ name: candidate, distance: distance, order: order });
+		}
+	});
+	return scored.sort(function(a, b) {
+		return a.distance - b.distance || a.order - b.order;
+	}).slice(0, MAX_FIXES).map(function(entry) {
+		return entry.name;
+	});
+}
+
+// Insertions, deletions, substitutions and swaps of neighbours needed to turn a
+// into b, or limit + 1 once it is certain to exceed limit.
+function editDistance(a, b, limit) {
+	if(Math.abs(a.length - b.length) > limit) {
+		return limit + 1;
+	}
+	var rows = [];
+	for(var i = 0; i <= a.length; i++) {
+		rows[i] = [i];
+	}
+	for(var j = 1; j <= b.length; j++) {
+		rows[0][j] = j;
+	}
+	for(i = 1; i <= a.length; i++) {
+		var best = limit + 1;
+		for(j = 1; j <= b.length; j++) {
+			var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+			rows[i][j] = Math.min(rows[i - 1][j] + 1, rows[i][j - 1] + 1, rows[i - 1][j - 1] + cost);
+			if(i > 1 && j > 1 && a.charAt(i - 1) === b.charAt(j - 2) && a.charAt(i - 2) === b.charAt(j - 1)) {
+				rows[i][j] = Math.min(rows[i][j], rows[i - 2][j - 2] + 1);
+			}
+			best = Math.min(best, rows[i][j]);
+		}
+		if(best > limit) {
+			return limit + 1;
+		}
+	}
+	return rows[a.length][b.length];
 }
 
 // TiddlyWiki sets its core variables and tv- settings itself, and __name__ is a
@@ -130,3 +265,4 @@ function widgetVariablesIn(text, names) {
 }
 
 exports.hints = hints;
+exports.codeActions = codeActions;

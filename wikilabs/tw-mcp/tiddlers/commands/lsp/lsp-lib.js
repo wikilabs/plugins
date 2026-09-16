@@ -97,7 +97,8 @@ function serverCapabilities() {
 		signatureHelpProvider: { triggerCharacters: [" ", ":", "="], retriggerCharacters: ["\""] },
 		inlayHintProvider: true,
 		// prepareRename says why a name cannot be renamed before a new one is typed.
-		renameProvider: { prepareProvider: true }
+		renameProvider: { prepareProvider: true },
+		codeActionProvider: { codeActionKinds: ["quickfix"] }
 	};
 }
 
@@ -312,6 +313,13 @@ function createSession(send, options) {
 					renameText = documents[renameUri],
 					renamed = renameText === undefined ? null : features.rename(renameUri, renameText, params.position, params.newName, { annotations: changeAnnotations }, documents);
 				send(renamed && renamed.error ? errorResponse(id, REQUEST_FAILED, renamed.error) : response(id, renamed));
+				break;
+			}
+
+			case "textDocument/codeAction": {
+				var actionUri = params.textDocument.uri,
+					actionText = documents[actionUri];
+				send(response(id, actionText === undefined || features.isVirtualUri(actionUri) ? [] : features.codeActions(actionUri, actionText, params.range, params.context)));
 				break;
 			}
 
