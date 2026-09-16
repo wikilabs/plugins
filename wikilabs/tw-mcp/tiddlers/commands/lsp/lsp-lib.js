@@ -16,10 +16,12 @@ and answers every message on its own.
 
 "use strict";
 
-var net = $tw.node ? require("net") : null;
+var net = $tw.node ? require("net") : null,
+	path = $tw.node ? require("path") : null;
 
 var features = require("$:/core/modules/commands/inspect/lsp/lsp-features.js"),
-	discovery = require("$:/core/modules/commands/inspect/lsp/lsp-discovery.js");
+	discovery = require("$:/core/modules/commands/inspect/lsp/lsp-discovery.js"),
+	watch = require("$:/core/modules/commands/inspect/lsp/lsp-watch.js");
 
 var SERVER_NAME = "tiddlywiki-lsp";
 var PLUGIN_TITLE = "$:/plugins/wikilabs/tw-mcp";
@@ -41,13 +43,25 @@ var INTERNAL_ERROR = -32603;
 var SERVER_NOT_INITIALIZED = -32002;
 var REQUEST_FAILED = -32803;
 
+var MESSAGE_TYPE_INFO = 3;
+
 function getServerVersion() {
 	var pluginTiddler = $tw.wiki.getTiddler(PLUGIN_TITLE);
 	return (pluginTiddler && pluginTiddler.fields.version) || "0.0.0";
 }
 
 function log(msg) {
-	process.stderr.write("[tw-lsp] " + msg + "\n");
+	process.stderr.write("[tw-lsp" + labelSuffix($tw.lsp && $tw.lsp.label) + "] " + msg + "\n");
+}
+
+function labelSuffix(label) {
+	return label ? " @" + label : "";
+}
+
+// label= on the command line wins over the "lsp" section of tiddlywiki.info.
+function resolveLabel(options) {
+	var section = ($tw.boot.wikiInfo || {}).lsp || {};
+	return options.label || section.label || null;
 }
 
 // --- JSON-RPC helpers ---
@@ -134,6 +148,8 @@ function createSession(send, options) {
 	function handleNotification(method, params) {
 		switch(method) {
 			case "initialized":
+				// The client's own log is where a reader looks for which wiki answers.
+				send(notification("window/logMessage", { type: MESSAGE_TYPE_INFO, message: describeWiki() }));
 				break;
 			case "exit":
 				// In socket mode the process serves other commands too, so exit
@@ -164,6 +180,9 @@ function createSession(send, options) {
 				if(reloaded && reloaded.length) {
 					log("Reloaded " + reloaded.join(", "));
 				}
+				if(options.onSaved) {
+					options.onSaved(params.textDocument.uri, reloaded);
+				}
 				break;
 			}
 			case "textDocument/didClose": {
@@ -193,6 +212,9 @@ function createSession(send, options) {
 				var workspaceEdit = params.capabilities && params.capabilities.workspace && params.capabilities.workspace.workspaceEdit;
 				changeAnnotations = !!(workspaceEdit && workspaceEdit.documentChanges && workspaceEdit.changeAnnotationSupport);
 				log("Initialized by " + describeClient(params) + " (v" + getServerVersion() + ")");
+				if(options.onInitialized) {
+					options.onInitialized(describeClient(params));
+				}
 				send(response(id, {
 					capabilities: serverCapabilities(),
 					serverInfo: { name: SERVER_NAME, version: getServerVersion() }
@@ -459,7 +481,7 @@ function startSocketServer(options) {
 		}
 		log("Listening on " + host + ":" + actual + " (v" + getServerVersion() + ", PID " + process.pid + ")");
 		if(options.discoveryDir) {
-			publish(options.discoveryDir, { pid: process.pid, host: host, port: actual, version: getServerVersion(), wiki: $tw.boot.wikiPath });
+			publish(options.discoveryDir, { pid: process.pid, host: host, port: actual, version: getServerVersion(), wiki: $tw.boot.wikiPath, label: ($tw.lsp && $tw.lsp.label) || undefined });
 		}
 	});
 	server.on("error", function(err) {
@@ -512,17 +534,104 @@ function startStdioServer() {
 	log("Serving on stdio (v" + getServerVersion() + ", PID " + process.pid + ")");
 }
 
+// The editor created the pipe and owns this process, so the process ends with the session.
+function startPipeClient(pipeName, options) {
+	options = options || {};
+	var exit = options.exit || process.exit,
+		connected = false,
+		socket = net.connect(pipeName),
+		send = framedWriter(socket),
+		session = createSession(send, {
+			onExit: function(cleanShutdown) { exit(cleanShutdown ? 0 : 1); },
+			onInitialized: function(client) {
+				if($tw.lsp && $tw.lsp.mcpLink) {
+					$tw.lsp.mcpLink.update({ client: client });
+				}
+			},
+			onSaved: tellPrimary
+		});
+	socket.on("connect", function() {
+		connected = true;
+		log("Connected to the editor on " + pipeName + " (v" + getServerVersion() + ", PID " + process.pid + ")");
+	});
+	attachFramedHandler(socket, session, send, function() {
+		session.dispose();
+		log(connected ? "The editor closed the pipe, shutting down" : "Could not reach the editor on " + pipeName);
+		exit(connected ? 0 : 1);
+	});
+	return socket;
+}
+
+// A save of the wiki's own file reaches a running dev server too, which holds the other copy of the wiki.
+function tellPrimary(uri, reloaded) {
+	var link = $tw.lsp && $tw.lsp.mcpLink;
+	if(reloaded === null || !link) {
+		return;
+	}
+	var filepath = path.resolve(features.uriToPath(uri));
+	link.reloadFile(filepath, function(err, titles) {
+		if(err) {
+			log("Could not tell the MCP server about " + filepath + ": " + err.message);
+		} else if(titles !== undefined) {
+			log("The MCP server reloaded " + (titles && titles.length ? titles.join(", ") : "nothing from " + filepath));
+		}
+	});
+}
+
+// A dev server may be writing the same folder, so an editor-owned process leaves the files to it.
+function neverWrite() {
+	var adaptor = $tw.syncer && $tw.syncer.syncadaptor;
+	if(adaptor) {
+		adaptor.saveTiddler = function(tiddler, callback) { callback(null); };
+		adaptor.deleteTiddler = function(title, callback) { callback(null); };
+	}
+}
+
+// Names the $tw.wiki that answers, so a reader can tell which wiki an editor reached.
+function describeWiki() {
+	var wikiPath = $tw.boot.wikiPath ? path.resolve($tw.boot.wikiPath) : null,
+		includes = wikiPath ? (($tw.boot.wikiInfo || {}).includeWikis || []).map(function(info) {
+			return path.resolve(wikiPath, typeof info === "string" ? info : info.path);
+		}) : [];
+	return "Wiki " + (wikiPath || "(no wiki folder)") +
+		(includes.length ? ", including " + includes.join(", ") : "") +
+		"; tiddlers folder " + ($tw.boot.wikiTiddlersPath || "(none)") +
+		"; " + $tw.wiki.allTitles().length + " tiddlers, " + $tw.wiki.allShadowTitles().length + " shadows";
+}
+
 function startLSPServer(options) {
 	options = options || {};
+	var transport = options.stdio ? "stdio" : (options.pipe ? "pipe" : "socket");
 	$tw.lsp = {
 		pid: process.pid,
-		transport: options.stdio ? "stdio" : "socket",
-		port: options.stdio ? null : (options.port || DEFAULT_PORT),
+		transport: transport,
+		port: transport === "socket" ? (options.port || DEFAULT_PORT) : null,
 		version: getServerVersion(),
-		started: Date.now()
+		started: Date.now(),
+		label: resolveLabel(options)
 	};
+	log(describeWiki());
 	if(options.stdio) {
 		startStdioServer();
+		return;
+	}
+	if(options.pipe) {
+		neverWrite();
+		$tw.lsp.pipe = options.pipe;
+		$tw.lsp.watcher = watch.startWatching({ log: log });
+		log("Watching " + ($tw.lsp.watcher.roots.join(", ") || "no folders") + " for tiddler files changed on disk");
+		$tw.lsp.mcpLink = require("$:/core/modules/commands/inspect/lsp/lsp-primary.js").createLink({
+			log: log,
+			hello: {
+				pid: process.pid,
+				transport: "pipe",
+				label: $tw.lsp.label || undefined,
+				wiki: $tw.boot.wikiPath ? path.resolve($tw.boot.wikiPath) : null,
+				version: getServerVersion(),
+				started: $tw.lsp.started
+			}
+		});
+		$tw.lsp.connection = startPipeClient(options.pipe, { exit: options.exit });
 		return;
 	}
 	// The folder .tw-mcp/connect uses, so every edition of one wiki converges there.
@@ -535,6 +644,9 @@ function startLSPServer(options) {
 
 exports.startLSPServer = startLSPServer;
 exports.startSocketServer = startSocketServer;
+exports.startPipeClient = startPipeClient;
+exports.describeWiki = describeWiki;
+exports.resolveLabel = resolveLabel;
 // Test seam. The lifecycle rules (initialize gate, capabilities, sync, shutdown)
 // are the contract worth pinning, and none of it needs a socket to reach.
 exports.createSession = createSession;

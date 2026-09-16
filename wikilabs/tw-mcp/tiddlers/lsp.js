@@ -7,8 +7,16 @@ LSP (Language Server Protocol) server for TiddlyWiki.
 Offers editors title completion and broken-link diagnostics over wikitext.
 
 Usage:
-  tiddlywiki ./wiki --lsp [port=<n>] [host=<h>]
-  tiddlywiki ./wiki --lsp stdio
+  tiddlywiki ./wiki --lsp [port=<n>] [host=<h>] [label=<name>]
+  tiddlywiki ./wiki --lsp stdio [label=<name>]
+  tiddlywiki ./wiki --lsp pipe=<name> [label=<name>]
+
+label= names this LSP server in both its own log and the MCP server's; without
+it, "label" in the "lsp" section of tiddlywiki.info is used.
+
+pipe= is how an editor starts a wiki of its own: the process connects to the
+named pipe the editor created, serves that one session, never writes to disk,
+and exits when the pipe closes.
 
 It composes with --mcp on one command line, which is the point: both commands
 run in the same process against the same $tw.wiki, so a tiddler renamed over
@@ -49,11 +57,18 @@ Command.prototype.execute = function() {
 		var param = this.params[i];
 		if(param === "stdio") {
 			options.stdio = true;
+		} else if(param.startsWith("pipe=")) {
+			options.pipe = param.slice("pipe=".length);
 		} else if(param.startsWith("port=")) {
 			options.port = parseInt(param.slice("port=".length), 10);
 		} else if(param.startsWith("host=")) {
 			options.host = param.slice("host=".length);
+		} else if(param.startsWith("label=")) {
+			options.label = param.slice("label=".length);
 		}
+	}
+	if(options.stdio && options.pipe) {
+		return "--lsp takes stdio or pipe=<name>, not both";
 	}
 	if(options.stdio && $tw.mcp) {
 		return "--lsp stdio cannot run beside --mcp: both would read the same pipe, and their framings differ. Use --lsp port=<n> instead.";

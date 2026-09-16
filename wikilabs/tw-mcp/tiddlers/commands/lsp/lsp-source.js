@@ -383,27 +383,25 @@ function hasFile(title) {
 	return !!(entry && entry.filepath && (isTidUri(entry.filepath) || entry.hasMetaFile));
 }
 
-// Somewhere the reader can open this title: its own file, or failing that the
-// wiki in the browser. A shadow has no file, and a core macro is exactly the
-// definition a reader most wants to look at, so the browser is the answer
-// there whenever this process is serving HTTP itself.
-//
-// $tw.httpServer is deliberately a NARROW test, and it is narrower than "HTTP
-// is reachable": only the plugin's own `--mcp listen` sets it, so core's
-// `--listen` and a secondary process serving through a primary both leave it
-// undefined while the wiki is genuinely reachable. Those cases lose the link,
-// which is the safe direction: the discovery file records that HTTP is up but
-// not on which port, and a link to a guessed port would be worse than none.
+// Somewhere the reader can open this title: its own file, or else the wiki in
+// the browser, served by this process or by the dev server in .tw-mcp/connect.
+// Core's --listen records no port, so it gets no link rather than a guess.
 function browsableUri(title) {
 	var fileUri = uriOfTitle(title);
 	if(fileUri) {
 		return fileUri;
 	}
+	var port = httpPort();
+	return port ? "http://127.0.0.1:" + port + "/#" + encodeURIComponent(title) : null;
+}
+
+function httpPort() {
 	var address = $tw.httpServer && $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();
-	if(!address || !address.port) {
-		return null;
+	if(address && address.port) {
+		return address.port;
 	}
-	return "http://127.0.0.1:" + address.port + "/#" + encodeURIComponent(title);
+	var primary = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js").readDiscoveryFile();
+	return primary && primary.listen && primary.port ? primary.port : null;
 }
 
 exports.WIKITEXT_TYPE = WIKITEXT_TYPE;

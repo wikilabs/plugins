@@ -52,6 +52,14 @@ module.exports = {
 			var addr = $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();
 			lines.push("HTTP: " + (addr ? addr.address + ":" + addr.port : "not listening"));
 		}
+		// An LSP server in this process, then the ones editors started that said hello over the pipe.
+		if($tw.lsp) {
+			lines.push("LSP: " + $tw.lsp.transport + ($tw.lsp.port ? " port " + $tw.lsp.port : "") + " (PID " + $tw.lsp.pid + ", this process)" + ($tw.lsp.label ? " @" + $tw.lsp.label : ""));
+		}
+		var lspClients = $tw.mcp && typeof $tw.mcp.lspClients === "function" ? $tw.mcp.lspClients() : [];
+		$tw.utils.each(lspClients, function(info) {
+			lines.push("LSP: " + (info.transport || "pipe") + " for " + (info.client || "an editor") + " (PID " + info.pid + ")" + (info.label ? " @" + info.label : "") + (info.wiki ? " on " + info.wiki : ""));
+		});
 		if(plugins.length) {
 			lines.push("Plugins:");
 			$tw.utils.each(plugins, function(p) { lines.push("  " + p); });
@@ -99,7 +107,7 @@ module.exports = {
 // MCP tool definition — advertised via mcp-handlers getToolDefinitions();
 // write:true marks tools hidden in readonly mode.
 module.exports["get_wiki_info"].definition = {
-	"description": "Wiki metadata: title, version, tiddler counts, plugins, themes, settings.",
+	"description": "Wiki metadata: title, version, tiddler counts, MCP/HTTP/LSP servers, plugins, themes, settings.",
 	"inputSchema": {
 		"type": "object",
 		"properties": {},

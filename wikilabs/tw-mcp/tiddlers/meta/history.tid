@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.17.0 - 2026-09-16
+
+* VS Code starts the wiki's LSP server itself when `tiddlywiki.info` has an `lsp` section (`autostart`, `command`, `label`). It follows tiddler files changed on disk and passes saves on to a running MCP server.
+* `get_wiki_info` lists the wiki's LSP servers, and the LSP and MCP logs name each other by label.
+* Hovers link shadow tiddlers to the browser of a running MCP server, whose port is now recorded in `.tw-mcp/connect`.
+
 V 0.16.0 - 2026-09-09
 
 * New `--lsp` command: an editor connected to it completes tiddler titles inside `[[...]]`, warns about links whose target does not exist, opens the `.tid` file behind a link on ctrl-click, and on hover shows what a filter resolves to and what a `<<macro>>` call binds each of its parameters to. Runs in the same process as `--mcp`, so both answer from one wiki.

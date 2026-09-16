@@ -18,19 +18,22 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
 
 // Loads the .tid at uri into the wiki and returns the titles it holds, or null
-// when the file is not the wiki's: one it files a tiddler in, or one in its
-// tiddlers folder. A plugin's source file must never become a real tiddler.
+// when the file is not the wiki's.
 function reloadSaved(uri) {
-	if(!source.isTidUri(uri)) {
-		return null;
-	}
-	var key = files.sameFileKey(uri),
+	return source.isTidUri(uri) ? reloadFile(path.resolve(source.uriToPath(uri))) : null;
+}
+
+// Loads a tiddler file into the wiki and returns the titles it holds, or null when
+// the file is not the wiki's: one it files a tiddler in, or one in its tiddlers
+// folder. A plugin's source file must never become a real tiddler.
+function reloadFile(filepath) {
+	var key = files.sameFileKey(source.pathToUri(filepath)),
 		filed = titlesFiledAt(key);
 	if(!filed.length && !inTiddlersFolder(key)) {
 		return null;
 	}
-	var filepath = filed.length ? $tw.boot.files[filed[0]].filepath : path.resolve(source.uriToPath(uri)),
-		loaded = $tw.loadTiddlersFromFile(filepath),
+	filepath = filed.length ? $tw.boot.files[filed[0]].filepath : filepath;
+	var loaded = $tw.loadTiddlersFromFile(filepath),
 		titles = [];
 	loaded.tiddlers.forEach(function(fields) {
 		if(!fields.title) {
@@ -51,6 +54,17 @@ function reloadSaved(uri) {
 		}
 	});
 	return titles;
+}
+
+// A file deleted on disk takes its tiddlers with it; they are unfiled first, so
+// a syncer's delete finds no file left to remove.
+function forgetFile(filepath) {
+	var filed = titlesFiledAt(files.sameFileKey(source.pathToUri(filepath)));
+	filed.forEach(function(title) {
+		delete $tw.boot.files[title];
+		$tw.wiki.deleteTiddler(title);
+	});
+	return filed;
 }
 
 function titlesFiledAt(key) {
@@ -77,3 +91,5 @@ function sameFields(tiddler, fields) {
 }
 
 exports.reloadSaved = reloadSaved;
+exports.reloadFile = reloadFile;
+exports.forgetFile = forgetFile;

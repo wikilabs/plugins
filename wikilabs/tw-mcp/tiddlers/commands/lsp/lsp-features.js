@@ -74,6 +74,7 @@ exports.filterContext = filters.filterContext;
 exports.bracketsBalanced = filters.bracketsBalanced;
 exports.targetAt = definition.targetAt;
 exports.pathToUri = source.pathToUri;
+exports.uriToPath = source.uriToPath;
 exports.uriOfTitle = source.uriOfTitle;
 exports.markdownLink = filters.markdownLink;
 exports.widgetSites = widgets.widgetSites;

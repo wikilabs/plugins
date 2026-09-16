@@ -50,6 +50,10 @@ var TW_PID = "wikilabs.tw-mcp/pid";
 var TW_LABEL = "wikilabs.tw-mcp/label";
 var TW_ROLE = "wikilabs.tw-mcp/role";
 
+var RELOAD_FILE_METHOD = "wikilabs.tw-mcp/reloadFile";
+var LSP_HELLO_METHOD = "wikilabs.tw-mcp/lspHello";
+var UNREADABLE_CODES = ["EBUSY", "EPERM", "EACCES", "ENOENT"];
+
 // Freshness hint for list results. Deliberately short: the tool list is not
 // static here, since it varies with readonly mode and reload_mcp_modules can
 // change it mid-process, and we advertise no listChanged notification.
@@ -67,6 +71,7 @@ var serverLabel = null; // optional user-defined label to identify this instance
 var pipeClients = {}; // clientId -> { send, socket } — authenticated pipe clients
 var currentPipeServer = null; // reference to the active net.Server for the pipe
 var takeoverInProgress = false; // guard against concurrent takeover requests
+var lspClients = {}; // clientId -> what an editor's LSP process said about itself
 
 // --- Path validation helpers ---
 
@@ -522,10 +527,41 @@ function dispatchMessage(line, send) {
 			break;
 		}
 
+		// Not MCP: the LSP process an editor started holds its own copy of this wiki
+		// and names a file it saved, so the browser and tools here see the save too.
+		case RELOAD_FILE_METHOD: {
+			var savedPath = parsed.params && parsed.params.path;
+			if(typeof savedPath !== "string" || !savedPath) {
+				send(jsonrpcError(id, -32602, RELOAD_FILE_METHOD + " needs a path"));
+				break;
+			}
+			send(reloadSavedFile(id, path.resolve(savedPath), era));
+			break;
+		}
+
 		default:
 			send(jsonrpcError(id, -32601, "Method not found: " + method));
 			break;
 	}
+}
+
+// A file still being written or already gone is answered as an error, so the
+// server keeps serving; anything else is a bug and propagates.
+function reloadSavedFile(id, filepath, era) {
+	var watch = require("$:/core/modules/commands/inspect/lsp/lsp-watch.js"),
+		titles;
+	try {
+		titles = watch.fileChanged(filepath);
+	} catch(err) {
+		if(!UNREADABLE_CODES.includes(err.code)) {
+			throw err;
+		}
+		return jsonrpcError(id, -32603, "Could not read " + filepath + ": " + err.message);
+	}
+	if(titles && titles.length) {
+		log("Reloaded " + titles.join(", ") + " saved in the editor");
+	}
+	return jsonrpcResponse(id, { titles: titles }, era);
 }
 
 // --- Stream handler for newline-delimited JSON-RPC ---
@@ -754,16 +790,23 @@ function startPipeServer() {
 				// Suppress the redundant per-client discovery log — the line above already covers it
 				suppressNextInitLog = true;
 			}
+			if(handlePipeNotification(clientId, parsed)) {
+				// An LSP process sends no discovery, so nothing is left to suppress.
+				suppressNextInitLog = false;
+				return;
+			}
 			dispatchMessage(line, sendFn);
 		};
 
 		attachStreamHandler(socket, send, function() {
 			delete pipeClients[clientId];
+			forgetPipeClient(clientId);
 			log("Client gone: " + clientId + clientSuffix);
 		}, authenticatedDispatch);
 
 		socket.on("error", function(err) {
 			delete pipeClients[clientId];
+			forgetPipeClient(clientId);
 			log("Client error: " + clientId + clientSuffix + " — " + err.message);
 		});
 	});
@@ -822,11 +865,54 @@ function startPipeServer() {
 				}
 			}
 			// Write discovery file to the canonical wiki path so all editions converge
-			writeDiscoveryFile({ pipe: pipePath, token: authToken, pid: process.pid, label: serverLabel || undefined, listen: !!$tw.httpServer });
+			var writePrimaryDiscovery = function() {
+				writeDiscoveryFile({ pipe: pipePath, token: authToken, pid: process.pid, label: serverLabel || undefined, listen: !!$tw.httpServer, port: listeningPort() });
+			};
+			writePrimaryDiscovery();
+			// The editor's LSP process links to the browser through this port, which exists only once HTTP listens.
+			if($tw.httpServer && !listeningPort()) {
+				$tw.httpServer.nodeServer.once("listening", writePrimaryDiscovery);
+			}
 		});
 	});
 
 	return pipeServer;
+}
+
+// An editor's LSP process says who it is, so get_wiki_info can list it; true when the message was that hello.
+function handlePipeNotification(clientId, parsed) {
+	if(parsed.method !== LSP_HELLO_METHOD) {
+		return false;
+	}
+	var info = Object.assign({}, parsed.params);
+	delete info._meta;
+	if(!lspClients[clientId]) {
+		log("LSP client: " + describeLspClient(info));
+	}
+	lspClients[clientId] = info;
+	return true;
+}
+
+function forgetPipeClient(clientId) {
+	if(lspClients[clientId]) {
+		log("LSP client gone: " + describeLspClient(lspClients[clientId]));
+		delete lspClients[clientId];
+	}
+}
+
+function describeLspClient(info) {
+	return (info.client || "an editor") + " (PID " + info.pid + ", " + (info.transport || "pipe") + ")" + (info.label ? " @" + info.label : "") + (info.wiki ? " on " + info.wiki : "");
+}
+
+function listLspClients() {
+	return Object.keys(lspClients).map(function(clientId) {
+		return lspClients[clientId];
+	});
+}
+
+function listeningPort() {
+	var address = $tw.httpServer && $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();
+	return address && address.port ? address.port : undefined;
 }
 
 // --- Takeover: primary steps down, new primary takes over ---
@@ -1509,6 +1595,7 @@ function startMCPServer(options) {
 		readonly: readonlyMode,
 		version: getServerVersion(),
 		started: Date.now(),
+		lspClients: listLspClients,
 		heartbeat: function() {
 			return {
 				pid: process.pid,
@@ -1552,3 +1639,11 @@ exports.getCanonicalWikiPath = getCanonicalWikiPath;
 // Test seam. The protocol contract (discovery, version gate, result shape) is
 // worth pinning without standing up a transport to reach it.
 exports.dispatchMessage = dispatchMessage;
+exports.RELOAD_FILE_METHOD = RELOAD_FILE_METHOD;
+exports.LSP_HELLO_METHOD = LSP_HELLO_METHOD;
+exports.handlePipeNotification = handlePipeNotification;
+exports.forgetPipeClient = forgetPipeClient;
+exports.listLspClients = listLspClients;
+exports.TW_AUTH = TW_AUTH;
+exports.TW_PID = TW_PID;
+exports.TW_LABEL = TW_LABEL;
