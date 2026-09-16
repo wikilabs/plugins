@@ -34,9 +34,9 @@ var KIND_FUNCTION = 3,
 // list on the first "[[".
 var MAX_COMPLETIONS = 200;
 
-// Shortest prefix worth answering. A single character matches too much of any
-// real wiki to be a useful list.
-var MIN_PREFIX = 2;
+// Shortest prefix worth answering. VS Code asks again on the next keystroke only
+// if the last answer had items, so one character must already produce a list.
+var MIN_PREFIX = 1;
 
 var KIND_REFERENCE = 18;
 
