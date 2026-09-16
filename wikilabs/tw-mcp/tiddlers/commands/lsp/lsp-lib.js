@@ -485,7 +485,7 @@ function startSocketServer(options) {
 		}
 		log("Listening on " + host + ":" + actual + " (v" + getServerVersion() + ", PID " + process.pid + ")");
 		if(options.discoveryDir) {
-			publish(options.discoveryDir, { pid: process.pid, host: host, port: actual, version: getServerVersion(), wiki: $tw.boot.wikiPath, label: ($tw.lsp && $tw.lsp.label) || undefined });
+			publish(options.discoveryDir, { pid: process.pid, host: host, port: actual, version: getServerVersion(), wiki: wikiFolder(), label: ($tw.lsp && $tw.lsp.label) || undefined });
 		}
 	});
 	server.on("error", function(err) {
@@ -514,16 +514,19 @@ function publish(wikiDir, data) {
 	}
 }
 
-function forgetOnExit(wikiDir) {
+// SIGHUP is how Windows reports a closed console window; proc is a test seam.
+function forgetOnExit(wikiDir, proc) {
+	proc = proc || process;
 	function forget() {
 		// Best-effort teardown: a file left behind names a dead PID, which readers skip.
 		try {
 			discovery.removeDiscovery(wikiDir, process.pid);
 		} catch(err) {}
 	}
-	process.on("exit", forget);
-	process.on("SIGINT", function() { process.exit(0); });
-	process.on("SIGTERM", function() { process.exit(0); });
+	proc.on("exit", forget);
+	["SIGINT", "SIGTERM", "SIGHUP"].forEach(function(signal) {
+		proc.on(signal, function() { proc.exit(0); });
+	});
 }
 
 function startStdioServer() {
@@ -606,9 +609,14 @@ function neverWrite() {
 	}
 }
 
+// $tw.boot.wikiPath is the folder as typed on the command line, often relative.
+function wikiFolder() {
+	return $tw.boot.wikiPath ? path.resolve($tw.boot.wikiPath) : null;
+}
+
 // Names the $tw.wiki that answers, so a reader can tell which wiki an editor reached.
 function describeWiki() {
-	var wikiPath = $tw.boot.wikiPath ? path.resolve($tw.boot.wikiPath) : null,
+	var wikiPath = wikiFolder(),
 		includes = wikiPath ? (($tw.boot.wikiInfo || {}).includeWikis || []).map(function(info) {
 			return path.resolve(wikiPath, typeof info === "string" ? info : info.path);
 		}) : [];
@@ -650,7 +658,7 @@ function startLSPServer(options) {
 				pid: process.pid,
 				transport: "pipe",
 				label: $tw.lsp.label || undefined,
-				wiki: $tw.boot.wikiPath ? path.resolve($tw.boot.wikiPath) : null,
+				wiki: wikiFolder(),
 				version: getServerVersion(),
 				started: $tw.lsp.started
 			}
@@ -671,6 +679,7 @@ exports.startSocketServer = startSocketServer;
 exports.startPipeClient = startPipeClient;
 exports.describeWiki = describeWiki;
 exports.resolveLabel = resolveLabel;
+exports.forgetOnExit = forgetOnExit;
 // Test seam. The lifecycle rules (initialize gate, capabilities, sync, shutdown)
 // are the contract worth pinning, and none of it needs a socket to reach.
 exports.createSession = createSession;
