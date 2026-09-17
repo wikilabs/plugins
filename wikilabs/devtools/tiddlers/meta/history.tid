@@ -1,6 +1,10 @@
 title: $:/plugins/wikilabs/devtools/history
 
 
+V 0.7.0 - 2026.09.17
+
+* Source position tracking now also records which variable produced a subtree, and its line helpers moved to `utils.js` so other plugins can share them.
+
 V 0.6.1 - 2026.05.09
 
 * Fix startup ordering so `$tw.popup` exists when the click-handler runs (regression exposed by TW core PR #9305).

@@ -21,61 +21,12 @@ exports.after = ["startup"];
 exports.before = ["render"];
 exports.synchronous = true;
 
-// Caches (reset on each tracking toggle to avoid stale data)
-var lineCache = {};
-var headerCache = {};
-var bodyOffsetCache = {};
-
-// Build array of line-start character offsets for a tiddler's text
-function getLineOffsets(title) {
-	if(lineCache[title]) return lineCache[title];
-	var text = $tw.wiki.getTiddlerText(title, "");
-	var offsets = [0];
-	for(var i = 0; i < text.length; i++) {
-		if(text.charAt(i) === "\n") offsets.push(i + 1);
-	}
-	lineCache[title] = offsets;
-	return offsets;
-}
-
-// Binary search: character offset → 1-based line number
-function charToLine(offsets, charPos) {
-	var lo = 0, hi = offsets.length - 1;
-	while(lo < hi) {
-		var mid = (lo + hi + 1) >> 1;
-		if(offsets[mid] <= charPos) lo = mid; else hi = mid - 1;
-	}
-	return lo + 1;
-}
-
-// Count .tid file header lines (fields excluding text + 1 blank separator)
-function getTidHeaderLines(title) {
-	if(headerCache[title] !== undefined) return headerCache[title];
-	var tiddler = $tw.wiki.getTiddler(title);
-	if(!tiddler) {
-		headerCache[title] = 0;
-		return 0;
-	}
-	// Exclude fields not written to .tid files: 'text' (body), 'bag' (excluded by
-	// $:/core/templates/tid-tiddler), and 'revision' (sync adapter runtime field)
-	var exclude = {"text": true, "bag": true, "revision": true};
-	var fieldCount = 0;
-	for(var f in tiddler.fields) {
-		if(!exclude[f]) fieldCount++;
-	}
-	headerCache[title] = fieldCount + 1; // fields + empty line
-	return headerCache[title];
-}
-
-// Find the character offset where a variable body starts within the full tiddler text
-function findBodyOffset(title, bodyText) {
-	var key = title + "\0" + bodyText.length;
-	if(bodyOffsetCache[key] !== undefined) return bodyOffsetCache[key];
-	var fullText = $tw.wiki.getTiddlerText(title, "");
-	var idx = fullText.indexOf(bodyText);
-	bodyOffsetCache[key] = idx >= 0 ? idx : 0;
-	return bodyOffsetCache[key];
-}
+// Source geometry lives in utils.js, shared with tw-mcp-core's inspect_pos,
+// which reports the same lines in its own format (bead tw-mcp-server-bay).
+var getLineOffsets = sourcePosUtils.getLineOffsets;
+var charToLine = sourcePosUtils.charToLine;
+var getTidHeaderLines = sourcePosUtils.getTidHeaderLines;
+var findBodyOffset = sourcePosUtils.findBodyOffset;
 
 // Walk up the widget tree to find the nearest sourceContext
 function getSourceInfo(widget) {
@@ -256,6 +207,8 @@ exports.startup = function() {
 				var srcVar = varInfo && varInfo.srcVariable;
 				this.sourceContext = (srcVar && srcVar.sourceTitle) || this.transcludeVariable;
 				this.sourceContextOffset = 0;
+				// Which variable produced this subtree: inspect_pos reports it as v=.
+				this.sourceContextVariable = this.transcludeVariable;
 				if(srcVar && srcVar.sourceTitle && srcVar.value) {
 					this.sourceContextOffset = findBodyOffset(srcVar.sourceTitle, srcVar.value);
 				}
@@ -272,8 +225,6 @@ function updateTracking() {
 	$tw.wiki.trackSourcePositions = enabled;
 	// Clear caches when tracking state changes
 	if(enabled) {
-		lineCache = {};
-		headerCache = {};
-		bodyOffsetCache = {};
+		sourcePosUtils.resetSourceCaches();
 	}
 }

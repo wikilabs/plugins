@@ -47,6 +47,72 @@ exports.parseRange = function(rangeString) {
 
 exports.SEPARATOR = SEPARATOR;
 
+// --- Source text geometry ---
+// Where a character offset falls in a tiddler's file. Shared with tw-mcp-core's
+// inspect_pos, which reports the same lines in its own format (bead
+// tw-mcp-server-bay); the caches are reset whenever tracking is toggled.
+
+var lineCache = {};
+var headerCache = {};
+var bodyOffsetCache = {};
+
+exports.resetSourceCaches = function() {
+	lineCache = {};
+	headerCache = {};
+	bodyOffsetCache = {};
+};
+
+// Character offset of each line start in a tiddler's text.
+exports.getLineOffsets = function(title) {
+	if(lineCache[title]) return lineCache[title];
+	var text = $tw.wiki.getTiddlerText(title, "");
+	var offsets = [0];
+	for(var i = 0; i < text.length; i++) {
+		if(text.charAt(i) === "\n") offsets.push(i + 1);
+	}
+	lineCache[title] = offsets;
+	return offsets;
+};
+
+// 1-based line number holding charPos.
+exports.charToLine = function(offsets, charPos) {
+	var lo = 0, hi = offsets.length - 1;
+	while(lo < hi) {
+		var mid = Math.ceil((lo + hi) / 2);
+		if(offsets[mid] <= charPos) lo = mid; else hi = mid - 1;
+	}
+	return lo + 1;
+};
+
+// Lines the .tid header occupies, so a body line maps to its line in the FILE:
+// one per field, plus the blank line that ends the header.
+exports.getTidHeaderLines = function(title) {
+	if(headerCache[title] !== undefined) return headerCache[title];
+	var tiddler = $tw.wiki.getTiddler(title);
+	if(!tiddler) {
+		headerCache[title] = 0;
+		return 0;
+	}
+	var exclude = { "text": true, "bag": true, "revision": true };
+	var fieldCount = 0;
+	for(var f in tiddler.fields) {
+		if(!exclude[f]) fieldCount++;
+	}
+	headerCache[title] = fieldCount + 1;
+	return headerCache[title];
+};
+
+// Where a macro/procedure body starts inside its tiddler's text, so positions
+// inside it can be reported against the whole tiddler.
+exports.findBodyOffset = function(title, bodyText) {
+	var key = title + "\0" + bodyText.length;
+	if(bodyOffsetCache[key] !== undefined) return bodyOffsetCache[key];
+	var fullText = $tw.wiki.getTiddlerText(title, "");
+	var idx = fullText.indexOf(bodyText);
+	bodyOffsetCache[key] = idx >= 0 ? idx : 0;
+	return bodyOffsetCache[key];
+};
+
 // --- Sourcepos event bus ---
 // Shared pub/sub for inter-panel communication that does NOT touch the TW store.
 // This avoids triggering the TW refresh cycle (which closes popups, etc.)
