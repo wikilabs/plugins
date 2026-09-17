@@ -44,6 +44,8 @@ var SERVER_NOT_INITIALIZED = -32002;
 var REQUEST_FAILED = -32803;
 
 var MESSAGE_TYPE_INFO = 3;
+
+var OTHER_VERSION_RENAME = "This is another version of the tiddler, such as the older side of a diff: rename in its file instead";
 var MCP_SERVER_NOTIFICATION = "tiddlywiki/mcpServer";
 
 function getServerVersion() {
@@ -108,7 +110,9 @@ function serverCapabilities() {
 // the transport, which keeps this whole path drivable from a test.
 function createSession(send, options) {
 	options = options || {};
+	// Other versions, such as the HEAD side of a diff, are answered but never counted with the wiki's documents.
 	var documents = Object.create(null),
+		otherVersions = Object.create(null),
 		pending = Object.create(null),
 		initialized = false,
 		shuttingDown = false,
@@ -122,9 +126,18 @@ function createSession(send, options) {
 		cancel = options.cancel || clearTimeout,
 		debounceMs = options.debounceMs === undefined ? DIAGNOSTIC_DEBOUNCE_MS : options.debounceMs;
 
+	// The open text of a document, whichever version it is.
+	function textOf(uri) {
+		return documents[uri] !== undefined ? documents[uri] : otherVersions[uri];
+	}
+
+	function isReadOnly(uri) {
+		return features.isVirtualUri(uri) || features.isOtherVersionUri(uri);
+	}
+
 	function publishDiagnostics(uri, version) {
-		// A read-only view gets no squiggles: nothing in it can be fixed from there.
-		var params = { uri: uri, diagnostics: features.isVirtualUri(uri) ? [] : features.diagnostics(uri, documents[uri] || "", listedUndefinedCalls) };
+		// A read-only view or version gets no squiggles: nothing in it can be fixed from there.
+		var params = { uri: uri, diagnostics: isReadOnly(uri) ? [] : features.diagnostics(uri, documents[uri] || "", listedUndefinedCalls) };
 		if(version !== undefined && version !== null) {
 			params.version = version;
 		}
@@ -168,7 +181,7 @@ function createSession(send, options) {
 				break;
 			case "textDocument/didOpen": {
 				var opened = params.textDocument;
-				documents[opened.uri] = opened.text;
+				(features.isOtherVersionUri(opened.uri) ? otherVersions : documents)[opened.uri] = opened.text;
 				publishDiagnostics(opened.uri, opened.version);
 				break;
 			}
@@ -177,7 +190,7 @@ function createSession(send, options) {
 					changes = params.contentChanges || [];
 				// Full sync: the last change carries the whole document.
 				if(changes.length) {
-					documents[changed.uri] = changes[changes.length - 1].text;
+					(features.isOtherVersionUri(changed.uri) ? otherVersions : documents)[changed.uri] = changes[changes.length - 1].text;
 				}
 				scheduleDiagnostics(changed.uri, changed.version);
 				break;
@@ -196,6 +209,7 @@ function createSession(send, options) {
 				var closed = params.textDocument;
 				clearPending(closed.uri);
 				delete documents[closed.uri];
+				delete otherVersions[closed.uri];
 				// An empty list clears the squiggles of a closed file; once undefined calls
 				// were listed, a wiki file gets its listed ones back instead.
 				send(notification("textDocument/publishDiagnostics", { uri: closed.uri, diagnostics: (listedUndefinedCalls && features.undefinedCallsInFile(closed.uri)) || [] }));
@@ -235,7 +249,7 @@ function createSession(send, options) {
 
 			case "textDocument/completion": {
 				var uri = params.textDocument.uri,
-					text = documents[uri];
+					text = textOf(uri);
 				if(text === undefined) {
 					// Completing in a document the client never opened is a
 					// client bug, but answering an empty list beats an error.
@@ -248,80 +262,80 @@ function createSession(send, options) {
 
 			case "textDocument/hover": {
 				var hoverUri = params.textDocument.uri,
-					hoverText = documents[hoverUri];
+					hoverText = textOf(hoverUri);
 				send(response(id, hoverText === undefined ? null : features.hover(hoverUri, hoverText, params.position, documents)));
 				break;
 			}
 
 			case "textDocument/definition": {
 				var defUri = params.textDocument.uri,
-					defText = documents[defUri];
+					defText = textOf(defUri);
 				send(response(id, defText === undefined ? null : features.definition(defUri, defText, params.position, { linkSupport: linkSupport }, documents)));
 				break;
 			}
 
 			case "textDocument/references": {
 				var refUri = params.textDocument.uri,
-					refText = documents[refUri];
+					refText = textOf(refUri);
 				send(response(id, refText === undefined ? null : features.references(refUri, refText, params.position, params.context, documents)));
 				break;
 			}
 
 			case "textDocument/documentSymbol": {
 				var symbolUri = params.textDocument.uri,
-					symbolText = documents[symbolUri];
+					symbolText = textOf(symbolUri);
 				send(response(id, symbolText === undefined ? null : features.documentSymbols(symbolUri, symbolText, { hierarchical: hierarchicalSymbols })));
 				break;
 			}
 
 			case "textDocument/documentHighlight": {
 				var highlightUri = params.textDocument.uri,
-					highlightText = documents[highlightUri];
+					highlightText = textOf(highlightUri);
 				send(response(id, highlightText === undefined ? null : features.documentHighlights(highlightUri, highlightText, params.position)));
 				break;
 			}
 
 			case "textDocument/foldingRange": {
 				var foldUri = params.textDocument.uri,
-					foldText = documents[foldUri];
+					foldText = textOf(foldUri);
 				send(response(id, foldText === undefined ? null : features.foldingRanges(foldUri, foldText)));
 				break;
 			}
 
 			case "textDocument/signatureHelp": {
 				var helpUri = params.textDocument.uri,
-					helpText = documents[helpUri];
+					helpText = textOf(helpUri);
 				send(response(id, helpText === undefined ? null : features.signatureHelp(helpUri, helpText, params.position)));
 				break;
 			}
 
 			case "textDocument/inlayHint": {
 				var hintUri = params.textDocument.uri,
-					hintText = documents[hintUri];
+					hintText = textOf(hintUri);
 				send(response(id, hintText === undefined ? null : features.inlayHints(hintUri, hintText, params.range)));
 				break;
 			}
 
 			case "textDocument/prepareRename": {
 				var prepareUri = params.textDocument.uri,
-					prepareText = documents[prepareUri],
-					prepared = prepareText === undefined ? null : features.prepareRename(prepareUri, prepareText, params.position, documents);
+					prepareText = textOf(prepareUri),
+					prepared = prepareText === undefined ? null : features.isOtherVersionUri(prepareUri) ? { error: OTHER_VERSION_RENAME } : features.prepareRename(prepareUri, prepareText, params.position, documents);
 				send(prepared && prepared.error ? errorResponse(id, REQUEST_FAILED, prepared.error) : response(id, prepared));
 				break;
 			}
 
 			case "textDocument/rename": {
 				var renameUri = params.textDocument.uri,
-					renameText = documents[renameUri],
-					renamed = renameText === undefined ? null : features.rename(renameUri, renameText, params.position, params.newName, { annotations: changeAnnotations }, documents);
+					renameText = textOf(renameUri),
+					renamed = renameText === undefined ? null : features.isOtherVersionUri(renameUri) ? { error: OTHER_VERSION_RENAME } : features.rename(renameUri, renameText, params.position, params.newName, { annotations: changeAnnotations }, documents);
 				send(renamed && renamed.error ? errorResponse(id, REQUEST_FAILED, renamed.error) : response(id, renamed));
 				break;
 			}
 
 			case "textDocument/codeAction": {
 				var actionUri = params.textDocument.uri,
-					actionText = documents[actionUri];
-				send(response(id, actionText === undefined || features.isVirtualUri(actionUri) ? [] : features.codeActions(actionUri, actionText, params.range, params.context)));
+					actionText = textOf(actionUri);
+				send(response(id, actionText === undefined || isReadOnly(actionUri) ? [] : features.codeActions(actionUri, actionText, params.range, params.context)));
 				break;
 			}
 

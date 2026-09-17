@@ -30,8 +30,9 @@ function bodyStartLine(lines) {
 	return lines.length;
 }
 
+// A git: URI carries the version in a query after the path.
 function isTidUri(uri) {
-	return uri.endsWith(".tid");
+	return /\.tid(?:\?.*)?$/.test(uri);
 }
 
 // Character offset of the start of each line, so a parse tree's offsets can be
@@ -325,6 +326,11 @@ function isVirtualUri(uri) {
 	return uri.startsWith(VIRTUAL_SCHEME);
 }
 
+// Neither a file of the wiki nor a view of it, such as the HEAD side of a git diff: a version that does not run.
+function isOtherVersionUri(uri) {
+	return !uri.startsWith("file:") && !isVirtualUri(uri);
+}
+
 // The path is the whole title plus an extension naming the editor's language:
 // a wikitext view is always .tid, other types keep an extension they end in.
 function virtualUri(title) {
@@ -420,6 +426,7 @@ exports.fileOfTitle = fileOfTitle;
 exports.uriOfTitle = uriOfTitle;
 exports.browsableUri = browsableUri;
 exports.isVirtualUri = isVirtualUri;
+exports.isOtherVersionUri = isOtherVersionUri;
 exports.virtualUri = virtualUri;
 exports.titleOfVirtualUri = titleOfVirtualUri;
 exports.virtualText = virtualText;

@@ -71,6 +71,7 @@ exports.prepareRename = rename.prepareRename;
 exports.rename = rename.rename;
 exports.virtualDocument = source.virtualDocument;
 exports.isVirtualUri = source.isVirtualUri;
+exports.isOtherVersionUri = source.isOtherVersionUri;
 
 // Test seams. Each is a pure function worth pinning without a document or a
 // transport to reach it.
