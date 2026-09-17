@@ -12,7 +12,8 @@ cursor, the way title completion reads an open [[.
 
 "use strict";
 
-var filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js");
+var filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js"),
+	calls = require("$:/core/modules/commands/inspect/calls.js");
 
 // How far back an unclosed call is looked for, at most.
 var MAX_LOOKBACK = 4000;
@@ -191,6 +192,43 @@ function filterBefore(upto) {
 	return match ? match[1] : null;
 }
 
+// The filter typed so far before offset in text, which may have started on an earlier line: upto
+// is the cursor's line up to it, where most filters are found; null outside a filter.
+function filterAt(text, offset, upto) {
+	var onLine = filterBefore(upto);
+	if(onLine !== null) {
+		return onLine;
+	}
+	var before = text.slice(Math.max(0, offset - MAX_LOOKBACK), offset),
+		call = callContext(text, offset);
+	if(call) {
+		// A call's value is a filter when its attribute says so, or when it is a {{{ }}}.
+		var value = call.inValue;
+		return value && ((value.attribute && calls.isFilterAttribute(value.attribute)) || text.slice(value.start - 3, value.start) === "{{{") ? text.slice(value.start, offset) : null;
+	}
+	var braces = before.lastIndexOf("{{{");
+	if(braces >= 0 && before.indexOf("}}}", braces) < 0) {
+		return before.slice(braces + 3);
+	}
+	var condition = /<%\s*(?:else)?if\s((?:(?!%>)[\s\S])*)$/.exec(before);
+	return condition ? condition[1] : functionBodyBefore(before);
+}
+
+// The body typed so far of a \function whose head stands alone on its line, before anything ends it.
+function functionBodyBefore(before) {
+	var head = /(?:^|\n)[ \t]*\\function[ \t]+[^\s(]+(?:\([^)\n]*\))?[ \t]*\r?\n/g,
+		match,
+		last = null;
+	while((match = head.exec(before)) !== null) {
+		last = match;
+	}
+	if(!last) {
+		return null;
+	}
+	var body = before.slice(last.index + last[0].length);
+	return /(?:^|\n)[ \t]*\\(?:end|procedure|define|widget|function)\b/.test(body) ? null : body;
+}
+
 function unquote(value) {
 	var quote = quoteAt(value, 0);
 	return quote && value.endsWith(quote[1]) ? value.slice(quote[0].length, value.length - quote[1].length) : value;
@@ -268,4 +306,5 @@ exports.callContext = callContext;
 exports.calleeOf = calleeOf;
 exports.argumentsIn = argumentsIn;
 exports.filterBefore = filterBefore;
+exports.filterAt = filterAt;
 exports.filterPosition = filterPosition;

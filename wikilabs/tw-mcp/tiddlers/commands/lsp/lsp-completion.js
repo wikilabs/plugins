@@ -164,7 +164,7 @@ function rankTitles(titles, prefix) {
 // call's or widget's name, a name given as $variable or $name, or a parameter
 // the call has not been given yet.
 function wanted(body, offset, upto) {
-	var filter = typing.filterBefore(upto);
+	var filter = typing.filterAt(body.text, offset, upto);
 	if(filter !== null) {
 		var at = typing.filterPosition(filter),
 			suffixed = at.state === "name" ? /^!?([\w\-]+):([\w.\-]*)$/.exec(at.word) : null;
@@ -296,21 +296,23 @@ function operandUse(name) {
 	return uses[name];
 }
 
-// An operator's function in its module's text, from its export (or the function the export names)
+// An operator's function in the code that runs, from its export (or the function the export names)
 // to the next line that starts a top-level definition.
 function operatorSource(name) {
 	var title = $tw.wiki.getFilterOperators()[name] ? modules.moduleOfFilterOperator(name) : null,
-		info = title && $tw.modules.titles[title],
-		text = title ? $tw.wiki.getTiddlerText(title) || (info && typeof info.definition === "string" ? info.definition : "") : "",
-		at = text ? modules.exportedAt(title, name) : null;
-	if(!at) {
+		code = title ? widgets.moduleCode(title) : "",
+		escaped = $tw.utils.escapeRegExp(name),
+		exported = new RegExp("^exports(?:\\." + escaped + "|\\[\\s*([\"'])" + escaped + "\\1\\s*\\])\\s*=\\s*([A-Za-z_$][\\w$]*)?", "m").exec(code);
+	if(!exported) {
 		return "";
 	}
-	var from = text.lastIndexOf("\n", at.start) + 1,
+	var identifier = exported[2] && exported[2] !== "function" ? $tw.utils.escapeRegExp(exported[2]) : null,
+		written = identifier ? new RegExp("^(?:(?:var|let|const)\\s+" + identifier + "\\s*=|function\\s+" + identifier + "\\s*\\()", "m").exec(code) : null,
+		from = written ? written.index : exported.index,
 		next = /^(?:exports\b|function\s|var\s|let\s|const\s)/gm;
-	next.lastIndex = text.indexOf("\n", at.start) + 1 || text.length;
-	var end = next.exec(text);
-	return text.slice(from, end ? end.index : text.length);
+	next.lastIndex = code.indexOf("\n", from) + 1 || code.length;
+	var end = next.exec(code);
+	return code.slice(from, end ? end.index : code.length);
 }
 
 // The tags the wiki uses, system tags only once the typed text starts with $, and none holding

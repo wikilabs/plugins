@@ -37,7 +37,7 @@ function signatureHelp(uri, text, position) {
 // positionalValue } or { callee, byIndex } for an operand: a <<call>> or widget
 // form, a dotted function used as an operator, or a variable operand with arguments.
 function callAt(body, offset, upto) {
-	var filter = typing.filterBefore(upto);
+	var filter = typing.filterAt(body.text, offset, upto);
 	if(filter !== null) {
 		var at = typing.filterPosition(filter);
 		if(at.state !== "operand") {

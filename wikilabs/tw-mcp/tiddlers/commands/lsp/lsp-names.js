@@ -253,7 +253,7 @@ function knownNames() {
 function namesSetByJavaScript() {
 	var names = [];
 	$tw.utils.each($tw.modules.titles, function(info, title) {
-		var text = $tw.wiki.getTiddlerText(title) || info.definition;
+		var text = widgets.moduleCode(title);
 		if(typeof text !== "string" || !JS_SETS_VARIABLES.test(text)) {
 			return;
 		}

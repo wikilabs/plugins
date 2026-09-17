@@ -253,3 +253,4 @@ exports.variablesOf = variablesOf;
 exports.isRegistered = isRegistered;
 exports.customWidgetOf = customWidgetOf;
 exports.titleAttributes = titleAttributes;
+exports.moduleCode = moduleCode;
