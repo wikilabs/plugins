@@ -91,6 +91,23 @@ function provenance(title) {
 	return "from " + source + (replaced.length ? ", replacing " + replaced.join(", ") : "");
 }
 
+// The plugins whose shadow of title does not run, the one that would run next first: all of them under a
+// tiddler of the user's, else all but the plugin that won. A higher plugin-priority unpacks later and wins.
+function hiddenVersions(title) {
+	if(!$tw.wiki.isShadowTiddler(title)) {
+		return [];
+	}
+	var running = $tw.wiki.tiddlerExists(title) ? null : $tw.wiki.getShadowSource(title),
+		hidden = providersOf(title).filter(function(plugin) { return plugin !== running; });
+	return hidden.map(function(plugin, index) {
+		return { plugin: plugin, index: index, priority: Number(($tw.wiki.getTiddler(plugin) || { fields: {} }).fields["plugin-priority"]) || 0 };
+	}).sort(function(a, b) {
+		return (b.priority - a.priority) || (b.index - a.index);
+	}).map(function(entry) {
+		return entry.plugin;
+	});
+}
+
 exports.moduleOfWidget = moduleOfWidget;
 exports.moduleOfFilterOperator = moduleOfFilterOperator;
 exports.moduleOfRunPrefix = moduleOfRunPrefix;
@@ -98,3 +115,4 @@ exports.moduleOfMacro = moduleOfMacro;
 exports.exportedAt = exportedAt;
 exports.providersOf = providersOf;
 exports.provenance = provenance;
+exports.hiddenVersions = hiddenVersions;

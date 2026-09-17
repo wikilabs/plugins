@@ -520,14 +520,19 @@ function looksLikeFilter(value) {
 }
 
 // A definition's home: its file, else the wiki in the browser, plus the editor's
-// read-only view of a tiddler with no file, and the plugin supplying it, if any.
+// read-only view of a tiddler with no file, the plugin supplying it, if any, and
+// the views of the shadows it replaces.
 function definitionLink(title) {
 	var uri = source.browsableUri(title),
 		view = source.documentUriOf(title),
-		from = modules.provenance(title);
+		from = modules.provenance(title),
+		hidden = modules.hiddenVersions(title);
 	return (uri ? markdownLink(title, uri) : "`" + title + "`") +
 		(view && source.isVirtualUri(view) ? " (" + markdownLink("open in editor", view) + ")" : "") +
-		(from ? ", " + from : "");
+		(from ? ", " + from : "") +
+		(hidden.length ? "; versions that do not run: " + hidden.map(function(plugin) {
+			return markdownLink(plugin, source.virtualUri(title, plugin));
+		}).join(", ") : "");
 }
 
 function hover(uri, text, position, openDocuments) {

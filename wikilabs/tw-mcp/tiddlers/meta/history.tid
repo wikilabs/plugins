@@ -9,6 +9,7 @@ V 0.19.0 - 2026-09-17
 * Variables core builds for event and message catchers, such as `dom-class` or `event-param`, no longer get a hint.
 * The older side of a diff gets hovers and definitions, but no warnings or rename, and does not count as the wiki's text.
 * Semantic tokens tell definitions, calls, parameters, variables, core names, filter operators and field tests apart.
+* Where a tiddler or a later plugin replaces a shadow, the hover also links the versions that do not run.
 
 V 0.18.0 - 2026-09-16
 

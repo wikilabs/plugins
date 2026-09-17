@@ -326,26 +326,33 @@ function isVirtualUri(uri) {
 	return uri.startsWith(VIRTUAL_SCHEME);
 }
 
-// Neither a file of the wiki nor a view of it, such as the HEAD side of a git diff: a version that does not run.
+// A version that does not run: neither a file of the wiki nor a view of its running text, such as the HEAD
+// side of a git diff or a plugin's shadow that another version replaces.
 function isOtherVersionUri(uri) {
-	return !uri.startsWith("file:") && !isVirtualUri(uri);
+	return !uri.startsWith("file:") && (!isVirtualUri(uri) || sourceOfVirtualUri(uri) !== null);
 }
 
 // The path is the whole title plus an extension naming the editor's language:
-// a wikitext view is always .tid, other types keep an extension they end in.
-function virtualUri(title) {
+// a wikitext view is always .tid, other types keep an extension they end in. A
+// source names the plugin whose shadow the view shows instead of the running text.
+function virtualUri(title, source) {
 	var tiddler = $tw.wiki.getTiddler(title),
 		type = (tiddler && tiddler.fields.type) || WIKITEXT_TYPE,
 		info = $tw.config.contentTypeInfo[type],
 		extension = type !== WIKITEXT_TYPE && info && info.extension ? info.extension : ".tid",
 		suffix = type !== WIKITEXT_TYPE && title.endsWith(extension) ? "" : extension;
-	return VIRTUAL_SCHEME + "/" + encodeURIComponent(title) + suffix;
+	return VIRTUAL_SCHEME + "/" + encodeURIComponent(title) + suffix + (source ? "?source=" + encodeURIComponent(source) : "");
+}
+
+function sourceOfVirtualUri(uri) {
+	var match = /\?(?:[^#]*&)?source=([^&#]*)/.exec(uri);
+	return match ? decodeURIComponent(match[1]) : null;
 }
 
 // The editor re-encodes a URI it was given (%2F comes back as /), so the title is
 // decoded from the whole path; null when no such tiddler exists.
 function titleOfVirtualUri(uri) {
-	var path = decodeURIComponent(uri.slice(VIRTUAL_SCHEME.length)).replace(/^\/+/, ""),
+	var path = decodeURIComponent(uri.slice(VIRTUAL_SCHEME.length).replace(/\?.*$/, "")).replace(/^\/+/, ""),
 		stripped = path.replace(/\.tid$/, ""),
 		strippedTiddler = stripped !== path ? $tw.wiki.getTiddler(stripped) : null;
 	if(strippedTiddler && (strippedTiddler.fields.type || WIKITEXT_TYPE) === WIKITEXT_TYPE) {
@@ -357,8 +364,11 @@ function titleOfVirtualUri(uri) {
 // A wikitext view reads as a .tid file, fields as get_tiddler format=tid gives
 // them, so every .tid rule applies; any other type is its text alone.
 function virtualText(title) {
-	var crud = require("$:/core/modules/commands/inspect/handlers/crud/_shared.js"),
-		tiddler = $tw.wiki.getTiddler(title);
+	return viewText($tw.wiki.getTiddler(title));
+}
+
+function viewText(tiddler) {
+	var crud = require("$:/core/modules/commands/inspect/handlers/crud/_shared.js");
 	if(!tiddler) {
 		return null;
 	}
@@ -369,9 +379,20 @@ function virtualText(title) {
 	return crud.formatFieldsBlock(tiddler, { exclude: ["text"] }) + "\n\n" + text;
 }
 
+// The shadow of title that plugin ships, as its view reads; null when the plugin ships no such title.
+function shadowVersionText(title, plugin) {
+	var info = $tw.wiki.getPluginInfo(plugin),
+		fields = info && info.tiddlers && $tw.utils.hop(info.tiddlers, title) ? info.tiddlers[title] : null;
+	return fields ? viewText(new $tw.Tiddler(fields, { title: title })) : null;
+}
+
 function virtualDocument(uri) {
-	var title = isVirtualUri(uri) ? titleOfVirtualUri(uri) : null;
-	return title === null ? null : virtualText(title);
+	var title = isVirtualUri(uri) ? titleOfVirtualUri(uri) : null,
+		plugin = title === null ? null : sourceOfVirtualUri(uri);
+	if(title === null) {
+		return null;
+	}
+	return plugin === null ? virtualText(title) : shadowVersionText(title, plugin);
 }
 
 // Where the editor can open title: its own file when that file holds exactly
