@@ -311,7 +311,7 @@ function describePart(part, bodyText, offset) {
 	var module = modules.moduleOfFilterOperator(part.operator);
 	if(module) {
 		return "**filter operator** `" + part.operator + "`" + (part.suffix === null ? "" : ", suffix `" + part.suffix + "`") + (part.negated ? ", negated by `!`" : "") +
-			"\n\nDefined in " + definitionLink(module) + coreDoc(module, part.operator + " Operator") + "\n";
+			"\n\nDefined in " + definitionLink(module) + coreDoc(module, part.operator + " Operator") + operatorModuleDescription(module) + "\n";
 	}
 	var field = part.suffix || part.operator,
 		operands = part.step.slice(part.operator.length + (part.suffix === null ? 0 : part.suffix.length + 1)),
@@ -324,6 +324,19 @@ function describePart(part, bodyText, offset) {
 		return "**No definition of** `" + part.operator + "` **is visible here.** Unless a caller supplies one, " + test + "\n";
 	}
 	return "**Not a filter operator.** " + test + " A misspelt operator looks exactly like this.\n";
+}
+
+// A header describes its whole module, which may export several operators.
+function operatorModuleDescription(module) {
+	var description = widgets.moduleDescription(module);
+	if(!description) {
+		return "";
+	}
+	var count = Object.keys($tw.modules.execute(module)).length;
+	return (count > 1 ? "\n\nIts module's header, shared by " + count + " operators:" : "") + "\n\n" +
+		description.replace(/</g, "\\<").split(/\r?\n/).map(function(line) {
+			return line ? "> " + line : ">";
+		}).join("\n");
 }
 
 // Core's operators and prefixes are documented on tiddlywiki.com; a plugin's are not.

@@ -5,6 +5,7 @@ V 0.19.0 - 2026-09-17
 * Completion offers tag names after `tag[`, field names where a filter operator takes one (`has[`, `sort[`, `field:`) and titles in widget attributes that take one (`<$link to="`), also in filters spanning several lines.
 * Rename covers `\widget` definitions, closing tags included, and their parameters.
 * A filter step that names no operator gets a hint with a quick fix, definitions brought in by `\import` are found, and missing-link warnings come from the parser, `<$link to="...">` included.
+* Hovering a filter operator quotes the description in its module's header.
 
 V 0.18.0 - 2026-09-16
 

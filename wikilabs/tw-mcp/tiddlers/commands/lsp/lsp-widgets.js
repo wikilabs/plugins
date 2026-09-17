@@ -201,6 +201,12 @@ function moduleCode(title) {
 	return info && typeof info.definition === "string" ? info.definition : $tw.wiki.getTiddlerText(title, "");
 }
 
+// The text after the fields of the running module's header, which boot.js reads with this same pattern.
+function moduleDescription(title) {
+	var header = new RegExp($tw.config.jsModuleHeaderRegExpString, "m").exec(moduleCode(title));
+	return header ? header[1].split(/\r?\n\r?\n/).slice(1).join("\n\n").trim() : "";
+}
+
 // An attribute read on a line that falls back to the current tiddler, or kept in a property or variable
 // that is used as a title, directly or through one more variable.
 function titleAttributesIn(code) {
@@ -254,3 +260,4 @@ exports.isRegistered = isRegistered;
 exports.customWidgetOf = customWidgetOf;
 exports.titleAttributes = titleAttributes;
 exports.moduleCode = moduleCode;
+exports.moduleDescription = moduleDescription;
