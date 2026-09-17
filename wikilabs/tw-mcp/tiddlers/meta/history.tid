@@ -6,6 +6,7 @@ V 0.19.0 - 2026-09-17
 * Rename covers `\widget` definitions, closing tags included, and their parameters.
 * A filter step that names no operator gets a hint with a quick fix, definitions brought in by `\import` are found, and missing-link warnings come from the parser, `<$link to="...">` included.
 * Hovering a filter operator quotes the description in its module's header.
+* Variables core builds for event and message catchers, such as `dom-class` or `event-param`, no longer get a hint.
 
 V 0.18.0 - 2026-09-16
 

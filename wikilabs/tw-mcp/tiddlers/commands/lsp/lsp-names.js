@@ -7,7 +7,7 @@ Hints for calls whose name nothing defines, since TiddlyWiki renders a misspelt
 name as silence. Variables are set while the wiki renders, out of a static
 reader's sight, so a name also counts as known when any tiddler defines it,
 declares it as a parameter or sets it with a widget, when a shadow tiddler calls
-it, or when a JavaScript module hands it to action strings.
+it, or when JavaScript sets it or builds it from a prefix.
 
 \*/
 
@@ -40,6 +40,16 @@ var JS_SETS_VARIABLES = /invokeActionString|invokeActions|setVariable\s*\(/,
 	SET_VARIABLE = /setVariable\(\s*(["'])([^"']+)\1/,
 	OBJECT_KEY = /[{,]\s*(?:(["'])([\w.\-]+)\1|([A-Za-z_$][\w$]*))\s*:(?!:)/;
 
+// What JavaScript sets and builds, in the global cache.
+var JS_CACHE_KEY = "tw-lsp-javascript-names";
+
+// Keys any module writes by name (x["name"] =), or builds from a prefix (x["dom-" + name] =, x[prefix + "-" + name] =),
+// which is how core builds the variables of event and message catchers.
+var LITERAL_KEY = /[\w$\])]\[\s*(["'])([^"'\n]+)\1\s*\]\s*=(?!=)/,
+	PREFIXED_KEY = /[\w$\])]\[\s*(["'])([^"'\n]*-)\1\s*\+[^\]\n]*\]\s*=(?!=)/,
+	JOINED_PARAMETER = /\[\s*([\w$]+)\s*\+\s*(["'])-\2/,
+	FUNCTION_HEAD = /(?:\bfunction\s+([\w$]+)|([\w$]+)\s*=\s*function)\s*\(([^)]*)\)/;
+
 // A string value worth parsing as wikitext.
 var HOLDS_WIKITEXT = /<\$|<<|^\s*\\(?:procedure|define|function|widget)\s/m;
 
@@ -64,7 +74,7 @@ function unknownSites(uri, text) {
 	var body = source.bodyOf(uri, text),
 		tree = source.parseWithBodies(body.text);
 	return sites.filter(function(site) {
-		return !inReach(site, body, tree) && !knownNames()[site.name];
+		return !inReach(site, body, tree) && !knownNames()[site.name] && !builtByJavaScript(site.name);
 	});
 }
 
@@ -332,29 +342,105 @@ function knownNames() {
 				});
 			}
 		});
-		namesSetByJavaScript().forEach(add);
+		javaScriptNames().names.forEach(add);
 		return known;
 	});
 }
 
-// Names JavaScript hands to wikitext: those given to setVariable, and the keys of
-// the object literals in a module that runs action strings, where the variables
-// they receive are built (actionValue, status, ...).
-function namesSetByJavaScript() {
-	var names = [];
-	$tw.utils.each($tw.modules.titles, function(info, title) {
-		var text = widgets.moduleCode(title);
-		if(typeof text !== "string" || !JS_SETS_VARIABLES.test(text)) {
-			return;
-		}
-		eachMatch(SET_VARIABLE, text, function(match) {
-			names.push(match[2]);
+// A name JavaScript builds from one of its prefixes, unless it is a typing slip away from a name the wiki knows.
+function builtByJavaScript(name) {
+	return javaScriptNames().prefixes.some(function(prefix) {
+		return name.length > prefix.length && name.startsWith(prefix);
+	}) && !closestNames(name, Object.keys(knownNames())).length;
+}
+
+// Names JavaScript hands to wikitext: those given to setVariable and the keys of the object literals in a module
+// that runs action strings (actionValue, status, ...), and in any module the keys written by name; with the
+// prefixes of the keys it builds.
+function javaScriptNames() {
+	return $tw.wiki.getGlobalCache(JS_CACHE_KEY, function() {
+		var names = [],
+			prefixes = [];
+		$tw.utils.each($tw.modules.titles, function(info, title) {
+			var text = widgets.moduleCode(title);
+			if(typeof text !== "string") {
+				return;
+			}
+			if(JS_SETS_VARIABLES.test(text)) {
+				eachMatch(SET_VARIABLE, text, function(match) {
+					names.push(match[2]);
+				});
+				eachMatch(OBJECT_KEY, text, function(match) {
+					names.push(match[2] || match[3]);
+				});
+			}
+			eachMatch(LITERAL_KEY, text, function(match) {
+				names.push(match[2]);
+			});
+			eachMatch(PREFIXED_KEY, text, function(match) {
+				prefixes.push(match[2]);
+			});
+			prefixes.push.apply(prefixes, passedPrefixes(text));
 		});
-		eachMatch(OBJECT_KEY, text, function(match) {
-			names.push(match[2] || match[3]);
+		return { names: names, prefixes: prefixes };
+	});
+}
+
+// Prefixes given as literal arguments to a function that joins that parameter to a name in a key, as
+// collectProps(event, "event") does for event-*.
+function passedPrefixes(text) {
+	var joined = Object.create(null),
+		found = [];
+	eachMatch(JOINED_PARAMETER, text, function(match) {
+		joined[match[1]] = true;
+	});
+	eachMatch(FUNCTION_HEAD, text, function(head) {
+		var called = new RegExp("\\b" + $tw.utils.escapeRegExp(head[1] || head[2]) + "\\s*\\(");
+		head[3].split(",").forEach(function(param, index) {
+			if(!joined[param.trim()]) {
+				return;
+			}
+			eachMatch(called, text, function(call) {
+				var literal = /^\s*(["'])([^"'\n]*)\1\s*$/.exec(argumentsAt(text, call.index + call[0].length)[index] || "");
+				if(literal) {
+					found.push(literal[2] + "-");
+				}
+			});
 		});
 	});
-	return names;
+	return found;
+}
+
+// The arguments of a call whose opening parenthesis ends at start, as written.
+function argumentsAt(text, start) {
+	var args = [],
+		depth = 0,
+		quote = null,
+		from = start;
+	for(var i = start; i < text.length; i++) {
+		var ch = text.charAt(i);
+		if(quote) {
+			if(ch === "\\") {
+				i++;
+			} else if(ch === quote) {
+				quote = null;
+			}
+		} else if("\"'`".includes(ch)) {
+			quote = ch;
+		} else if("([{".includes(ch)) {
+			depth++;
+		} else if(")]}".includes(ch)) {
+			if(depth === 0) {
+				args.push(text.slice(from, i));
+				break;
+			}
+			depth--;
+		} else if(ch === "," && depth === 0) {
+			args.push(text.slice(from, i));
+			from = i + 1;
+		}
+	}
+	return args;
 }
 
 function eachMatch(pattern, text, fn) {
