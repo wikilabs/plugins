@@ -10,16 +10,20 @@ Patches TW's popup handler to ignore clicks inside devtools panels.
 
 "use strict";
 
-var utils = require("$:/plugins/wikilabs/devtools/utils.js");
-var tooltip = require("$:/plugins/wikilabs/devtools/tooltip.js");
-var contextMenu = require("$:/plugins/wikilabs/devtools/context-menu.js");
-
 exports.name = "sourcepos-click";
 exports.after = ["sourcepos"];
 exports.platforms = ["browser"];
 exports.synchronous = true;
 
 exports.startup = function() {
+	// Required here, not at the top: `platforms` keeps startup() from running on
+	// the server but cannot stop the module body, which boot must execute to
+	// read this very field. Top-level requires therefore dragged the whole UI
+	// into every headless host that loads devtools.
+	var utils = require("$:/plugins/wikilabs/devtools/utils.js");
+	var tooltip = require("$:/plugins/wikilabs/devtools/tooltip.js");
+	var contextMenu = require("$:/plugins/wikilabs/devtools/context-menu.js");
+
 	// Patch TW's popup handler to ignore clicks inside our panels
 	var origHandleEvent = $tw.popup.handleEvent.bind($tw.popup);
 	$tw.popup.handleEvent = function(event) {
