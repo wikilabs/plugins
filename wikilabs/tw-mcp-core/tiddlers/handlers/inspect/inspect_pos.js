@@ -12,7 +12,17 @@ The widget patches that feed it come from devtools' sourcepos.js.
 "use strict";
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
-var sourcePosUtils = require("$:/plugins/wikilabs/devtools/utils.js");
+
+var DEVTOOLS_UTILS = "$:/plugins/wikilabs/devtools/utils.js";
+
+// devtools is a declared dependent, but a wiki can still be assembled without
+// it. Requiring it at load time would abort the whole tool map, taking every
+// other tool down with inspect_pos, because $tw.modules.execute() sends a
+// missing module to $tw.utils.error(), which exits the process on node. So
+// look it up when it is needed and check it is there first.
+function devtoolsUtils() {
+	return $tw.modules.titles[DEVTOOLS_UTILS] ? require(DEVTOOLS_UTILS) : null;
+}
 
 // Post-process inspect_pos DOM: replace verbose data-pos attributes
 // with compact p="idx:lines" format. Returns title index header + innerHTML.
@@ -122,7 +132,7 @@ function posBuildCallerChain(widget) {
 	return chain;
 }
 
-function createPosTracker() {
+function createPosTracker(sourcePosUtils) {
 	function posBuildInfo(widget) {
 		var ptn = widget.parseTreeNode;
 		if(!ptn || ptn.start === undefined) return null;
@@ -173,6 +183,10 @@ module.exports = {
 			return shared.errorResult( "Text too long (" + args.text.length + " chars). Maximum: " + shared.MAX_TEXT_LENGTH );
 		}
 		var inputType = args.type || "text/vnd.tiddlywiki";
+		var sourcePosUtils = devtoolsUtils();
+		if(!sourcePosUtils) {
+			return shared.errorResult( "inspect_pos needs the wikilabs/devtools plugin, which supplies the source-position tracking. Add it to this wiki's plugin list and restart." );
+		}
 		try {
 			var built = shared.buildWrappedTree(args.text, inputType, args.context);
 			if(!built) {
@@ -182,7 +196,7 @@ module.exports = {
 			// turned tracking on, and a tool call must not switch it off.
 			var trackingWas = $tw.wiki.trackSourcePositions;
 			$tw.wiki.trackSourcePositions = true;
-			var tracker = createPosTracker();
+			var tracker = createPosTracker(sourcePosUtils);
 			// Added after devtools' own hooks, so our data-pos wins where both write it.
 			$tw.hooks.addHook("th-dom-rendering-element", tracker.posHook);
 			$tw.hooks.addHook("th-dom-rendering-link", tracker.posHook);
