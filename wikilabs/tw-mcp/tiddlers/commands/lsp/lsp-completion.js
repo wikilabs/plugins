@@ -3,9 +3,9 @@ title: $:/core/modules/commands/inspect/lsp/lsp-completion.js
 type: application/javascript
 module-type: library
 
-Completion: tiddler titles inside [[...]] and {{...}}, and names where
-TiddlyWiki expects one (calls, widgets, parameters, variables, operators, and
-the tags and fields a filter step names).
+Completion: tiddler titles inside [[...]], {{...}} and widget attributes that take
+one, and names where TiddlyWiki expects one (calls, widgets, parameters,
+variables, operators, and the tags and fields a filter step names).
 
 This one cannot use the parser, and that is not a compromise: at the moment
 completion is asked for, the text reads "[[LSP Ser" with no closing bracket, and
@@ -23,7 +23,8 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	symbols = require("$:/core/modules/commands/inspect/lsp/lsp-symbols.js"),
 	typing = require("$:/core/modules/commands/inspect/lsp/lsp-typing.js"),
 	calls = require("$:/core/modules/commands/inspect/calls.js"),
-	modules = require("$:/core/modules/commands/inspect/modules.js");
+	modules = require("$:/core/modules/commands/inspect/modules.js"),
+	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js");
 
 // LSP CompletionItemKind.
 var KIND_FUNCTION = 3,
@@ -204,6 +205,11 @@ function wanted(body, offset, upto) {
 	if(call.inValue && call.form === "widget" && ((call.name === "transclude" && call.inValue.attribute === "$variable") || (call.name === "macrocall" && call.inValue.attribute === "$name"))) {
 		return { start: call.inValue.start, candidates: nameCandidates(body.text, offset).filter(notWidget) };
 	}
+	if(call.inValue && call.form === "widget" && call.inValue.attribute && widgets.titleAttributes(call.name).includes(call.inValue.attribute)) {
+		var typedTitle = body.text.slice(call.inValue.start, offset);
+		// As inside [[, one character must be typed before the wiki's titles are listed.
+		return { start: call.inValue.start, candidates: typedTitle.replace(/\s+/g, "").length < MIN_PREFIX ? [] : titleCandidates(typedTitle) };
+	}
 	if(call.argument !== null) {
 		return { start: offset - call.argument.length, candidates: parameterCandidates(call, body.text, offset) };
 	}
@@ -212,6 +218,13 @@ function wanted(body, offset, upto) {
 
 function notWidget(candidate) {
 	return candidate.definition !== "widget";
+}
+
+// Titles for an attribute value, typed like those of a link; the type is looked up only for the titles listed.
+function titleCandidates(prefix) {
+	return candidateTitles(prefix).map(function(title) {
+		return { label: title, kind: KIND_REFERENCE, isTitle: true };
+	});
 }
 
 // Every name a call could reach here, in the order TiddlyWiki looks: what an
@@ -383,11 +396,12 @@ function nameCompletions(uri, text, position, lineText) {
 	return {
 		isIncomplete: true,
 		items: rankTitles(Object.keys(byLabel), typed).slice(0, MAX_COMPLETIONS).map(function(label, index) {
-			var candidate = byLabel[label];
+			var candidate = byLabel[label],
+				tiddler = candidate.isTitle ? $tw.wiki.getTiddler(label) : null;
 			return {
 				label: label,
 				kind: candidate.kind,
-				detail: candidate.detail,
+				detail: candidate.isTitle ? (tiddler && tiddler.fields.type ? tiddler.fields.type : undefined) : candidate.detail,
 				documentation: candidate.documentation,
 				filterText: typed,
 				sortText: ("0000" + index).slice(-4),

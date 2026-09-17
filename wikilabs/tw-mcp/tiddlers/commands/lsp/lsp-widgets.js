@@ -15,12 +15,19 @@ this position, which only a booted wiki can say.
 "use strict";
 
 var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
-	calls = require("$:/core/modules/commands/inspect/calls.js");
+	calls = require("$:/core/modules/commands/inspect/calls.js"),
+	modules = require("$:/core/modules/commands/inspect/modules.js");
 
 // Widgets whose every attribute becomes a variable of the same name, and those
 // naming one variable in an attribute.
 var VARIABLE_WIDGETS = { let: true, vars: true, parameters: true };
 var NAMING_ATTRIBUTE = { set: "name", qualify: "name", wikify: "name" };
+
+// The attributes each widget's code treats as a tiddler title, in the wiki's global cache.
+var TITLE_ATTRIBUTES_CACHE_KEY = "tw-lsp-title-attributes";
+
+// Wiki and tiddler methods whose first argument is a title.
+var TITLE_CALLS = "(?:getTiddler|getTiddlerText|tiddlerExists|isShadowTiddler|getTiddlerDataCached|getTiddlerData|deleteTiddler|parseTiddler|getTiddlerList|getTiddlerAsJson|renderTiddler|getCacheForTiddler|isDraftModified|getChangeCount|findDraft|generateDraftTitle|getTiddlersWithTag|sortByList|setText|setTiddlerData)\\(\\s*";
 
 function isRegistered(name) {
 	var classes = $tw.rootWidget && $tw.rootWidget.widgetClasses;
@@ -161,9 +168,88 @@ function literal(attribute) {
 	return attribute && attribute.type === "string" ? attribute.value : null;
 }
 
+// The attributes a registered widget's code treats as a tiddler title. TiddlyWiki describes attributes
+// nowhere else, so it is read from how the code uses each one.
+function titleAttributes(name) {
+	var cache = $tw.wiki.getGlobalCache(TITLE_ATTRIBUTES_CACHE_KEY, function() { return Object.create(null); });
+	if(!cache[name]) {
+		var title = isRegistered(name) ? modules.moduleOfWidget(name) : null;
+		cache[name] = title ? titleAttributesIn(codeWithRequired(title)) : [];
+	}
+	return cache[name];
+}
+
+// A module's code followed by the libraries it requires, since a widget may read its attributes in a
+// shared factory, as edit-text does. A required widget module describes another widget.
+function codeWithRequired(title) {
+	var code = moduleCode(title),
+		required = /require\(\s*["']([^"']+)["']\s*\)/g,
+		match,
+		all = code;
+	while((match = required.exec(code)) !== null) {
+		var info = $tw.modules.titles[match[1]];
+		if(info && info.moduleType !== "widget") {
+			all += "\n" + moduleCode(match[1]);
+		}
+	}
+	return all;
+}
+
+// The code that runs: the definition the module was made from, not a tiddler edited since.
+function moduleCode(title) {
+	var info = $tw.modules.titles[title];
+	return info && typeof info.definition === "string" ? info.definition : $tw.wiki.getTiddlerText(title, "");
+}
+
+// An attribute read on a line that falls back to the current tiddler, or kept in a property or variable
+// that is used as a title, directly or through one more variable.
+function titleAttributesIn(code) {
+	var found = [],
+		match;
+	function add(attribute) {
+		if(!found.includes(attribute)) {
+			found.push(attribute);
+		}
+	}
+	code.split("\n").forEach(function(line) {
+		if(/getVariable\(\s*"currentTiddler"/.test(line)) {
+			eachMatch(/getAttribute\(\s*"([^"]+)"/g, line, function(read) {
+				add(read[1]);
+			});
+		}
+	});
+	var kept = /(?:(?:var|let|const|,)\s*|this\.)([\w$]+)\s*=\s*(?:self|this)\.getAttribute\(\s*"([^"]+)"/g;
+	while((match = kept.exec(code)) !== null) {
+		var holder = (match[0].startsWith("this.") ? "this\\." : "\\b") + $tw.utils.escapeRegExp(match[1]),
+			used = usedAsTitle(code, holder),
+			aliases = new RegExp("(?:(?:var|let|const|,)\\s*|[;{(\\s])([\\w$]+)\\s*=\\s*" + holder + "\\b", "g"),
+			alias;
+		while(!used && (alias = aliases.exec(code)) !== null) {
+			used = usedAsTitle(code, "\\b" + $tw.utils.escapeRegExp(alias[1]));
+		}
+		if(used) {
+			add(match[2]);
+		}
+	}
+	return found;
+}
+
+function usedAsTitle(code, expression) {
+	return new RegExp(TITLE_CALLS + expression + "\\s*[,)]|\\btitle:\\s*" + expression + "\\b|navigateTo:\\s*" + expression +
+		"\\b|\\$?tiddler:\\s*\\{\\s*type:\\s*\"string\",\\s*value:\\s*" + expression + "\\b|setVariable\\(\\s*\"currentTiddler\"\\s*,\\s*" + expression + "\\b").test(code);
+}
+
+function eachMatch(pattern, text, fn) {
+	var match;
+	while((match = pattern.exec(text)) !== null) {
+		fn(match);
+	}
+}
+
 exports.widgetSites = widgetSites;
 exports.resolveAttribute = resolveAttribute;
 exports.writtenOf = writtenOf;
 exports.variablesOf = variablesOf;
 exports.isRegistered = isRegistered;
 exports.customWidgetOf = customWidgetOf;
+exports.titleAttributes = titleAttributes;
