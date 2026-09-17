@@ -150,9 +150,15 @@ function log(msg) {
 	console.error("[tw-mcp pear] " + msg);
 }
 
-function startPearMode(options) {
-	var pearDir = options.pearDir;
-	var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
+// The app side of pear mode: the pipe, the frames and the scope the handshake
+// settled on. Split from the dispatcher (bead tw-mcp-server-i1k) because
+// reaching it means dialling a running app, which a test cannot do; everything
+// the protocol contract turns on lives in createPearSession instead.
+// onHandshake fires whenever a handshake settles, so the session can tell a
+// subscribed client that the tool list changed under it.
+function createPearBridge(pearDir, options) {
+	options = options || {};
+	var onHandshake = options.onHandshake || function() {};
 
 	// --- the pipe client (lazy connect, reconnect per call, per-call timeout) ---
 	var sock = null;
@@ -166,40 +172,8 @@ function startPearMode(options) {
 	var connWaiters = [];
 	var readyWaiters = []; // single-flight handshake
 	var handshakeInFlight = false;
-	// tools/list_changed: remember what the last tools/list advertised; when a
-	// later handshake lands in a different effective scope (the app came up,
-	// the enrollment was approved, the agent was revoked) notify the client so
-	// it re-fetches — the write set appears exactly when it becomes callable.
-	// Delivery rides an open subscriptions/listen. This revision forbids an
-	// unsolicited notification, and every one must name the subscription that
-	// asked for it, so nothing is sent until a client opts in.
-	var lastAdvertisedRw = null;
-	var toolsListSubscribers = {}; // String(listen request id) -> the id itself
 	function effectiveRw() {
 		return (authScope === "rw") && (authState === "full-trust" || authState === "authenticated");
-	}
-	function notifyOnSubscription(subscriptionId, method, params) {
-		var body = params || {};
-		body._meta = body._meta || {};
-		body._meta[META_SUBSCRIPTION_ID] = subscriptionId;
-		send(JSON.stringify({ jsonrpc: "2.0", method: method, params: body }));
-	}
-	function maybeNotifyListChanged() {
-		if(lastAdvertisedRw === null || effectiveRw() === lastAdvertisedRw) return;
-		lastAdvertisedRw = effectiveRw();
-		for(var key in toolsListSubscribers) {
-			notifyOnSubscription(toolsListSubscribers[key], "notifications/tools/list_changed");
-		}
-	}
-	// Graceful closure: answer each open subscriptions/listen so the client can
-	// tell a clean shutdown from a dropped transport.
-	function closeSubscriptions() {
-		for(var key in toolsListSubscribers) {
-			var payload = { _meta: {} };
-			payload._meta[META_SUBSCRIPTION_ID] = toolsListSubscribers[key];
-			send(jsonrpcResponse(toolsListSubscribers[key], payload));
-		}
-		toolsListSubscribers = {};
 	}
 
 	function readDiscovery() {
@@ -312,7 +286,7 @@ function startPearMode(options) {
 				handshakeInFlight = false;
 				var w = readyWaiters; readyWaiters = [];
 				for(var i = 0; i < w.length; i++) w[i](e);
-				maybeNotifyListChanged();
+				onHandshake();
 			}
 			var disco = readDiscovery();
 			if(!disco || disco.mode !== "agent") {
@@ -346,6 +320,67 @@ function startPearMode(options) {
 		});
 	}
 
+	// Self-healing: while unreachable or enrollment-pending, another handshake
+	// may settle where the last one did not, so onHandshake can tell the client.
+	function retryIfUnsettled() {
+		if(authState !== "none" && authState !== "pending") return;
+		ready(function() {});
+	}
+
+	return {
+		ready: ready,
+		call: call,
+		effectiveRw: effectiveRw,
+		readDiscovery: readDiscovery,
+		retryIfUnsettled: retryIfUnsettled
+	};
+}
+
+// The protocol contract of pear mode, with the app handed in. `send` takes one
+// serialised line and `makeBridge(onHandshake)` supplies the app; the defaults
+// are stdout and a real pipe client, so a test can replace both.
+function createPearSession(options) {
+	var pearDir = options.pearDir;
+	var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
+	var send = options.send || function(line) { process.stdout.write(line + "\n"); };
+	var makeBridge = options.makeBridge || function(onHandshake) {
+		return createPearBridge(pearDir, { onHandshake: onHandshake, label: options.label });
+	};
+	var bridge = makeBridge(function() { maybeNotifyListChanged(); });
+
+	// tools/list_changed: remember what the last tools/list advertised; when a
+	// later handshake lands in a different effective scope (the app came up,
+	// the enrollment was approved, the agent was revoked) notify the client so
+	// it re-fetches — the write set appears exactly when it becomes callable.
+	// Delivery rides an open subscriptions/listen. This revision forbids an
+	// unsolicited notification, and every one must name the subscription that
+	// asked for it, so nothing is sent until a client opts in.
+	var lastAdvertisedRw = null;
+	var toolsListSubscribers = {}; // String(listen request id) -> the id itself
+	function notifyOnSubscription(subscriptionId, method, params) {
+		var body = params || {};
+		body._meta = body._meta || {};
+		body._meta[META_SUBSCRIPTION_ID] = subscriptionId;
+		send(JSON.stringify({ jsonrpc: "2.0", method: method, params: body }));
+	}
+	function maybeNotifyListChanged() {
+		if(lastAdvertisedRw === null || bridge.effectiveRw() === lastAdvertisedRw) return;
+		lastAdvertisedRw = bridge.effectiveRw();
+		for(var key in toolsListSubscribers) {
+			notifyOnSubscription(toolsListSubscribers[key], "notifications/tools/list_changed");
+		}
+	}
+	// Graceful closure: answer each open subscriptions/listen so the client can
+	// tell a clean shutdown from a dropped transport.
+	function closeSubscriptions() {
+		for(var key in toolsListSubscribers) {
+			var payload = { _meta: {} };
+			payload._meta[META_SUBSCRIPTION_ID] = toolsListSubscribers[key];
+			send(jsonrpcResponse(toolsListSubscribers[key], payload));
+		}
+		toolsListSubscribers = {};
+	}
+
 	function handlePearTool(name, args, done) {
 		// every tool forwards VERBATIM: the app runs the real tw-mcp handler
 		// in its headless engine (feature parity, ruled 2026-07-17) and the
@@ -353,7 +388,7 @@ function startPearMode(options) {
 		if(PEAR_READ_TOOLS.indexOf(name) < 0 && PEAR_WRITE_TOOLS.indexOf(name) < 0) {
 			return done(null); // unknown tool
 		}
-		return call(name, args, function(err, r) {
+		return bridge.call(name, args, function(err, r) {
 			if(err) return done(errorResult(err.message));
 			if(!r.ok) return done(errorResult("Facets: " + r.error));
 			done(textResult((r.result && r.result.text) || ""));
@@ -364,21 +399,17 @@ function startPearMode(options) {
 		// write tools show only at an effective rw scope: full-trust rw, or an
 		// agent authenticated at rw. In agent mode before/without approval the
 		// read set still lists (calls return a readable pending error).
-		var rw = effectiveRw();
+		var rw = bridge.effectiveRw();
 		var names = rw ? PEAR_READ_TOOLS.concat(PEAR_WRITE_TOOLS) : PEAR_READ_TOOLS;
 		return handlers.getToolDefinitions(!rw).filter(function(t) {
 			return names.indexOf(t.name) >= 0;
 		});
 	}
 
-	// --- the stdio JSON-RPC loop (async dispatch — replies ride the pipe) ---
-	function send(line) {
-		process.stdout.write(line + "\n");
-	}
 	// Handed over on server/discover and on initialize alike, so it lives in one
 	// place. Read fresh each time: what the app is doing can change between calls.
 	function pearInstructions() {
-		var disco = readDiscovery();
+		var disco = bridge.readDiscovery();
 		return "TiddlyWiki MCP server — PEAR MODE: tools answer from a RUNNING Facets app" +
 			(disco ? " (group '" + (disco.name || disco.group) + "', " + disco.mode + ")" : " (NOT currently reachable)") +
 			", not from this process's wiki.\n" +
@@ -466,8 +497,8 @@ function startPearMode(options) {
 			case "tools/list":
 				// resolve the connection (and enrollment) first so the write
 				// tools appear exactly when they are actually callable
-				return ready(function() {
-					lastAdvertisedRw = effectiveRw();
+				return bridge.ready(function() {
+					lastAdvertisedRw = bridge.effectiveRw();
 					// The cache hints are 2026-07-28 fields; the handshake era has
 					// no such thing, so they are sent only to modern clients.
 					var listResult = { tools: pearToolDefinitions() };
@@ -490,6 +521,17 @@ function startPearMode(options) {
 		}
 	}
 
+	return {
+		dispatch: dispatch,
+		closeSubscriptions: closeSubscriptions,
+		bridge: bridge
+	};
+}
+
+function startPearMode(options) {
+	var session = createPearSession(options);
+
+	// --- the stdio JSON-RPC loop (async dispatch — replies ride the pipe) ---
 	var stdinBuf = "";
 	process.stdin.setEncoding("utf8");
 	process.stdin.on("data", function(chunk) {
@@ -497,22 +539,24 @@ function startPearMode(options) {
 		var lines = stdinBuf.split("\n");
 		stdinBuf = lines.pop();
 		for(var i = 0; i < lines.length; i++) {
-			if(lines[i].trim()) dispatch(lines[i].trim());
+			if(lines[i].trim()) session.dispatch(lines[i].trim());
 		}
 	});
 	process.stdin.on("end", function() {
-		closeSubscriptions();
+		session.closeSubscriptions();
 		process.exit(0);
 	});
-	var disco = readDiscovery();
-	log("pear mode: " + pearDir + (disco ? " -> " + disco.pipe + " (" + disco.mode + ")" : " (app not running yet — will dial on first call)"));
+	var disco = session.bridge.readDiscovery();
+	log("pear mode: " + options.pearDir + (disco ? " -> " + disco.pipe + " (" + disco.mode + ")" : " (app not running yet — will dial on first call)"));
 	// self-healing: while unreachable or enrollment-pending, retry the
 	// handshake every 30 s — when the app comes up or the approval lands,
-	// maybeNotifyListChanged() tells the client to re-fetch the tool list.
+	// the client is told to re-fetch the tool list.
 	setInterval(function() {
-		if(authState !== "none" && authState !== "pending") return;
-		ready(function() {});
+		session.bridge.retryIfUnsettled();
 	}, 30000);
 }
 
 exports.startPearMode = startPearMode;
+// Test seam: the protocol contract is worth pinning without a running app to
+// dial (bead tw-mcp-server-i1k).
+exports.createPearSession = createPearSession;
