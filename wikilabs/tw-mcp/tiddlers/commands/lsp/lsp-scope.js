@@ -131,3 +131,4 @@ function variableDeclaration(node, text, name) {
 
 exports.resolve = resolve;
 exports.bindingsAt = bindingsAt;
+exports.parameterDeclaration = parameterDeclaration;

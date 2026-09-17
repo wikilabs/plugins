@@ -511,3 +511,4 @@ exports.hints = hints;
 exports.operatorHints = operatorHints;
 exports.codeActions = codeActions;
 exports.closingTagRange = closingTagRange;
+exports.operatorsWritten = operatorsWritten;

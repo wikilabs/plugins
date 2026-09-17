@@ -98,6 +98,7 @@ function serverCapabilities() {
 		// A space starts the next argument, ":" and "=" its value; a quote may close one.
 		signatureHelpProvider: { triggerCharacters: [" ", ":", "="], retriggerCharacters: ["\""] },
 		inlayHintProvider: true,
+		semanticTokensProvider: { legend: features.SEMANTIC_TOKENS_LEGEND, full: true },
 		// prepareRename says why a name cannot be renamed before a new one is typed.
 		renameProvider: { prepareProvider: true },
 		codeActionProvider: { codeActionKinds: ["quickfix"] }
@@ -119,6 +120,8 @@ function createSession(send, options) {
 		linkSupport = false,
 		hierarchicalSymbols = false,
 		changeAnnotations = false,
+		// What the client wants semantic tokens to show, from its initializationOptions.
+		tokenOptions = {},
 		// Once undefined calls were listed, they stay in the problem list.
 		listedUndefinedCalls = false;
 	// Injectable so a test can run the timer synchronously rather than sleeping.
@@ -232,6 +235,7 @@ function createSession(send, options) {
 				// A client that annotates changes can be made to preview a rename.
 				var workspaceEdit = params.capabilities && params.capabilities.workspace && params.capabilities.workspace.workspaceEdit;
 				changeAnnotations = !!(workspaceEdit && workspaceEdit.documentChanges && workspaceEdit.changeAnnotationSupport);
+				tokenOptions = (params.initializationOptions && params.initializationOptions.semanticTokens) || {};
 				log("Initialized by " + describeClient(params) + " (v" + getServerVersion() + ")");
 				if(options.onInitialized) {
 					options.onInitialized(describeClient(params));
@@ -313,6 +317,13 @@ function createSession(send, options) {
 				var hintUri = params.textDocument.uri,
 					hintText = textOf(hintUri);
 				send(response(id, hintText === undefined ? null : features.inlayHints(hintUri, hintText, params.range)));
+				break;
+			}
+
+			case "textDocument/semanticTokens/full": {
+				var tokensUri = params.textDocument.uri,
+					tokensText = textOf(tokensUri);
+				send(response(id, tokensText === undefined ? null : features.semanticTokens(tokensUri, tokensText, tokenOptions)));
 				break;
 			}
 
