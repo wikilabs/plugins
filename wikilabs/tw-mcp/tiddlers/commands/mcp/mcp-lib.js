@@ -1109,6 +1109,45 @@ function injectAuth(line, token, label, role) {
 	return JSON.stringify(msg);
 }
 
+// What the proxy must do with a client message before relaying it: which answer
+// to intercept later (`track`), whether to stop here (`block`) and the refusal
+// to write back (`response`). Pure, so the readonly write-block is testable
+// without a primary to relay to (bead tw-mcp-server-5hd).
+function classifyOutbound(msg, options) {
+	var nothing = { track: null, block: false, response: null };
+	if(!msg || msg.id === undefined) {
+		return nothing; // unparseable, or a notification nobody answers
+	}
+	if(msg.method === "server/discover") {
+		return { track: "discover", block: false, response: null };
+	}
+	if(msg.method === "initialize") {
+		return { track: "initialize", block: false, response: null };
+	}
+	if(!options.readonly) {
+		return nothing;
+	}
+	if(msg.method === "tools/list") {
+		return { track: "toolsList", block: false, response: null };
+	}
+	if(msg.method === "tools/call") {
+		var toolName = msg.params && msg.params.name;
+		if(toolName && options.writeToolNames[toolName]) {
+			// The refusal is ours, not the primary's, so it must be shaped for
+			// whichever era the client is speaking.
+			return {
+				track: null,
+				block: true,
+				response: jsonrpcResponse(msg.id, {
+					isError: true,
+					content: [{ type: "text", text: "Tool '" + toolName + "' is disabled in readonly mode" }]
+				}, eraOfMessage(msg))
+			};
+		}
+	}
+	return nothing;
+}
+
 function startProxyMode(discovery) {
 	var pipePath = discovery.pipe;
 	var token = discovery.token;
@@ -1456,37 +1495,22 @@ function startProxyMode(discovery) {
 
 	function relayToPrimary(line) {
 		var modified = injectAuth(line, token, serverLabel);
-		// Inspect requests that need proxy-side handling. This runs OUTSIDE any
-		// catch on purpose: the readonly block below decides whether a write
-		// call reaches the primary, and the early return is the only thing that
-		// stops it. Swallowing a throw from here would forward the very call we
-		// just refused.
+		// This runs OUTSIDE any catch on purpose: classifyOutbound decides
+		// whether a write call reaches the primary, and the early return below
+		// is the only thing that stops it. Swallowing a throw from here would
+		// forward the very call we just refused.
 		var msg = parseJsonRpc(line);
-		if(msg && msg.id !== undefined) {
-			if(msg.method === "server/discover") {
-				discoverId = msg.id;
-			}
-			if(msg.method === "initialize") {
-				initializeId = msg.id;
-			}
-			// Track tools/list requests for readonly filtering of responses
-			if(readonlyMode && msg.method === "tools/list") {
-				toolsListIds[msg.id] = true;
-			}
-			// Block write tool calls locally when proxy is readonly
-			if(readonlyMode && msg.method === "tools/call") {
-				var toolName = msg.params && msg.params.name;
-				if(toolName && writeToolNames[toolName]) {
-					// The refusal is ours, not the primary's, so it must be shaped
-					// for whichever era the client is speaking.
-					var errResp = jsonrpcResponse(msg.id, {
-						isError: true,
-						content: [{ type: "text", text: "Tool '" + toolName + "' is disabled in readonly mode" }]
-					}, eraOfMessage(msg));
-					process.stdout.write(errResp + "\n");
-					return; // don't forward to primary
-				}
-			}
+		var decision = classifyOutbound(msg, { readonly: readonlyMode, writeToolNames: writeToolNames });
+		if(decision.track === "discover") {
+			discoverId = msg.id;
+		} else if(decision.track === "initialize") {
+			initializeId = msg.id;
+		} else if(decision.track === "toolsList") {
+			toolsListIds[msg.id] = true;
+		}
+		if(decision.block) {
+			process.stdout.write(decision.response + "\n");
+			return; // don't forward to primary
 		}
 		if(connected && pipeSocket && !pipeSocket.destroyed) {
 			pipeSocket.write(modified + "\n");
@@ -1639,6 +1663,7 @@ exports.getCanonicalWikiPath = getCanonicalWikiPath;
 // Test seam. The protocol contract (discovery, version gate, result shape) is
 // worth pinning without standing up a transport to reach it.
 exports.dispatchMessage = dispatchMessage;
+exports.classifyOutbound = classifyOutbound;
 exports.RELOAD_FILE_METHOD = RELOAD_FILE_METHOD;
 exports.LSP_HELLO_METHOD = LSP_HELLO_METHOD;
 exports.handlePipeNotification = handlePipeNotification;
