@@ -333,3 +333,4 @@ function namesSetIn(text, names) {
 
 exports.hints = hints;
 exports.codeActions = codeActions;
+exports.closingTagRange = closingTagRange;

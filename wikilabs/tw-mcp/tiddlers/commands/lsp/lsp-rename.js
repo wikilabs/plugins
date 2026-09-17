@@ -22,6 +22,8 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 	macros = require("$:/core/modules/commands/inspect/lsp/lsp-macros.js"),
 	references = require("$:/core/modules/commands/inspect/lsp/lsp-references.js"),
 	filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js"),
+	names = require("$:/core/modules/commands/inspect/lsp/lsp-names.js"),
+	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
 	calls = require("$:/core/modules/commands/inspect/calls.js");
 
 // A name a call can write: nothing that ends a name or starts an argument.
@@ -47,7 +49,8 @@ function planAt(uri, text, position, openDocuments) {
 	documents[uri] = text;
 	var load = loader(documents),
 		doc = load(uri),
-		site = files.siteAt(doc.sites, position),
+		closingTag = files.siteAt(doc.sites, position) ? null : closingTagAt(doc, position),
+		site = closingTag ? closingTag.site : files.siteAt(doc.sites, position),
 		declared = site ? null : parameterDeclaredAt(doc, source.offsetAt(doc.body.starts, position) - doc.body.offset);
 	if(declared) {
 		return parameterPlan(load, documents, doc, declared.definition, declared.name);
@@ -65,7 +68,11 @@ function planAt(uri, text, position, openDocuments) {
 	if(binding) {
 		return parameterPlan(load, documents, doc, doc.definitions.filter(function(d) { return d.body && d.body.start === binding.scope.start; })[0], site.name);
 	}
-	return definitionPlan(load, documents, doc, site);
+	var plan = definitionPlan(load, documents, doc, site);
+	if(closingTag && !plan.error) {
+		plan.origin = closingTag.range;
+	}
+	return plan;
 }
 
 // Each document read once: open buffer, else the file, else a tiddler's view.
@@ -90,6 +97,23 @@ function loader(documents) {
 	};
 }
 
+// A closing tag name holding position, which is no call site of its own, as { site, range } with the
+// site of its opening tag.
+function closingTagAt(doc, position) {
+	for(var i = 0; i < doc.sites.length; i++) {
+		var site = doc.sites[i],
+			range = site.name.charAt(0) === "$" ? names.closingTagRange(site, doc.body, doc.tree) : null;
+		if(range && !before(position, range.start) && !before(range.end, position)) {
+			return { site: site, range: range };
+		}
+	}
+	return null;
+}
+
+function before(p, q) {
+	return p.line < q.line || (p.line === q.line && p.character < q.character);
+}
+
 function textOf(docUri, documents) {
 	var open = Object.keys(documents).filter(function(key) { return files.sameFileKey(key) === files.sameFileKey(docUri); })[0];
 	if(open !== undefined) {
@@ -110,24 +134,35 @@ function definitionPlan(load, documents, doc, site) {
 		return target;
 	}
 	var defDoc = target.doc,
-		def = target.definition;
-	if(def.kind === "widget") {
-		return { error: "Renaming a \\widget is not supported yet: its closing tags are not tracked." };
-	}
-	var global = def.parent === null && calls.importedGlobally(defDoc.title),
+		def = target.definition,
+		global = def.parent === null && calls.importedGlobally(defDoc.title),
 		found = callsTo(load, documents, defDoc, def, global);
 	if(found.error) {
 		return found;
 	}
+	var edits = [{ uri: defDoc.uri, range: rangeIn(defDoc, def.start, def.end) }];
+	found.calls.forEach(function(call) {
+		edits.push({ uri: call.doc.uri, range: call.site.range });
+		// A widget's tag closes with its name again.
+		var closing = def.kind === "widget" ? names.closingTagRange(call.site, call.doc.body, call.doc.tree) : null;
+		if(closing) {
+			edits.push({ uri: call.doc.uri, range: closing });
+		}
+	});
 	return {
 		kind: "definition",
 		name: def.name,
 		origin: site.range,
-		edits: [{ uri: defDoc.uri, range: rangeIn(defDoc, def.start, def.end) }].concat(found.calls.map(function(call) {
-			return { uri: call.doc.uri, range: call.site.range };
-		})),
+		edits: edits,
 		conflict: function(newName) {
-			if(newName.charAt(0) === "$") {
+			if(def.kind === "widget" && newName.charAt(0) !== "$") {
+				return "A \\widget's name starts with $.";
+			}
+			// Without a dot, core widget.js only lets a \widget replace the core widget of that name.
+			if(def.kind === "widget" && !newName.includes(".")) {
+				return "`" + newName + "` needs a dot to name a \\widget of its own.";
+			}
+			if(def.kind !== "widget" && newName.charAt(0) === "$") {
 				return "A name starting with $ is a widget's.";
 			}
 			if(def.kind === "function" && def.name.includes(".") && !newName.includes(".")) {
@@ -246,8 +281,8 @@ function declarationOf(doc, definition, name) {
 }
 
 function parameterPlan(load, documents, doc, definition, name) {
-	if(!definition || definition.kind === "widget") {
-		return { error: "Renaming a \\widget's parameters is not supported yet: its attributes are not tracked." };
+	if(!definition) {
+		return { error: "Nothing to rename here: `" + name + "` is not a parameter of a definition in this tiddler." };
 	}
 	var declared = declarationOf(doc, definition, name),
 		binding = definition.body ? scope.resolve(name, definition.body.start, doc.tree, doc.body.text) : null,
@@ -271,7 +306,7 @@ function parameterPlan(load, documents, doc, definition, name) {
 		return found;
 	}
 	found.calls.forEach(function(call) {
-		var at = namedArgument(call.doc, call.site, name);
+		var at = definition.kind === "widget" ? widgetAttribute(call.doc, call.site, name) : namedArgument(call.doc, call.site, name);
 		if(at !== null) {
 			edits.push({ uri: call.doc.uri, range: rangeIn(call.doc, at, at + name.length) });
 		}
@@ -298,6 +333,16 @@ function namedArgument(doc, site, name) {
 	var call = macros.callSites(doc.tree).filter(function(c) { return c.start <= site.start && site.start < c.end; })[0],
 		arg = call ? call.args.filter(function(a) { return a.name === name; })[0] : null;
 	return arg && arg.start !== undefined ? arg.start + /^\s*/.exec(doc.body.text.slice(arg.start))[0].length : null;
+}
+
+// Where a call of a \widget gives this parameter as an attribute, or null: on the widget's own tag, or
+// on the <$transclude> whose $variable names it, whichever is the innermost widget holding the call.
+function widgetAttribute(doc, site, name) {
+	var holder = widgets.widgetSites(doc.tree, doc.body.text).filter(function(widget) {
+			return widget.start <= site.start && site.start < widget.end;
+		}).sort(function(a, b) { return b.start - a.start; })[0],
+		attribute = holder ? holder.attributes.filter(function(a) { return a.name === name; })[0] : null;
+	return attribute && attribute.start !== undefined ? attribute.start + /^\s*/.exec(doc.body.text.slice(attribute.start))[0].length : null;
 }
 
 // --- The answer ---
