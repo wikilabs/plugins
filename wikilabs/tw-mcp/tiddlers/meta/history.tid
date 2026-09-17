@@ -10,6 +10,7 @@ V 0.19.0 - 2026-09-17
 * The older side of a diff gets hovers and definitions, but no warnings or rename, and does not count as the wiki's text.
 * Semantic tokens tell definitions, calls, parameters, variables, core names, filter operators and field tests apart.
 * Where a tiddler or a later plugin replaces a shadow, the hover also links the versions that do not run.
+* A call's hover shows the call as it runs, every parameter named and defaults filled in.
 
 V 0.18.0 - 2026-09-16
 

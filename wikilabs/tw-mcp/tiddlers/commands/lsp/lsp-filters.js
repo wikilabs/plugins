@@ -365,15 +365,19 @@ function describeCall(site, body, context, tree) {
 			: "defined in " + definitionLink(definition.title),
 		body = "**" + definition.kind + "** `" + site.name + "`, " + where + "\n\n",
 		bound = macros.bindArguments(definition.params, site.args, definition.kind);
-	if(!bound.length) {
+	if(!bound.length && !definition.params.length) {
 		body += "Takes no parameters.\n";
-	} else {
+	}
+	if(bound.length) {
 		// Markdown, not wikitext: hover contents are declared as markdown, and a
 		// markdown table is nothing without its header separator row.
 		body += "| Parameter | Value | Given as |\n| --- | --- | --- |\n";
 		for(var i = 0; i < bound.length; i++) {
 			body += "| " + cell(bound[i].name === null ? "" : bound[i].name) + " | `" + cell(bound[i].value) + "` | " + bound[i].origin + " |\n";
 		}
+	}
+	if(definition.params.length) {
+		body += (bound.length ? "\n" : "") + "Runs as:\n\n```\n" + callAsRun(site.name, definition.params, bound) + "\n```\n";
 	}
 	// A parameter holding a filter is the one a reader wants evaluated, and it
 	// is why this hover exists rather than just naming the macro.
@@ -384,6 +388,22 @@ function describeCall(site, body, context, tree) {
 		}
 	}
 	return body;
+}
+
+// Every declared parameter named, with the value it gets here, or "" where nothing sets it.
+function callAsRun(name, params, bound) {
+	return "<<" + name + params.map(function(param) {
+		var given = bound.filter(function(entry) { return entry.name === param.name && entry.origin !== "undeclared"; })[0];
+		return " " + param.name + ":" + quoteArgument(given ? String(given.value) : "");
+	}).join("") + ">>";
+}
+
+// The first quoting a macro argument's value does not contain.
+var ARGUMENT_QUOTES = [["\"", "\""], ["'", "'"], ["\"\"\"", "\"\"\""], ["[[", "]]"]];
+
+function quoteArgument(value) {
+	var quote = ARGUMENT_QUOTES.find(function(pair) { return !value.includes(pair[1]); }) || ARGUMENT_QUOTES[2];
+	return quote[0] + value + quote[1];
 }
 
 function describeBinding(binding, body, context) {
