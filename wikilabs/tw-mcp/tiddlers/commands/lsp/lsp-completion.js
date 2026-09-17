@@ -238,6 +238,9 @@ function nameCandidates(bodyText, offset) {
 	macros.visibleDefinitions(calls.sitesIn(bodyText).definitions, offset).forEach(function(definition) {
 		out.push(definitionCandidate(definition, "defined in this tiddler"));
 	});
+	macros.importedDefinitions(bodyText, offset).reverse().forEach(function(imported) {
+		out.push(definitionCandidate(imported.definition, "imported from " + imported.title));
+	});
 	calls.globalDefinitions().forEach(function(global) {
 		out.push(definitionCandidate(global.definition, "defined in " + global.title));
 	});

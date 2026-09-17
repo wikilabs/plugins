@@ -17,8 +17,13 @@ argument be reported by the name it binds to.
 
 "use strict";
 
-var widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
+var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
+	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js"),
 	calls = require("$:/core/modules/commands/inspect/calls.js");
+
+// The import scopes of the last few trees, each read once however many calls ask.
+var recentImports = [],
+	RECENT_MAX = 8;
 
 // --- Calls ---
 
@@ -79,12 +84,19 @@ function argumentsOf(attributes, isWidget) {
 // --- Definitions ---
 
 // What a call at offset (body coordinates) resolves to, the way the wiki resolves
-// it: a definition of this document, nested ones innermost first, then a global,
-// then a JavaScript macro. site is the definition's entry from calls.js.
+// it: a definition of this document, nested ones innermost first, then one an
+// \import or <$importvariables> around the call brings in, then a global, then a
+// JavaScript macro. site is the definition's entry from calls.js.
 function findDefinition(name, bodyText, offset) {
 	var local = localDefinition(name, calls.sitesIn(bodyText).definitions, offset);
 	if(local) {
 		return { kind: local.kind, params: local.params, title: null, site: local };
+	}
+	var imported = offset === undefined ? null : importedDefinitions(bodyText, offset).filter(function(entry) {
+		return entry.definition.name === name;
+	}).pop();
+	if(imported) {
+		return { kind: imported.definition.kind, params: imported.definition.params, title: imported.title, site: imported.definition, imported: true };
 	}
 	var global = calls.globalDefinition(name);
 	if(global) {
@@ -94,6 +106,58 @@ function findDefinition(name, bodyText, offset) {
 		return { kind: "javascript", params: $tw.macros[name].params || [], title: null };
 	}
 	return null;
+}
+
+// Every top-level definition the imports around offset bring in, as [{ title, definition }]: the innermost
+// import last, and within one filter a later title after an earlier one, as core importvariables.js
+// overwrites them.
+function importedDefinitions(bodyText, offset) {
+	var found = [];
+	importScopes(source.parseWithBodies(bodyText)).forEach(function(scope) {
+		if(offset < scope.start || offset > scope.end) {
+			return;
+		}
+		$tw.wiki.filterTiddlers(scope.filter).forEach(function(title) {
+			calls.sitesOfTiddler(title).definitions.forEach(function(definition) {
+				if(definition.parent === null) {
+					found.push({ title: title, definition: definition });
+				}
+			});
+		});
+	});
+	return found;
+}
+
+// Each \import and <$importvariables> of a tree as { filter, start, end }, outermost first. A \import pragma's
+// node spans its own line, and what follows it in the tiddler is nested inside it, so a scope ends where
+// its last descendant does.
+function importScopes(tree) {
+	for(var i = 0; i < recentImports.length; i++) {
+		if(recentImports[i].tree === tree) {
+			return recentImports[i].scopes;
+		}
+	}
+	var scopes = [];
+	(function visit(nodes) {
+		(nodes || []).forEach(function(node) {
+			var filter = node.type === "importvariables" && node.attributes && node.attributes.filter;
+			if(filter && filter.type === "string" && node.start !== undefined) {
+				scopes.push({ filter: filter.value, start: node.start, end: extentOf(node) });
+			}
+			visit(node.children);
+		});
+	})(tree);
+	recentImports.unshift({ tree: tree, scopes: scopes });
+	recentImports.length = Math.min(recentImports.length, RECENT_MAX);
+	return scopes;
+}
+
+function extentOf(node) {
+	var end = node.end || 0;
+	(node.children || []).forEach(function(child) {
+		end = Math.max(end, extentOf(child));
+	});
+	return end;
 }
 
 // A top-level definition is visible anywhere in the document, a nested one from
@@ -194,6 +258,7 @@ function bindArguments(params, args, kind) {
 
 exports.callSites = callSites;
 exports.findDefinition = findDefinition;
+exports.importedDefinitions = importedDefinitions;
 exports.localDefinition = localDefinition;
 exports.visibleDefinitions = visibleDefinitions;
 exports.bindArguments = bindArguments;

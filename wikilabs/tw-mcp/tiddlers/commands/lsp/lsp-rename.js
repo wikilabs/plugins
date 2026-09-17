@@ -192,6 +192,9 @@ function definitionOfCall(load, doc, site) {
 	if(found.title === null) {
 		return { doc: doc, definition: found.site };
 	}
+	if(found.imported) {
+		return { error: "`" + site.name + "` is brought in by an \\import from `" + found.title + "`, and rename cannot find every tiddler that imports it." };
+	}
 	var where = source.documentUriOf(found.title);
 	if(!where || source.isVirtualUri(where)) {
 		return { error: "`" + site.name + "` is defined in `" + found.title + "`, a tiddler without a file of its own, which cannot be edited." };
