@@ -1,11 +1,15 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.19.0 - 2026-09-17
+
+* Completion offers tag names after `tag[`, field names where a filter operator takes one (`has[`, `sort[`, `field:`) and titles in widget attributes that take one (`<$link to="`), also in filters spanning several lines.
+* Rename covers `\widget` definitions, closing tags included, and their parameters.
+* A filter step that names no operator gets a hint with a quick fix, definitions brought in by `\import` are found, and missing-link warnings come from the parser, `<$link to="...">` included.
+
 V 0.18.0 - 2026-09-16
 
 * A call whose name nothing in the wiki defines or sets, such as a misspelt macro or widget, gets a hint in the editor, with a quick fix to the closest existing names.
 * VS Code's "List undefined calls and widgets" command lists those names for every tiddler file of the wiki in the Problems panel.
-* Completion offers tag names after `tag[`, field names where a filter operator takes one (`has[`, `sort[`, `field:`), and titles in widget attributes that take one (`<$link to="`).
-* Rename covers `\widget` definitions, closing tags included, and their parameters with the attributes that fill them.
 
 V 0.17.0 - 2026-09-16
 
