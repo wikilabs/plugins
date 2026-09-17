@@ -29,6 +29,11 @@ var KNOWN_CACHE_KEY = "tw-lsp-known-names";
 // The names one tiddler defines or sets, in its own cache.
 var SET_CACHE_KEY = "tw-lsp-names-set";
 
+// Names a filter step may test as a field on purpose: every field name, and every name a shadow tiddler's
+// filters write (core toc.tid tests toc-link), in the global cache; each tiddler's written names in its own.
+var FIELD_TESTS_CACHE_KEY = "tw-lsp-known-field-tests",
+	OPERATORS_WRITTEN_CACHE_KEY = "tw-lsp-operators-written";
+
 // A JavaScript module that may hand variables to wikitext, the names it sets, and
 // the keys of its object literals.
 var JS_SETS_VARIABLES = /invokeActionString|invokeActions|setVariable\s*\(/,
@@ -74,8 +79,84 @@ function diagnosticOf(site) {
 	};
 }
 
+// Filter steps naming no operator, where TiddlyWiki silently tests a field instead.
+function operatorHints(uri, text) {
+	return unknownOperators(uri, text).map(operatorDiagnosticOf);
+}
+
+function unknownOperators(uri, text) {
+	var body = source.bodyOf(uri, text),
+		operators = $tw.wiki.getFilterOperators();
+	return operatorsWritten(body.text, source.parseWithBodies(body.text)).filter(function(step) {
+		// A dotted name is a function called as an operator, hinted as a call.
+		return !operators[step.operator] && !step.operator.includes(".") && !knownFieldTests()[step.operator];
+	}).map(function(step) {
+		return Object.assign({ range: { start: source.positionAt(body.starts, body.offset + step.start), end: source.positionAt(body.starts, body.offset + step.end) } }, step);
+	});
+}
+
+function operatorDiagnosticOf(step) {
+	return {
+		range: step.range,
+		severity: SEVERITY_HINT,
+		source: "tiddlywiki",
+		message: "`" + step.operator + "` is no filter operator, so TiddlyWiki tests a field of that name"
+	};
+}
+
+// Every operator name the filters of a wikitext write, as { operator, start, end } in its offsets.
+function operatorsWritten(text, tree) {
+	var found = [];
+	filters.filterSites(tree, text).forEach(function(site) {
+		// A substituted filter changes before it runs.
+		if(site.substituted) {
+			return;
+		}
+		var at = site.start + text.slice(site.start, site.end).lastIndexOf(site.filter),
+			parts = calls.filterParts(site.filter);
+		((parts && parts.operators) || []).forEach(function(part) {
+			found.push({ operator: part.operator, start: at + part.start, end: at + part.end });
+		});
+	});
+	return found;
+}
+
+function knownFieldTests() {
+	return $tw.wiki.getGlobalCache(FIELD_TESTS_CACHE_KEY, function() {
+		var known = Object.create(null);
+		function fieldsOf(tiddler) {
+			Object.keys(tiddler.fields).forEach(function(name) {
+				known[name] = true;
+			});
+		}
+		$tw.wiki.each(fieldsOf);
+		$tw.wiki.eachShadow(function(tiddler, title) {
+			if(!$tw.wiki.tiddlerExists(title)) {
+				fieldsOf(tiddler);
+				operatorsWrittenBy(title).forEach(function(name) {
+					known[name] = true;
+				});
+			}
+		});
+		return known;
+	});
+}
+
+function operatorsWrittenBy(title) {
+	var tiddler = $tw.wiki.getTiddler(title);
+	if(!tiddler || (tiddler.fields.type || source.WIKITEXT_TYPE) !== source.WIKITEXT_TYPE) {
+		return [];
+	}
+	return $tw.wiki.getCacheForTiddler(title, OPERATORS_WRITTEN_CACHE_KEY, function() {
+		var text = tiddler.fields.text || "";
+		return operatorsWritten(text, source.parseWithBodies(text)).map(function(step) {
+			return step.operator;
+		});
+	});
+}
+
 // Quick fixes for the hinted names inside range: each replaces the name with a
-// close one that exists, a widget's closing tag included.
+// close one that exists, a widget's closing tag included, or an operator's name with an operator.
 function codeActions(uri, text, range, context) {
 	if(context && context.only && !context.only.some(function(kind) { return kind === "quickfix" || kind === ""; })) {
 		return [];
@@ -86,23 +167,32 @@ function codeActions(uri, text, range, context) {
 	unknownSites(uri, text).filter(function(site) {
 		return overlaps(site.range, range);
 	}).forEach(function(site) {
-		var ranges = [site.range].concat(closingTagRange(site, body, tree) || []),
-			diagnostic = reportedAs(diagnosticOf(site), context);
-		closestNames(site.name, candidatesFor(site, body, tree)).forEach(function(name, index) {
-			var changes = {};
-			changes[uri] = ranges.map(function(where) {
-				return { range: where, newText: name };
-			});
-			actions.push({
-				title: "Change to " + name,
-				kind: "quickfix",
-				diagnostics: [diagnostic],
-				isPreferred: index === 0,
-				edit: { changes: changes }
-			});
-		});
+		var ranges = [site.range].concat(closingTagRange(site, body, tree) || []);
+		addFixes(actions, uri, ranges, reportedAs(diagnosticOf(site), context), closestNames(site.name, candidatesFor(site, body, tree)));
+	});
+	unknownOperators(uri, text).filter(function(step) {
+		return overlaps(step.range, range);
+	}).forEach(function(step) {
+		var operators = Object.keys($tw.wiki.getFilterOperators()).filter(function(name) { return name !== "[unknown]"; }).sort();
+		addFixes(actions, uri, [step.range], reportedAs(operatorDiagnosticOf(step), context), closestNames(step.operator, operators));
 	});
 	return actions;
+}
+
+function addFixes(actions, uri, ranges, diagnostic, names) {
+	names.forEach(function(name, index) {
+		var changes = {};
+		changes[uri] = ranges.map(function(where) {
+			return { range: where, newText: name };
+		});
+		actions.push({
+			title: "Change to " + name,
+			kind: "quickfix",
+			diagnostics: [diagnostic],
+			isPreferred: index === 0,
+			edit: { changes: changes }
+		});
+	});
 }
 
 // The editor's own copy of the diagnostic, which listing undefined calls reported
@@ -332,5 +422,6 @@ function namesSetIn(text, names) {
 }
 
 exports.hints = hints;
+exports.operatorHints = operatorHints;
 exports.codeActions = codeActions;
 exports.closingTagRange = closingTagRange;

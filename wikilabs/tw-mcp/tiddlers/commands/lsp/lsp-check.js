@@ -21,9 +21,9 @@ var links = require("$:/core/modules/commands/inspect/lsp/lsp-links.js"),
 
 var SEVERITY_INFORMATION = 3;
 
-// listed: undefined calls as information, which keeps them in the problem list.
+// listed: undefined calls as information, which keeps them in the problem list; an unknown operator stays a hint.
 function diagnostics(uri, text, listed) {
-	return links.diagnostics(uri, text).concat(listed ? undefinedCalls(uri, text) : names.hints(uri, text));
+	return links.diagnostics(uri, text).concat(listed ? undefinedCalls(uri, text) : names.hints(uri, text), names.operatorHints(uri, text));
 }
 
 function undefinedCalls(uri, text) {
