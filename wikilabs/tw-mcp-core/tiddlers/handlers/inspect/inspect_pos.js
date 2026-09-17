@@ -4,15 +4,15 @@ type: application/javascript
 module-type: mcp-handler
 
 MCP tool handler: inspect_pos — render text with source-position
-attributes (p=, v=, ctx=, c=) on every DOM element. Hot-path tool;
-includes all pos tracking + widget-prototype patching machinery.
+attributes (p=, v=, ctx=, c=) on every DOM element. Hot-path tool.
+The widget patches that feed it come from devtools' sourcepos.js.
 
 \*/
 
 "use strict";
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
-var inspectShared = require("$:/core/modules/commands/inspect/handlers/inspect/_shared.js");
+var sourcePosUtils = require("$:/plugins/wikilabs/devtools/utils.js");
 
 // Post-process inspect_pos DOM: replace verbose data-pos attributes
 // with compact p="idx:lines" format. Returns title index header + innerHTML.
@@ -88,21 +88,10 @@ function compactPositions(container) {
 
 // --- inspect_pos helpers (hoisted to module scope) -----------------------
 //
-// All inspect_pos machinery lives here so the handler stays orchestration.
-// Pure helpers (charToLine, posGetSourceInfo, posBuildCallerChain) are
-// stateless. createPosTracker() bundles the line/header/body-offset caches
-// plus the hook + posBuildInfo function that share them. patchPosWidgets()
-// wires up the widget-prototype monkey-patches and returns a restore()
-// callback for the handler's finally block.
-
-function charToLine(offsets, charPos) {
-	var lo = 0, hi = offsets.length - 1;
-	while(lo < hi) {
-		var mid = (lo + hi + 1) >> 1;
-		if(offsets[mid] <= charPos) lo = mid; else hi = mid - 1;
-	}
-	return lo + 1;
-}
+// The handler stays orchestration: posGetSourceInfo and posBuildCallerChain are
+// stateless, createPosTracker() bundles the hook with the posBuildInfo that
+// formats a position the MCP way, and the source geometry comes from devtools'
+// utils.js.
 
 function posGetSourceInfo(widget) {
 	var w = widget;
@@ -134,50 +123,17 @@ function posBuildCallerChain(widget) {
 }
 
 function createPosTracker() {
-	var lineCache = {};
-	var headerCache = {};
-	var bodyOffsetCache = {};
-	function getLineOffsets(title) {
-		if(lineCache[title]) return lineCache[title];
-		var text = $tw.wiki.getTiddlerText(title, "");
-		var offsets = [0];
-		for(var ci = 0; ci < text.length; ci++) {
-			if(text.charAt(ci) === "\n") offsets.push(ci + 1);
-		}
-		lineCache[title] = offsets;
-		return offsets;
-	}
-	function getTidHeaderLines(title) {
-		if(headerCache[title] !== undefined) return headerCache[title];
-		var tiddler = $tw.wiki.getTiddler(title);
-		if(!tiddler) { headerCache[title] = 0; return 0; }
-		var exclude = {"text": true, "bag": true, "revision": true};
-		var fieldCount = 0;
-		for(var f in tiddler.fields) {
-			if(!exclude[f]) fieldCount++;
-		}
-		headerCache[title] = fieldCount + 1;
-		return headerCache[title];
-	}
-	function findBodyOffset(title, bodyText) {
-		var key = title + "\0" + bodyText.length;
-		if(bodyOffsetCache[key] !== undefined) return bodyOffsetCache[key];
-		var fullText = $tw.wiki.getTiddlerText(title, "");
-		var idx = fullText.indexOf(bodyText);
-		bodyOffsetCache[key] = idx >= 0 ? idx : 0;
-		return bodyOffsetCache[key];
-	}
 	function posBuildInfo(widget) {
 		var ptn = widget.parseTreeNode;
 		if(!ptn || ptn.start === undefined) return null;
 		var info = posGetSourceInfo(widget);
 		if(!info) return null;
-		var offsets = getLineOffsets(info.title);
+		var offsets = sourcePosUtils.getLineOffsets(info.title);
 		var absStart = ptn.start + info.offset;
 		var absEnd = (ptn.end || ptn.start) + info.offset;
-		var startLine = charToLine(offsets, absStart);
-		var endLine = charToLine(offsets, absEnd);
-		var headerOffset = getTidHeaderLines(info.title);
+		var startLine = sourcePosUtils.charToLine(offsets, absStart);
+		var endLine = sourcePosUtils.charToLine(offsets, absEnd);
+		var headerOffset = sourcePosUtils.getTidHeaderLines(info.title);
 		return shared.formatSourcePos(startLine + headerOffset, endLine + headerOffset, info.title);
 	}
 	function posHook(domNode, widget) {
@@ -201,63 +157,15 @@ function createPosTracker() {
 		}
 		return domNode;
 	}
-	return { posHook: posHook, findBodyOffset: findBodyOffset };
+	return { posHook: posHook };
 }
 
-// Monkey-patch widget prototypes so source-context flows through transclusion
-// boundaries. Returns a restore() callback the caller MUST invoke in finally.
-// tracker is the createPosTracker() result; only its findBodyOffset is read.
-// The variable-source-tracking half (Widget.setVariable + ImportVariablesWidget)
-// is in inspect/_shared.js so inspect_scope can apply it standalone.
-function patchPosWidgets(tracker) {
-	var LinkWidget = require("$:/core/modules/widgets/link.js").link;
-	var CodeBlockWidget = require("$:/core/modules/widgets/codeblock.js").codeblock;
-	var TranscludeWidget = require("$:/core/modules/widgets/transclude.js").transclude;
-	var restoreSourceTitle = inspectShared.patchSourceTitleTracking();
-	// TW core only emits th-dom-rendering-element natively; the link and
-	// codeblock equivalents come from devtools' renderLink/render patches.
-	// Patch them ourselves so inspect_pos works regardless of whether the
-	// devtools plugin is loaded.
-	var origRenderLink = LinkWidget.prototype.renderLink;
-	LinkWidget.prototype.renderLink = function(parent, nextSibling) {
-		origRenderLink.call(this, parent, nextSibling);
-		if(this.domNodes.length > 0) {
-			$tw.hooks.invokeHook("th-dom-rendering-link", this.domNodes[this.domNodes.length - 1], this);
-		}
-	};
-	var origCodeBlockRender = CodeBlockWidget.prototype.render;
-	CodeBlockWidget.prototype.render = function(parent, nextSibling) {
-		origCodeBlockRender.call(this, parent, nextSibling);
-		if(this.domNodes.length > 0) {
-			$tw.hooks.invokeHook("th-dom-rendering-codeblock", this.domNodes[this.domNodes.length - 1], this);
-		}
-	};
-	var origExecute = TranscludeWidget.prototype.execute;
-	TranscludeWidget.prototype.execute = function() {
-		origExecute.call(this);
-		if($tw.wiki.trackSourcePositions) {
-			if(this.transcludeVariable) {
-				var varInfo = this.getVariableInfo(this.transcludeVariable);
-				var srcVar = varInfo && varInfo.srcVariable;
-				this.sourceContext = (srcVar && srcVar.sourceTitle) || this.transcludeVariable;
-				this.sourceContextOffset = 0;
-				this.sourceContextVariable = this.transcludeVariable;
-				if(srcVar && srcVar.sourceTitle && srcVar.value) {
-					this.sourceContextOffset = tracker.findBodyOffset(srcVar.sourceTitle, srcVar.value);
-				}
-			} else if(this.transcludeTitle) {
-				this.sourceContext = this.transcludeTitle;
-				this.sourceContextOffset = 0;
-			}
-		}
-	};
-	return function restore() {
-		restoreSourceTitle();
-		LinkWidget.prototype.renderLink = origRenderLink;
-		CodeBlockWidget.prototype.render = origCodeBlockRender;
-		TranscludeWidget.prototype.execute = origExecute;
-	};
-}
+// The widget patches that make source context flow through transclusion, emit
+// the link and codeblock hooks, and tag variables with their defining tiddler
+// all live in devtools' sourcepos.js, installed once at boot and dormant until
+// trackSourcePositions is on. Carrying a second copy here double-fired every
+// hook when both plugins were loaded (bead tw-mcp-server-bay), so tw-mcp-core
+// declares devtools a dependent and uses those.
 
 module.exports = {
 	"inspect_pos": function(args) {
@@ -270,12 +178,15 @@ module.exports = {
 			if(!built) {
 				return shared.errorResult( "No parser for type: " + inputType );
 			}
+			// Restored, not forced off: with devtools loaded a user may have
+			// turned tracking on, and a tool call must not switch it off.
+			var trackingWas = $tw.wiki.trackSourcePositions;
 			$tw.wiki.trackSourcePositions = true;
 			var tracker = createPosTracker();
+			// Added after devtools' own hooks, so our data-pos wins where both write it.
 			$tw.hooks.addHook("th-dom-rendering-element", tracker.posHook);
 			$tw.hooks.addHook("th-dom-rendering-link", tracker.posHook);
 			$tw.hooks.addHook("th-dom-rendering-codeblock", tracker.posHook);
-			var restorePatches = patchPosWidgets(tracker);
 			try {
 				var posWidget = $tw.wiki.makeWidget(built.wrappedTree, built.widgetOptions);
 				posWidget.sourceContext = args.context || "(inline)";
@@ -283,11 +194,10 @@ module.exports = {
 				posWidget.render(posContainer, null);
 				return shared.textResult( compactPositions(posContainer) );
 			} finally {
-				$tw.wiki.trackSourcePositions = false;
+				$tw.wiki.trackSourcePositions = trackingWas;
 				$tw.hooks.removeHook("th-dom-rendering-element", tracker.posHook);
 				$tw.hooks.removeHook("th-dom-rendering-link", tracker.posHook);
 				$tw.hooks.removeHook("th-dom-rendering-codeblock", tracker.posHook);
-				restorePatches();
 			}
 		} catch(e) {
 			return shared.errorResult( "inspect_pos error: " + e.message );
