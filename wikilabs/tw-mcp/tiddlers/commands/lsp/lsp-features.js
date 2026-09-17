@@ -7,7 +7,7 @@ The wiki-facing half of the LSP server, gathered into one import for lsp-lib.js.
 Each feature lives in its own module, split by what it can rely on:
 
 	lsp-source.js      offsets, .tid headers, parse tree walking
-	lsp-links.js       link diagnostics, hand-scanned (see the note in that file)
+	lsp-links.js       link and transclusion diagnostics, from the parse tree
 	lsp-names.js       hints and quick fixes for calls whose name nothing defines
 	lsp-check.js       one document's diagnostics, or every file's undefined calls
 	lsp-completion.js  title and name completion, necessarily hand-scanned
@@ -75,7 +75,7 @@ exports.isVirtualUri = source.isVirtualUri;
 // Test seams. Each is a pure function worth pinning without a document or a
 // transport to reach it.
 exports.bodyStartLine = source.bodyStartLine;
-exports.scanLinks = links.scanLinks;
+exports.linkTargets = links.targetsIn;
 exports.titleOfTarget = links.titleOfTarget;
 exports.linkContext = completion.linkContext;
 exports.filterContext = filters.filterContext;

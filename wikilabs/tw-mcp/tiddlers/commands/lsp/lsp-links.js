@@ -4,20 +4,14 @@ type: application/javascript
 module-type: library
 
 Link diagnostics: which links and transclusions point at a tiddler that does
-not exist.
-
-The scanning here is hand-written rather than driven by the parser. That is a
-known compromise: TiddlyWiki's transclude rule records no source offsets, so a
-{{target}} cannot be located through the parse tree at all. Links could be, and
-moving them there would also cover <$link to="..."> — see lsp-filters.js for
-what the parser-driven version looks like.
+not exist, found in the parse tree, which already knows code, comments and
+filters from links.
 
 \*/
 
 "use strict";
 
-var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
-	filters = require("$:/core/modules/commands/inspect/lsp/lsp-filters.js");
+var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js");
 
 var SEVERITY_WARNING = 2;
 
@@ -51,115 +45,55 @@ function isCheckable(target) {
 	return !(target.includes("$(") || target.includes("<<"));
 }
 
-// One line's worth of link targets, as {target, line, start, end} where start
-// and end bracket the target text itself rather than its delimiters.
-// Hand-scanned rather than matched by regex so that a filtered transclusion
-// ({{{ ... }}}) and inline code can be stepped over instead of parsed.
-function scanLine(text, lineNumber, found) {
-	var i = 0;
-	while(i < text.length) {
-		var ch = text.charAt(i);
-		if(ch === "`") {
-			var closeTick = text.indexOf("`", i + 1);
-			i = closeTick < 0 ? text.length : closeTick + 1;
-			continue;
+// Every link and transclusion target in a document body, as { target, start, end } in body offsets around
+// the target text: [[X]], [[caption|X]], <$link to="X"/>, {{X}} and {{X||template}}.
+function targetsIn(bodyText) {
+	var found = [];
+	source.eachNode(source.parseWithBodies(bodyText), function(node) {
+		if(node.start === undefined || !node.attributes) {
+			return;
 		}
-		if(ch === "[" && text.charAt(i + 1) === "[") {
-			var closeLink = text.indexOf("]]", i + 2);
-			if(closeLink < 0) {
-				return;
-			}
-			pushTarget(text.slice(i + 2, closeLink), i + 2, lineNumber, found, "|");
-			i = closeLink + 2;
-			continue;
+		var attribute, at;
+		if(node.type === "link" && (node.rule === "prettylink" || node.tag === "$link")) {
+			attribute = node.attributes.to;
+			// The attribute records where it is written, value last.
+			at = isLiteral(attribute) && attribute.start !== undefined ? attribute.start + bodyText.slice(attribute.start, attribute.end).lastIndexOf(attribute.value) : -1;
+		} else if(node.type === "tiddler" && /^transclude/.test(node.rule || "")) {
+			attribute = node.attributes.tiddler;
+			// A transclusion's attributes record no range, but its target comes first after the braces.
+			at = isLiteral(attribute) ? bodyText.indexOf(attribute.value, node.start) : -1;
 		}
-		if(ch === "{" && text.charAt(i + 1) === "{") {
-			if(text.charAt(i + 2) === "{") {
-				var closeFilter = text.indexOf("}}}", i + 3);
-				i = closeFilter < 0 ? text.length : closeFilter + 3;
-				continue;
-			}
-			var closeTrans = text.indexOf("}}", i + 2);
-			if(closeTrans < 0) {
-				return;
-			}
-			pushTarget(text.slice(i + 2, closeTrans), i + 2, lineNumber, found, "||");
-			i = closeTrans + 2;
-			continue;
+		if(at >= 0 && at < node.end) {
+			found.push({ target: attribute.value, start: at, end: at + attribute.value.length });
 		}
-		i++;
-	}
-}
-
-// The target is the segment after the caption separator for a link, and before
-// the template separator for a transclusion.
-function pushTarget(body, offset, lineNumber, found, separator) {
-	var start = offset,
-		text = body;
-	if(separator === "|") {
-		var pipe = body.lastIndexOf("|");
-		if(pipe >= 0) {
-			start = offset + pipe + 1;
-			text = body.slice(pipe + 1);
-		}
-	} else {
-		var template = body.indexOf("||");
-		if(template >= 0) {
-			text = body.slice(0, template);
-		}
-	}
-	found.push({
-		target: text,
-		line: lineNumber,
-		start: start,
-		end: start + text.length
 	});
+	return found;
 }
 
-function scanLinks(lines, firstLine) {
-	var found = [],
-		inFence = false;
-	for(var i = firstLine; i < lines.length; i++) {
-		if(/^\s*```/.test(lines[i])) {
-			inFence = !inFence;
-			continue;
-		}
-		if(!inFence) {
-			scanLine(lines[i], i, found);
-		}
-	}
-	return found;
+function isLiteral(attribute) {
+	return !!attribute && attribute.type === "string" && !!attribute.value;
 }
 
 function diagnostics(uri, text) {
 	var body = source.bodyOf(uri, text),
-		links = scanLinks(body.lines, body.firstLine),
-		// [[X]] in a filter names a title rather than linking to it, so a \function
-		// body, a filter attribute or an <%if%> condition is left alone.
-		inFilter = filters.filterSites(source.parseWithBodies(body.text), body.text),
 		out = [];
-	for(var i = 0; i < links.length; i++) {
-		var link = links[i],
-			offset = body.starts[link.line] + link.start - body.offset;
-		if(!isCheckable(link.target) || inFilter.some(function(site) { return offset >= site.start && offset < site.end; })) {
-			continue;
-		}
-		var title = titleOfTarget(link.target);
+	targetsIn(body.text).forEach(function(link) {
+		var title = isCheckable(link.target) ? titleOfTarget(link.target) : "";
 		if(title && !tiddlerExists(title)) {
 			out.push({
 				range: {
-					start: { line: link.line, character: link.start },
-					end: { line: link.line, character: link.end }
+					start: source.positionAt(body.starts, body.offset + link.start),
+					end: source.positionAt(body.starts, body.offset + link.end)
 				},
 				severity: SEVERITY_WARNING,
 				source: "tiddlywiki",
 				message: "No tiddler titled '" + title + "'"
 			});
 		}
-	}
+	});
 	return out;
 }
 
 exports.diagnostics = diagnostics;
-exports.scanLinks = scanLinks;
+exports.targetsIn = targetsIn;
 exports.titleOfTarget = titleOfTarget;

@@ -27,32 +27,14 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 
 // --- Links ---
 
-// Every link under the cursor, as {target, from, to} in document offsets.
-// Both spellings are gathered: the hand-scanner sees [[X]] and {{X}}, and the
-// parser sees <$link to="X"/>, which no line scanner could.
+// Every link and transclusion target, as {target, from, to} in document offsets.
 function linkSites(body) {
-	var sites = [],
-		scanned = links.scanLinks(body.lines, body.firstLine);
-	for(var i = 0; i < scanned.length; i++) {
-		var hit = scanned[i],
-			lineStart = body.starts[hit.line];
-		sites.push({ target: hit.target, from: lineStart + hit.start, to: lineStart + hit.end });
-	}
-	source.eachNode(source.parseBody(body.text), function(node) {
-		if(node.type !== "link" || node.start === undefined) {
-			return;
-		}
-		var to = (node.attributes || {}).to;
-		if(to && to.type === "string" && to.value) {
-			sites.push({ target: to.value, from: body.offset + node.start, to: body.offset + node.end });
-		}
+	return links.targetsIn(body.text).map(function(link) {
+		return { target: link.target, from: body.offset + link.start, to: body.offset + link.end };
 	});
-	return sites;
 }
 
-// The tightest link containing the cursor. The scanner's range covers the
-// target text and the parser's covers the whole widget, so the same [[X]] can
-// appear twice; the narrower one describes what was clicked.
+// The link whose target text holds the cursor, the tightest when a transclusion sits inside a link.
 function targetAt(uri, text, position) {
 	var body = source.bodyOf(uri, text),
 		cursor = source.offsetAt(body.starts, position),
