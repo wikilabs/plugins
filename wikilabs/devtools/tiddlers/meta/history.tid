@@ -5,6 +5,7 @@ V 0.7.0 - 2026.09.17
 
 * Source position tracking now also records which variable produced a subtree, and its line helpers moved to `utils.js` so other plugins can share them.
 * On a server the tooltip, context menu, source viewer, inline editor and variable inspector are no longer loaded at all.
+* Source position tracking now starts switched OFF, as the readme always said it did. Switch it on in Control Panel → Settings → WikiLabs.
 
 V 0.6.1 - 2026.05.09
 
