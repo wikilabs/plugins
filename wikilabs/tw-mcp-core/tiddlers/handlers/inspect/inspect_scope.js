@@ -121,20 +121,26 @@ function formatScopeOutput(localVars, usedImported, unusedImported, targetCharPo
 			return prefix + entry.name + paramStr + src;
 		}
 	}
-	if(localVars.length > 0) {
+	// limit caps the entries listed, innermost section first; without it every entry is listed.
+	var room = opts.limit > 0 ? opts.limit : Infinity;
+	var hidden = 0;
+	function pushSection(heading, entries) {
+		var shown = entries.slice(0, room);
+		hidden += entries.length - shown.length;
+		room -= shown.length;
+		if(shown.length === 0) return;
 		lines.push("");
-		lines.push("— local scope");
-		for(var li = 0; li < localVars.length; li++) lines.push(formatEntry(localVars[li]));
+		lines.push(heading);
+		for(var i = 0; i < shown.length; i++) lines.push(formatEntry(shown[i]));
 	}
-	if(usedImported.length > 0) {
-		lines.push("");
-		lines.push("— used globals");
-		for(var gi = 0; gi < usedImported.length; gi++) lines.push(formatEntry(usedImported[gi]));
+	pushSection("— local scope", localVars);
+	pushSection("— used globals", usedImported);
+	if(opts.showAll) {
+		pushSection("— other globals", unusedImported);
 	}
-	if(opts.showAll && unusedImported.length > 0) {
+	if(hidden > 0) {
 		lines.push("");
-		lines.push("— other globals");
-		for(var oi = 0; oi < unusedImported.length; oi++) lines.push(formatEntry(unusedImported[oi]));
+		lines.push("+" + hidden + " more (raise limit, or filter to narrow)");
 	}
 	if(!opts.showAll && unusedImported.length > 0) {
 		lines.push("");
@@ -295,7 +301,7 @@ module.exports = {
 				unusedImported = unusedImported.filter(function(v) { return v.name.toLowerCase().indexOf(filter) !== -1; });
 			}
 			var widgetType = bestWidget.parseTreeNode ? bestWidget.parseTreeNode.type : "unknown";
-			return shared.textResult( formatScopeOutput(localVars, usedImported, unusedImported, targetCharPos, widgetType, bestDistance, { showAll: !!args.all }) );
+			return shared.textResult( formatScopeOutput(localVars, usedImported, unusedImported, targetCharPos, widgetType, bestDistance, { showAll: !!args.all, limit: args.limit }) );
 		} catch(e) {
 			return shared.errorResult( "inspect_scope error: " + e.message );
 		}
@@ -338,7 +344,7 @@ module.exports["inspect_scope"].definition = {
 			},
 			"limit": {
 				"type": "number",
-				"default": 20
+				"description": "Max variables listed, innermost first (default: all)"
 			},
 			"all": {
 				"type": "boolean",
