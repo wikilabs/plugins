@@ -47,7 +47,7 @@ module.exports = {
 			if(compiled.error) {
 				return shared.errorResult("replace_in_tiddlers: rule " + i + " invalid regex: " + compiled.error);
 			}
-			compiledRules.push({matcher: compiled.matcher, replacement: rule.replacement});
+			compiledRules.push({matcher: compiled.matcher, replacement: rule.replacement, literal: !rule.regexp});
 		}
 		var scoped = shared.scopedTitles(args);
 		if(scoped.errorResult) return scoped.errorResult;
@@ -90,7 +90,8 @@ module.exports = {
 						var matches = after.match(cr.matcher);
 						if(matches) {
 							lineReplacements += matches.length;
-							after = after.replace(cr.matcher, cr.replacement);
+							// A function returns a literal rule's text as is; a string would expand $&, $$ and $1.
+							after = after.replace(cr.matcher, cr.literal ? function() { return cr.replacement; } : cr.replacement);
 						}
 					}
 					if(after !== before) {
@@ -161,7 +162,7 @@ module.exports["replace_in_tiddlers"].definition = {
 						},
 						"replacement": {
 							"type": "string",
-							"description": "Replacement string. When regexp=true supports $1..$9, $&, $$."
+							"description": "Replacement string, inserted as is. With regexp=true, $1..$9, $& and $$ expand."
 						},
 						"regexp": {
 							"type": "boolean",

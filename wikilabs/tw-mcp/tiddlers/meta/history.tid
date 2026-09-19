@@ -6,6 +6,7 @@ V 0.19.1 - 2026-09-19
 * Staging an import writes no tiddler files, so restarting the server before extraction no longer blocks a new import.
 * On Windows, wikis started as `tiddlywiki . --mcp` in different folders each get their own server instead of the second one finding the pipe taken.
 * `search_lines` shows the first matches of a tiddler that has more than `max_lines_per_tiddler` and goes on to the next tiddler, where it used to end the search, sometimes with `(no matches)`.
+* `replace_in_tiddlers` inserts a literal rule's replacement as written; `$&`, `$$` and `$1` expand only in regex rules.
 
 V 0.19.0 - 2026-09-17
 
