@@ -258,3 +258,9 @@ function install() {
 		TranscludeWidget.prototype.execute = origTranscludeExecute;
 	};
 }
+
+// Re-executed while the patches are held (reload_mcp_modules), this copy swaps them for its own.
+if($tw.wikilabsSourcePos && $tw.wikilabsSourcePos.holders > 0) {
+	$tw.wikilabsSourcePos.restore();
+	$tw.wikilabsSourcePos.restore = install();
+}
