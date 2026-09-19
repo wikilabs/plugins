@@ -132,9 +132,11 @@ function analyzeForFileSystemPaths(tiddlers) {
 		.sort(function(a, b) { return tagCounts[b] - tagCounts[a]; });
 	for(var si = 0; si < sortedTags.length; si++) {
 		var tag = sortedTags[si];
+		// Letters of any script stay; a mixed run of separators left by punctuation becomes one.
 		var folder = tag.toLowerCase()
 			.replace(/\s+/g, "-")
-			.replace(/[^a-z0-9\-]+/g, "_")
+			.replace(/[^\p{L}\p{N}\-]+/gu, "_")
+			.replace(/[-_]{2,}/g, function(run) { return run.includes("-") ? "-" : "_"; })
 			.replace(/^[-_]+|[-_]+$/g, "");
 		rules.push("[tag[" + tag + "]addprefix[" + folder + "/]]");
 		ruleDescriptions.push(tagCounts[tag] + " tiddlers tagged '" + tag + "' → " + folder + "/ subfolder");

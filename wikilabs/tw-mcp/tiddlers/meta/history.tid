@@ -13,6 +13,7 @@ V 0.19.1 - 2026-09-19
 * The descriptions of `render_tiddler`, `run_filter`, `delete_tiddler` and `extract_html_wiki` now say what the tools actually do.
 * `tw-upload.js` finds the server of an edition that includes another wiki, and its hints say to start `--mcp rw`, which `upload_file` needs.
 * The SSE settings no longer mention a filesystem watcher the server does not have: files reloaded off disk are what always broadcast.
+* Folder names an import proposes for tags keep letters beyond ASCII and no longer carry `-_` runs.
 
 V 0.19.0 - 2026-09-17
 
