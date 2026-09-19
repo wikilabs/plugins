@@ -14,7 +14,7 @@ The full documentation can be found at the [[devtools plugin|https://wikilabs.gi
 	default="no"
 > Enable source position tracking</$checkbox>
 
-//Save and reload the page for this setting to take effect.//
+//Applies at once to content rendered afterwards; save and reload the page to trace what is already on screen.//
 
 When enabled, hover over elements to see their wikitext source position. Right-click to open the DevTools context menu.
 

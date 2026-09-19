@@ -1,6 +1,10 @@
 title: $:/plugins/wikilabs/devtools/history
 
 
+V 0.7.1 - 2026.09.19
+
+* The settings say that source position tracking applies at once to content rendered afterwards; a reload is only needed to trace what is already on screen.
+
 V 0.7.0 - 2026.09.17
 
 * Source position tracking now also records which variable produced a subtree, and its line helpers moved to `utils.js` so other plugins can share them.

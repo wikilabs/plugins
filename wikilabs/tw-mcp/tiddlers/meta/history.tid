@@ -12,6 +12,7 @@ V 0.19.1 - 2026-09-19
 * `inspect_scope` honours `limit`: it lists that many variables, innermost first, and counts the rest.
 * The descriptions of `render_tiddler`, `run_filter`, `delete_tiddler` and `extract_html_wiki` now say what the tools actually do.
 * `tw-upload.js` finds the server of an edition that includes another wiki, and its hints say to start `--mcp rw`, which `upload_file` needs.
+* The SSE settings no longer mention a filesystem watcher the server does not have: files reloaded off disk are what always broadcast.
 
 V 0.19.0 - 2026-09-17
 

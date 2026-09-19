@@ -11,4 +11,4 @@ See: [[DevTools Settings|$:/plugins/wikilabs/devtools/settings]] in the ''WikiLa
 	default="no"
 > Enable source position tracking</$checkbox>
 
-//Save and reload the page for this setting to take effect.//
+//Applies at once to content rendered afterwards; save and reload the page to trace what is already on screen.//

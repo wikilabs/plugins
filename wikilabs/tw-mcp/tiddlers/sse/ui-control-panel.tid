@@ -20,7 +20,7 @@ tags: $:/tags/ControlPanel/WikiLabs
 
 ! Broadcast mode
 
-Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:/HistoryList`, `$:/state/*` by default) propagate between connected browser tabs. MCP-tool changes and filesystem-watcher edits always broadcast to all tabs, regardless of mode.
+Controls how SSE events for ''per-tab view-state tiddlers'' (`$:/StoryList`, `$:/HistoryList`, `$:/state/*` by default) propagate between connected browser tabs. Changes from MCP tools, and from files reloaded off disk, always broadcast to all tabs, regardless of mode.
 
 <% if [<locked>match[yes]] %>
 
