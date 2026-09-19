@@ -602,20 +602,15 @@ function attachStreamHandler(input, send, onClose, customDispatch) {
 // e.g. tw5.com-server includes ../tw5.com → canonical path is tw5.com.
 // The pipe name and discovery file are based on this so all editions converge.
 function getCanonicalWikiPath() {
-	var wikiPath = $tw.boot.wikiPath;
-	if(!wikiPath) {
+	if(!$tw.boot.wikiPath) {
 		return null;
 	}
-	try {
-		var infoPath = path.resolve(wikiPath, "tiddlywiki.info");
-		var info = JSON.parse(fs.readFileSync(infoPath, "utf8"));
-		if(info.includeWikis && info.includeWikis.length > 0) {
-			var first = info.includeWikis[0];
-			var includePath = typeof first === "string" ? first : first.path;
-			return path.resolve(wikiPath, includePath);
-		}
-	} catch(e) {
-		// tiddlywiki.info doesn't exist or is unreadable
+	// Resolved, or every wiki started as `.` would share one pipe name.
+	var wikiPath = path.resolve($tw.boot.wikiPath);
+	var includeWikis = ($tw.boot.wikiInfo && $tw.boot.wikiInfo.includeWikis) || [];
+	if(includeWikis.length > 0) {
+		var first = includeWikis[0];
+		return path.resolve(wikiPath, typeof first === "string" ? first : first.path);
 	}
 	return wikiPath;
 }
