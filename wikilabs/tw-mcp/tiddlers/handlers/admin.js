@@ -41,9 +41,17 @@ var CACHE_INVALIDATE_MAP = {
 	"filterrunprefix": "filterRunPrefixes"
 };
 
-function reloadInPlace(title, moduleType) {
+// Gives a module its fresh text and forgets its exports, so the next require executes it again.
+function resetModule(title, moduleType) {
 	var text = $tw.wiki.getTiddlerText(title);
 	if(!text) return { error: "no text in wiki store" };
+	// Checked before the reset, so a broken module keeps its old exports instead of a half-executed one a dependent required.
+	try {
+		new Function("module", "exports", "require", text);
+	} catch(e) {
+		if(e instanceof SyntaxError) return { error: "SyntaxError: " + e.message };
+		throw e;
+	}
 	var info = $tw.modules.titles[title];
 	if(!info) {
 		// Module added since boot — register it now so it can be executed.
@@ -56,11 +64,19 @@ function reloadInPlace(title, moduleType) {
 	var oldExports = info.exports;
 	info.definition = text;
 	info.exports = undefined;
-	try {
-		$tw.modules.execute(title);
-	} catch(e) {
-		info.exports = oldExports;
-		return { error: e.message };
+	return { ok: true, oldExports: oldExports };
+}
+
+// Executes a reset module, unless a module requiring it already did.
+function executeModule(title, moduleType, oldExports) {
+	var info = $tw.modules.titles[title];
+	if(info.exports === undefined) {
+		try {
+			$tw.modules.execute(title);
+		} catch(e) {
+			info.exports = oldExports;
+			return { error: e.message };
+		}
 	}
 	var newExports = info.exports;
 	if(PRESERVE_IDENTITY[title] && oldExports && typeof oldExports === "object" && oldExports !== newExports) {
@@ -155,15 +171,27 @@ module.exports = {
 		}
 		moduleTitles.sort();
 
-		// Phase 3: reload each module, except excluded.
+		// Phase 3: reset every module before executing any, so a module requiring
+		// one that sorts after it gets that module's new exports.
 		var touchedTypes = Object.create(null);
+		var oldExports = Object.create(null);
+		var reset = [];
 		moduleTitles.forEach(function(title) {
 			if(EXCLUDE_FROM_RELOAD[title]) {
 				skipped.push(title + " (" + EXCLUDE_FROM_RELOAD[title] + ")");
 				return;
 			}
+			var result = resetModule(title, moduleTypes[title]);
+			if(result.ok) {
+				oldExports[title] = result.oldExports;
+				reset.push(title);
+			} else {
+				errors.push(title + ": " + result.error);
+			}
+		});
+		reset.forEach(function(title) {
 			var moduleType = moduleTypes[title];
-			var result = reloadInPlace(title, moduleType);
+			var result = executeModule(title, moduleType, oldExports[title]);
 			if(result.ok) {
 				reloaded.push(title + (PRESERVE_IDENTITY[title] ? " [identity]" : ""));
 				if(moduleType && CACHE_INVALIDATE_MAP[moduleType]) {

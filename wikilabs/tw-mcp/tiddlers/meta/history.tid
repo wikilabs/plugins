@@ -11,6 +11,7 @@ V 0.19.1 - 2026-09-19
 * `--mcp listen` and `--mcp sse` warn at startup when no `tiddlywiki/filesystem` plugin is loaded, since browser edits then stay in memory. `--mcp rw` no longer loads that plugin itself, which never made browser edits persist.
 * `inspect_scope` honours `limit`: it lists that many variables, innermost first, and counts the rest.
 * `inspect_pos` counts lines in the text it renders, where inline text used to report line 1 throughout, or lines of the `context` tiddler's own file.
+* After `reload_mcp_modules`, a module uses the new version of every module it requires; one sorting after it used to keep its old code until a second reload.
 * The descriptions of `render_tiddler`, `run_filter`, `delete_tiddler` and `extract_html_wiki` now say what the tools actually do.
 * `tw-upload.js` finds the server of an edition that includes another wiki, and its hints say to start `--mcp rw`, which `upload_file` needs.
 * The SSE settings no longer mention a filesystem watcher the server does not have: files reloaded off disk are what always broadcast.
