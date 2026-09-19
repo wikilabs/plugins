@@ -30,6 +30,7 @@ var MIN_GROUP_COUNT = 3;
 
 // What import staged; extract writes only these, never whatever else the running wiki holds.
 var STAGED_TITLE = "$:/temp/mcp/html-import/staged";
+var PROPOSAL_TITLE = "Import — Proposed Folder Structure";
 
 // import_html_wiki accepts paths from anywhere on disk by design (the user
 // typically points it at a downloaded `index.html`), so we cannot gate it on
@@ -180,13 +181,10 @@ function importHandler(args) {
 	if(existing && existing.fields.status === "pending") {
 		return shared.errorResult("An HTML import is already pending (source: " + existing.fields["source-file"] + "). Call extract_html_wiki to commit it, or delete $:/temp/mcp/html-import to discard.");
 	}
-	// Refuse if the wiki folder is already populated
-	if($tw.boot.wikiTiddlersPath && fs.existsSync($tw.boot.wikiTiddlersPath)) {
-		var existingFiles = fs.readdirSync($tw.boot.wikiTiddlersPath);
-		var hasTidFiles = existingFiles.some(function(f) { return f.endsWith(".tid"); });
-		if(hasTidFiles && wiki.tiddlerExists("$:/config/FileSystemPaths")) {
-			return shared.errorResult("Wiki already has extracted tiddlers and FileSystemPaths. Run import against an empty wiki folder.");
-		}
+	// Refuse a wiki with content of its own; system tiddlers such as an edited proposal do not count.
+	var existingContent = wiki.filterTiddlers("[!is[system]is[tiddler]] -[[" + PROPOSAL_TITLE + "]]");
+	if(existingContent.length > 0) {
+		return shared.errorResult("The wiki already holds " + existingContent.length + " content tiddler" + (existingContent.length === 1 ? "" : "s") + ". Run the import against an empty wiki folder.");
 	}
 	// Ensure tiddlers directory exists
 	var wikiPath = $tw.boot.wikiPath;
@@ -260,7 +258,8 @@ function importHandler(args) {
 			infoChanged = true;
 		}
 	}
-	if(infoChanged || !fs.existsSync(infoPath)) {
+	var infoWritten = infoChanged || !fs.existsSync(infoPath);
+	if(infoWritten) {
 		fs.writeFileSync(infoPath, JSON.stringify(wikiInfo, null, 4), "utf8");
 	}
 	// Import all content + system + custom-plugin tiddlers into memory
@@ -363,31 +362,32 @@ function importHandler(args) {
 	fullRulesLines.push("");
 	fullRulesLines.push("[[Full documentation|https://tiddlywiki.com/#Customising%20Tiddler%20File%20Naming]]");
 	var now = $tw.utils.stringifyDate(new Date());
-	wiki.addTiddler(new $tw.Tiddler({
-		title: "Import — Proposed Folder Structure",
+	// Stored without saving: SSE still pushes them to the browser, and the folder stays untouched until extract.
+	shared.addToWikiSilently({
+		title: PROPOSAL_TITLE,
 		text: fullRulesLines.join("\n"),
 		tags: "Import",
 		modified: now,
 		created: now
-	}));
+	});
 	// Create $:/config/FileSystemPaths so user can edit it in the browser before extraction
-	wiki.addTiddler(new $tw.Tiddler({
+	shared.addToWikiSilently({
 		title: "$:/config/FileSystemPaths",
 		text: analysis.proposedText,
 		modified: now,
 		created: now
-	}));
+	});
 	// Set as default tiddler so it opens on startup in the browser
-	wiki.addTiddler(new $tw.Tiddler({
+	shared.addToWikiSilently({
 		title: "$:/DefaultTiddlers",
-		text: "[[Import — Proposed Folder Structure]]"
-	}));
+		text: "[[" + PROPOSAL_TITLE + "]]"
+	});
 	var summary = [
 		"Loaded " + filePath,
 		"  content: " + contentTiddlers.length + " · system: " + systemTiddlers.length + " · library plugins: " + libraryPlugins.length + " · custom plugins: " + customPlugins.length + " · ignored: " + ignoredCount,
 		"  " + analysis.proposedRules.length + " FileSystemPaths rules proposed.",
 		"",
-		"Nothing written to disk yet. Next steps:",
+		"No tiddler files written yet" + (infoWritten ? " (tiddlywiki.info updated)" : "") + ". Next steps:",
 		"  1. Read $:/temp/mcp/html-import for the analysis summary.",
 		"  2. Show the user the proposed folder structure (also visible in the browser as 'Import — Proposed Folder Structure').",
 		"  3. Let the user edit $:/config/FileSystemPaths in the browser if they want changes.",
@@ -529,7 +529,7 @@ module.exports = {
 // MCP tool definition — advertised via mcp-handlers getToolDefinitions();
 // write:true marks tools hidden in readonly mode.
 module.exports["import_html_wiki"].definition = {
-	"description": "Stage a single-file HTML wiki for import. Loads tiddlers from the file into memory, classifies them, proposes FileSystemPaths rules, and writes the staged analysis to $:/temp/mcp/html-import. Nothing is written to disk yet — call extract_html_wiki to commit. Refuses if the wiki folder is already populated or another import is already pending.",
+	"description": "Stage a single-file HTML wiki for import. Loads tiddlers from the file into memory, classifies them, proposes FileSystemPaths rules, and writes the staged analysis to $:/temp/mcp/html-import. No tiddler file is written yet (tiddlywiki.info may gain library plugins); call extract_html_wiki to commit. Refuses if the wiki already has content tiddlers or another import is pending.",
 	"inputSchema": {
 		"type": "object",
 		"properties": {

@@ -3,6 +3,7 @@ title: $:/plugins/wikilabs/tw-mcp/history
 V 0.19.1 - 2026-09-19
 
 * Extracting an imported single-file wiki writes only the tiddlers that wiki contained, its own default tiddlers included, and no longer copies the running TiddlyWiki core into the folder.
+* Staging an import writes no tiddler files, so restarting the server before extraction no longer blocks a new import.
 
 V 0.19.0 - 2026-09-17
 
