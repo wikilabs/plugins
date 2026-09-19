@@ -15,7 +15,8 @@ Examples:
   node tw-upload.js icon.gif --subfolder images
 
 The --wiki option specifies the wiki directory to find the .tw-mcp/connect discovery file.
-If omitted, the current directory is used.
+If omitted, the current directory is used. For a wiki that includes others, the file sits
+in the first wiki it includes, which is where the server writes it.
 */
 
 "use strict";
@@ -97,16 +98,40 @@ function printUsage() {
 	console.log("Usage: tw-upload <file> [--wiki <path>] [--title <title>] [--tags <tags>] [--subfolder <dir>]");
 	console.log("");
 	console.log("Uploads a binary file (PNG, JPG, GIF, PDF) to a running TiddlyWiki MCP server.");
-	console.log("Connects via named pipe (the MCP server must be running with --mcp).");
+	console.log("Connects via named pipe (the MCP server must be running with --mcp rw).");
 	console.log("");
 	console.log("Options:");
-	console.log("  --wiki <path>       Wiki directory to find .tw-mcp/connect (defaults to current dir)");
+	console.log("  --wiki <path>       Wiki directory of the running server (defaults to current dir)");
 	console.log("  --title <title>     Tiddler title (defaults to filename)");
 	console.log("  --tags <tags>       Space-separated tags for the tiddler");
 	console.log("  --subfolder <dir>   Subfolder within files/ to save to");
 	console.log("  -h, --help          Show this help message");
 	console.log("");
 	console.log("Supported formats: PNG, JPG, GIF, PDF (max 50MB)");
+}
+
+// Where the server writes .tw-mcp/connect: the first includeWikis entry when there is one,
+// as getCanonicalWikiPath() in mcp-lib.js decides.
+function canonicalWikiPath(wikiPath) {
+	var infoPath = path.resolve(wikiPath, "tiddlywiki.info");
+	if(!fs.existsSync(infoPath)) {
+		return wikiPath;
+	}
+	var info = JSON.parse(fs.readFileSync(infoPath, "utf8"));
+	var first = info.includeWikis && info.includeWikis[0];
+	return first ? path.resolve(wikiPath, typeof first === "string" ? first : first.path) : wikiPath;
+}
+
+// The discovery file's JSON, or null when it does not parse.
+function parseDiscovery(text) {
+	try {
+		return JSON.parse(text);
+	} catch(err) {
+		if(err instanceof SyntaxError) {
+			return null;
+		}
+		throw err;
+	}
 }
 
 function sendJsonRpc(socket, id, method, params) {
@@ -146,33 +171,24 @@ function main() {
 	}
 
 	// Discover pipe path
-	var wikiPath = path.resolve(args.wiki);
-	var discoveryFile = path.resolve(wikiPath, ".tw-mcp/connect");
-	// Parse discovery file (JSON format: { "pipe": "...", "token": "..." })
-	// Clients should ignore unknown fields for forward compatibility
-	var pipePath, authToken;
-	try {
-		var discoveryContent = fs.readFileSync(discoveryFile, "utf8").trim();
-		var discovery = JSON.parse(discoveryContent);
-		pipePath = discovery.pipe;
-		authToken = discovery.token;
-		if(!pipePath || typeof pipePath !== "string") {
-			throw new Error("missing 'pipe' field");
-		}
-		if(!authToken || typeof authToken !== "string") {
-			throw new Error("missing 'token' field");
-		}
-	} catch(e) {
-		if(e.code === "ENOENT") {
-			console.error("\nNo MCP server found for wiki: " + wikiPath);
-			console.error("\nThe .tw-mcp/connect discovery file does not exist.");
-			console.error("Start the MCP server first:\n");
-			console.error("  tiddlywiki +plugins/tiddlywiki/filesystem " + args.wiki + " --mcp\n");
-		} else {
-			console.error("\nCould not read .tw-mcp/connect: " + e.message);
-			console.error("The file may be corrupted. Restart the MCP server:\n");
-			console.error("  tiddlywiki +plugins/tiddlywiki/filesystem " + args.wiki + " --mcp\n");
-		}
+	var wikiPath = canonicalWikiPath(path.resolve(args.wiki));
+	var discoveryFile = path.resolve(wikiPath, ".tw-mcp", "connect");
+	var startCommand = "  tiddlywiki " + args.wiki + " --mcp rw\n";
+	if(!fs.existsSync(discoveryFile)) {
+		console.error("\nNo MCP server found for wiki: " + wikiPath);
+		console.error("\nThe .tw-mcp/connect discovery file does not exist.");
+		console.error("Start the MCP server first:\n");
+		console.error(startCommand);
+		process.exit(1);
+	}
+	// JSON { "pipe": "...", "token": "..." }; unknown fields are ignored for forward compatibility.
+	var discovery = parseDiscovery(fs.readFileSync(discoveryFile, "utf8"));
+	var pipePath = discovery && discovery.pipe;
+	var authToken = discovery && discovery.token;
+	if(!pipePath || typeof pipePath !== "string" || !authToken || typeof authToken !== "string") {
+		console.error("\nCould not read .tw-mcp/connect: it is not JSON with a pipe and a token.");
+		console.error("Restart the MCP server:\n");
+		console.error(startCommand);
 		process.exit(1);
 	}
 
@@ -257,7 +273,7 @@ function main() {
 	socket.on("error", function(err) {
 		console.error("Connection error: " + err.message);
 		if(err.code === "ENOENT" || err.code === "ECONNREFUSED") {
-			console.error("Is the MCP server running? Start it with: tiddlywiki +plugins/tiddlywiki/filesystem <wiki> --mcp");
+			console.error("Is the MCP server running? Start it with: tiddlywiki <wiki> --mcp rw");
 		}
 		process.exit(1);
 	});
