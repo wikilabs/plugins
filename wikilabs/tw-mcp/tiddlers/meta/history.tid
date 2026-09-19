@@ -8,6 +8,7 @@ V 0.19.1 - 2026-09-19
 * `search_lines` shows the first matches of a tiddler that has more than `max_lines_per_tiddler` and goes on to the next tiddler, where it used to end the search, sometimes with `(no matches)`.
 * `replace_in_tiddlers` inserts a literal rule's replacement as written; `$&`, `$$` and `$1` expand only in regex rules.
 * A wiki that lists `wikilabs/tw-mcp` without `wikilabs/tw-mcp-core` boots again for other commands, and `--mcp` or `--lsp` says which plugin to add instead of crashing.
+* `--mcp listen` and `--mcp sse` warn at startup when no `tiddlywiki/filesystem` plugin is loaded, since browser edits then stay in memory. `--mcp rw` no longer loads that plugin itself, which never made browser edits persist.
 
 V 0.19.0 - 2026-09-17
 

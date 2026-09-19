@@ -30,7 +30,7 @@ All --listen parameters (port, host, credentials, tls-*, etc.) are accepted.
 When "sse" is specified, "listen" is implied AND the Server-Sent Events
 endpoint at GET /events is enabled. Browsers that load this plugin will
 receive per-tiddler change notifications instead of polling for the full
-tiddler list every 60s — see $:/plugins/wikilabs/tw-mcp/sse/ for the
+tiddler list — see $:/plugins/wikilabs/tw-mcp/sse/ for the
 client-side adaptor and bootstrap.
 If both "sse" and "listen" are given, sse wins (no error).
 
@@ -98,12 +98,6 @@ Command.prototype.execute = function() {
 		require("$:/core/modules/commands/inspect/mcp/mcp-pear.js").startPearMode(options);
 		return null;
 	}
-	// Load the filesystem plugin if not already present (needed for disk persistence)
-	if(!options.readonly && !$tw.wiki.getTiddler("$:/plugins/tiddlywiki/filesystem")) {
-		$tw.loadPlugins(["tiddlywiki/filesystem"], $tw.config.pluginsPath, $tw.config.pluginsEnvVar);
-		$tw.wiki.registerPluginTiddlers("plugin");
-		$tw.wiki.unpackPluginTiddlers();
-	}
 	// Start HTTP server if listen mode is enabled
 	if(listenMode) {
 		var mcpLib = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js");
@@ -113,6 +107,10 @@ Command.prototype.execute = function() {
 		} else {
 			if(!$tw.boot.wikiTiddlersPath) {
 				$tw.utils.warning("Warning: Wiki folder '" + $tw.boot.wikiPath + "' does not exist or is missing a tiddlywiki.info file");
+			}
+			// Only a plugin listed at boot yields a sync adaptor; loading one now would be too late.
+			if(!$tw.syncadaptor) {
+				$tw.utils.warning("Warning: browser edits stay in memory only, since no sync adaptor is loaded. Add tiddlywiki/filesystem to the plugins in tiddlywiki.info to save them to disk.");
 			}
 			var server = new Server({
 				wiki: this.commander.wiki,
