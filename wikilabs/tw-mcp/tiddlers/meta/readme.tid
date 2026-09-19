@@ -8,6 +8,6 @@ The full documentation can be found at [[tw-mcp plugin|https://wikilabs.github.i
 
 ----
 
-''Important'': This plugin adds or modifies several core modules
+''Important'': This plugin ships {{{ [[$:/plugins/wikilabs/tw-mcp]plugintiddlers[]prefix[$:/core/]count[]] }}} tiddlers in the `$:/core/` namespace. They are new modules, except where marked: that one replaces a tiddler ~TiddlyWiki ships.
 
-<$list filter="[[$:/plugins/wikilabs/tw-mcp]plugintiddlers[]prefix[$:/core/]]"><$link to=<<currentTiddler>>><<currentTiddler>><br></$link></$list>
+<$list filter="[[$:/plugins/wikilabs/tw-mcp]plugintiddlers[]prefix[$:/core/]]"><$link to=<<currentTiddler>>><<currentTiddler>></$link><$list filter="[[$:/core]plugintiddlers[]match<currentTiddler>]" variable="ignore"> ''replaces a core tiddler''</$list><br></$list>
