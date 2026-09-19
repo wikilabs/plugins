@@ -25,17 +25,30 @@ function cached(key, title, compute) {
 	return entry.value;
 }
 
+function lineOffsets(text) {
+	var offsets = [0];
+	for(var i = 0; i < text.length; i++) {
+		if(text.charAt(i) === "\n") offsets.push(i + 1);
+	}
+	return offsets;
+}
+
 // Character offset of each line start in a tiddler's text.
 exports.getLineOffsets = function(title) {
 	return cached("lines\0" + title, title, function() {
-		var text = $tw.wiki.getTiddlerText(title, "");
-		var offsets = [0];
-		for(var i = 0; i < text.length; i++) {
-			if(text.charAt(i) === "\n") offsets.push(i + 1);
-		}
-		return offsets;
+		return lineOffsets($tw.wiki.getTiddlerText(title, ""));
 	});
 };
+
+// Inline text has no tiddler to cache on; one entry is enough, since a render parses one text.
+var inlineLines = { text: null, offsets: null };
+
+function inlineLineOffsets(text) {
+	if(inlineLines.text !== text) {
+		inlineLines = { text: text, offsets: lineOffsets(text) };
+	}
+	return inlineLines.offsets;
+}
 
 // 1-based line number holding charPos.
 exports.charToLine = function(offsets, charPos) {
@@ -71,11 +84,11 @@ exports.findBodyOffset = function(title, bodyText) {
 
 // --- Where a rendered widget comes from ---
 
-// The nearest source context above a widget: its tiddler, the offset into it, and the variable that produced it.
+// The nearest source context above a widget: its tiddler, the offset into it, the variable that produced it, and the inline text it was parsed from, if any.
 exports.getSourceInfo = function(widget) {
 	for(var w = widget; w; w = w.parentWidget) {
 		if(w.sourceContext !== undefined) {
-			return { title: w.sourceContext, offset: w.sourceContextOffset || 0, via: w.sourceContextVariable };
+			return { title: w.sourceContext, offset: w.sourceContextOffset || 0, via: w.sourceContextVariable, text: w.sourceContextText };
 		}
 	}
 	return null;
@@ -93,14 +106,15 @@ exports.buildCallerChain = function(widget) {
 	return chain;
 };
 
-// A widget's lines in its source tiddler's .tid file, header included: { title, start, end }, or null.
+// A widget's lines in its source tiddler's .tid file, header included, or in the inline text it was parsed from: { title, start, end }, or null.
 exports.lineRange = function(widget) {
 	var ptn = widget.parseTreeNode;
 	if(!ptn || ptn.start === undefined) return null;
 	var info = exports.getSourceInfo(widget);
 	if(!info) return null;
-	var offsets = exports.getLineOffsets(info.title);
-	var header = exports.getTidHeaderLines(info.title);
+	var inline = info.text !== undefined;
+	var offsets = inline ? inlineLineOffsets(info.text) : exports.getLineOffsets(info.title);
+	var header = inline ? 0 : exports.getTidHeaderLines(info.title);
 	return {
 		title: info.title,
 		start: exports.charToLine(offsets, ptn.start + info.offset) + header,

@@ -131,6 +131,10 @@ module.exports = {
 			try {
 				var posWidget = $tw.wiki.makeWidget(built.wrappedTree, built.widgetOptions);
 				posWidget.sourceContext = args.context || "(inline)";
+				// Parse offsets index args.text, so lines count in it unless it is the context tiddler's own text.
+				if(!args.context || $tw.wiki.getTiddlerText(args.context) !== args.text) {
+					posWidget.sourceContextText = args.text;
+				}
 				var posContainer = $tw.fakeDocument.createElement("div");
 				posWidget.render(posContainer, null);
 				return shared.textResult( compactPositions(posContainer) );
@@ -150,7 +154,7 @@ module.exports = {
 // MCP tool definition — advertised via mcp-handlers getToolDefinitions();
 // write:true marks tools hidden in readonly mode.
 module.exports["inspect_pos"].definition = {
-	"description": "Render wikitext to HTML with source-position attrs + title index header. Header: [0=Title 1=Title ...]. Each node may carry p=\"idx:line\" or p=\"idx:start-end\" (idx→header, lines in defining tiddler), v=\"name\" (transcluded procedure/macro/variable that produced this node), c=\"A|B|C\" (caller chain — closest enclosing transclude first, outermost last), and ctx=\"Title\" (currentTiddler when it differs from the source-context tiddler — distinguishes repeated list items). Pair with inspect_scope.",
+	"description": "Render wikitext to HTML with source-position attrs + title index header. Header: [0=Title 1=Title ...]. Each node may carry p=\"idx:line\" or p=\"idx:start-end\" (idx→header; lines in the defining tiddler's .tid file, or in text itself unless text is context's own text), v=\"name\" (transcluded procedure/macro/variable that produced this node), c=\"A|B|C\" (caller chain — closest enclosing transclude first, outermost last), and ctx=\"Title\" (currentTiddler when it differs from the source-context tiddler — distinguishes repeated list items). Pair with inspect_scope.",
 	"inputSchema": {
 		"type": "object",
 		"properties": {
@@ -164,7 +168,7 @@ module.exports["inspect_pos"].definition = {
 			},
 			"context": {
 				"type": "string",
-				"description": "Context tiddler"
+				"description": "Context tiddler: sets currentTiddler and names text in the header"
 			}
 		},
 		"required": [
