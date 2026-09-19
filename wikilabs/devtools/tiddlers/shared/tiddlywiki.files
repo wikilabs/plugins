@@ -1,0 +1,12 @@
+{
+	"tiddlers": [
+		{
+			"file": "../../../tw-mcp-core/tiddlers/shared/sourcepos.js",
+			"fields": {
+				"title": "$:/plugins/wikilabs/shared/sourcepos.js",
+				"type": "application/javascript",
+				"module-type": "library"
+			}
+		}
+	]
+}

@@ -12,7 +12,7 @@ used globals / other globals.
 "use strict";
 
 var shared = require("$:/core/modules/commands/inspect/handlers/shared.js");
-var inspectShared = require("$:/core/modules/commands/inspect/handlers/inspect/_shared.js");
+var sourcePos = require("$:/plugins/wikilabs/shared/sourcepos.js");
 
 // --- inspect_scope helpers (hoisted to module scope) ---------------------
 //
@@ -166,20 +166,13 @@ module.exports = {
 			var targetCharPos = args.charPos || 0;
 			var contextTiddler = args.context || args.tiddler;
 			var extraVars = buildRenderContextVars(args.renderContext || "isolated", contextTiddler);
-			// Apply the source-title-tracking patches before rendering so the
-			// importvariables widget stamps `sourceTitle` on each imported
-			// variable instance. The mutations persist after restore (they
-			// live on the variable-info objects), so we can restore the
-			// patches before walking the widget tree. Without this, every
-			// variable would land in "local scope" because none would have
-			// sourceTitle set, and "— used globals" / "— other globals"
-			// sections never fire.
-			var restoreSourceTitle = inspectShared.patchSourceTitleTracking();
+			// The patches tag each imported variable with its sourceTitle, which sorts globals from locals; the tags outlive the release.
+			var releasePatches = sourcePos.acquire();
 			var rendered;
 			try {
 				rendered = shared.parseAndRender(textToRender, "text/vnd.tiddlywiki", contextTiddler, extraVars);
 			} finally {
-				restoreSourceTitle();
+				releasePatches();
 			}
 			if(!rendered) {
 				return shared.errorResult( "No parser for text" );
