@@ -28,6 +28,9 @@ var TIDDLERS_TO_IGNORE = [
 
 var MIN_GROUP_COUNT = 3;
 
+// What import staged; extract writes only these, never whatever else the running wiki holds.
+var STAGED_TITLE = "$:/temp/mcp/html-import/staged";
+
 // import_html_wiki accepts paths from anywhere on disk by design (the user
 // typically points it at a downloaded `index.html`), so we cannot gate it on
 // `allowedPaths` like upload_file does. As a defence-in-depth, refuse any
@@ -325,6 +328,18 @@ function importHandler(args) {
 		"proposed-filesystem-paths": analysis.proposedText
 	});
 	wiki.addTiddler(analysisTiddler);
+	var ownDefaultTiddlers = null;
+	allTiddlers.forEach(function(fields) {
+		if(fields.title === "$:/DefaultTiddlers") ownDefaultTiddlers = fields;
+	});
+	wiki.addTiddler(new $tw.Tiddler({
+		title: STAGED_TITLE,
+		type: "application/json",
+		text: JSON.stringify({
+			titles: allTiddlers.map(function(fields) { return fields.title; }),
+			defaultTiddlers: ownDefaultTiddlers
+		})
+	}));
 	// Create a visible tiddler with the full proposed rules (browsable in the wiki)
 	var fullRulesLines = [
 		"! Proposed Folder Structure",
@@ -394,6 +409,10 @@ function extractHandler(args) {
 	if(analysisTiddler.fields.status === "extracted") {
 		return shared.errorResult("Tiddlers have already been extracted to disk.");
 	}
+	var staged = $tw.wiki.getTiddlerData(STAGED_TITLE, null);
+	if(!staged) {
+		return shared.errorResult("The pending import has no list of staged tiddlers. Delete $:/temp/mcp/html-import and call import_html_wiki again.");
+	}
 	// Determine FileSystemPaths: args override > user-edited tiddler > proposed
 	var fileSystemPathsText = args.fileSystemPaths
 		|| $tw.wiki.getTiddlerText("$:/config/FileSystemPaths", "")
@@ -419,12 +438,14 @@ function extractHandler(args) {
 	if(!tiddlersDir) {
 		return shared.errorResult("No wiki tiddlers path available.");
 	}
-	// Get tiddlers to extract — regular content + system + custom plugin tiddlers
-	// (kept as single tiddlers, not exploded). Library plugins live in tiddlywiki.info
-	// and are not in the regular tiddler space, so they're naturally excluded.
+	// Import replaced $:/DefaultTiddlers to open the proposed rules; the wiki's own one belongs on disk.
+	if(staged.defaultTiddlers) {
+		shared.addToWikiSilently(staged.defaultTiddlers);
+	}
+	// The staged content, system and custom plugin tiddlers (plugins kept whole), less what core's
+	// saver also leaves out. Library plugins live in tiddlywiki.info, so they were never staged.
 	var allTitles = $tw.wiki.filterTiddlers(
-		"[all[tiddlers]!has[plugin-type]]" +
-		" [all[tiddlers]plugin-type[plugin]]" +
+		"[is[tiddler]]" +
 		" -[prefix[$:/state/popup/]]" +
 		" -[prefix[$:/temp/]]" +
 		" -[prefix[$:/HistoryList]]" +
@@ -433,7 +454,9 @@ function extractHandler(args) {
 		" -[[$:/boot/bootprefix.js]]" +
 		" -[[$:/library/sjcl.js]]" +
 		" -[is[system]type[application/javascript]library[yes]]" +
-		" -[status[pending]plugin-type[import]]"
+		" -[status[pending]plugin-type[import]]",
+		null,
+		$tw.wiki.makeTiddlerIterator(staged.titles.concat("$:/config/FileSystemPaths"))
 	);
 	var checkPathAllowed = shared.getCheckPathAllowed();
 	var bootedPlugins = bootedPluginTitleSet();
