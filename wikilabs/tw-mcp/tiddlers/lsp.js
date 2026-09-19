@@ -38,7 +38,8 @@ MCP server is running in this process.
 
 "use strict";
 
-var startLSPServer = require("$:/core/modules/commands/inspect/lsp/lsp-lib.js").startLSPServer;
+// Boot executes every command module, so tw-mcp-core code is required inside execute, after this check.
+var CORE_MODULE = "$:/core/modules/commands/inspect/mcp-handlers.js";
 
 exports.info = {
 	name: "lsp",
@@ -52,6 +53,9 @@ var Command = function(params, commander, callback) {
 };
 
 Command.prototype.execute = function() {
+	if(!$tw.modules.titles[CORE_MODULE]) {
+		return "--lsp needs the wikilabs/tw-mcp-core plugin: add it to the plugins list in tiddlywiki.info, next to wikilabs/tw-mcp.";
+	}
 	var options = {};
 	for(var i = 0; i < this.params.length; i++) {
 		var param = this.params[i];
@@ -76,7 +80,7 @@ Command.prototype.execute = function() {
 	if(options.port !== undefined && !(options.port >= 0 && options.port < 65536)) {
 		return "--lsp port must be a number between 0 (any free port) and 65535";
 	}
-	startLSPServer(options);
+	require("$:/core/modules/commands/inspect/lsp/lsp-lib.js").startLSPServer(options);
 	return null;
 };
 

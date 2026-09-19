@@ -38,8 +38,10 @@ If both "sse" and "listen" are given, sse wins (no error).
 
 "use strict";
 
-var startMCPServer = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js").startMCPServer;
 var Server = require("$:/core/modules/server/server.js").Server;
+
+// Boot executes every command module, so tw-mcp-core code is required inside execute, after this check.
+var CORE_MODULE = "$:/core/modules/commands/inspect/mcp-handlers.js";
 
 exports.info = {
 	name: "mcp",
@@ -53,6 +55,10 @@ var Command = function(params, commander, callback) {
 };
 
 Command.prototype.execute = function() {
+	if(!$tw.modules.titles[CORE_MODULE]) {
+		return "--mcp needs the wikilabs/tw-mcp-core plugin: add it to the plugins list in tiddlywiki.info, next to wikilabs/tw-mcp.";
+	}
+	var startMCPServer = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js").startMCPServer;
 	// --lsp has the same guard, so the collision is refused whichever command
 	// the user listed first.
 	if($tw.lsp && $tw.lsp.transport === "stdio") {

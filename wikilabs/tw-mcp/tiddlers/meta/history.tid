@@ -7,6 +7,7 @@ V 0.19.1 - 2026-09-19
 * On Windows, wikis started as `tiddlywiki . --mcp` in different folders each get their own server instead of the second one finding the pipe taken.
 * `search_lines` shows the first matches of a tiddler that has more than `max_lines_per_tiddler` and goes on to the next tiddler, where it used to end the search, sometimes with `(no matches)`.
 * `replace_in_tiddlers` inserts a literal rule's replacement as written; `$&`, `$$` and `$1` expand only in regex rules.
+* A wiki that lists `wikilabs/tw-mcp` without `wikilabs/tw-mcp-core` boots again for other commands, and `--mcp` or `--lsp` says which plugin to add instead of crashing.
 
 V 0.19.0 - 2026-09-17
 
