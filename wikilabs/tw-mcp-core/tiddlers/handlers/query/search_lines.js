@@ -135,7 +135,7 @@ module.exports = {
 			bucket.fieldEntries[e.field].push(e);
 		}
 		// Pass 3: format. Detect range boundaries by line-number gaps within (title, field).
-		// Apply caps on MATCH count: an entire range is accepted or dropped atomically.
+		// Caps count MATCH lines; the range that reaches one is cut after its last allowed match.
 		// Display: existing match form for matches, '- ' prefix for context, '  --'
 		// separator between non-adjacent ranges (only when context is requested -- without
 		// context every match looks like its own 1-line range, and separators would noise).
@@ -146,17 +146,27 @@ module.exports = {
 				: field + ":L" + lineNum;
 			return (isMatch ? "  " : "  - ") + prefix + ": " + displayText;
 		}
+		// The entries of a range up to and including its nth match.
+		function cutAfterMatches(range, n) {
+			var kept = [], seen = 0;
+			for(var i = 0; i < range.length && seen < n; i++) {
+				kept.push(range[i]);
+				if(range[i].isMatch) seen++;
+			}
+			return kept;
+		}
 		var blocks = [];
 		var totalMatches = 0;
 		var truncated = false;
-		for(var ti = 0; ti < titleOrder.length; ti++) {
-			if(truncated) break;
+		var tiddlersCut = 0;
+		for(var ti = 0; ti < titleOrder.length && !truncated; ti++) {
 			var t = titleOrder[ti];
 			var bucket = titleBuckets[t];
 			var perTiddler = 0;
+			var tiddlerCut = false;
 			var titleLines = [];
 			var titleHasContent = false;
-			for(var fi = 0; fi < bucket.fieldOrder.length && !truncated; fi++) {
+			for(var fi = 0; fi < bucket.fieldOrder.length && !truncated && !tiddlerCut; fi++) {
 				var fName = bucket.fieldOrder[fi];
 				var fEntries = bucket.fieldEntries[fName];
 				// Split into ranges by line-number gap.
@@ -171,33 +181,41 @@ module.exports = {
 					current.push(entry);
 				}
 				if(current) ranges.push(current);
-				// Accept whole ranges until a cap would be exceeded.
+				// The per-tiddler cap ends this tiddler only; the total cap ends the search.
 				for(var ri = 0; ri < ranges.length; ri++) {
 					var range = ranges[ri];
 					var rangeMatches = 0;
 					for(var rei = 0; rei < range.length; rei++) {
 						if(range[rei].isMatch) rangeMatches++;
 					}
-					if(perTiddler + rangeMatches > maxPerTiddler) {
-						truncated = true;
-						break;
+					var tiddlerRoom = maxPerTiddler - perTiddler;
+					var totalRoom = maxTotal - totalMatches;
+					var room = Math.min(tiddlerRoom, totalRoom);
+					if(rangeMatches > room) {
+						range = cutAfterMatches(range, room);
+						rangeMatches = room;
+						if(totalRoom <= tiddlerRoom) {
+							truncated = true;
+						} else {
+							tiddlerCut = true;
+						}
 					}
-					if(totalMatches + rangeMatches > maxTotal) {
-						truncated = true;
-						break;
+					if(rangeMatches > 0) {
+						if(titleHasContent && hasContext) {
+							titleLines.push("  --");
+						}
+						for(var rei = 0; rei < range.length; rei++) {
+							var re = range[rei];
+							titleLines.push(formatLine(re.field, re.line, re.text, re.isMatch));
+						}
+						perTiddler += rangeMatches;
+						totalMatches += rangeMatches;
+						titleHasContent = true;
 					}
-					if(titleHasContent && hasContext) {
-						titleLines.push("  --");
-					}
-					for(var rei = 0; rei < range.length; rei++) {
-						var re = range[rei];
-						titleLines.push(formatLine(re.field, re.line, re.text, re.isMatch));
-					}
-					perTiddler += rangeMatches;
-					totalMatches += rangeMatches;
-					titleHasContent = true;
+					if(truncated || tiddlerCut) break;
 				}
 			}
+			if(tiddlerCut) tiddlersCut++;
 			if(titleLines.length > 0) {
 				blocks.push(t + "\n" + titleLines.join("\n"));
 			}
@@ -208,6 +226,10 @@ module.exports = {
 		var output = blocks.join("\n\n");
 		output += "\n\n" + totalMatches + " line" + (totalMatches !== 1 ? "s" : "") +
 			" matched in " + blocks.length + " tiddler" + (blocks.length !== 1 ? "s" : "");
+		if(tiddlersCut > 0) {
+			output += "\n(truncated: " + tiddlersCut + " tiddler" + (tiddlersCut !== 1 ? "s" : "") +
+				" cut at max_lines_per_tiddler=" + maxPerTiddler + "; raise it to see more)";
+		}
 		if(truncated) {
 			output += "\n(truncated at " + maxTotal + " matches; narrow filter or raise max_lines_total)";
 		}
