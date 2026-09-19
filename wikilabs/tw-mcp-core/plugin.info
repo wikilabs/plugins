@@ -4,7 +4,7 @@
 	"description": "MCP tool handlers for TiddlyWiki (runtime-agnostic core)",
 	"author": "pmario",
 	"core-version": ">=5.4.0",
-	"version": "0.17.0",
+	"version": "0.17.1",
 	"list": "readme license",
 	"stability": "STABILITY_1_EXPERIMENTAL"
 }

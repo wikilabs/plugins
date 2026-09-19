@@ -76,7 +76,7 @@ exports["search-lines"] = function(source, operator, options) {
 	var matcher = compiled.matcher;
 	var results = [];
 	source(function(tiddler, title) {
-		if(!tiddler) return;
+		if(!tiddler || shared.isPluginTiddler(tiddler)) return;
 		for(var fi = 0; fi < fields.length; fi++) {
 			var field = fields[fi];
 			var value = tiddler.fields[field];

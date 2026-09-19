@@ -112,7 +112,7 @@ module.exports["find_calls"].definition = {
 			},
 			"filter": {
 				"type": "string",
-				"description": "TW filter scope; default '[all[tiddlers]!is[system]]' or '[all[tiddlers]]' when include_system"
+				"description": "TW filter scope; default '[all[tiddlers]!is[system]]' or '[all[tiddlers]]' when include_system. Plugin tiddlers are never scanned, their shadow subtiddlers are"
 			},
 			"include_system": {
 				"type": "boolean",

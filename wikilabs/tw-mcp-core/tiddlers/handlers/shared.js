@@ -356,11 +356,18 @@ function errorResult(msg) {
 //   var titles = scoped.titles;
 function scopedTitles(args) {
 	var scope = args.filter || (args.include_system ? "[all[tiddlers]]" : "[all[tiddlers]!is[system]]");
+	var titles;
 	try {
-		return { titles: $tw.wiki.filterTiddlers(scope) };
+		titles = $tw.wiki.filterTiddlers(scope);
 	} catch(e) {
 		return { errorResult: errorResult("Filter error: " + e.message) };
 	}
+	return { titles: titles.filter(function(title) { return !isPluginTiddler($tw.wiki.getTiddler(title)); }) };
+}
+
+// A plugin, theme, language or import tiddler, whose text is a whole bundle as JSON; the search tools never scan one, only its shadow subtiddlers.
+function isPluginTiddler(tiddler) {
+	return !!(tiddler && tiddler.fields["plugin-type"]);
 }
 
 // The 1-based line holding offset in text, its text and the offset's column.
@@ -669,6 +676,7 @@ exports.checkTitle = checkTitle;
 exports.textResult = textResult;
 exports.errorResult = errorResult;
 exports.scopedTitles = scopedTitles;
+exports.isPluginTiddler = isPluginTiddler;
 exports.lineAt = lineAt;
 exports.lineSnippet = lineSnippet;
 exports.compileSearchRegex = compileSearchRegex;
