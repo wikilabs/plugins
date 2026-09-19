@@ -4,6 +4,8 @@ tags: $:/tags/ControlPanel/WikiLabs
 
 The runtime-agnostic core of the [[tw-mcp|$:/plugins/wikilabs/tw-mcp]] MCP server: the tool handlers (crud, query, render, inspect), the hashline edit engine and the tool dispatcher. It contains no transport and no filesystem tools — the ''tw-mcp'' server plugin adds those plus HTTP/SSE/stdio on top and is the plugin to install for a node MCP server. Install BOTH plugins there; this core alone serves embedders that host the handlers against their own `$tw` (e.g. the Facets bare-vm engine).
 
+`inspect_pos` needs the `wikilabs/devtools` plugin. This plugin declares it a dependent, but TiddlyWiki does not load a dependent by itself, so list it in `tiddlywiki.info` as well, or pass `+plugins/wikilabs/devtools` before the wiki path.
+
 Tool handlers are modules of `module-type: mcp-handler`; each export becomes a tool, keyed by export name. Any plugin can contribute tools by shipping such a module.
 
 Code in this plugin must stay runtime-agnostic: no unguarded node requires at load time, and no `\p{...}` regex without feature detection (no-ICU JS engines reject them).
