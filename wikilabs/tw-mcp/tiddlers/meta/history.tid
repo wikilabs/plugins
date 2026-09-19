@@ -3,6 +3,7 @@ title: $:/plugins/wikilabs/tw-mcp/history
 V 0.20.1 - 2026-09-19
 
 * `search_lines`, `replace_in_tiddlers`, `find_calls` and the `search-lines` operator never scan a plugin tiddler, whose text is its whole bundle as JSON; their shadow subtiddlers are still searched. A filter naming a plugin used to return lines of hundreds of kilobytes, and `replace_in_tiddlers` rewrote the bundle.
+* Hover answers on a widget's tags and on an `<%if%>` block's markers only; the content between them no longer opens a popup, and the editor highlights the tag, not the whole element.
 
 V 0.20.0 - 2026-09-19
 

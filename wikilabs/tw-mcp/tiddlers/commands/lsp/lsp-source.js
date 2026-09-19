@@ -122,6 +122,9 @@ function parseWithBodies(bodyText) {
 	return tree;
 }
 
+// Where the parser says an element's tags sit, next to its start and end.
+var TAG_EDGES = ["openTagStart", "openTagEnd", "closeTagStart", "closeTagEnd"];
+
 // Moves every range in a parsed tree by delta. An attribute is reachable both
 // through attributes and orderedAttributes, so each object is moved once.
 function shift(nodes, delta) {
@@ -131,6 +134,9 @@ function shift(nodes, delta) {
 			moved.push(item);
 			item.start += delta;
 			item.end += delta;
+			TAG_EDGES.forEach(function(edge) {
+				if(item[edge] !== undefined) item[edge] += delta;
+			});
 		}
 	}
 	(function walk(list) {

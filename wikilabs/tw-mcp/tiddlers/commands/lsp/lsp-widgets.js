@@ -64,10 +64,24 @@ function widgetSites(tree, text) {
 			type: node.type,
 			start: node.start,
 			end: node.end,
+			spots: tagSpots(node),
 			attributes: node.orderedAttributes || toOrdered(node.attributes)
 		});
 	});
 	return sites;
+}
+
+// Where a widget answers a hover: its opening and closing tags, never its content.
+// The parser records no openTagStart for a self-closing tag, which is all the element is.
+function tagSpots(node) {
+	if(node.openTagStart === undefined) {
+		return [{ start: node.start, end: node.end }];
+	}
+	var spots = [{ start: node.openTagStart, end: node.openTagEnd }];
+	if(node.closeTagEnd > node.closeTagStart) {
+		spots.push({ start: node.closeTagStart, end: node.closeTagEnd });
+	}
+	return spots;
 }
 
 function toOrdered(attributes) {

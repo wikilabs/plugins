@@ -109,22 +109,41 @@ function conditionalBlocks(tree, body) {
 	source.eachNode(tree, function(node) {
 		var clauses = calls.conditionalClauses(node, body);
 		if(clauses) {
-			blocks.push({ clauses: clauses, start: node.start, end: node.end });
+			blocks.push({ clauses: clauses, start: node.start, end: node.end, spots: markerSpots(clauses, node, body) });
 		}
 	});
 	return blocks;
 }
 
-// The smallest site containing the cursor, so an inner filter wins over the
-// widget that encloses it.
+// Where a block answers a hover: each clause's <%...%> marker and its <%endif%>, never what it renders.
+function markerSpots(clauses, node, body) {
+	var spots = clauses.map(function(clause) {
+		return { start: clause.at, end: body.indexOf("%>", clause.at) + 2 };
+	});
+	var last = body.lastIndexOf("<%", node.end - 1);
+	if(/^<%\s*endif\s*%>$/.test(body.slice(last, node.end))) {
+		spots.push({ start: last, end: node.end });
+	}
+	return spots;
+}
+
+// The part of a site that answers a hover at offset: one of its spots, else its whole range; or null.
+function spotAt(site, offset) {
+	return (site.spots || [site]).find(function(spot) {
+		return offset >= spot.start && offset < spot.end;
+	}) || null;
+}
+
+// The site with the smallest spot under the cursor, so an inner filter wins over
+// the widget that encloses it.
 function innermostSite(sites, offset) {
-	var best = null;
+	var best = null,
+		bestSize = Infinity;
 	for(var i = 0; i < sites.length; i++) {
-		var site = sites[i];
-		if(offset >= site.start && offset < site.end) {
-			if(!best || (site.end - site.start) < (best.end - best.start)) {
-				best = site;
-			}
+		var spot = spotAt(sites[i], offset);
+		if(spot && spot.end - spot.start < bestSize) {
+			best = sites[i];
+			bestSize = spot.end - spot.start;
 		}
 	}
 	return best;
@@ -572,21 +591,26 @@ function hover(uri, text, position, openDocuments) {
 		// once, since it renders and one hover may run two filters.
 		at = source.renderAt(source.titleOfDocument(uri, text), body.text, cursor),
 		context = at.context;
-	var call = innermostSite(macros.callSites(tree), cursor),
-		widgetsHere = widgets.widgetSites(tree, body.text);
+	var widgetsHere = widgets.widgetSites(tree, body.text),
+		// A <$transclude> or <$macrocall> is a widget as well as a call, so it answers on its tags.
+		callsHere = macros.callSites(tree).map(function(site) {
+			var tagged = site.tag && widgetsHere.find(function(w) { return w.start === site.start; });
+			return tagged ? Object.assign({}, site, { spots: tagged.spots }) : site;
+		}),
+		call = innermostSite(callsHere, cursor);
 	if(call) {
-		// A <$transclude> or <$macrocall> is a widget as well as a call, so the
-		// widget is described and the call it makes follows.
+		// The widget is described and the call it makes follows.
 		var asWidget = call.tag && widgetsHere.find(function(w) { return w.start === call.start; }),
-			described = describeCall(call, body, context, tree);
+			described = describeCall(call, body, context, tree),
+			callSpot = spotAt(call, cursor);
 		return {
 			contents: {
 				kind: "markdown",
 				value: asWidget ? describeWidget(asWidget, context, renderedWidget(at.widget), body.text, described) : described
 			},
 			range: {
-				start: source.positionAt(body.starts, body.offset + call.start),
-				end: source.positionAt(body.starts, body.offset + call.end)
+				start: source.positionAt(body.starts, body.offset + callSpot.start),
+				end: source.positionAt(body.starts, body.offset + callSpot.end)
 			}
 		};
 	}
@@ -596,7 +620,7 @@ function hover(uri, text, position, openDocuments) {
 		site = innermostSite(filters.concat(widgetsHere, conditionalBlocks(tree, body.text)), cursor),
 		unbound = at.widget && !renderedWidget(at.widget) ? UNBOUND_NOTE : "",
 		value,
-		span = site;
+		span = site && spotAt(site, cursor);
 	if(site) {
 		if(site.clauses) {
 			value = describeConditional(site, context) + unbound;
