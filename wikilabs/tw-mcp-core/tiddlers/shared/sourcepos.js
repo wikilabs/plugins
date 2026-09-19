@@ -98,13 +98,33 @@ exports.getSourceInfo = function(widget) {
 exports.buildCallerChain = function(widget) {
 	var chain = [], last = null;
 	for(var w = widget; w; w = w.parentWidget) {
-		if(w.sourceContext !== undefined && w.sourceContext !== last) {
-			if(last !== null) chain.push(w.sourceContext);
-			last = w.sourceContext;
+		if(w.sourceContext !== undefined) {
+			var name = w.sourceContextLabel !== undefined ? w.sourceContextLabel : w.sourceContext;
+			if(name !== last) {
+				if(last !== null) chain.push(name);
+				last = name;
+			}
 		}
 	}
 	return chain;
 };
+
+// Where the body of a definition made inside the rendered text sits in that text: { title, text, offset }, or null.
+function localDefinition(widget, name, variable) {
+	if(!variable.isProcedureDefinition && !variable.isMacroDefinition && !variable.isWidgetDefinition) return null;
+	for(var w = widget; w; w = w.parentWidget) {
+		if(Object.prototype.hasOwnProperty.call(w.variables, name)) {
+			var ptn = w.parseTreeNode;
+			var info = exports.getSourceInfo(w);
+			if(w.variables[name] !== variable || !ptn || ptn.start === undefined || !info) return null;
+			var text = info.text !== undefined ? info.text : $tw.wiki.getTiddlerText(info.title, "");
+			var body = text.indexOf(variable.value, info.offset + ptn.start);
+			if(body < 0 || (ptn.end !== undefined && body > info.offset + ptn.end)) return null;
+			return { title: info.title, text: info.text, offset: body };
+		}
+	}
+	return null;
+}
 
 // A widget's lines in its source tiddler's .tid file, header included, or in the inline text it was parsed from: { title, start, end }, or null.
 exports.lineRange = function(widget) {
@@ -207,12 +227,23 @@ function install() {
 	TranscludeWidget.prototype.execute = function() {
 		origTranscludeExecute.call(this);
 		if(!$tw.wiki.trackSourcePositions) return;
+		this.sourceContextText = undefined;
+		this.sourceContextLabel = undefined;
 		// With both $variable and $tiddler set, the parse tree comes from the variable.
 		if(this.transcludeVariable) {
 			var varInfo = this.getVariableInfo(this.transcludeVariable);
 			var srcVar = varInfo && varInfo.srcVariable;
-			this.sourceContext = (srcVar && srcVar.sourceTitle) || this.transcludeVariable;
-			this.sourceContextOffset = (srcVar && srcVar.sourceTitle && srcVar.value) ? exports.findBodyOffset(srcVar.sourceTitle, srcVar.value) : 0;
+			var local = srcVar && !srcVar.sourceTitle && localDefinition(this, this.transcludeVariable, srcVar);
+			if(local) {
+				this.sourceContext = local.title;
+				this.sourceContextText = local.text;
+				this.sourceContextOffset = local.offset;
+				// Its tiddler is the caller's too, so the caller chain names the definition instead.
+				this.sourceContextLabel = this.transcludeVariable;
+			} else {
+				this.sourceContext = (srcVar && srcVar.sourceTitle) || this.transcludeVariable;
+				this.sourceContextOffset = (srcVar && srcVar.sourceTitle && srcVar.value) ? exports.findBodyOffset(srcVar.sourceTitle, srcVar.value) : 0;
+			}
 			this.sourceContextVariable = this.transcludeVariable;
 		} else if(this.transcludeTitle) {
 			this.sourceContext = this.transcludeTitle;

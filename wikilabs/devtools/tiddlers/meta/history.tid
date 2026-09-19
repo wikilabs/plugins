@@ -5,6 +5,7 @@ V 0.8.0 - 2026.09.19
 
 * Source position tracking runs on a module shared with tw-mcp-core, so the browser view and the MCP tools trace every element to the same lines with the same code.
 * Line numbers follow edits to a tiddler instead of waiting for tracking to be switched off and on again.
+* Content from a procedure or macro defined in the same tiddler points at its lines in that tiddler, where it showed the procedure's name and line 1.
 
 V 0.7.1 - 2026.09.19
 
