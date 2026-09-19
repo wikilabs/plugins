@@ -39,7 +39,7 @@ module.exports = {
 // MCP tool definition — advertised via mcp-handlers getToolDefinitions();
 // write:true marks tools hidden in readonly mode.
 module.exports["run_filter"].definition = {
-	"description": "Execute TW filter expression. Returns titles, capped at 500 (output prefixed '(N total, showing first 500)' if truncated). Empty: '(no results)'. Filter max 10000 chars.",
+	"description": "Execute TW filter expression. Returns titles, one per line, capped at 500 (then a last line '(N total, showing first 500)'). Empty: '(no results)'. Filter max 10000 chars.",
 	"inputSchema": {
 		"type": "object",
 		"properties": {

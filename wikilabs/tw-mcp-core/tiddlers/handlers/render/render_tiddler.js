@@ -62,7 +62,7 @@ module.exports["render_tiddler"].definition = {
 					"text/plain-formatted",
 					"text/html"
 				],
-				"default": "text/plain-formatted"
+				"default": "text/plain"
 			},
 			"mode": {
 				"type": "string",

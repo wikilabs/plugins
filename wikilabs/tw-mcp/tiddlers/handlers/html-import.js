@@ -303,7 +303,7 @@ function importHandler(args) {
 	explanation.push("- Content tiddlers: " + contentTiddlers.length);
 	explanation.push("- System tiddlers: " + systemTiddlers.length);
 	explanation.push("- Library plugins (added to tiddlywiki.info): " + libraryPlugins.length);
-	explanation.push("- Custom plugins (kept as single .tid files): " + customPlugins.length);
+	explanation.push("- Custom plugins (kept whole, one file each): " + customPlugins.length);
 	explanation.push("- Ignored (boot/core): " + ignoredCount);
 	var totalTags = Object.keys(analysis.tagCounts).length;
 	var totalPrefixes = Object.keys(analysis.prefixCounts).length;
@@ -391,7 +391,7 @@ function importHandler(args) {
 		"  1. Read $:/temp/mcp/html-import for the analysis summary.",
 		"  2. Show the user the proposed folder structure (also visible in the browser as 'Import — Proposed Folder Structure').",
 		"  3. Let the user edit $:/config/FileSystemPaths in the browser if they want changes.",
-		"  4. When approved, call extract_html_wiki() to commit the .tid files to disk.",
+		"  4. When approved, call extract_html_wiki() to commit the tiddler files to disk.",
 		"  5. Restart the server once after extraction so any new library plugins activate."
 	].join("\n");
 	return shared.textResult(summary);
@@ -548,7 +548,7 @@ module.exports["import_html_wiki"].definition = {
 // MCP tool definition — advertised via mcp-handlers getToolDefinitions();
 // write:true marks tools hidden in readonly mode.
 module.exports["extract_html_wiki"].definition = {
-	"description": "Commit a previously staged HTML wiki import (see import_html_wiki) to disk as .tid files. Reads $:/config/FileSystemPaths from the wiki by default; the user can edit it in the browser before this call. Optionally override the rules via fileSystemPaths.",
+	"description": "Commit a previously staged HTML wiki import (see import_html_wiki) to disk: wikitext as .tid files, other types as a native file plus .meta, plugins whole. Reads $:/config/FileSystemPaths from the wiki by default; the user can edit it in the browser before this call. Optionally override the rules via fileSystemPaths.",
 	"inputSchema": {
 		"type": "object",
 		"properties": {

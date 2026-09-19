@@ -52,7 +52,7 @@ module.exports = {
 // MCP tool definition — advertised via mcp-handlers getToolDefinitions();
 // write:true marks tools hidden in readonly mode.
 module.exports["delete_tiddler"].definition = {
-	"description": "Delete tiddler + .tid file. Shadow-only tiddlers (plugin-provided): removed from store only, no file touched, reappear on reload. Path gated by allowed-paths.",
+	"description": "Delete tiddler + its file. A shadow-only title (plugin-provided, not overridden) is refused as not found; deleting an override brings the plugin's version back. Path gated by allowed-paths.",
 	"inputSchema": {
 		"type": "object",
 		"properties": {
