@@ -59,6 +59,12 @@ var PEAR_READ_TOOLS = ["get_wiki_info", "list_tiddlers", "get_tiddler", "run_fil
 	"search_lines", "get_tiddlers", "render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
 var PEAR_WRITE_TOOLS = ["put_tiddler", "delete_tiddler", "edit_tiddler", "rename_tiddler", "replace_in_tiddlers"];
 
+// A self-heal must fit inside the window a client is given to notice it, with
+// room for the handshake, so the retry period is a fraction of it, not equal
+// to it (bead tw-mcp-server-cjt).
+var SELF_HEAL_NOTICE_MS = 30000;
+var SELF_HEAL_RETRY_MS = 10000;
+
 // This client's own ed25519 identity for `agent` mode (concept 12
 // §Authorization). Persisted per-user so an approval sticks across restarts.
 // node's ed25519 is RFC 8032 and verifies under the app's libsodium (measured).
@@ -543,11 +549,11 @@ function startPearMode(options) {
 	var disco = session.bridge.readDiscovery();
 	log("pear mode: " + options.pearDir + (disco ? " -> " + disco.pipe + " (" + disco.mode + ")" : " (app not running yet — will dial on first call)"));
 	// self-healing: while unreachable or enrollment-pending, retry the
-	// handshake every 30 s — when the app comes up or the approval lands,
-	// the client is told to re-fetch the tool list.
+	// handshake — when the app comes up or the approval lands, the client is
+	// told to re-fetch the tool list.
 	setInterval(function() {
 		session.bridge.retryIfUnsettled();
-	}, 30000);
+	}, SELF_HEAL_RETRY_MS);
 }
 
 exports.startPearMode = startPearMode;
@@ -556,3 +562,5 @@ exports.startPearMode = startPearMode;
 exports.createPearSession = createPearSession;
 // Test seam: the default must keep an existing approval working (bead tw-mcp-server-u7n).
 exports.agentKeyPath = agentKeyPath;
+exports.SELF_HEAL_NOTICE_MS = SELF_HEAL_NOTICE_MS;
+exports.SELF_HEAL_RETRY_MS = SELF_HEAL_RETRY_MS;
