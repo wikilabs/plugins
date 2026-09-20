@@ -284,7 +284,7 @@ V 0.10.1 - 2026.05.08
 
 V 0.10.0 - 2026.05.08
 
-''SSE broadcast sync (server + client).'' New `--mcp sse` keyword adds a `GET /events` Server-Sent Events endpoint for real-time per-tiddler push sync, replacing tiddlyweb's 60-second polling. The browser-side startup module wraps the stock tiddlyweb adaptor at runtime -- no separate plugin install. Echo suppression via `X-MCP-Client-Id`; Last-Event-ID replay via ring buffer. Default `$:/config/SyncPollingInterval` set to 600000 (10-minute fallback). Without `--mcp sse`, polling stays in charge. Full docs in [[MCP SSE Sync]].
+''SSE broadcast sync (server + client).'' New `--mcp sse` keyword adds a `GET /events` Server-Sent Events endpoint for real-time per-tiddler push sync, replacing tiddlyweb's 60-second polling. The browser-side startup module wraps the stock tiddlyweb adaptor at runtime -- no separate plugin install. Echo suppression via `X-MCP-Client-Id`; Last-Event-ID replay via ring buffer. Default `$:/config/SyncPollingInterval` set to 600000 (10-minute fallback). Without `--mcp sse`, polling stays in charge. Full docs in [[SSE Sync]].
 
 V 0.9.4 - 2026.05.04
 
