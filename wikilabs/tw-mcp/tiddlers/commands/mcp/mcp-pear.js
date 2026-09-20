@@ -420,6 +420,7 @@ function createPearSession(options) {
 			"- get_tiddler / list_tiddlers reflect the shared bag; staged-only edits appear in the engine view.\n" +
 			"- This client enrolls with its own device identity; the member must approve it in the app's Agents panel before any tool works. A 'PENDING' error means approval is still needed.\n" +
 			"- Once approved at rw, writes land like member saves: they stay PRIVATE in staging until the member commits them.\n" +
+			"- A staged write is NOT yours to undo: only the member can discard or commit it, and delete_tiddler stages a deletion rather than removing the entry. Ask before writing what you cannot take back.\n" +
 			"- 'Facets app not reachable' errors mean the app is not running; ask the user to start it with --mcp.";
 	}
 
