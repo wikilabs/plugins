@@ -365,11 +365,6 @@ function scopedTitles(args) {
 	return { titles: titles.filter(function(title) { return !isPluginTiddler($tw.wiki.getTiddler(title)); }) };
 }
 
-// A plugin, theme, language or import tiddler, whose text is a whole bundle as JSON; the search tools never scan one, only its shadow subtiddlers.
-function isPluginTiddler(tiddler) {
-	return !!(tiddler && tiddler.fields["plugin-type"]);
-}
-
 // The 1-based line holding offset in text, its text and the offset's column.
 function lineAt(text, offset) {
 	var start = text.lastIndexOf("\n", offset - 1) + 1,
@@ -442,8 +437,7 @@ function toSet(arr) {
 	return set;
 }
 
-// Is the tiddler a plugin/theme/language/etc bundle? Returns true if any
-// `plugin-type` field value is present.
+// A plugin, theme, language or import tiddler, whose text is a whole bundle as JSON; the search tools never scan one, only its shadow subtiddlers.
 function isPluginTiddler(tiddler) {
 	return !!(tiddler && tiddler.fields["plugin-type"]);
 }
@@ -676,7 +670,6 @@ exports.checkTitle = checkTitle;
 exports.textResult = textResult;
 exports.errorResult = errorResult;
 exports.scopedTitles = scopedTitles;
-exports.isPluginTiddler = isPluginTiddler;
 exports.lineAt = lineAt;
 exports.lineSnippet = lineSnippet;
 exports.compileSearchRegex = compileSearchRegex;
