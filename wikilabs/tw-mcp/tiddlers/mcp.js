@@ -11,12 +11,14 @@ Usage (readonly by default):
   tiddlywiki ./wiki --mcp rw [label=<name>] [allowed-paths=<paths>]
   tiddlywiki ./wiki --mcp rw listen [port=<n>] [host=<h>] [label=<name>] ...
   tiddlywiki ./wiki --mcp rw sse    [port=<n>] [host=<h>] [label=<name>] ...
-  tiddlywiki ./wiki --mcp pear=<accountDir>   (serve a RUNNING Facets app)
+  tiddlywiki ./wiki --mcp pear=<accountDir> [label=<name>] [agent-key=<file>]
 
 Pear mode serves a running Facets (Pear) app instead of this process's wiki:
 <accountDir> is a Facets account directory whose mcp.json discovery file
 names the app's agent pipe. All other flags are ignored in pear mode; the
-read/write mode follows the app's own mcp.flag. See mcp-pear.js.
+read/write scope follows the agent's approved scope in the app. agent-key=
+points at this instance's identity file, so one machine can run more than one
+client; it defaults to ~/.tw-mcp/agent-key.json. See mcp-pear.js.
 
 Single-file wiki workflow (runtime tools):
   Start a normal --mcp rw listen server against an empty wiki folder, then
@@ -85,6 +87,8 @@ Command.prototype.execute = function() {
 			options.allowedPaths = param.slice("allowed-paths=".length).split(",");
 		} else if(param.indexOf("label=") === 0) {
 			options.label = param.slice("label=".length);
+		} else if(param.indexOf("agent-key=") === 0) {
+			options.agentKeyFile = param.slice("agent-key=".length);
 		} else if(param.indexOf("=") !== -1) {
 			// Named parameter — forward to listen server if in listen mode
 			var eq = param.indexOf("=");

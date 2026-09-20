@@ -5,7 +5,7 @@ module-type: library
 
 Pear-mode backend: `--mcp pear=<accountDir>` serves a RUNNING Facets (Pear)
 app instead of this process's wiki. The account dir's discovery file
-(mcp.json, written by the app while its mcp.flag is set) names a same-user
+(mcp.json, written by the app when it is started with --mcp) names a same-user
 OS pipe; every tool call is forwarded over it as an NDJSON bridge frame
 ({v:1,id,cmd,args} -> {id,ok,result|error}). This process's own wiki is only
 the plugin host — no local handlers, no HTTP, no primary/proxy machinery.
@@ -62,9 +62,14 @@ var PEAR_WRITE_TOOLS = ["put_tiddler", "delete_tiddler", "edit_tiddler", "rename
 // This client's own ed25519 identity for `agent` mode (concept 12
 // §Authorization). Persisted per-user so an approval sticks across restarts.
 // node's ed25519 is RFC 8032 and verifies under the app's libsodium (measured).
-function loadOrCreateAgentKey() {
-	var dir = path.join(os.homedir(), ".tw-mcp");
-	var file = path.join(dir, "agent-key.json");
+// Where this instance keeps that identity; agent-key= lets one machine run
+// more than one, which enrollment testing and two scopes both need.
+function agentKeyPath(options) {
+	return (options && options.agentKeyFile) || path.join(os.homedir(), ".tw-mcp", "agent-key.json");
+}
+function loadOrCreateAgentKey(options) {
+	var file = agentKeyPath(options);
+	var dir = path.dirname(file);
 	try {
 		var jwk = JSON.parse(fs.readFileSync(file, "utf8"));
 		return {
@@ -165,7 +170,7 @@ function createPearBridge(pearDir, options) {
 	var sockBuf = "";
 	var nextFrameId = 1;
 	var inflight = {}; // frame id -> { cb, timer }
-	var authState = "none"; // none | full-trust | authenticated | pending | denied
+	var authState = "none"; // none | authenticated | pending | denied
 	var authScope = "ro";
 	var agentKey = null; // { priv, pubHex } — lazy, agent mode only
 	var connState = "idle"; // idle | connecting | open — single-flight connect
@@ -173,7 +178,7 @@ function createPearBridge(pearDir, options) {
 	var readyWaiters = []; // single-flight handshake
 	var handshakeInFlight = false;
 	function effectiveRw() {
-		return (authScope === "rw") && (authState === "full-trust" || authState === "authenticated");
+		return (authScope === "rw") && (authState === "authenticated");
 	}
 
 	function readDiscovery() {
@@ -205,7 +210,7 @@ function createPearBridge(pearDir, options) {
 		connState = "connecting";
 		var disco = readDiscovery();
 		if(!disco || !disco.pipe) {
-			return flushConn(new Error("Facets app not reachable — no discovery file at " + path.join(pearDir, "mcp.json") + ". Is the app running with mcp.flag set?"));
+			return flushConn(new Error("Facets app not reachable — no discovery file at " + path.join(pearDir, "mcp.json") + ". Is the app running with --mcp?"));
 		}
 		var s = net.connect(disco.pipe);
 		var settled = false;
@@ -288,17 +293,10 @@ function createPearBridge(pearDir, options) {
 				for(var i = 0; i < w.length; i++) w[i](e);
 				onHandshake();
 			}
-			var disco = readDiscovery();
-			if(!disco || disco.mode !== "agent") {
-				authState = "full-trust";
-				authScope = (disco && disco.mode === "rw") ? "rw" : "ro";
-				return done(null);
-			}
-			if(!agentKey) agentKey = loadOrCreateAgentKey();
+			if(!agentKey) agentKey = loadOrCreateAgentKey(options);
 			frame("agent-hello", { pub: agentKey.pubHex, name: options.label || "claude-code" }, function(e, hello) {
 				if(e) return done(e);
 				if(!hello.ok) return done(new Error("agent-hello: " + hello.error));
-				if(hello.result.mode === "full-trust") { authState = "full-trust"; authScope = hello.result.scope || "ro"; return done(null); }
 				frame("agent-auth", { sig: signChallenge(agentKey.priv, hello.result.challenge) }, function(e2, auth) {
 					if(e2) return done(e2);
 					if(!auth.ok) return done(new Error("agent-auth: " + auth.error));
@@ -344,7 +342,7 @@ function createPearSession(options) {
 	var handlers = require("$:/core/modules/commands/inspect/mcp-handlers.js");
 	var send = options.send || function(line) { process.stdout.write(line + "\n"); };
 	var makeBridge = options.makeBridge || function(onHandshake) {
-		return createPearBridge(pearDir, { onHandshake: onHandshake, label: options.label });
+		return createPearBridge(pearDir, { onHandshake: onHandshake, label: options.label, agentKeyFile: options.agentKeyFile });
 	};
 	var bridge = makeBridge(function() { maybeNotifyListChanged(); });
 
@@ -396,9 +394,8 @@ function createPearSession(options) {
 	}
 
 	function pearToolDefinitions() {
-		// write tools show only at an effective rw scope: full-trust rw, or an
-		// agent authenticated at rw. In agent mode before/without approval the
-		// read set still lists (calls return a readable pending error).
+		// Write tools show only once the agent is authenticated at rw; before
+		// approval the read set still lists and calls return a pending error.
 		var rw = bridge.effectiveRw();
 		var names = rw ? PEAR_READ_TOOLS.concat(PEAR_WRITE_TOOLS) : PEAR_READ_TOOLS;
 		return handlers.getToolDefinitions(!rw).filter(function(t) {
@@ -411,16 +408,13 @@ function createPearSession(options) {
 	function pearInstructions() {
 		var disco = bridge.readDiscovery();
 		return "TiddlyWiki MCP server — PEAR MODE: tools answer from a RUNNING Facets app" +
-			(disco ? " (group '" + (disco.name || disco.group) + "', " + disco.mode + ")" : " (NOT currently reachable)") +
+			(disco ? " (group '" + (disco.name || disco.group) + "')" : " (NOT currently reachable)") +
 			", not from this process's wiki.\n" +
 			"- run_filter / render_* execute in the app's headless engine over the member's composed view (bag + staged edits).\n" +
 			"- get_tiddler / list_tiddlers reflect the shared bag; staged-only edits appear in the engine view.\n" +
-			((disco && disco.mode === "rw")
-				? "- Writes land like member saves: with staging armed they stay PRIVATE until the member commits them.\n"
-				: (disco && disco.mode === "agent")
-					? "- AGENT MODE: this client enrolls with its own device identity; the member must approve it in the app's Agents panel before any tool works. A 'PENDING' error means approval is still needed.\n"
-					: "- READONLY: the app's mcp.flag does not say rw — write tools are not offered.\n") +
-			"- 'Facets app not reachable' errors mean the app is not running (or mcp.flag is absent); ask the user to start it.";
+			"- This client enrolls with its own device identity; the member must approve it in the app's Agents panel before any tool works. A 'PENDING' error means approval is still needed.\n" +
+			"- Once approved at rw, writes land like member saves: they stay PRIVATE in staging until the member commits them.\n" +
+			"- 'Facets app not reachable' errors mean the app is not running; ask the user to start it with --mcp.";
 	}
 
 	function dispatch(line) {
@@ -560,3 +554,5 @@ exports.startPearMode = startPearMode;
 // Test seam: the protocol contract is worth pinning without a running app to
 // dial (bead tw-mcp-server-i1k).
 exports.createPearSession = createPearSession;
+// Test seam: the default must keep an existing approval working (bead tw-mcp-server-u7n).
+exports.agentKeyPath = agentKeyPath;
