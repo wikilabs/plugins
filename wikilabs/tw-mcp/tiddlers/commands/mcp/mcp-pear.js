@@ -59,6 +59,25 @@ var PEAR_READ_TOOLS = ["get_wiki_info", "list_tiddlers", "get_tiddler", "run_fil
 	"search_lines", "get_tiddlers", "render_field", "inspect_tree", "inspect_pos", "inspect_tw", "inspect_scope"];
 var PEAR_WRITE_TOOLS = ["put_tiddler", "delete_tiddler", "edit_tiddler", "rename_tiddler", "replace_in_tiddlers"];
 
+// The app's own tools (Facets concept 12.2): no tw-mcp handler defines them, so their
+// definitions live here, and the app answers them. check_writes lists only at rw.
+const PEAR_APP_TOOLS = [
+	{
+		name: "get_guide",
+		description: "Read this first. The rules of this Facets workspace for an agent: what you are connected to, what you see, where your writes go, what fails without an error, and what to check before you finish. Topics: start (the default), failures, check.",
+		inputSchema: { type: "object", properties: { topic: { type: "string", enum: ["start", "failures", "check"] } } },
+		annotations: { readOnlyHint: true },
+		rw: false
+	},
+	{
+		name: "check_writes",
+		description: "Before you finish: reports on the tiddlers you last modified, or on the titles you name. Finds protected titles, overrides of a plugin's tiddler, code, and links to tiddlers that do not exist. Writes nothing.",
+		inputSchema: { type: "object", properties: { titles: { type: "array", items: { type: "string" } } } },
+		annotations: { readOnlyHint: true },
+		rw: true
+	}
+];
+
 // A self-heal must fit inside the window a client is given to notice it, with
 // room for the handshake, so the retry period is a fraction of it, not equal
 // to it (bead tw-mcp-server-cjt).
@@ -389,7 +408,8 @@ function createPearSession(options) {
 		// every tool forwards VERBATIM: the app runs the real tw-mcp handler
 		// in its headless engine (feature parity, ruled 2026-07-17) and the
 		// handler's pre-formatted text passes through
-		if(PEAR_READ_TOOLS.indexOf(name) < 0 && PEAR_WRITE_TOOLS.indexOf(name) < 0) {
+		const appTool = PEAR_APP_TOOLS.find(function(t) { return t.name === name; });
+		if(PEAR_READ_TOOLS.indexOf(name) < 0 && PEAR_WRITE_TOOLS.indexOf(name) < 0 && !appTool) {
 			return done(null); // unknown tool
 		}
 		return bridge.call(name, args, function(err, r) {
@@ -404,9 +424,12 @@ function createPearSession(options) {
 		// approval the read set still lists and calls return a pending error.
 		var rw = bridge.effectiveRw();
 		var names = rw ? PEAR_READ_TOOLS.concat(PEAR_WRITE_TOOLS) : PEAR_READ_TOOLS;
-		return handlers.getToolDefinitions(!rw).filter(function(t) {
-			return names.indexOf(t.name) >= 0;
+		const own = PEAR_APP_TOOLS.filter(function(t) { return rw || !t.rw; }).map(function(t) {
+			return { name: t.name, description: t.description, inputSchema: t.inputSchema, annotations: t.annotations };
 		});
+		return own.concat(handlers.getToolDefinitions(!rw).filter(function(t) {
+			return names.indexOf(t.name) >= 0;
+		}));
 	}
 
 	// Handed over on server/discover and on initialize alike, so it lives in one
@@ -416,6 +439,7 @@ function createPearSession(options) {
 		return "TiddlyWiki MCP server — PEAR MODE: tools answer from a RUNNING Facets app" +
 			(disco ? " (group '" + (disco.name || disco.group) + "')" : " (NOT currently reachable)") +
 			", not from this process's wiki.\n" +
+			"- Call get_guide first: the workspace's rules for an agent, and what fails without an error.\n" +
 			"- run_filter / render_* execute in the app's headless engine over the member's composed view (bag + staged edits).\n" +
 			"- get_tiddler / list_tiddlers reflect the shared bag; staged-only edits appear in the engine view.\n" +
 			"- This client enrolls with its own device identity; the member must approve it in the app's Agents panel before any tool works. A 'PENDING' error means approval is still needed.\n" +

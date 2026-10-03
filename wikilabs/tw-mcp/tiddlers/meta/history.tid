@@ -1,5 +1,11 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.21.0 - 2026-10-03
+
+* Pear mode lists the Facets app's `get_guide` at every scope and `check_writes` at `rw`, and tells an agent to read the guide first.
+* Pear mode takes its scope only from the agent's approved scope; `agent-key=<file>` lets one machine run more than one pear client.
+* Pear mode retries a self-heal every 10 s, and its instructions say a staged write cannot be undone by the agent.
+
 V 0.20.1 - 2026-09-19
 
 * `search_lines`, `replace_in_tiddlers`, `find_calls` and the `search-lines` operator never scan a plugin tiddler, whose text is its whole bundle as JSON; their shadow subtiddlers are still searched. A filter naming a plugin used to return lines of hundreds of kilobytes, and `replace_in_tiddlers` rewrote the bundle.
