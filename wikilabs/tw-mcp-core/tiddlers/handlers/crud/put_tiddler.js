@@ -24,7 +24,9 @@ module.exports = {
 			modificationFields = $tw.wiki.getModificationFields(),
 			tiddler;
 		if(existingTiddler && args.overwrite) {
-			tiddler = new $tw.Tiddler(existingTiddler.fields, args.fields, modificationFields, {title: title});
+			// a replace: only the old created and creator survive, unless the new version brings its own
+			var kept = {created: existingTiddler.fields.created, creator: existingTiddler.fields.creator};
+			tiddler = new $tw.Tiddler(kept, args.fields, modificationFields, {title: title});
 		} else if(existingTiddler) {
 			title = $tw.wiki.generateNewTitle(title);
 			tiddler = new $tw.Tiddler(creationFields, args.fields, modificationFields, {title: title});
