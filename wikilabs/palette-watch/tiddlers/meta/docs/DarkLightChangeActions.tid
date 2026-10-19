@@ -10,6 +10,7 @@ If the browser settings are set to "System theme - auto" for ~FireFox or "System
 
 * Actions tagged <<tag $:/tags/StartupAction/Browser>> are executed when the wiki is started. More info can be found at StartupActions and examples here.
 * Actions tagged <<tag "$:/tags/DarkLightChangeActions">> are executed whenever the browser or OS dark / light setting is changed.
+* They are also executed at startup, but only if the setting changed since the last start or switch, so a palette selected in between stays. The last mode is stored in $:/config/palette/last-mode.
 
 !!! Variable
 
