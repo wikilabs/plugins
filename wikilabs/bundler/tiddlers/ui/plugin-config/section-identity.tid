@@ -1,0 +1,46 @@
+created: 20260423143700000
+modified: 20260423150000000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/section-identity
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import [[$:/plugins/wikilabs/bundler/ui/plugin-config/helpers]]
+
+<$transclude $variable="wlpc-collapsible" key="identity" defaultOpen="yes">
+	<$fill $name="summary"><span class="wlpc-section-title">Identity</span></$fill>
+	<$fill $name="body">
+
+		<div class="wlpc-row-form">
+			<label class="wlpc-label">Template</label>
+			<$select tiddler=<<currentTiddler>> field="template" default="">
+				<option value="">— pick a template —</option>
+				<$list filter="[tag[$:/tags/PluginMetaTemplate]sort[caption]]">
+					<option value=<<currentTiddler>>>{{!!caption}} ({{!!description}})</option>
+				</$list>
+			</$select>
+			<$list filter="[<currentTiddler>get[template]!is[blank]]" variable="ignore">
+				<span class="wlpc-muted tc-tiny-gap-left">↺ resync (not wired yet)</span>
+			</$list>
+		</div>
+
+		<div class="wlpc-row-form">
+			<label class="wlpc-label">Target plugin</label>
+			<$edit-text tiddler=<<currentTiddler>> field="plugin" tag="input" placeholder="$:/plugins/author/name" class="wlpc-input-wide"/>
+		</div>
+
+		<div class="wlpc-row-form">
+			<label class="wlpc-label">Version policy</label>
+			<$select tiddler=<<currentTiddler>> field="version-policy" default="patch">
+				<option value="patch">patch (auto-bump)</option>
+				<option value="minor">minor (auto-bump)</option>
+				<option value="major">major (auto-bump)</option>
+				<option value="manual">manual (no auto-bump)</option>
+			</$select>
+		</div>
+
+		<div class="wlpc-muted wlpc-small-gap-top">
+			Identity is wired up minimally for the prototype scaffold. Template seeding, per-field override markers, and inline metadata editing arrive in the next iteration.
+		</div>
+
+	</$fill>
+</$transclude>

@@ -1,0 +1,8 @@
+caption: Plugins
+created: 20260423143000000
+modified: 20260423143000000
+tags: $:/tags/SideBar
+title: $:/plugins/wikilabs/bundler/ui/Plugins
+type: text/vnd.tiddlywiki
+
+{{$:/plugins/wikilabs/bundler/ui/plugin-config/PluginsList}}

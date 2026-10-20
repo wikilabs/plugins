@@ -1,0 +1,56 @@
+created: 20260423143100000
+modified: 20260423143100000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/PluginsList
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+\procedure new-plugin-config-actions()
+<$action-sendmessage $message="tm-new-tiddler"
+	title="new.plugin-config"
+	tags="$:/tags/PluginConfig"
+	draft="yes"
+	plugin=""
+	template=""
+	include-bundles=""
+	exclude-bundles=""
+	remove-bundles=""
+	version-policy="patch"
+	text="A new plugin configuration. Pick a template, set the target plugin, and add at least one source bundle to activate."
+/>
+\end
+
+<div class="wlpc-tab-toolbar">
+	<$button actions=<<new-plugin-config-actions>> tooltip="Create a new plugin configuration" class="tc-btn-invisible tc-btn-mini-padding wlpc-btn-action">
+		{{$:/core/images/new-button}} New plugin config
+	</$button>
+	<$edit-text tag="input" placeholder="Filter list" tiddler="$:/temp/plugin-config/listFilter" class="tc-tiny-gap-left wlpc-filter-input"/>
+	<$button class="tc-small-gap-left tc-btn-invisible tc-btn-icon" tooltip="Clear filter">
+		{{$:/core/images/close-button}}
+		<$action-deletetiddler $tiddler="$:/temp/plugin-config/listFilter"/>
+	</$button>
+</div>
+
+<div class="wlpc-list">
+	<$list filter="[tag[$:/tags/PluginConfig]] :filter[search:title{$:/temp/plugin-config/listFilter}]" emptyMessage="<div class='wlpc-empty'>No plugin configs yet — click ''New plugin config'' to start.</div>">
+		<div class="wlpc-row">
+			<div class="wlpc-row-line1">
+				<$link to=<<currentTiddler>> class="wlpc-row-title"><$view field="title"/></$link>
+				{{||$:/plugins/wikilabs/bundler/ui/plugin-config/status-pill}}
+			</div>
+			<div class="wlpc-row-line2">
+				<$list filter="[all[current]has[plugin]get[plugin]!is[blank]]" variable="targetPlugin">
+					<span class="wlpc-row-target">→ <<targetPlugin>></span>
+				</$list>
+				<$list filter="[all[current]!has[plugin]] [all[current]get[plugin]is[blank]]" variable="ignore">
+					<span class="wlpc-row-target wlpc-muted">no target plugin</span>
+				</$list>
+				<span class="wlpc-row-counts">
+					<$count filter="[enlist{!!include-bundles}]"/> src ·
+					<$count filter="[enlist{!!exclude-bundles}]"/> skip ·
+					<$count filter="[enlist{!!remove-bundles}]"/> drop
+				</span>
+			</div>
+		</div>
+	</$list>
+</div>

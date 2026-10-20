@@ -1,0 +1,30 @@
+created: 20260423143500000
+modified: 20260423143500000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/section-draft-banner
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+\procedure activate-actions()
+<$action-setfield draft="no"/>
+\end
+
+<$list filter="[<currentTiddler>get[draft]match[yes]]" variable="ignore">
+	<div class="wlpc-banner wlpc-banner-draft">
+		<div class="wlpc-banner-text">
+			<strong>Draft</strong> — pick a template, set a target plugin, and add at least one source bundle to activate this config.
+		</div>
+		<div class="wlpc-banner-actions">
+			<$let
+				canActivate={{{ [<currentTiddler>get[plugin]!is[blank]] :and[<currentTiddler>get[include-bundles]!is[blank]] +[then[yes]else[no]] }}}
+			>
+				<$list filter="[<canActivate>match[yes]]" variable="ignore">
+					<$button actions=<<activate-actions>> class="tc-btn-boxed">Activate</$button>
+				</$list>
+				<$list filter="[<canActivate>match[no]]" variable="ignore">
+					<$button class="tc-btn-boxed" disabled="yes" tooltip="Set a target plugin and at least one source bundle first">Activate</$button>
+				</$list>
+			</$let>
+		</div>
+	</div>
+</$list>

@@ -1,0 +1,53 @@
+created: 20260423143600000
+modified: 20260423143600000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/section-header
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+\procedure build-stub-actions()
+<$action-setfield
+	$tiddler="$:/temp/plugin-config/build-stub-log"
+	source=<<currentTiddler>>
+	text="""! Build stub invoked
+
+This is the UI prototype — no actual build happened.
+
+The real build will call `$tw.utils.bundlePlugin` with the source plugin-config's fields. That wiring lands in the next iteration.
+
+Source plugin-config: <$link to={{$:/temp/plugin-config/build-stub-log!!source}}><$view tiddler="$:/temp/plugin-config/build-stub-log" field="source"/></$link>
+
+* Target plugin: `<$view tiddler={{$:/temp/plugin-config/build-stub-log!!source}} field="plugin"/>`
+* Version policy: <$view tiddler={{$:/temp/plugin-config/build-stub-log!!source}} field="version-policy"/>
+* Sources: `<$view tiddler={{$:/temp/plugin-config/build-stub-log!!source}} field="include-bundles"/>`
+* Skip:    `<$view tiddler={{$:/temp/plugin-config/build-stub-log!!source}} field="exclude-bundles"/>`
+* Drop:    `<$view tiddler={{$:/temp/plugin-config/build-stub-log!!source}} field="remove-bundles"/>`
+"""
+/>
+<$action-navigate $to="$:/temp/plugin-config/build-stub-log"/>
+\end
+
+\procedure verify-actions()
+<$action-setfield $tiddler="$:/temp/plugin-config/verify-target" $value=<<currentTiddler>>/>
+<!-- Verify renders inline in the Resolved section; this state field can drive future expand-on-verify behavior. -->
+\end
+
+<div class="wlpc-section wlpc-header">
+	<div class="wlpc-header-title">
+		<span class="wlpc-eyebrow">PLUGIN CONFIG</span>
+		<h2><$view field="title"/></h2>
+		<$list filter="[<currentTiddler>get[plugin]!is[blank]]" variable="ignore">
+			<div class="wlpc-header-target">target: <code><$view field="plugin"/></code></div>
+		</$list>
+	</div>
+	<div class="wlpc-header-actions">
+		<$list filter="[<currentTiddler>get[draft]!match[yes]]" variable="ignore">
+			<$button actions=<<verify-actions>> class="tc-btn-boxed wlpc-btn-verify" tooltip="Render the resolved set + diff inline (read-only)">
+				Verify
+			</$button>
+			<$button actions=<<build-stub-actions>> class="tc-btn-boxed wlpc-btn-build" tooltip="Stub — writes a log to $:/temp/plugin-config/build-stub-log instead of running the real build">
+				Build (stub)
+			</$button>
+		</$list>
+	</div>
+</div>

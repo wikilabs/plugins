@@ -1,0 +1,83 @@
+created: 20260423143900000
+modified: 20260423143900000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/section-sources
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import [[$:/plugins/wikilabs/bundler/ui/plugin-config/helpers]]
+
+\procedure lane(field, label, helpText, addLabel, kind)
+<$let
+	pluginConfig=<<currentTiddler>>
+	laneField={{{ [<field>addprefix[lane-]] }}}
+	laneClass={{{ [[wlpc-lane wlpc-lane-]addsuffix<kind>] }}}
+>
+<div class=<<laneClass>>>
+	<div class="wlpc-lane-header">
+		<span class="wlpc-lane-label"><<label>></span>
+		<span class="wlpc-lane-help"><<helpText>></span>
+	</div>
+	<div class="wlpc-lane-body">
+		<$list filter="[<pluginConfig>get<field>enlist-input[]]" variable="bundle" emptyMessage="<div class='wlpc-muted wlpc-lane-empty'>(none)</div>">
+			<span class="wlpc-bundle-chip">
+				<$link to=<<bundle>>><<bundle>></$link>
+				<span class="wlpc-chip-count tc-tiny-gap-left">
+					<$let
+						listCount={{{ [<bundle>tag[$:/tags/Bundle]get[text]enlist-input[]!prefix[---]] +[count[]] }}}
+						filterCount={{{ [<bundle>tag[$:/tags/Filter]get[filter]] =>filter [subfilter<filter>] +[count[]] }}}
+						total={{{ [<listCount>add<filterCount>] }}}
+					>
+						<<total>>
+					</$let>
+				</span>
+				<$button class="tc-btn-invisible wlpc-chip-remove" tooltip="Remove from this lane">
+					<$action-listops $tiddler=<<pluginConfig>> $field=<<field>> $subfilter="-[<bundle>]"/>
+					×
+				</$button>
+			</span>
+		</$list>
+	</div>
+	<div class="wlpc-lane-add">
+		<$select tiddler="$:/temp/plugin-config/add-to-lane" field=<<laneField>> default="">
+			<option value="">— pick bundle to add —</option>
+			<$list filter="[<kind>match[exclude]]" variable="ignore">
+				<$list filter="[<pluginConfig>get[include-bundles]enlist-input[]] -[<pluginConfig>get[exclude-bundles]enlist-input[]] +[sort[title]]">
+					<option value=<<currentTiddler>>><$view field="title"/></option>
+				</$list>
+			</$list>
+			<$list filter="[<kind>!match[exclude]]" variable="ignore">
+				<$list filter="[tag[$:/tags/Bundle]] [tag[$:/tags/Filter]] -[<pluginConfig>get[include-bundles]enlist-input[]] -[<pluginConfig>get[exclude-bundles]enlist-input[]] -[<pluginConfig>get[remove-bundles]enlist-input[]] +[sort[title]]">
+					<option value=<<currentTiddler>>><$view field="title"/></option>
+				</$list>
+			</$list>
+		</$select>
+		<$button tooltip="Add the picked bundle to this lane" class="tc-btn-boxed tc-tiny-gap-left">
+			<$let pickedBundle={{{ [[$:/temp/plugin-config/add-to-lane]get<laneField>] }}}>
+				<$list filter="[<pickedBundle>!is[blank]]" variable="ignore">
+					<$action-listops $tiddler=<<pluginConfig>> $field=<<field>> $subfilter="[<pickedBundle>]"/>
+					<$action-deletefield $tiddler="$:/temp/plugin-config/add-to-lane" $field=<<laneField>>/>
+				</$list>
+			</$let>
+			<<addLabel>>
+		</$button>
+	</div>
+</div>
+</$let>
+\end
+
+<$transclude $variable="wlpc-collapsible" key="sources" defaultOpen="yes">
+	<$fill $name="summary"><span class="wlpc-section-title">Sources</span></$fill>
+	<$fill $name="body">
+
+		<<lane "include-bundles" "Sources" "Bundles whose tiddlers go into the plugin" "+ Source" "include">>
+
+		<<lane "exclude-bundles" "Skip this build" "Bundles temporarily skipped (won't be added to the plugin this round)" "+ Skip" "exclude">>
+
+		<<lane "remove-bundles" "Drop from plugin" "Bundles whose tiddlers will be permanently dropped from the plugin (wins over Sources)" "+ Drop" "remove">>
+
+		<div class="wlpc-muted wlpc-small-gap-top">
+			Inline filters and drag-from-Bundles-tab are not yet wired in this scaffold — for now, pick from the dropdowns. Chip counts assume a bundle uses either a list (`$:/tags/Bundle`) or a filter (`$:/tags/Filter`).
+		</div>
+
+	</$fill>
+</$transclude>

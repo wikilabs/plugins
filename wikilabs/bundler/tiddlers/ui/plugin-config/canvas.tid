@@ -1,0 +1,24 @@
+created: 20260423143400000
+modified: 20260423143400000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/canvas
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+
+<div class="wlpc-canvas">
+
+{{||$:/plugins/wikilabs/bundler/ui/plugin-config/section-draft-banner}}
+
+{{||$:/plugins/wikilabs/bundler/ui/plugin-config/section-header}}
+
+{{||$:/plugins/wikilabs/bundler/ui/plugin-config/section-identity}}
+
+{{||$:/plugins/wikilabs/bundler/ui/plugin-config/section-pending}}
+
+{{||$:/plugins/wikilabs/bundler/ui/plugin-config/section-sources}}
+
+{{||$:/plugins/wikilabs/bundler/ui/plugin-config/section-resolved}}
+
+{{||$:/plugins/wikilabs/bundler/ui/plugin-config/section-snapshot}}
+
+</div>

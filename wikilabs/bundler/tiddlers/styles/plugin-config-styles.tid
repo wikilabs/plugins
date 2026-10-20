@@ -1,0 +1,354 @@
+created: 20260423144200000
+modified: 20260423144200000
+tags: $:/tags/Stylesheet
+title: $:/plugins/wikilabs/bundler/styles/plugin-config
+
+/* Plugin-config UI styles — palette-aware, no hardcoded colors */
+
+.wlpc-tab-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	margin-bottom: 0.5em;
+}
+
+.wlpc-filter-input {
+	flex: 1 1 auto;
+	min-width: 6em;
+}
+
+.wlpc-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4em;
+}
+
+.wlpc-row {
+	border: 1px solid <<colour table-border>>;
+	border-radius: 4px;
+	padding: 0.4em 0.5em;
+	background: <<colour background>>;
+}
+
+.wlpc-row-line1 {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	flex-wrap: wrap;
+}
+
+.wlpc-row-line2 {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	flex-wrap: wrap;
+	font-size: 0.85em;
+	color: <<colour muted-foreground>>;
+	margin-top: 0.15em;
+}
+
+.wlpc-row-title {
+	font-weight: 600;
+}
+
+.wlpc-row-target {
+	font-family: <<font-family-mono "monospace">>;
+	font-size: 0.85em;
+}
+
+.wlpc-row-counts {
+	margin-left: auto;
+}
+
+.wlpc-empty {
+	padding: 0.6em;
+	color: <<colour muted-foreground>>;
+	font-style: italic;
+}
+
+.wlpc-muted {
+	color: <<colour muted-foreground>>;
+}
+
+.wlpc-small-gap-top { margin-top: 0.6em; }
+/* For inline horizontal gaps use TW core: tc-{tiny|small|big}-gap-{left|right} */
+
+/* Status pills */
+
+.wlpc-pill {
+	display: inline-block;
+	padding: 0.05em 0.5em;
+	font-size: 0.75em;
+	border-radius: 999px;
+	border: 1px solid <<colour tag-background>>;
+	background: <<colour tag-background>>;
+	color: <<colour tag-foreground>>;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+
+.wlpc-pill-draft {
+	background: <<colour notification-background>>;
+	border-color: <<colour notification-border>>;
+	color: <<colour foreground>>;
+}
+
+.wlpc-pill-warn {
+	background: <<colour dirty-indicator>>;
+	border-color: <<colour dirty-indicator>>;
+	color: <<colour background>>;
+}
+
+.wlpc-pill-new {
+	background: <<colour download-background>>;
+	border-color: <<colour download-background>>;
+	color: <<colour background>>;
+}
+
+.wlpc-pill-clean {
+	background: <<colour message-background>>;
+	border-color: <<colour message-border>>;
+	color: <<colour message-foreground>>;
+}
+
+.wlpc-pill-info {
+	background: <<colour table-header-background>>;
+	border-color: <<colour table-border>>;
+	color: <<colour foreground>>;
+}
+
+/* Canvas */
+
+.wlpc-canvas {
+	display: flex;
+	flex-direction: column;
+	gap: 0.8em;
+}
+
+.wlpc-section {
+	border: 1px solid <<colour table-border>>;
+	border-radius: 6px;
+	padding: 0;
+	background: <<colour background>>;
+}
+
+.wlpc-collapsible {
+	overflow: hidden;
+}
+
+.wlpc-summary {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	width: 100%;
+	padding: 0.5em 0.7em;
+	background: <<colour table-header-background>>;
+	border: none;
+	font-weight: 600;
+	cursor: pointer;
+	text-align: left;
+	color: <<colour foreground>>;
+}
+
+.wlpc-summary:hover {
+	background: <<colour primary>>;
+	color: <<colour background>>;
+}
+
+.wlpc-caret {
+	display: inline-flex;
+	align-items: center;
+	width: 1em;
+	height: 1em;
+	fill: <<colour muted-foreground>>;
+}
+
+.wlpc-caret svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.wlpc-summary:hover .wlpc-caret {
+	color: <<colour background>>;
+}
+
+.wlpc-section-title {
+	letter-spacing: 0.02em;
+}
+
+.wlpc-section-body {
+	padding: 0.7em;
+	border-top: 1px solid <<colour table-border>>;
+}
+
+.wlpc-eyebrow {
+	font-size: 0.7em;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: <<colour muted-foreground>>;
+	margin-right: 0.4em;
+}
+
+/* Header section */
+
+.wlpc-header {
+	padding: 0.7em 0.9em;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.8em;
+	flex-wrap: wrap;
+}
+
+.wlpc-header-title h2 {
+	margin: 0.1em 0 0.2em 0;
+	font-size: 1.15em;
+}
+
+.wlpc-header-target code {
+	background: <<colour code-background>>;
+	padding: 0.05em 0.35em;
+	border-radius: 3px;
+}
+
+.wlpc-header-actions {
+	display: flex;
+	gap: 0.4em;
+	align-items: center;
+}
+
+/* Draft banner */
+
+.wlpc-banner {
+	border-radius: 6px;
+	padding: 0.6em 0.8em;
+	display: flex;
+	gap: 0.8em;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.wlpc-banner-draft {
+	background: <<colour notification-background>>;
+	border: 1px solid <<colour notification-border>>;
+	color: <<colour foreground>>;
+}
+
+/* Form rows */
+
+.wlpc-row-form {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	margin-bottom: 0.4em;
+	flex-wrap: wrap;
+}
+
+.wlpc-label {
+	min-width: 9em;
+	font-weight: 500;
+	color: <<colour foreground>>;
+}
+
+.wlpc-input-wide {
+	flex: 1 1 18em;
+	min-width: 12em;
+}
+
+/* Sources lanes */
+
+.wlpc-lane {
+	border: 1px solid <<colour table-border>>;
+	border-left: 4px solid <<colour primary>>;
+	border-radius: 4px;
+	padding: 0.5em 0.6em;
+	margin-bottom: 0.5em;
+	background: transparent;
+	color: <<colour foreground>>;
+}
+
+.wlpc-lane-include { border-left-color: <<colour primary>>; }
+.wlpc-lane-exclude { border-left-color: <<colour muted-foreground>>; }
+.wlpc-lane-remove  { border-left-color: <<colour dirty-indicator>>; }
+
+.wlpc-lane-header {
+	display: flex;
+	align-items: baseline;
+	gap: 0.6em;
+	margin-bottom: 0.3em;
+	flex-wrap: wrap;
+}
+
+.wlpc-lane-label {
+	font-weight: 600;
+	color: <<colour foreground>>;
+}
+
+.wlpc-lane-help {
+	font-size: 0.85em;
+	color: <<colour muted-foreground>>;
+}
+
+.wlpc-lane-body {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.3em;
+	margin-bottom: 0.3em;
+	min-height: 1.6em;
+}
+
+.wlpc-lane-empty { font-style: italic; }
+
+.wlpc-bundle-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3em;
+	background: <<colour background>>;
+	border: 1px solid <<colour table-border>>;
+	border-radius: 999px;
+	padding: 0.05em 0.6em;
+	font-size: 0.85em;
+}
+
+.wlpc-chip-count {
+	color: <<colour muted-foreground>>;
+	font-size: 0.85em;
+}
+
+.wlpc-chip-remove {
+	color: <<colour muted-foreground>>;
+	font-size: 0.95em;
+	line-height: 1;
+	padding: 0 0.15em;
+}
+
+.wlpc-lane-add {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+}
+
+/* Resolved set */
+
+.wlpc-resolved-row {
+	padding: 0.15em 0;
+	border-bottom: 1px solid <<colour table-border>>;
+	font-family: <<font-family-mono "monospace">>;
+	font-size: 0.85em;
+}
+
+.wlpc-resolved-extra {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
+
+/* Pending changes */
+
+.wlpc-pending-row {
+	padding: 0.15em 0;
+	display: flex;
+	align-items: baseline;
+}

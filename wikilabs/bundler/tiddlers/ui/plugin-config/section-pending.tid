@@ -1,0 +1,39 @@
+created: 20260423143800000
+modified: 20260423150000000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/section-pending
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import [[$:/plugins/wikilabs/bundler/ui/plugin-config/helpers]]
+
+\procedure pending-count()
+<$count filter="[<pluginConfig>get[plugin]plugintiddlers[]] :filter[get[modified]compare:string:gt{$(pluginConfig)$!!last-built}]"/>
+\end
+
+\procedure pending-list-body()
+<$list filter="[<pluginConfig>get[plugin]plugintiddlers[]] :filter[get[modified]compare:string:gt{$(pluginConfig)$!!last-built}]" emptyMessage="<div class='wlpc-muted'>No pending changes since last build.</div>">
+	<div class="wlpc-pending-row">
+		<$link to=<<currentTiddler>>><<currentTiddler>></$link>
+		<span class="wlpc-muted tc-tiny-gap-left">modified <$view field="modified" format="date" template="YYYY-0MM-0DD 0hh:0mm"/></span>
+	</div>
+</$list>
+\end
+
+<$let pluginConfig=<<currentTiddler>>>
+<$transclude $variable="wlpc-collapsible" key="pending" defaultOpen="no">
+	<$fill $name="summary">
+		<span class="wlpc-section-title">Pending changes</span>
+		<$list filter="[<pluginConfig>has[last-built]]" variable="ignore">
+			<span class="wlpc-pill wlpc-pill-info tc-tiny-gap-left"><<pending-count>></span>
+		</$list>
+	</$fill>
+	<$fill $name="body">
+		<$list filter="[<pluginConfig>!has[last-built]]" variable="ignore">
+			<div class="wlpc-muted">No build recorded yet — pending detection activates after the first build.</div>
+		</$list>
+		<$list filter="[<pluginConfig>has[last-built]]" variable="ignore">
+			<<pending-list-body>>
+		</$list>
+	</$fill>
+</$transclude>
+</$let>

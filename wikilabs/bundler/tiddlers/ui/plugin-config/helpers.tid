@@ -1,0 +1,33 @@
+created: 20260423145500000
+modified: 20260423145500000
+title: $:/plugins/wikilabs/bundler/ui/plugin-config/helpers
+type: text/vnd.tiddlywiki
+
+\function bundle-list-tids(t) [<t>tag[$:/tags/Bundle]get[text]enlist-input[]!prefix[---]]
+\function bundle-filter-tids(t) [<t>tag[$:/tags/Filter]get[filter]] :map[subfilter<currentTiddler>]
+\function bundle-tids(t) [bundle-list-tids<t>] [bundle-filter-tids<t>]
+\function lane-tids(field) [<pluginConfig>get<field>enlist-input[]] :map[bundle-list-tids<currentTiddler>] [<pluginConfig>get<field>enlist-input[]] :map[bundle-filter-tids<currentTiddler>]
+
+\procedure wlpc-collapsible(key, defaultOpen:"no")
+\whitespace trim
+<$let
+	state={{{ [[$:/state/plugin-config/]addsuffix<currentTiddler>addsuffix[/]addsuffix<key>] }}}
+	stateText={{{ [<state>get[text]!is[blank]] ~[<defaultOpen>] }}}
+>
+	<div class="wlpc-section wlpc-collapsible">
+		<$button set=<<state>> setTo={{{ [<stateText>match[yes]then[no]else[yes]] }}} class="tc-btn-invisible wlpc-summary">
+			<span class="wlpc-caret">
+				<$list filter="[<stateText>match[yes]]" variable="ignore" emptyMessage="{{$:/core/images/right-arrow}}">
+					{{$:/core/images/down-arrow}}
+				</$list>
+			</span>
+			<$slot $name="summary"/>
+		</$button>
+		<$reveal type="match" state=<<state>> text="yes" default=<<defaultOpen>>>
+			<div class="wlpc-section-body">
+				<$slot $name="body"/>
+			</div>
+		</$reveal>
+	</div>
+</$let>
+\end
