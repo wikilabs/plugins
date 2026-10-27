@@ -10,17 +10,21 @@ A quick and dirty way to pack up plugins within the browser.
 /*global $tw: false */
 "use strict";
 
-/*
-Build a plugin, and then delete any non-shadow payload tiddlers.
-options:
-	incrementMinor ... auto increment version minor
-	incrementPatch ... auto increment version patch
-*/
+/**
+ * Build a plugin, and then delete any non-shadow payload tiddlers.
+ * @param {string} title - plugin title
+ * @param {string[]} [additionalTiddlers] - tiddlers to add
+ * @param {string[]} [excludeTiddlers] - tiddlers to leave out
+ * @param {string[]} [removeTiddlers] - tiddlers to remove from the plugin
+ * @param {{incrementMinor?: boolean, incrementPatch?: boolean, removeFields?: string[]}} [options] - version bumps, fields to drop from every payload tiddler
+ * @returns {string} Confirmation message
+ */
 exports.bundlePlugin = function(title,additionalTiddlers,excludeTiddlers,removeTiddlers,options) {
 	options = options || {incrementMinor: false, incrementPatch: true};
 	additionalTiddlers = additionalTiddlers || [];
 	excludeTiddlers = excludeTiddlers || [];
 	removeTiddlers = removeTiddlers || [];
+	var removeFields = options.removeFields || [];
 	// Get the plugin tiddler
 	var pluginTiddler = $tw.wiki.getTiddler(title);
 	if(!pluginTiddler) {
@@ -51,7 +55,9 @@ exports.bundlePlugin = function(title,additionalTiddlers,excludeTiddlers,removeT
 			fields = {};
 		if (tiddler) {
 			$tw.utils.each(tiddler.fields,function (value,name) {
-				fields[name] = tiddler.getFieldString(name);
+				if(!removeFields.includes(name)) {
+					fields[name] = tiddler.getFieldString(name);
+				}
 			});
 			plugins[title] = fields;
 		}

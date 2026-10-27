@@ -13,38 +13,49 @@ Action widget to bundle an existing or a new plugin.
 
 var Widget = require("$:/core/modules/widgets/widget.js").widget;
 
+/**
+ * Action widget that bundles tiddlers into a new or existing plugin.
+ * @param {object} parseTreeNode - widget parse tree node
+ * @param {object} options - widget options
+ * @returns {void}
+ */
 var BundlePluginWidget = function(parseTreeNode,options) {
 	this.initialise(parseTreeNode,options);
 };
 
-/*
-Inherit from the base widget class
-*/
+// Inherit from the base widget class
 BundlePluginWidget.prototype = new Widget();
 
-/*
-Render this widget into the DOM
-*/
+/**
+ * Render this widget into the DOM.
+ * @param {Element} parent - parent DOM node
+ * @param {Element} nextSibling - next sibling DOM node
+ * @returns {void}
+ */
 BundlePluginWidget.prototype.render = function(parent,nextSibling) {
 	this.computeAttributes();
 	this.execute();
 };
 
-/*
-Compute the internal state of the widget
-*/
+/**
+ * Compute the internal state of the widget.
+ * @returns {void}
+ */
 BundlePluginWidget.prototype.execute = function() {
 	this.actionPlugin = this.getAttribute("$plugin");
 	this.actionInclude = this.getAttribute("$include");
 	this.actionExclude = this.getAttribute("$exclude");
 	this.actionRemove = this.getAttribute("$remove");
+	this.actionRemoveFields = this.getAttribute("$removeFields","");
 	this.actionMode = this.getAttribute("$mode","log");
 	this.actionIncrementPatch = this.getAttribute("$incrementPatch","yes");
 };
 
-/*
-Refresh the widget by ensuring our attributes are up to date
-*/
+/**
+ * Refresh the widget by ensuring our attributes are up to date.
+ * @param {object} changedTiddlers - changed tiddler titles
+ * @returns {boolean} True if the widget was refreshed
+ */
 BundlePluginWidget.prototype.refresh = function(changedTiddlers) {
 	var changedAttributes = this.computeAttributes();
 	if(changedAttributes["$pluginname"] || changedAttributes["$filter"] || changedAttributes["$excludeFilter"] || changedAttributes["$mode"]) {
@@ -54,9 +65,12 @@ BundlePluginWidget.prototype.refresh = function(changedTiddlers) {
 	return this.refreshChildren(changedTiddlers);
 };
 
-/*
-Invoke the action associated with this widget
-*/
+/**
+ * Invoke the action associated with this widget.
+ * @param {object} triggeringWidget - widget that triggered the action
+ * @param {object} [event] - triggering event
+ * @returns {boolean} True, the action was invoked
+ */
 BundlePluginWidget.prototype.invokeAction = function(triggeringWidget,event) {
 	event = event || {};
 	var tiddlers = $tw.wiki.filterTiddlers(this.actionInclude),
@@ -68,7 +82,10 @@ BundlePluginWidget.prototype.invokeAction = function(triggeringWidget,event) {
 	// Warning!: This funcionality is able to "destroy" your plugin
 	function write() {
 		if (tiddlers && self.actionPlugin) {
-			$tw.utils.bundlePlugin(self.actionPlugin, tiddlers, excluded, remove, {incrementPatch:(self.actionIncrementPatch === "yes")});
+			$tw.utils.bundlePlugin(self.actionPlugin, tiddlers, excluded, remove, {
+				incrementPatch: (self.actionIncrementPatch === "yes"),
+				removeFields: $tw.utils.parseStringArray(self.actionRemoveFields) || []
+			});
 			log("dangerous");
 		}
 	};
