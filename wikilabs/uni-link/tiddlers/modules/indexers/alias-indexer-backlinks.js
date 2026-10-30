@@ -16,17 +16,38 @@ Implemented as a trie: https://en.wikipedia.org/wiki/Trie
 var Trie = require("$:/plugins/wikilabs/uni-link/indexers/trie.js").Trie;
 var BACKLINK_HEAD = "b";	// "a" .. for alias (b)acklinks
 
+/**
+ * The index of which tiddlers link to which alias, built when it is first looked up.
+ * @param {object} wiki the wiki
+ */
 function AliasBacklinkIndexer(wiki) {
 	this.wiki = wiki;
 	this.aliases = $tw.wiki.getIndexer("AliasIndexer");
 }
 
+/**
+ * Starts with nothing built.
+ * @returns {void}
+ */
 AliasBacklinkIndexer.prototype.init = function() {
-	this.trie = new Trie(BACKLINK_HEAD);
+	this.trie = null;
 }
 
+/**
+ * Drops the index for the next lookup to build, as building parses every tiddler and any plugin change rebuilds the indexes.
+ * @returns {void}
+ */
 AliasBacklinkIndexer.prototype.rebuild = function() {
+	this.trie = null;
+}
+
+/**
+ * Builds the index from every tiddler and shadow.
+ * @returns {void}
+ */
+AliasBacklinkIndexer.prototype._build = function() {
 	var self = this;
+	this.trie = new Trie(BACKLINK_HEAD);
 	this.wiki.eachShadowPlusTiddlers(function(tiddler,title) {
 		var aliasLinks = self._getAliasLinks(tiddler);
 		if (aliasLinks.length > 0) {
@@ -52,6 +73,12 @@ AliasBacklinkIndexer.prototype.rebuild = function() {
 	});
 }
 
+/**
+ * The aliases a tiddler or a text links to.
+ * @param {object} tiddler the tiddler
+ * @param {string} [text] the text, in place of parsing the tiddler
+ * @returns {string[]|undefined}
+ */
 AliasBacklinkIndexer.prototype._getAliasLinks = function(tiddler, text) {
 	var self = this;
 	var links = [];
@@ -95,12 +122,14 @@ AliasBacklinkIndexer.prototype._getAliasLinks = function(tiddler, text) {
 	}
 }
 
+/**
+ * Follows a changed tiddler, if the index is built; the next lookup sees the change otherwise.
+ * @param {{old: {exists: boolean, tiddler: object}, new: {exists: boolean, tiddler: object}}} updateDescriptor the change
+ * @returns {void}
+ */
 AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 	var self = this;
-	if(!this.trie) {
-		// This should never happen
-		throw new Error("Alias BACKLINKS trie not initialized!");
-	}
+	if(!this.trie) return;
 	var newAliases = [],
 		oldAliases = [],
 		self = this;
@@ -189,7 +218,13 @@ AliasBacklinkIndexer.prototype.update = function(updateDescriptor) {
 	}
 }
 
+/**
+ * The node of a title, with its aliases' backlinks in `details`.
+ * @param {string} title the title
+ * @returns {object}
+ */
 AliasBacklinkIndexer.prototype.lookup = function(title) {
+	if(!this.trie) this._build();
 	return this.trie.getNodeMap(title)[title] || {};
 }
 

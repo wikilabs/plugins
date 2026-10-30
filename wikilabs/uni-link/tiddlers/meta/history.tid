@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 3.1.0 - 2026-10-30
+
+* Faster wiki startup: Alias backlinks are now built the first time they are needed
+
 V 3.0.4 - 2026-04-08
 
 * Remove nodemon dev-dependency
