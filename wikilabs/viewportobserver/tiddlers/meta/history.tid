@@ -1,0 +1,6 @@
+title: $:/plugins/wikilabs/viewportobserver/history
+
+V 0.1.0 - 2026-11-05
+
+* The `<$viewportobserver>` widget: an eventcatcher with `$enterview` and `$leaveview` actions
+* `lazy="yes"` renders the content when it first comes into view
