@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.23.0 - 2026-11-07
+
+* Hovering a core widget or a core macro call links to its reference page on tiddlywiki.com, found by its caption; an internal one opens the Widgets or Core Macros overview. A plugin's or an overridden definition gets no link.
+
 V 0.22.1 - 2026-11-07
 
 * With the TiddlyWiki 5.5.0 prerelease, hovering the content of an `<%elseif%>` or `<%else%>` clause opens no `$list` popup, and `condition` there is set "by `<%if%>`".

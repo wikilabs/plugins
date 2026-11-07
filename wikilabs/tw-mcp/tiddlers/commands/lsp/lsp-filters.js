@@ -61,9 +61,12 @@ var MAX_RENDER_CHARS = 600;
 
 // --- Locating filters through the parser ---
 
-// Every filter the parser can locate, in offsets relative to the body: a filter
-// attribute in any quoting, a {{{ }}} value of any attribute, a \function body,
-// and each condition of an <%if%> block.
+/**
+ * Every filter the parser locates, in body offsets: filter attributes, {{{ }}} values, \function bodies and <%if%> conditions.
+ * @param {object[]} tree - parse tree
+ * @param {string} body - body text
+ * @returns {object[]} Sites as { filter, start, end, substituted?, condition? }
+ */
 function filterSites(tree, body) {
 	var sites = [];
 	source.eachNode(tree, function(node) {
@@ -103,7 +106,12 @@ function filterSites(tree, body) {
 	return sites;
 }
 
-// Each <%if%> block, for the hover that says which clause renders.
+/**
+ * Each <%if%> block, for the hover that says which clause renders.
+ * @param {object[]} tree - parse tree
+ * @param {string} body - body text
+ * @returns {object[]} Blocks as { clauses, start, end, spots }
+ */
 function conditionalBlocks(tree, body) {
 	var blocks = [];
 	source.eachNode(tree, function(node) {
@@ -115,7 +123,13 @@ function conditionalBlocks(tree, body) {
 	return blocks;
 }
 
-// Where a block answers a hover: each clause's <%...%> marker and its <%endif%>, never what it renders.
+/**
+ * Where a block answers a hover: each clause's marker and its <%endif%>, never what it renders.
+ * @param {object[]} clauses - from calls.conditionalClauses
+ * @param {object} node - the block's $list
+ * @param {string} body - body text
+ * @returns {Array<{start: number, end: number}>} Spots
+ */
 function markerSpots(clauses, node, body) {
 	var spots = clauses.map(function(clause) {
 		return { start: clause.at, end: body.indexOf("%>", clause.at) + 2 };
@@ -127,15 +141,24 @@ function markerSpots(clauses, node, body) {
 	return spots;
 }
 
-// The part of a site that answers a hover at offset: one of its spots, else its whole range; or null.
+/**
+ * The part of a site that answers a hover at offset: one of its spots, else its whole range.
+ * @param {object} site - filter, widget, call or block site
+ * @param {number} offset - body offset
+ * @returns {(object|null)} Spot
+ */
 function spotAt(site, offset) {
 	return (site.spots || [site]).find(function(spot) {
 		return offset >= spot.start && offset < spot.end;
 	}) || null;
 }
 
-// The site with the smallest spot under the cursor, so an inner filter wins over
-// the widget that encloses it.
+/**
+ * The site with the smallest spot under the cursor, so an inner filter wins over its enclosing widget.
+ * @param {object[]} sites - candidate sites
+ * @param {number} offset - body offset
+ * @returns {(object|null)} Site
+ */
 function innermostSite(sites, offset) {
 	var best = null,
 		bestSize = Infinity;
@@ -149,8 +172,13 @@ function innermostSite(sites, offset) {
 	return best;
 }
 
-// The run prefix or operator name under the cursor in a filter site, as
-// { part, start, end } in body offsets (part from calls.filterParts), or null.
+/**
+ * The run prefix or operator under the cursor in a filter site.
+ * @param {object} site - filter site
+ * @param {string} bodyText - body text
+ * @param {number} cursor - body offset
+ * @returns {({part: object, start: number, end: number}|null)} Part in body offsets
+ */
 function partIn(site, bodyText, cursor) {
 	var at = site.start + bodyText.slice(site.start, site.end).lastIndexOf(site.filter),
 		parts = calls.filterParts(site.filter),
@@ -160,24 +188,45 @@ function partIn(site, bodyText, cursor) {
 	return hit ? { part: hit, start: at + hit.start, end: at + hit.end } : null;
 }
 
+/**
+ * The run prefix or operator under the cursor anywhere in the body.
+ * @param {object[]} tree - parse tree
+ * @param {string} bodyText - body text
+ * @param {number} cursor - body offset
+ * @returns {({part: object, start: number, end: number}|null)} Part in body offsets
+ */
 function filterPartAt(tree, bodyText, cursor) {
 	var site = innermostSite(filterSites(tree, bodyText), cursor);
 	return site ? partIn(site, bodyText, cursor) : null;
 }
 
+/**
+ * The named prefix a run prefix stands for.
+ * @param {object} part - prefix part from calls.filterParts
+ * @returns {string} Prefix name
+ */
 function runPrefixName(part) {
 	return part.named || SHORTHAND_PREFIXES[part.prefix];
 }
 
 // --- The fallback, for a filter that does not parse yet ---
 
-// A filter is written in two places on a line: a filtered transclusion, and a
-// filter= or filter: value. Both may be unfinished, because the cursor is
-// usually still inside one.
+/**
+ * A filter on a line, finished or still being typed: a {{{ }}} or a filter= or filter: value.
+ * @param {string} lineText - the line
+ * @param {number} character - cursor column
+ * @returns {({text: string, start: number, end: number}|null)} Filter in line columns
+ */
 function filterContext(lineText, character) {
 	return filterInBraces(lineText, character) || filterInAttribute(lineText, character);
 }
 
+/**
+ * The filtered transclusion around a column, finished or not.
+ * @param {string} lineText - the line
+ * @param {number} character - cursor column
+ * @returns {({text: string, start: number, end: number}|null)} Filter in line columns
+ */
 function filterInBraces(lineText, character) {
 	var open = lineText.lastIndexOf("{{{", character);
 	if(open < 0) {
@@ -192,6 +241,12 @@ function filterInBraces(lineText, character) {
 	return { text: lineText.slice(start, end), start: start, end: end };
 }
 
+/**
+ * The filter or subfilter value around a column, in any quoting including backticks, finished or not.
+ * @param {string} lineText - the line
+ * @param {number} character - cursor column
+ * @returns {({text: string, start: number, end: number}|null)} Filter in line columns
+ */
 function filterInAttribute(lineText, character) {
 	// Backtick included because 5.3 attribute values may use it.
 	var pattern = /(?:filter|subfilter)\s*[=:]\s*(["'`])/g,
@@ -209,11 +264,12 @@ function filterInAttribute(lineText, character) {
 
 // --- The last resort: a line that is nothing but a filter ---
 
-// A bare [tag[X]] carries no syntax saying it is a filter, so it is recognised
-// by shape instead: the whole line, trimmed, opens with "[" and closes with "]"
-// and nothing else is on it. That covers a filter inside a documentation code
-// block and a filter-valued system tiddler such as $:/config/FileSystemPaths,
-// where the text IS a filter with no wikitext around it.
+/**
+ * A line that is nothing but a filter, such as one in a code block or a filter-valued config tiddler.
+ * @param {string} lineText - the line
+ * @param {number} character - cursor column
+ * @returns {({text: string, start: number, end: number}|null)} Filter in line columns
+ */
 function bareFilterOnLine(lineText, character) {
 	var trimmed = lineText.trim();
 	if(trimmed.length < 2 || trimmed.charAt(0) !== "[" || trimmed.charAt(trimmed.length - 1) !== "]") {
@@ -229,8 +285,11 @@ function bareFilterOnLine(lineText, character) {
 
 // --- Running and describing ---
 
-// A filter still being typed is the normal state under a cursor, and it must
-// not be reported as one that legitimately matches nothing.
+/**
+ * Tells whether a filter's brackets balance, so a half-typed filter is not reported as matching nothing.
+ * @param {string} filterString - filter
+ * @returns {boolean} True if balanced
+ */
 function bracketsBalanced(filterString) {
 	var depth = 0;
 	for(var i = 0; i < filterString.length; i++) {
@@ -247,9 +306,12 @@ function bracketsBalanced(filterString) {
 	return depth === 0;
 }
 
-// compileFilter does not throw on a malformed filter: it returns a function
-// whose single result is the error message. Told apart from a real tiddler of
-// that title by asking the wiki whether one exists.
+/**
+ * Runs a filter, telling a filter error apart from a real tiddler of that title.
+ * @param {string} filterString - filter
+ * @param {object} [context] - widget at the position
+ * @returns {({titles: string[]}|{error: string})} Titles or error
+ */
 function runFilter(filterString, context) {
 	var errorTiddler = $tw.wiki.getTiddler(FILTER_ERROR_TITLE),
 		prefix = ((errorTiddler && errorTiddler.fields.text) || "Filter error") + ": ",
@@ -260,23 +322,35 @@ function runFilter(filterString, context) {
 	return { titles: results };
 }
 
-// Markdown link syntax is fragile about characters a real path holds. A ")" in
-// the URL ends the link early, and a filename with parentheses is ordinary,
-// while encodeURI leaves both alone. Brackets in the text end it too.
+/**
+ * A markdown link, escaping the characters that would end it early.
+ * @param {string} text - link text
+ * @param {string} uri - target
+ * @returns {string} Markdown
+ */
 function markdownLink(text, uri) {
 	return "[" + text.replace(/[[\]]/g, "\\$&") + "](" + uri.replace(/[()]/g, function(ch) {
 		return "%" + ch.charCodeAt(0).toString(16).toUpperCase();
 	}) + ")";
 }
 
-// A title in the hover, linked to its own file so the reader can open it. A
-// shadow tiddler has no file, so it stays plain text rather than becoming a
-// link that goes nowhere.
+/**
+ * A title linked to its file, or plain text when it has none, as for a shadow tiddler.
+ * @param {string} title - tiddler title
+ * @returns {string} Markdown
+ */
 function titleLink(title) {
 	var uri = source.uriOfTitle(title);
 	return uri ? markdownLink(title, uri) : title;
 }
 
+/**
+ * The hover for a filter: the filter, its substituted form, and what it matches here.
+ * @param {string} filterString - filter
+ * @param {object} [context] - widget at the position
+ * @param {boolean} [substituted] - a backtick value
+ * @returns {string} Markdown
+ */
 function describeFilter(filterString, context, substituted) {
 	var trimmed = filterString.trim();
 	if(!trimmed) {
@@ -314,8 +388,13 @@ function describeFilter(filterString, context, substituted) {
 	return body;
 }
 
-// A run prefix or operator: the JavaScript that runs it, or for a name no
-// operator has, the field test TiddlyWiki silently makes instead (unknown.js).
+/**
+ * The hover for a run prefix or operator: the code that runs it, or the field test TiddlyWiki makes for an unknown name.
+ * @param {object} part - from calls.filterParts
+ * @param {string} bodyText - body text
+ * @param {number} offset - body offset
+ * @returns {string} Markdown
+ */
 function describePart(part, bodyText, offset) {
 	if(part.prefix !== undefined) {
 		var name = runPrefixName(part),
@@ -345,7 +424,11 @@ function describePart(part, bodyText, offset) {
 	return "**Not a filter operator.** " + test + " A misspelt operator looks exactly like this.\n";
 }
 
-// A header describes its whole module, which may export several operators.
+/**
+ * The header description of an operator's module, which may export several operators.
+ * @param {string} module - module title
+ * @returns {string} Markdown quote, or empty
+ */
 function operatorModuleDescription(module) {
 	var description = widgets.moduleDescription(module);
 	if(!description) {
@@ -358,16 +441,47 @@ function operatorModuleDescription(module) {
 		}).join("\n");
 }
 
-// Core's operators and prefixes are documented on tiddlywiki.com; a plugin's are not.
+/**
+ * A tiddlywiki.com link for a core module's page; a plugin's or an overridden module gets none.
+ * @param {string} module - module title
+ * @param {string} page - tiddlywiki.com title
+ * @returns {string} Markdown, or empty
+ */
 function coreDoc(module, page) {
-	return $tw.wiki.getShadowSource(module) === "$:/core" && !$tw.wiki.tiddlerExists(module)
+	return isCore(module)
 		? ", documented at " + markdownLink("tiddlywiki.com", "https://tiddlywiki.com/#" + encodeURIComponent(page))
 		: "";
 }
 
-// A call is described whole, arguments and filter results together, so it wins
-// over the filter argument nested inside it. A name a parameter or an enclosing
-// widget binds is that binding, whatever definition shares the name.
+/**
+ * Tells whether a title is core's own shadow, not overridden.
+ * @param {string} [title] - tiddler or module title
+ * @returns {boolean} True for unchanged core
+ */
+function isCore(title) {
+	return !!title && $tw.wiki.getShadowSource(title) === "$:/core" && !$tw.wiki.tiddlerExists(title);
+}
+
+/**
+ * A tiddlywiki.com link opening the page tagged `tag` whose caption is `name`, else the tag's overview page.
+ * @param {string} tag - "Widgets" or "Core Macros"
+ * @param {string} name - widget or macro name
+ * @returns {string} Markdown
+ */
+function docByCaption(tag, name) {
+	// An empty permalink target with a story filter opens what the filter finds (core startup/story.js).
+	var filter = "[tag[" + tag + "]field:caption[" + name + "]] ~[[" + tag + "]]";
+	return ", documented at " + markdownLink("tiddlywiki.com", "https://tiddlywiki.com/#:" + encodeURIComponent(filter));
+}
+
+/**
+ * The hover for a call, arguments and filter results together, or for the binding its name resolves to.
+ * @param {object} site - call site
+ * @param {object} body - document body
+ * @param {object} [context] - widget at the position
+ * @param {object[]} tree - parse tree
+ * @returns {string} Markdown
+ */
 function describeCall(site, body, context, tree) {
 	// Each description names the call itself, so no heading repeats it.
 	var binding = scope.resolve(site.name, site.start, tree, body.text);
@@ -382,7 +496,8 @@ function describeCall(site, body, context, tree) {
 	var where = definition.title === null
 			? (definition.kind === "javascript" ? "a JavaScript macro" : "defined in this tiddler")
 			: "defined in " + definitionLink(definition.title),
-		body = "**" + definition.kind + "** `" + site.name + "`, " + where + "\n\n",
+		fromCore = isCore(definition.kind === "javascript" ? modules.moduleOfMacro(site.name) : definition.title),
+		body = "**" + definition.kind + "** `" + site.name + "`, " + where + (fromCore ? docByCaption("Core Macros", site.name) : "") + "\n\n",
 		bound = macros.bindArguments(definition.params, site.args, definition.kind);
 	if(!bound.length && !definition.params.length) {
 		body += "Takes no parameters.\n";
@@ -409,7 +524,13 @@ function describeCall(site, body, context, tree) {
 	return body;
 }
 
-// Every declared parameter named, with the value it gets here, or "" where nothing sets it.
+/**
+ * The call with every declared parameter named and the value it gets here.
+ * @param {string} name - callee
+ * @param {object[]} params - declared parameters
+ * @param {object[]} bound - from macros.bindArguments
+ * @returns {string} Wikitext call
+ */
 function callAsRun(name, params, bound) {
 	return "<<" + name + params.map(function(param) {
 		var given = bound.filter(function(entry) { return entry.name === param.name && entry.origin !== "undeclared"; })[0];
@@ -420,11 +541,23 @@ function callAsRun(name, params, bound) {
 // The first quoting a macro argument's value does not contain.
 var ARGUMENT_QUOTES = [["\"", "\""], ["'", "'"], ["\"\"\"", "\"\"\""], ["[[", "]]"]];
 
+/**
+ * A macro argument in the first quoting its value does not contain.
+ * @param {string} value - argument value
+ * @returns {string} Quoted value
+ */
 function quoteArgument(value) {
 	var quote = ARGUMENT_QUOTES.find(function(pair) { return !value.includes(pair[1]); }) || ARGUMENT_QUOTES[2];
 	return quote[0] + value + quote[1];
 }
 
+/**
+ * The hover for a name a parameter or an enclosing widget binds.
+ * @param {object} binding - from scope.resolve
+ * @param {object} body - document body
+ * @param {object} [context] - widget at the position
+ * @returns {string} Markdown
+ */
 function describeBinding(binding, body, context) {
 	if(binding.kind === "parameter") {
 		return "**parameter** `" + binding.name + "` of `" + binding.of + "`" +
@@ -437,8 +570,12 @@ function describeBinding(binding, body, context) {
 		(value === undefined ? "" : "\n\nHere: `" + cell(value) + "`") + "\n";
 }
 
-// Neither bound here nor defined anywhere: a variable TiddlyWiki sets itself, one
-// the rendering context supplies, or a name only a caller can provide.
+/**
+ * The hover for a name nothing binds here: a core variable, one set outside, or one only a caller can give.
+ * @param {string} name - variable name
+ * @param {object} [context] - widget at the position
+ * @returns {string} Markdown
+ */
 function describeUnbound(name, context) {
 	var value = context ? context.getVariable(name) : undefined,
 		here = value === undefined ? "" : ", here `" + cell(value) + "`";
@@ -452,7 +589,12 @@ function describeUnbound(name, context) {
 		"` at this position, so only a caller can give it a value.\n";
 }
 
-// An <%if%> block: each clause in order, and which one renders here.
+/**
+ * The hover for an <%if%> block: each clause and which one renders here.
+ * @param {object} block - from conditionalBlocks
+ * @param {object} [context] - widget at the position
+ * @returns {string} Markdown
+ */
 function describeConditional(block, context) {
 	var out = "**conditional**: the first clause whose filter yields a result renders, and `<<condition>>` holds that result.\n\n" +
 			"| Clause | Filter | Here |\n| --- | --- | --- |\n",
@@ -476,7 +618,12 @@ function describeConditional(block, context) {
 	return decided ? out : out + "\nNo clause holds, so nothing renders here.\n";
 }
 
-// What one condition decides, below its filter hover.
+/**
+ * What one condition decides, below its filter hover.
+ * @param {string} filter - condition filter
+ * @param {object} [context] - widget at the position
+ * @returns {string} Markdown, or empty
+ */
 function conditionVerdict(filter, context) {
 	if(!bracketsBalanced(filter.trim())) {
 		return "";
@@ -490,8 +637,15 @@ function conditionVerdict(filter, context) {
 		: "\n\nAs a condition: **false**, so the next clause is tried.";
 }
 
-// A widget hover: what it is, whether anything registers it, and what each
-// attribute is worth here rather than as written.
+/**
+ * The hover for a widget: what it is, what registers it, and each attribute's value here.
+ * @param {object} site - widget site
+ * @param {object} [context] - widget at the position
+ * @param {object} [widget] - rendered widget
+ * @param {string} bodyText - body text
+ * @param {string} [callText] - description of the call it makes
+ * @returns {string} Markdown
+ */
 function describeWidget(site, context, widget, bodyText, callText) {
 	var module = modules.moduleOfWidget(site.name),
 		body;
@@ -508,7 +662,7 @@ function describeWidget(site, context, widget, bodyText, callText) {
 		body = "**No widget named** `$" + site.name + "` **is registered.** It will render as nothing.\n";
 	} else {
 		body = "**widget** `$" + site.name + "`" +
-			(module ? ", defined in " + definitionLink(module) : "") + "\n";
+			(module ? ", defined in " + definitionLink(module) + (isCore(module) ? docByCaption("Widgets", site.name) : "") : "") + "\n";
 	}
 	if(site.attributes.length) {
 		body += "\n| Attribute | Written | Value |\n| --- | --- | --- |\n";
@@ -544,23 +698,40 @@ function describeWidget(site, context, widget, bodyText, callText) {
 	return body;
 }
 
+/**
+ * Text cut to a limit, saying how long it was.
+ * @param {string} text - text
+ * @param {number} limit - maximum characters
+ * @returns {string} Text
+ */
 function truncate(text, limit) {
 	return text.length > limit ? text.slice(0, limit) + "\n... (" + text.length + " characters)" : text;
 }
 
-// A "|" in a cell ends the column, and a filter is free to contain one.
+/**
+ * A value safe in a markdown table cell, since a filter may contain a |.
+ * @param {*} value - any value
+ * @returns {string} Escaped text
+ */
 function cell(value) {
 	return String(value === undefined ? "" : value).replace(/\|/g, "\\|");
 }
 
+/**
+ * Tells whether a value is a whole, balanced filter.
+ * @param {*} value - any value
+ * @returns {boolean} True if it looks like a filter
+ */
 function looksLikeFilter(value) {
 	var trimmed = String(value || "").trim();
 	return trimmed.startsWith("[") && trimmed.endsWith("]") && bracketsBalanced(trimmed);
 }
 
-// A definition's home: its file, else the wiki in the browser, plus the editor's
-// read-only view of a tiddler with no file, the plugin supplying it, if any, and
-// the views of the shadows it replaces.
+/**
+ * A definition's home: its file or the browser wiki, the editor view, the supplying plugin and the shadows it replaces.
+ * @param {string} title - tiddler or module title
+ * @returns {string} Markdown
+ */
 function definitionLink(title) {
 	var uri = source.browsableUri(title),
 		view = source.documentUriOf(title),
@@ -574,6 +745,14 @@ function definitionLink(title) {
 		}).join(", ") : "");
 }
 
+/**
+ * The LSP hover at a position: a pragma, call, filter, widget or <%if%> block, narrowest first.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @param {{line: number, character: number}} position - cursor
+ * @param {object} [openDocuments] - open documents by URI
+ * @returns {(object|null)} LSP hover
+ */
 function hover(uri, text, position, openDocuments) {
 	// A pragma line hovers as its keyword, name or parameter, which nothing below knows.
 	var pragma = pragmas.hover(uri, text, position, openDocuments);
@@ -661,13 +840,23 @@ function hover(uri, text, position, openDocuments) {
 	return lineHover(position, bare, describeFilter(bare.text, context));
 }
 
-// A definition is not rendered where it is written, so for a widget inside its
-// body the render at that position is the rest of the document, not its output.
+/**
+ * The widget rendered at a position, or null inside a definition body, which is not rendered where it is written.
+ * @param {object} [widget] - widget at the position
+ * @returns {(object|null)} Widget
+ */
 function renderedWidget(widget) {
 	var node = widget && widget.parseTreeNode;
 	return node && (node.isMacroDefinition || node.isProcedureDefinition || node.isFunctionDefinition || node.isWidgetDefinition) ? null : widget;
 }
 
+/**
+ * A hover over a range of one line.
+ * @param {{line: number, character: number}} position - cursor
+ * @param {{start: number, end: number}} context - columns
+ * @param {string} markdown - hover text
+ * @returns {object} LSP hover
+ */
 function lineHover(position, context, markdown) {
 	return {
 		contents: { kind: "markdown", value: markdown },
