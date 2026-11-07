@@ -16,3 +16,9 @@ tags: $:/tags/Stylesheet
   color: blue;
   font-weight: bold;
 }
+
+/* Keyboard-selected search result looks like a hovered one, in every search tab */
+.tc-block-dropdown .tc-list-item-selected a.tc-tiddlylink {
+	color: <<colour tiddler-link-background>>;
+	background-color: <<colour tiddler-link-foreground>>;
+}

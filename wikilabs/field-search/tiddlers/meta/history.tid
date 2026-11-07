@@ -1,5 +1,12 @@
 title: $:/plugins/wikilabs/field-search/history
 
+V 1.1.0 - 2026-11-07
+
+* The sidebar "matches" counter now counts field-search results, instead of showing 0
+** Custom tabs: Click ''Update'' once per tab in the configurator to get the new counter
+* Arrow keys highlight field-search results, like the default search tab
+* Keyboard-selected search results look like hovered ones, in all search tabs
+
 V 1.0.1 - 2024-05-23
 
 * Add stability badges

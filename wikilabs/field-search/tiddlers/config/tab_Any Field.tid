@@ -1,4 +1,5 @@
 caption: Any Field
+first-search-filter: [subfilter{$:/config/field-search/tab/Any Field!!search-set}search:*<userInput>subfilter{$:/config/field-search/tab/Any Field!!search-sort}]
 opt-checked: [all[]]
 opt-unchecked: [!is[system]]
 search-set: [!is[system]]

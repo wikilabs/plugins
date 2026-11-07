@@ -15,12 +15,19 @@ type: text/vnd.tiddlywiki
 </$button>
 \end
 
+\define fieldRun() [subfilter{$(tabTitle)$!!search-set}search:$(field)$<userInput>subfilter{$(tabTitle)$!!search-sort}]
+
 \define createTab()
+<!-- first-search-filter feeds the core sidebar match count and keyboard navigation, one run per field in display order -->
 <$set name=newConfigName value=<<getConfigName>> >
-  <$wikify name=aa text={{$:/plugins/wikilabs/field-search/templates/WrapperTemplate}} output=text>
-    <$action-createtiddler $basetitle=<<getTabName>> $overwrite=yes $template="$:/plugins/wikilabs/field-search/templates/WrapperTemplate" caption={{{ [<getTempName>get[caption]] }}} text=<<aa>> tags="$:/tags/SearchResults"/>
-    <$action-createtiddler $basetitle=<<getConfigName>> $template=<<getTempName>> $overwrite=yes tags="$:/tags/field-search/data"/>
-  </$wikify>
+	<$vars tabTitle=<<getTabName>>>
+		<$wikify name=firstFilter text="""<$list filter="[<getTempName>indexes[]sortby{$:/config/field-search/sortby}]" variable=field><$text text=<<fieldRun>>/> </$list>""" output=text>
+			<$wikify name=aa text={{$:/plugins/wikilabs/field-search/templates/WrapperTemplate}} output=text>
+				<$action-createtiddler $basetitle=<<getTabName>> $overwrite=yes $template="$:/plugins/wikilabs/field-search/templates/WrapperTemplate" caption={{{ [<getTempName>get[caption]] }}} text=<<aa>> tags="$:/tags/SearchResults" first-search-filter=<<firstFilter>>/>
+				<$action-createtiddler $basetitle=<<getConfigName>> $template=<<getTempName>> $overwrite=yes tags="$:/tags/field-search/data"/>
+			</$wikify>
+		</$wikify>
+	</$vars>
 </$set>
 \end
 

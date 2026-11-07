@@ -9,6 +9,10 @@ type: text/vnd.tiddlywiki
 <$set name=lst filter="[subfilter{!!search-set}] +[subfilter<searchTerm>] +[subfilter{!!search-sort}]">
 //Field: ''<<field>>'' (<$count filter="""[enlist<lst>]"""/>)   <<showAll>>//
 
-<$list filter="[enlist<lst>]" template="$:/core/ui/ListItemTemplate" emptyMessage="""<div class="tc-menu-list-item tc-small-gap-left">n/a</div>"""/>
+<$list filter="[enlist<lst>]" emptyMessage="""<div class="tc-menu-list-item tc-small-gap-left">n/a</div>""">
+<span class={{{ [<currentTiddler>addsuffix[-primaryList]] -[<searchListState>get[text]] +[then[]else[tc-list-item-selected]] }}}>
+<$transclude tiddler="$:/core/ui/ListItemTemplate"/>
+</span>
+</$list>
 </$set>
 </$tiddler>
