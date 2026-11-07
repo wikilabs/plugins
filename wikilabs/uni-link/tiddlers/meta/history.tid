@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/uni-link/history
 
+V 3.1.1 - 2026-11-07
+
+* Move the uni-link settings from the $:/ControlPanel top row to ''Settings'' -> ''WikiLabs'' -> ''uni-link''
+
 V 3.1.0 - 2026-10-30
 
 * Faster wiki startup: Alias backlinks are now built the first time they are needed

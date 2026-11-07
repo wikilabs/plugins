@@ -1,7 +1,6 @@
 title: $:/plugins/wikilabs/uni-link/readme
 subtitle: "uni-link" readme
 caption: uni-link
-tags: $:/tags/ControlPanel/WikiLabs
 
 \define createExampleTiddlers()
 <$button>
@@ -44,7 +43,7 @@ If you need to use it with TW <= V5.1.21 you'll need to use an older version, wh
 <<<
 * A new wikitext parsing rule, that calls the global [["uni-link" macro|$:/plugins/wikilabs/uni-link/uni-link-macro]], instead of referencing the tiddler name. 
 
-* It substitues the following tiddler fields: ''subtitle'', ''caption'' and ''title''. The $:/ControlPanel contains a new tab, that lets you define the behaviour of the uni-link macro. Default is ''title''. So there is no difference between the default setting of the plugin and the default behaviour in unmodified ~TiddlyWiki.
+* It substitues the following tiddler fields: ''subtitle'', ''caption'' and ''title''. The $:/ControlPanel -> ''Settings'' -> ''WikiLabs'' -> ''uni-link'' tab lets you define the behaviour of the uni-link macro. Default is ''title''. So there is no difference between the default setting of the plugin and the default behaviour in unmodified ~TiddlyWiki.
 <<<
 
 ! Uni-link Search
