@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/link-to-tabs/history
 
+V 3.2.1 - 2026-11-07
+
+* Hide tab links when printing
+
 V 3.2.0 - 2026-04-08
 
 * Stop shadowing core tabs macro — only override `tabs-tab` sub-macro

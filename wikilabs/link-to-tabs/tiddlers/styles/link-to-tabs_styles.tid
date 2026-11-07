@@ -44,4 +44,11 @@ type: text/vnd.tiddlywiki
   padding: 0;
 }
 
+@media print {
+	.wltc-link-to-tab,
+	.tc-tab-selected + .wltc-link-to-tab {
+		display: none;
+	}
+}
+
 </pre>
