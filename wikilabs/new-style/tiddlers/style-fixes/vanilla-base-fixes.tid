@@ -59,6 +59,13 @@ button.tc-btn-invisible.tc-remove-tag-button {
 	color: <<colour foreground>>;
 }
 
+/* Keep the core text colour of keyboard-selected items, which the rule above would override */
+.tc-block-dropdown .tc-list-item-selected a.tc-tiddlylink,
+.tc-block-dropdown a.tc-list-item-selected,
+.tc-block-dropdown a.tc-tag-button-selected {
+	color: <<colour tiddler-background>>;
+}
+
 .tc-block-dropdown a.tc-tiddlylink {
 	display: block;
 	padding: 4px 14px 4px 14px;
