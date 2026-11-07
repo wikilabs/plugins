@@ -26,7 +26,7 @@ title: $:/plugins/wikilabs/bundler/readme
 ! ~ReadMe
 
 * Documentation and more can be found at: https://wikilabs.github.io/editions/bundler
-* The position of the "Bundles" tab can be selected in the <$button actions=<<openControlBundlesTab>> class="tc-btn-invisible tc-tiddlylink">~$:/ControlPanel : Bundles tab</$button> at the ''Bundle Tab Settings'' section
+* The position of the "Bundles" tab can be selected in <$button actions=<<openControlBundlesTab>> class="tc-btn-invisible tc-tiddlylink">~$:/ControlPanel -> Settings -> ~WikiLabs -> Bundler</$button> at the ''Bundle Tab Settings'' section
 * There are 2 version of bundles
 ** <<.xL "Bundle Lists" "doc-bundle-lists">> ... Enabled by default
 ** <<.xL "Filtered Bundles" "doc-filtered-bundles">> ... Have to be activated by the user
@@ -37,8 +37,8 @@ title: $:/plugins/wikilabs/bundler/readme
 * The "Enable Import Bundle" option lets you collect / log imported tiddlers and create a new bundle, for future use.
 * It's easy to add the bundle configuration to the bundle itself eg: 
 ** If the bundle is named: `tagged-test.bundle`, the filter can look like this: `[tag[test]] tagged-test.bundle`
-* Have a closer look at the ~$:/ControlPanel: Bundles tab for more [[settings|$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config]].
-* This plugin only works with TW >= 5.1.18 since we use the "subfilter" operator which has been added in 5.1.18
+* Have a closer look at the [[Bundler settings|$:/plugins/wikilabs/bundler/ui/ControlPanel/bundler-config]] for more options.
+* This plugin needs ~TiddlyWiki {{$:/plugins/wikilabs/bundler!!core-version}}
 
 ---
 
