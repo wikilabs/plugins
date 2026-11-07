@@ -15,8 +15,11 @@ var calls = require("$:/core/modules/commands/inspect/calls.js");
 
 var WIKITEXT_TYPE = "text/vnd.tiddlywiki";
 
-// Index of the first body line. A .tid file's fields run until the first blank
-// line; a file that is nothing but fields has no body at all.
+/**
+ * Index of the first body line; a .tid file's fields run to the first blank line, and a file of fields only has no body.
+ * @param {string[]} lines - document lines
+ * @returns {number} Line index
+ */
 function bodyStartLine(lines) {
 	for(var i = 0; i < lines.length; i++) {
 		if(lines[i].trim() === "") {
@@ -30,13 +33,20 @@ function bodyStartLine(lines) {
 	return lines.length;
 }
 
-// A git: URI carries the version in a query after the path.
+/**
+ * Tells whether a URI names a .tid file, a git: URI carrying its version in a query.
+ * @param {string} uri - document URI
+ * @returns {boolean} True for a .tid
+ */
 function isTidUri(uri) {
 	return /\.tid(?:\?.*)?$/.test(uri);
 }
 
-// Character offset of the start of each line, so a parse tree's offsets can be
-// turned back into the line and column the protocol speaks in.
+/**
+ * The offset of each line's start, to turn parse tree offsets back into protocol positions.
+ * @param {string} text - document text
+ * @returns {number[]} Offsets
+ */
 function lineStarts(text) {
 	var starts = [0];
 	for(var i = 0; i < text.length; i++) {
@@ -47,11 +57,23 @@ function lineStarts(text) {
 	return starts;
 }
 
+/**
+ * The offset of a protocol position.
+ * @param {number[]} starts - from lineStarts
+ * @param {{line: number, character: number}} position - protocol position
+ * @returns {number} Offset
+ */
 function offsetAt(starts, position) {
 	var line = Math.min(position.line, starts.length - 1);
 	return starts[line] + position.character;
 }
 
+/**
+ * The protocol position of an offset.
+ * @param {number[]} starts - from lineStarts
+ * @param {number} offset - text offset
+ * @returns {{line: number, character: number}} Position
+ */
 function positionAt(starts, offset) {
 	var lo = 0,
 		hi = starts.length - 1;
@@ -66,8 +88,12 @@ function positionAt(starts, offset) {
 	return { line: lo, character: offset - starts[lo] };
 }
 
-// Everything a feature needs to work in body coordinates and report in document
-// ones, computed once per call.
+/**
+ * Everything a feature needs to work in body coordinates and report in document ones, computed once per call.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @returns {object} Body: text, offset, starts, lines, firstLine
+ */
 function bodyOf(uri, text) {
 	var lines = text.split(/\r?\n/),
 		starts = lineStarts(text),
@@ -82,6 +108,12 @@ function bodyOf(uri, text) {
 	};
 }
 
+/**
+ * Calls a callback for every node of a parse tree, depth first.
+ * @param {object[]} nodes - parse tree nodes
+ * @param {function(object): void} callback - receives each node
+ * @returns {void}
+ */
 function eachNode(nodes, callback) {
 	for(var i = 0; i < (nodes || []).length; i++) {
 		callback(nodes[i]);
@@ -89,6 +121,11 @@ function eachNode(nodes, callback) {
 	}
 }
 
+/**
+ * Parses a body as wikitext.
+ * @param {string} bodyText - body text
+ * @returns {object[]} Parse tree
+ */
 function parseBody(bodyText) {
 	return $tw.wiki.parseText(WIKITEXT_TYPE, bodyText).tree;
 }
@@ -98,10 +135,11 @@ function parseBody(bodyText) {
 var recentTrees = [],
 	RECENT_MAX = 8;
 
-// The parse tree with each \procedure, \define and \widget body parsed in place
-// and moved into document offsets, so what is written inside a body can be
-// hovered. A \function body is a filter, which its caller locates itself. The
-// tree is shared between callers: read it, never change it.
+/**
+ * The parse tree with each \procedure, \define and \widget body parsed in place in document offsets; shared, so read it, never change it.
+ * @param {string} bodyText - body text
+ * @returns {object[]} Parse tree
+ */
 function parseWithBodies(bodyText) {
 	for(var i = 0; i < recentTrees.length; i++) {
 		if(recentTrees[i].text === bodyText) {
@@ -125,8 +163,12 @@ function parseWithBodies(bodyText) {
 // Where the parser says an element's tags sit, next to its start and end.
 var TAG_EDGES = ["openTagStart", "openTagEnd", "closeTagStart", "closeTagEnd"];
 
-// Moves every range in a parsed tree by delta. An attribute is reachable both
-// through attributes and orderedAttributes, so each object is moved once.
+/**
+ * Moves every range in a parsed tree by delta, each attribute once although two lists reach it.
+ * @param {object[]} nodes - parse tree nodes
+ * @param {number} delta - offset change
+ * @returns {void}
+ */
 function shift(nodes, delta) {
 	var moved = [];
 	function move(item) {
@@ -158,8 +200,12 @@ function shift(nodes, delta) {
 
 // --- The tiddler a document is, and the context it gives a filter ---
 
-// Taken from the document's own field header, so a title being renamed in an
-// unsaved buffer is honoured, and only then from the file map.
+/**
+ * The document's title from its own field header, so an unsaved rename counts, else from the file map.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @returns {(string|null)} Title
+ */
 function titleOfDocument(uri, text) {
 	var lines = text.split(/\r?\n/),
 		firstLine = isTidUri(uri) ? bodyStartLine(lines) : 0;
@@ -172,6 +218,11 @@ function titleOfDocument(uri, text) {
 	return titleOfUri(uri);
 }
 
+/**
+ * The title of the tiddler a file URI holds, from the wiki's file map.
+ * @param {string} uri - document URI
+ * @returns {(string|null)} Title
+ */
 function titleOfUri(uri) {
 	if(isVirtualUri(uri)) {
 		return titleOfVirtualUri(uri);
@@ -185,19 +236,13 @@ function titleOfUri(uri) {
 	return null;
 }
 
-// A widget to evaluate a filter against, so [all[current]] means whatever it
-// means AT THIS POSITION: the document's own tiddler, or the value an enclosing
-// <$let> or <$set> gives it. Built from tw-mcp-core's render context, which
-// also imports the wiki's global macros, so a filter calling one resolves.
-//
-// Only widgets whose parse tree node came from THIS document may be measured
-// against a document offset. A macro expansion's nodes carry ranges into the
-// macro's own text, so an unrelated node routinely appears to cover the cursor;
-// comparing them is meaningless, and doing so picked a widget from inside a
-// list iteration instead of the call site.
-//
-// A variable is visible to a widget's children, never to the widget that set
-// it, so what is handed out is always a child.
+/**
+ * The widget a filter at this position runs against, from nodes of this document only; a child, since a widget never sees its own variables.
+ * @param {string} title - document's tiddler
+ * @param {string} bodyText - body text
+ * @param {number} offset - body offset
+ * @returns {{context: (object|null), widget: (object|null)}} Context widget and rendered widget
+ */
 function renderAt(title, bodyText, offset) {
 	if(!title) {
 		return { context: null, widget: null };
@@ -225,13 +270,22 @@ function renderAt(title, bodyText, offset) {
 	return { context: node.makeChildWidget({ type: "widget", children: [] }), widget: null };
 }
 
+/**
+ * The context widget at a position.
+ * @param {string} title - document's tiddler
+ * @param {string} bodyText - body text
+ * @param {number} offset - body offset
+ * @returns {(object|null)} Widget
+ */
 function renderContext(title, bodyText, offset) {
 	return renderAt(title, bodyText, offset).context;
 }
 
-// What a widget actually produced. A widget that creates no element of its own
-// has empty domNodes and its children hold the output, so the whole subtree is
-// gathered. This is the render the document already did, not a second one.
+/**
+ * The text a widget's subtree produced in the render the document already did.
+ * @param {object} widget - rendered widget
+ * @returns {string} Text
+ */
 function renderedTextOf(widget) {
 	if(!widget) {
 		return null;
@@ -257,7 +311,11 @@ function renderedTextOf(widget) {
 	return text || null;
 }
 
-// Identities, not ranges: two nodes from different texts can share a range.
+/**
+ * The nodes of a tree by identity, since two nodes from different texts can share a range.
+ * @param {object[]} tree - parse tree
+ * @returns {Set<object>} Nodes
+ */
 function ownNodes(tree) {
 	var seen = [];
 	(function collect(nodes) {
@@ -269,6 +327,13 @@ function ownNodes(tree) {
 	return seen;
 }
 
+/**
+ * The innermost rendered widget from this document's own nodes covering an offset.
+ * @param {object} root - root widget
+ * @param {Set<object>} own - from ownNodes
+ * @param {number} offset - body offset
+ * @returns {(object|null)} Widget
+ */
 function innermostWidget(root, own, offset) {
 	var best = null;
 	if(offset === undefined) {
@@ -290,8 +355,11 @@ function innermostWidget(root, own, offset) {
 
 // --- Tiddlers on disk ---
 
-// LSP speaks URIs, and a Windows path is not one: the separators are wrong and
-// a space in a title's filename must be escaped.
+/**
+ * A file URI for a path, with the separators and escapes a Windows path lacks.
+ * @param {string} filepath - file path
+ * @returns {string} URI
+ */
 function pathToUri(filepath) {
 	var slashed = filepath.replace(/\\/g, "/");
 	if(slashed.charAt(0) !== "/") {
@@ -302,21 +370,31 @@ function pathToUri(filepath) {
 	});
 }
 
-// Where a title lives on disk, or null when it has no file of its own. A shadow
-// tiddler is the ordinary case of that: it is supplied by a plugin, and neither
-// $tw.boot.files nor the plugin tiddler records the folder it came from.
-// A file URI's path, the inverse of pathToUri: /E:/x becomes E:/x.
+/**
+ * A file URI's path, the inverse of pathToUri: /E:/x becomes E:/x.
+ * @param {string} uri - file URI
+ * @returns {string} Path
+ */
 function uriToPath(uri) {
 	var decoded = decodeURIComponent(uri.replace(/^file:\/\//, ""));
 	return /^\/[a-zA-Z]:/.test(decoded) ? decoded.slice(1) : decoded;
 }
 
+/**
+ * Where a title lives on disk; a shadow tiddler has no file, and nothing records its plugin's folder.
+ * @param {string} title - tiddler title
+ * @returns {(string|null)} Path
+ */
 function fileOfTitle(title) {
 	var entry = ($tw.boot.files || {})[title];
 	return entry && entry.filepath ? entry.filepath : null;
 }
 
-// The file URI for a title, or null when it has no file to open.
+/**
+ * The file URI for a title, or null when it has no file to open.
+ * @param {string} title - tiddler title
+ * @returns {(string|null)} URI
+ */
 function uriOfTitle(title) {
 	var filepath = fileOfTitle(title);
 	return filepath ? pathToUri(filepath) : null;
@@ -328,19 +406,30 @@ function uriOfTitle(title) {
 // scheme; the extension asks for their text with the tiddlywiki/tiddler request.
 var VIRTUAL_SCHEME = "tiddlywiki:";
 
+/**
+ * Tells whether a URI is one of the server's read-only tiddler views.
+ * @param {string} uri - document URI
+ * @returns {boolean} True for a view
+ */
 function isVirtualUri(uri) {
 	return uri.startsWith(VIRTUAL_SCHEME);
 }
 
-// A version that does not run: neither a file of the wiki nor a view of its running text, such as the HEAD
-// side of a git diff or a plugin's shadow that another version replaces.
+/**
+ * Tells whether a URI is a version that does not run, such as a git diff side or a replaced plugin shadow.
+ * @param {string} uri - document URI
+ * @returns {boolean} True if not running
+ */
 function isOtherVersionUri(uri) {
 	return !uri.startsWith("file:") && (!isVirtualUri(uri) || sourceOfVirtualUri(uri) !== null);
 }
 
-// The path is the whole title plus an extension naming the editor's language:
-// a wikitext view is always .tid, other types keep an extension they end in. A
-// source names the plugin whose shadow the view shows instead of the running text.
+/**
+ * The view URI of a title: the title plus an extension naming the editor's language, and the plugin when it shows a shadow.
+ * @param {string} title - tiddler title
+ * @param {string} [source] - plugin whose shadow it shows
+ * @returns {string} URI
+ */
 function virtualUri(title, source) {
 	var tiddler = $tw.wiki.getTiddler(title),
 		type = (tiddler && tiddler.fields.type) || WIKITEXT_TYPE,
@@ -350,13 +439,21 @@ function virtualUri(title, source) {
 	return VIRTUAL_SCHEME + "/" + encodeURIComponent(title) + suffix + (source ? "?source=" + encodeURIComponent(source) : "");
 }
 
+/**
+ * The plugin a view URI shows a shadow of, or null for the running text.
+ * @param {string} uri - view URI
+ * @returns {(string|null)} Plugin title
+ */
 function sourceOfVirtualUri(uri) {
 	var match = /\?(?:[^#]*&)?source=([^&#]*)/.exec(uri);
 	return match ? decodeURIComponent(match[1]) : null;
 }
 
-// The editor re-encodes a URI it was given (%2F comes back as /), so the title is
-// decoded from the whole path; null when no such tiddler exists.
+/**
+ * The title a view URI shows, decoded from the whole path since the editor re-encodes it.
+ * @param {string} uri - view URI
+ * @returns {(string|null)} Title, null when no such tiddler exists
+ */
 function titleOfVirtualUri(uri) {
 	var path = decodeURIComponent(uri.slice(VIRTUAL_SCHEME.length).replace(/\?.*$/, "")).replace(/^\/+/, ""),
 		stripped = path.replace(/\.tid$/, ""),
@@ -367,12 +464,20 @@ function titleOfVirtualUri(uri) {
 	return $tw.wiki.getTiddler(path) ? path : null;
 }
 
-// A wikitext view reads as a .tid file, fields as get_tiddler format=tid gives
-// them, so every .tid rule applies; any other type is its text alone.
+/**
+ * The text of a title's view: a wikitext view reads as a .tid file, any other type is its text alone.
+ * @param {string} title - tiddler title
+ * @returns {(string|null)} Text
+ */
 function virtualText(title) {
 	return viewText($tw.wiki.getTiddler(title));
 }
 
+/**
+ * The view text of a tiddler.
+ * @param {object} tiddler - tiddler
+ * @returns {(string|null)} Text
+ */
 function viewText(tiddler) {
 	var crud = require("$:/core/modules/commands/inspect/handlers/crud/_shared.js");
 	if(!tiddler) {
@@ -385,13 +490,23 @@ function viewText(tiddler) {
 	return crud.formatFieldsBlock(tiddler, { exclude: ["text"] }) + "\n\n" + text;
 }
 
-// The shadow of title that plugin ships, as its view reads; null when the plugin ships no such title.
+/**
+ * The shadow of a title that a plugin ships, as its view reads.
+ * @param {string} title - tiddler title
+ * @param {string} plugin - plugin title
+ * @returns {(string|null)} Text, null when the plugin ships no such title
+ */
 function shadowVersionText(title, plugin) {
 	var info = $tw.wiki.getPluginInfo(plugin),
 		fields = info && info.tiddlers && $tw.utils.hop(info.tiddlers, title) ? info.tiddlers[title] : null;
 	return fields ? viewText(new $tw.Tiddler(fields, { title: title })) : null;
 }
 
+/**
+ * The text of a view URI.
+ * @param {string} uri - view URI
+ * @returns {(string|null)} Text
+ */
 function virtualDocument(uri) {
 	var title = isVirtualUri(uri) ? titleOfVirtualUri(uri) : null,
 		plugin = title === null ? null : sourceOfVirtualUri(uri);
@@ -401,8 +516,11 @@ function virtualDocument(uri) {
 	return plugin === null ? virtualText(title) : shadowVersionText(title, plugin);
 }
 
-// Where the editor can open title: its own file when that file holds exactly
-// the tiddler, else the read-only view; null for no such tiddler.
+/**
+ * Where the editor can open a title: its own file when that file holds exactly the tiddler, else the read-only view.
+ * @param {string} title - tiddler title
+ * @returns {(string|null)} URI, null for no such tiddler
+ */
 function documentUriOf(title) {
 	if(hasFile(title)) {
 		return pathToUri($tw.boot.files[title].filepath);
@@ -410,31 +528,43 @@ function documentUriOf(title) {
 	return $tw.wiki.getTiddler(title) ? virtualUri(title) : null;
 }
 
-// Whether the editor opens title as a file of its own: a .tid, or a file with a .meta sidecar.
+/**
+ * Tells whether the editor opens a title as a file of its own: a .tid, or a file with a .meta sidecar.
+ * @param {string} title - tiddler title
+ * @returns {boolean} True if it has a file
+ */
 function hasFile(title) {
 	var entry = ($tw.boot.files || {})[title];
 	return !!(entry && entry.filepath && (isTidUri(entry.filepath) || entry.hasMetaFile));
 }
 
-// Somewhere the reader can open this title: its own file, or else the wiki in
-// the browser, served by this process or by the dev server in .tw-mcp/connect.
-// Core's --listen records no port, so it gets no link rather than a guess.
+/**
+ * Somewhere the reader can open a title: its own file, else the wiki in the browser; core's --listen records no port, so it gets no link.
+ * @param {string} title - tiddler title
+ * @returns {(string|null)} URI
+ */
 function browsableUri(title) {
 	var fileUri = uriOfTitle(title);
 	if(fileUri) {
 		return fileUri;
 	}
-	var port = httpPort();
-	return port ? "http://127.0.0.1:" + port + "/#" + encodeURIComponent(title) : null;
+	var base = browserBase();
+	return base ? base + "/#" + encodeURIComponent(title) : null;
 }
 
-function httpPort() {
-	var address = $tw.httpServer && $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();
+/**
+ * Where a browser reaches the wiki: this process's HTTP server, else the dev server in .tw-mcp/connect.
+ * @returns {(string|null)} Base URL, eg: http://127.0.0.1:8080
+ */
+function browserBase() {
+	var mcpLib = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js"),
+		address = $tw.httpServer && $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();
 	if(address && address.port) {
-		return address.port;
+		return "http://" + mcpLib.browserHost() + ":" + address.port;
 	}
-	var primary = require("$:/core/modules/commands/inspect/mcp/mcp-lib.js").readDiscoveryFile();
-	return primary && primary.listen && primary.port ? primary.port : null;
+	var primary = mcpLib.readDiscoveryFile();
+	// A primary from before tw-mcp 0.23.1 records no host; it served 127.0.0.1 unless told otherwise.
+	return primary && primary.listen && primary.port ? "http://" + (primary.host || "127.0.0.1") + ":" + primary.port : null;
 }
 
 exports.WIKITEXT_TYPE = WIKITEXT_TYPE;

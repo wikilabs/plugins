@@ -59,6 +59,10 @@ var UNREADABLE_CODES = ["EBUSY", "EPERM", "EACCES", "ENOENT"];
 // change it mid-process, and we advertise no listChanged notification.
 var LIST_TTL_MS = 60000;
 
+/**
+ * The tw-mcp plugin version.
+ * @returns {string} Version
+ */
 function getServerVersion() {
 	var pluginTiddler = $tw.wiki.getTiddler(PLUGIN_TITLE);
 	return (pluginTiddler && pluginTiddler.fields.version) || "0.0.0";
@@ -75,6 +79,11 @@ var lspClients = {}; // clientId -> what an editor's LSP process said about itse
 
 // --- Path validation helpers ---
 
+/**
+ * Tells whether a path lies inside the allowed paths.
+ * @param {string} targetPath - path to check
+ * @returns {boolean} True if allowed
+ */
 function isPathAllowed(targetPath) {
 	if(!allowedPaths || allowedPaths.length === 0) {
 		return true;
@@ -95,6 +104,11 @@ function isPathAllowed(targetPath) {
 	return false;
 }
 
+/**
+ * Why a path may not be written, or null when it may.
+ * @param {string} targetPath - path to check
+ * @returns {(string|null)} Error message
+ */
 function checkPathAllowed(targetPath) {
 	if(!isPathAllowed(targetPath)) {
 		process.stderr.write("[tw-mcp] BLOCKED path: " + path.resolve(targetPath) + " | allowed: " + allowedPaths.join(", ") + "\n");
@@ -108,17 +122,27 @@ function checkPathAllowed(targetPath) {
 
 // --- JSON-RPC helpers ---
 
+/**
+ * This server's name and version.
+ * @returns {{name: string, version: string}} Identity
+ */
 function serverIdentity() {
 	return { name: SERVER_NAME, version: getServerVersion() };
 }
 
-// The _meta of an inbound request, or an empty object when it carries none.
+/**
+ * The _meta of an inbound request, or an empty object when it carries none.
+ * @param {object} parsed - JSON-RPC message
+ * @returns {object} Meta
+ */
 function getMeta(parsed) {
 	return (parsed && parsed.params && parsed.params._meta) || {};
 }
 
-// A proxy front-end is itself a client of the primary, so its own requests must
-// declare version and identity exactly like any other client's.
+/**
+ * The _meta a proxy's own requests carry, declaring version and identity like any client's.
+ * @returns {object} Params with _meta
+ */
 function buildRequestMeta() {
 	var params = { _meta: {} };
 	params._meta[META_VERSION] = PROTOCOL_VERSION;
@@ -129,11 +153,13 @@ function buildRequestMeta() {
 	return params;
 }
 
-// Under 2026-07-28 every result MUST carry resultType and SHOULD identify the
-// server, so both are stamped here rather than at each call site. A
-// handshake-era result carries neither: it has no resultType in its schema and
-// it was already given the server's identity once, at initialize. Era defaults
-// to modern so a call site that omits it cannot silently downgrade a response.
+/**
+ * A JSON-RPC result line; a modern one carries resultType and the server identity, a handshake-era one neither.
+ * @param {*} id - request id
+ * @param {object} result - result
+ * @param {string} [era] - modern (default) or legacy
+ * @returns {string} Line
+ */
 function jsonrpcResponse(id, result, era) {
 	var payload = result || {};
 	if(era !== "legacy") {
@@ -146,6 +172,14 @@ function jsonrpcResponse(id, result, era) {
 	return JSON.stringify({ jsonrpc: "2.0", id: id, result: payload });
 }
 
+/**
+ * A JSON-RPC error line.
+ * @param {*} id - request id
+ * @param {number} code - error code
+ * @param {string} message - message
+ * @param {*} [data] - error data
+ * @returns {string} Line
+ */
 function jsonrpcError(id, code, message, data) {
 	var err = { jsonrpc: "2.0", id: id, error: { code: code, message: message } };
 	if(data !== undefined) {
@@ -154,9 +188,11 @@ function jsonrpcError(id, code, message, data) {
 	return JSON.stringify(err);
 }
 
-// Returns null when the line is not valid JSON. A SyntaxError is the one
-// anticipated failure here; anything else is a bug and must propagate rather
-// than be silently reinterpreted as "unparseable".
+/**
+ * A parsed JSON-RPC line, or null when it is not JSON; any other failure propagates.
+ * @param {string} line - input line
+ * @returns {(object|null)} Message
+ */
 function parseJsonRpc(line) {
 	try {
 		return JSON.parse(line);
@@ -172,6 +208,11 @@ function parseJsonRpc(line) {
 
 // --- Shared message dispatcher (used by stdio and pipe transports) ---
 
+/**
+ * Logs a line to stderr, which is free since stdout carries the protocol.
+ * @param {string} msg - message
+ * @returns {void}
+ */
 function log(msg) {
 	var now = new Date();
 	var ts = now.toISOString().slice(11, 23);
@@ -180,6 +221,11 @@ function log(msg) {
 
 // Shorten pipe paths after the first mention so repeated log lines stay readable.
 var pipePathFullyShown = false;
+/**
+ * A pipe path shortened for the log.
+ * @param {string} p - pipe path
+ * @returns {string} Display form
+ */
 function fmtPipe(p) {
 	if(!p) return p;
 	if(!pipePathFullyShown) {
@@ -198,16 +244,19 @@ function fmtPipe(p) {
 // Suppress the redundant "Initialized" log for pipe clients — the auth log already covers it.
 var suppressNextInitLog = false;
 
-// Readonly is the default but surprising — most expect RW from a debug tool.
-// Render READONLY prominently so users notice when writes are disabled.
+/**
+ * The mode for the log, READONLY in capitals so a disabled write is noticed.
+ * @returns {string} Mode
+ */
 function fmtMode() {
 	return "mode: " + (readonlyMode ? "READONLY" : "readwrite");
 }
 
-// Modern clients identify themselves per request, so there is no stored session
-// to name them from — read it off whichever message we happen to be handling.
-// A handshake-era client puts the same thing in params.clientInfo instead, and
-// only once, on initialize.
+/**
+ * The client named by a message, per request for modern clients and in clientInfo on initialize for older ones.
+ * @param {object} parsed - JSON-RPC message
+ * @returns {string} Description
+ */
 function describeClient(parsed) {
 	var info = getMeta(parsed)[META_CLIENT_INFO] || (parsed && parsed.params && parsed.params.clientInfo);
 	if(info && info.name) {
@@ -216,16 +265,11 @@ function describeClient(parsed) {
 	return "unidentified client";
 }
 
-// Which revision a message belongs to: "modern", "legacy", or null when it
-// declares a version we do not speak.
-//
-// This stays a pure function of the message, so serving two eras adds no
-// per-connection state — which matters, because the pipe transport multiplexes
-// clients and 2026-07-28 removed the handshake that per-connection state used
-// to hang off. A modern request declares its version in _meta; a handshake-era
-// one has nowhere to put it, so an ABSENT version means legacy rather than an
-// error. server/discover is the era probe itself and is always answered as
-// modern, since a client that speaks it needs no handshake.
+/**
+ * The revision a message belongs to, as a pure function of the message; an absent version means legacy.
+ * @param {object} parsed - JSON-RPC message
+ * @returns {(string|null)} modern, legacy, or null for an unknown version
+ */
 function eraOfMessage(parsed) {
 	if(parsed.method === "server/discover") {
 		return "modern";
@@ -252,6 +296,13 @@ var requestHistory = Object.create(null);
 var requestHistoryOrder = [];
 var REQUEST_HISTORY_SIZE = 50;
 
+/**
+ * Remembers a request, so a later log line can name it.
+ * @param {*} id - request id
+ * @param {string} method - method
+ * @param {string} [toolName] - tool of a tools/call
+ * @returns {void}
+ */
 function recordRequest(id, method, toolName) {
 	if(id === undefined || id === null) return;
 	requestHistory[id] = { method: method, toolName: toolName, at: Date.now() };
@@ -262,6 +313,11 @@ function recordRequest(id, method, toolName) {
 	}
 }
 
+/**
+ * A remembered request with its age, for the log.
+ * @param {*} id - request id
+ * @returns {string} Description
+ */
 function describeRequest(id) {
 	var entry = requestHistory[id];
 	if(!entry) return "unknown (id=" + id + ")";
@@ -287,15 +343,22 @@ var CONFIRM_TITLE_SAMPLE = 20;
 // treats as attacker-controlled, so it is signed and verified on return.
 var confirmSecret = crypto ? crypto.randomBytes(32) : null;
 
+/**
+ * A confirmation state signed with this process's secret.
+ * @param {object} payload - state to sign
+ * @returns {string} Signed state
+ */
 function signRequestState(payload) {
 	var body = Buffer.from(JSON.stringify(payload), "utf8").toString("base64");
 	return body + "." + crypto.createHmac("sha256", confirmSecret).update(body).digest("hex");
 }
 
-// Valid only if the signature holds, the TTL has not lapsed, AND the impact
-// digest still matches. A target set that shifted between round trips fails
-// here, which forces a fresh confirmation rather than applying to a set the
-// user never saw.
+/**
+ * Tells whether a confirmation state is signed, unexpired and still matches the impact digest.
+ * @param {string} state - signed state
+ * @param {string} expectedDigest - digest of the current impact
+ * @returns {boolean} True if valid
+ */
 function verifyRequestState(state, expectedDigest) {
 	if(typeof state !== "string") return false;
 	var parts = state.split(".");
@@ -309,6 +372,13 @@ function verifyRequestState(state, expectedDigest) {
 	return payload.exp > Date.now() && payload.digest === expectedDigest;
 }
 
+/**
+ * A digest of what a write would affect, so a changed target set needs a new confirmation.
+ * @param {string} toolName - tool
+ * @param {object} toolArgs - arguments
+ * @param {string[]} titles - affected titles
+ * @returns {string} Digest
+ */
 function impactDigest(toolName, toolArgs, titles) {
 	return crypto.createHash("sha256").update(JSON.stringify({
 		tool: toolName,
@@ -319,6 +389,12 @@ function impactDigest(toolName, toolArgs, titles) {
 	}), "utf8").digest("hex");
 }
 
+/**
+ * The message asking the user to confirm a write.
+ * @param {string[]} titles - affected titles
+ * @param {object} impact - what the write does
+ * @returns {string} Message
+ */
 function confirmMessage(titles, impact) {
 	var shown = titles.slice(0, CONFIRM_TITLE_SAMPLE);
 	var more = titles.length - shown.length;
@@ -327,8 +403,15 @@ function confirmMessage(titles, impact) {
 		(impact.truncated ? "\n\n(the preview was truncated by a limit, so more may match)" : "");
 }
 
-// Returns true when it has answered the request itself and the caller must not
-// run the tool. Returns false to let the call proceed normally.
+/**
+ * Answers a write that needs confirmation; false lets the call proceed.
+ * @param {object} parsed - JSON-RPC message
+ * @param {string} toolName - tool
+ * @param {object} toolArgs - arguments
+ * @param {*} id - request id
+ * @param {function(string): void} send - writes a line
+ * @returns {boolean} True when answered here
+ */
 function confirmationHandled(parsed, toolName, toolArgs, id, send) {
 	if(!CONFIRM_TOOLS[toolName] || !crypto) return false;
 	// dry_run defaults true, so only an explicit apply is destructive.
@@ -379,8 +462,10 @@ function confirmationHandled(parsed, toolName, toolArgs, id, send) {
 	return true;
 }
 
-// The guidance a client is given about this wiki. Both eras hand it over, one
-// on server/discover and one on initialize, so it lives in one place.
+/**
+ * The guidance a client gets about this wiki, on server/discover and on initialize alike.
+ * @returns {string} Instructions
+ */
 function buildInstructions() {
 	return "TiddlyWiki MCP server." +
 		(readonlyMode ? " READONLY mode — writes disabled." : "") +
@@ -416,6 +501,12 @@ function buildInstructions() {
 		"- mcp.js / mcp-lib.js / shared.js / filesystem.js → full server restart.";
 }
 
+/**
+ * Answers one JSON-RPC line.
+ * @param {string} line - input line
+ * @param {function(string): void} send - writes a line
+ * @returns {void}
+ */
 function dispatchMessage(line, send) {
 	var parsed;
 	try {
@@ -545,8 +636,13 @@ function dispatchMessage(line, send) {
 	}
 }
 
-// A file still being written or already gone is answered as an error, so the
-// server keeps serving; anything else is a bug and propagates.
+/**
+ * Reloads a file an editor saved; a file being written or gone is an error answer, anything else propagates.
+ * @param {*} id - request id
+ * @param {string} filepath - saved file
+ * @param {string} era - modern or legacy
+ * @returns {string} Response line
+ */
 function reloadSavedFile(id, filepath, era) {
 	var watch = require("$:/core/modules/commands/inspect/lsp/lsp-watch.js"),
 		titles;
@@ -568,6 +664,14 @@ function reloadSavedFile(id, filepath, era) {
 
 var MAX_BUFFER_SIZE = 100 * 1024 * 1024; // 100MB — generous limit for base64 uploads
 
+/**
+ * Reads newline-delimited messages from a stream and dispatches each.
+ * @param {object} input - readable stream
+ * @param {function(string): void} send - writes a line
+ * @param {function(): void} [onClose] - called when the stream ends
+ * @param {function(string, function): void} [customDispatch] - replaces dispatchMessage
+ * @returns {void}
+ */
 function attachStreamHandler(input, send, onClose, customDispatch) {
 	var dispatch = customDispatch || function(line, sendFn) { dispatchMessage(line, sendFn); };
 	var buffer = "";
@@ -598,9 +702,10 @@ function attachStreamHandler(input, send, onClose, customDispatch) {
 
 // --- Named pipe transport ---
 
-// Resolve the canonical wiki path by following includeWikis to the root.
-// e.g. tw5.com-server includes ../tw5.com → canonical path is tw5.com.
-// The pipe name and discovery file are based on this so all editions converge.
+/**
+ * The wiki path the pipe and discovery file are named after: the first includeWikis entry, so editions sharing a wiki converge.
+ * @returns {(string|null)} Path
+ */
 function getCanonicalWikiPath() {
 	if(!$tw.boot.wikiPath) {
 		return null;
@@ -615,6 +720,10 @@ function getCanonicalWikiPath() {
 	return wikiPath;
 }
 
+/**
+ * The pipe path of this wiki: a named pipe on Windows, a socket in the wiki folder elsewhere.
+ * @returns {string} Pipe path
+ */
 function getPipePath() {
 	var canonical = getCanonicalWikiPath() || "default";
 	if(process.platform === "win32") {
@@ -627,6 +736,11 @@ function getPipePath() {
 	}
 }
 
+/**
+ * Tells whether a process id is alive.
+ * @param {number} pid - process id
+ * @returns {boolean} True if running
+ */
 function isProcessRunning(pid) {
 	try {
 		process.kill(pid, 0);
@@ -636,6 +750,10 @@ function isProcessRunning(pid) {
 	}
 }
 
+/**
+ * Removes a discovery file whose process is gone.
+ * @returns {void}
+ */
 function cleanStaleDiscoveryFile() {
 	var canonical = getCanonicalWikiPath();
 	if(!canonical) {
@@ -654,6 +772,11 @@ function cleanStaleDiscoveryFile() {
 	}
 }
 
+/**
+ * The discovery file of a wiki folder when its process is alive.
+ * @param {string} wikiPath - wiki folder
+ * @returns {(object|null)} Discovery data
+ */
 function tryReadDiscovery(wikiPath) {
 	var discoveryFile = path.resolve(wikiPath, ".tw-mcp", "connect");
 	try {
@@ -668,6 +791,10 @@ function tryReadDiscovery(wikiPath) {
 	return null;
 }
 
+/**
+ * The live discovery file of this wiki, from the canonical path first, then the wiki's own folder.
+ * @returns {(object|null)} Discovery data
+ */
 function readDiscoveryFile() {
 	if(!$tw.boot.wikiPath) {
 		return null;
@@ -684,6 +811,12 @@ function readDiscoveryFile() {
 	return tryReadDiscovery($tw.boot.wikiPath);
 }
 
+/**
+ * Checks whether another server owns the pipe, removing a stale Unix socket.
+ * @param {string} pipePath - pipe path
+ * @param {function((Error|null)): void} callback - receives an error when the pipe is taken
+ * @returns {void}
+ */
 function probeAndCleanPipe(pipePath, callback) {
 	// Clean up stale discovery files left by hard-killed processes
 	cleanStaleDiscoveryFile();
@@ -713,6 +846,11 @@ function probeAndCleanPipe(pipePath, callback) {
 	});
 }
 
+/**
+ * Sends a message to every pipe client.
+ * @param {string} message - line
+ * @returns {void}
+ */
 function broadcastToClients(message) {
 	var ids = Object.keys(pipeClients);
 	for(var i = 0; i < ids.length; i++) {
@@ -721,6 +859,10 @@ function broadcastToClients(message) {
 	}
 }
 
+/**
+ * Starts the pipe server and writes the discovery file once it listens.
+ * @returns {object} The net server
+ */
 function startPipeServer() {
 	var pipePath = getPipePath();
 
@@ -861,7 +1003,7 @@ function startPipeServer() {
 			}
 			// Write discovery file to the canonical wiki path so all editions converge
 			var writePrimaryDiscovery = function() {
-				writeDiscoveryFile({ pipe: pipePath, token: authToken, pid: process.pid, label: serverLabel || undefined, listen: !!$tw.httpServer, port: listeningPort() });
+				writeDiscoveryFile({ pipe: pipePath, token: authToken, pid: process.pid, label: serverLabel || undefined, listen: !!$tw.httpServer, port: listeningPort(), host: browserHost() });
 			};
 			writePrimaryDiscovery();
 			// The editor's LSP process links to the browser through this port, which exists only once HTTP listens.
@@ -874,7 +1016,12 @@ function startPipeServer() {
 	return pipeServer;
 }
 
-// An editor's LSP process says who it is, so get_wiki_info can list it; true when the message was that hello.
+/**
+ * Records an editor LSP process's hello, so get_wiki_info can list it.
+ * @param {string} clientId - pipe client
+ * @param {object} parsed - JSON-RPC message
+ * @returns {boolean} True when the message was that hello
+ */
 function handlePipeNotification(clientId, parsed) {
 	if(parsed.method !== LSP_HELLO_METHOD) {
 		return false;
@@ -888,6 +1035,11 @@ function handlePipeNotification(clientId, parsed) {
 	return true;
 }
 
+/**
+ * Drops a pipe client that disconnected.
+ * @param {string} clientId - pipe client
+ * @returns {void}
+ */
 function forgetPipeClient(clientId) {
 	if(lspClients[clientId]) {
 		log("LSP client gone: " + describeLspClient(lspClients[clientId]));
@@ -895,23 +1047,60 @@ function forgetPipeClient(clientId) {
 	}
 }
 
+/**
+ * An LSP client for get_wiki_info.
+ * @param {object} info - hello data
+ * @returns {string} Description
+ */
 function describeLspClient(info) {
 	return (info.client || "an editor") + " (PID " + info.pid + ", " + (info.transport || "pipe") + ")" + (info.label ? " @" + info.label : "") + (info.wiki ? " on " + info.wiki : "");
 }
 
+/**
+ * The LSP processes linked to this server.
+ * @returns {object[]} Clients
+ */
 function listLspClients() {
 	return Object.keys(lspClients).map(function(clientId) {
 		return lspClients[clientId];
 	});
 }
 
+/**
+ * The port this process's HTTP server listens on.
+ * @returns {(number|undefined)} Port
+ */
 function listeningPort() {
 	var address = $tw.httpServer && $tw.httpServer.nodeServer && $tw.httpServer.nodeServer.address();
 	return address && address.port ? address.port : undefined;
 }
 
+/**
+ * The host a browser opens this process's HTTP server at: a host= name as given, else the address it is bound to.
+ * @returns {(string|undefined)} Host, bracketed when it is an IPv6 address
+ */
+function browserHost() {
+	var http = $tw.httpServer,
+		address = http && http.nodeServer && http.nodeServer.address(),
+		WILDCARDS = ["0.0.0.0", "::"];
+	if(!address || !address.address) {
+		return undefined;
+	}
+	var host = http.server.get("host");
+	// localhost resolves to whichever address it was bound to; using that spares the browser trying the other one first.
+	if(!host || host === "localhost" || WILDCARDS.includes(host)) {
+		host = WILDCARDS.includes(address.address) ? "127.0.0.1" : address.address;
+	}
+	return host.includes(":") && host.charAt(0) !== "[" ? "[" + host + "]" : host;
+}
+
 // --- Takeover: primary steps down, new primary takes over ---
 
+/**
+ * Writes the discovery file to the canonical wiki path.
+ * @param {object} data - discovery data
+ * @returns {void}
+ */
 function writeDiscoveryFile(data) {
 	var canonical = getCanonicalWikiPath();
 	if(!canonical) {
@@ -927,6 +1116,11 @@ function writeDiscoveryFile(data) {
 	}
 }
 
+/**
+ * Steps down for a proxy that serves HTTP and asks to become primary.
+ * @param {object} params - the new primary's pid and label
+ * @returns {void}
+ */
 function handleTakeoverRequest(params) {
 	if(takeoverInProgress) {
 		log("Takeover already in progress, ignoring request from PID " + params.pid);
@@ -980,6 +1174,11 @@ function handleTakeoverRequest(params) {
 	}, 100);
 }
 
+/**
+ * Waits for the new primary's discovery file, then turns this process into its proxy.
+ * @param {number} expectedPid - new primary's pid
+ * @returns {void}
+ */
 function waitForNewPrimary(expectedPid) {
 	var attempts = 0;
 	var maxAttempts = 30; // 3 seconds max
@@ -1008,6 +1207,11 @@ function waitForNewPrimary(expectedPid) {
 // swapped by transitionToProxy to relay mode
 var stdinRelay = null;
 
+/**
+ * Turns a former primary into a proxy of the new one.
+ * @param {object} newPrimary - discovery data
+ * @returns {void}
+ */
 function transitionToProxy(newPrimary) {
 	log("Stepping down to PROXY → new primary (PID " + newPrimary.pid + ") at " + fmtPipe(newPrimary.pipe) + (newPrimary.label ? " @" + newPrimary.label : ""));
 	$tw.mcp.role = "proxy";
@@ -1084,8 +1288,14 @@ function transitionToProxy(newPrimary) {
 
 // --- Proxy mode helpers ---
 
-// Stamps the token on EVERY relayed message rather than only the first, because
-// the primary now re-checks it per request. A message without it is rejected.
+/**
+ * Stamps the token on a relayed message, since the primary checks it on every request.
+ * @param {string} line - JSON-RPC line
+ * @param {string} token - pipe token
+ * @param {string} [label] - this process's label
+ * @param {string} [role] - pipe role
+ * @returns {string} Line
+ */
 function injectAuth(line, token, label, role) {
 	var msg = parseJsonRpc(line);
 	if(!msg) {
@@ -1104,10 +1314,12 @@ function injectAuth(line, token, label, role) {
 	return JSON.stringify(msg);
 }
 
-// What the proxy must do with a client message before relaying it: which answer
-// to intercept later (`track`), whether to stop here (`block`) and the refusal
-// to write back (`response`). Pure, so the readonly write-block is testable
-// without a primary to relay to (bead tw-mcp-server-5hd).
+/**
+ * What the proxy does with a client message: which answer to track, whether to block it, and the refusal.
+ * @param {object} msg - JSON-RPC message
+ * @param {object} options - readonly and writeToolNames
+ * @returns {{track: (string|null), block: boolean, response: (string|null)}} Decision
+ */
 function classifyOutbound(msg, options) {
 	var nothing = { track: null, block: false, response: null };
 	if(!msg || msg.id === undefined) {
@@ -1143,6 +1355,11 @@ function classifyOutbound(msg, options) {
 	return nothing;
 }
 
+/**
+ * Relays stdio to a running primary over its pipe.
+ * @param {object} discovery - primary's discovery data
+ * @returns {void}
+ */
 function startProxyMode(discovery) {
 	var pipePath = discovery.pipe;
 	var token = discovery.token;
@@ -1517,6 +1734,11 @@ function startProxyMode(discovery) {
 
 // --- MCP Server entry point ---
 
+/**
+ * Serves the wiki on stdio and the pipe.
+ * @param {object} options - server options
+ * @returns {void}
+ */
 function startAsPrimary(options) {
 	// Generate auth token for pipe transport (256-bit random hex)
 	authToken = crypto.randomBytes(32).toString("hex");
@@ -1578,8 +1800,10 @@ function startAsPrimary(options) {
 	}
 }
 
-// Detect IDE-spawned process and derive a workspace tag so instances launched
-// from different VSCode windows are distinguishable in logs and heartbeats.
+/**
+ * A tag naming the workspace of an IDE-spawned process, so instances from different windows are told apart.
+ * @returns {(string|null)} Tag
+ */
 function deriveIDEWorkspaceTag() {
 	var env = process.env;
 	var fromIDE = !!(env.VSCODE_PID || env.VSCODE_IPC_HOOK || env.TERM_PROGRAM === "vscode" || env.CLAUDECODE || env.CLAUDE_CODE_ENTRYPOINT);
@@ -1597,6 +1821,11 @@ function deriveIDEWorkspaceTag() {
 	return tag || null;
 }
 
+/**
+ * Starts as primary, or as proxy when a primary already runs.
+ * @param {object} options - server options
+ * @returns {void}
+ */
 function startMCPServer(options) {
 	options = options || {};
 	readonlyMode = !!options.readonly;
@@ -1664,6 +1893,7 @@ exports.LSP_HELLO_METHOD = LSP_HELLO_METHOD;
 exports.handlePipeNotification = handlePipeNotification;
 exports.forgetPipeClient = forgetPipeClient;
 exports.listLspClients = listLspClients;
+exports.browserHost = browserHost;
 exports.TW_AUTH = TW_AUTH;
 exports.TW_PID = TW_PID;
 exports.TW_LABEL = TW_LABEL;

@@ -20,7 +20,11 @@ var TIMEOUT_MS = 3000;
 // A pipe that is gone or refuses belongs to a server that stopped; the next poll looks again.
 var GONE_CODES = ["ENOENT", "ECONNREFUSED", "ECONNRESET", "EPIPE"];
 
-// options: hello (sent on connect), log, onChange(server or null), pollMs, timeoutMs, readDiscovery (test seam).
+/**
+ * Links this LSP process to the wiki's MCP primary, found by its discovery file and polled until it appears.
+ * @param {object} [options] - hello (sent on connect), log, onChange(server or null), pollMs, timeoutMs, readDiscovery (test seam)
+ * @returns {object} Link
+ */
 function createLink(options) {
 	options = options || {};
 	var log = options.log || function() {},
@@ -145,7 +149,14 @@ function createLink(options) {
 
 	// What an editor shows about the server: no token or pipe.
 	function describe(found) {
-		return { pid: found.pid, label: found.label || null, browserPort: found.listen && found.port ? found.port : null };
+		var browsing = found.listen && found.port;
+		return {
+			pid: found.pid,
+			label: found.label || null,
+			browserPort: browsing ? found.port : null,
+			// A primary from before tw-mcp 0.23.1 records no host; it served 127.0.0.1 unless told otherwise.
+			browserUrl: browsing ? "http://" + (found.host || "127.0.0.1") + ":" + found.port : null
+		};
 	}
 
 	var timer = setInterval(poll, options.pollMs || POLL_MS);
