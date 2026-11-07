@@ -15,7 +15,11 @@ same name.
 var calls = require("$:/core/modules/commands/inspect/calls.js"),
 	widgets = require("$:/core/modules/commands/inspect/lsp/lsp-widgets.js");
 
-// The first source offset anywhere below nodes: where a widget's content starts.
+/**
+ * The first source offset anywhere below nodes: where a widget's content starts.
+ * @param {object[]} [nodes] - parse tree nodes
+ * @returns {(number|undefined)} Offset
+ */
 function firstStart(nodes) {
 	for(var i = 0; i < (nodes || []).length; i++) {
 		if(nodes[i].start !== undefined) {
@@ -29,9 +33,14 @@ function firstStart(nodes) {
 	return undefined;
 }
 
-// Every definition body and widget content holding offset, innermost first. A
-// widget's own attributes lie outside its scope: what it binds reaches its
-// content only. A cursor, unlike a name, is inside a body at its very end too.
+/**
+ * Every definition body and widget content holding offset, innermost first; a widget binds its content only, not its attributes.
+ * @param {object[]} tree - parse tree
+ * @param {string} text - source text
+ * @param {number} offset - offset into text
+ * @param {boolean} [atCursor] - a cursor at a body's very end is inside it
+ * @returns {Array<{node: object, definition: boolean, start: number, end: number}>} Scopes
+ */
 function scopesAt(tree, text, offset, atCursor) {
 	var scopes = [];
 	(function walk(nodes) {
@@ -53,8 +62,24 @@ function scopesAt(tree, text, offset, atCursor) {
 	return scopes.reverse();
 }
 
-// The binding of name at offset, or null when nothing in the document binds it
-// there. offset and the result's ranges are offsets into text.
+/**
+ * How a binding names the widget that sets it: <%if%> for a conditional clause, else the tag.
+ * @param {object} node - parse tree node
+ * @param {string} text - source text
+ * @returns {string} Label
+ */
+function bindingLabel(node, text) {
+	return widgets.isConditionalList(node, text) ? "<%if%>" : "<" + node.tag + ">";
+}
+
+/**
+ * The binding of name at offset, or null when nothing in the document binds it there.
+ * @param {string} name - variable or parameter name
+ * @param {number} offset - offset into text
+ * @param {object[]} tree - parse tree
+ * @param {string} text - source text
+ * @returns {(object|null)} Binding with ranges as offsets into text
+ */
 function resolve(name, offset, tree, text) {
 	var scopes = scopesAt(tree, text, offset);
 	for(var i = 0; i < scopes.length; i++) {
@@ -76,7 +101,7 @@ function resolve(name, offset, tree, text) {
 			return {
 				kind: "variable",
 				name: name,
-				by: calls.conditionalClauses(node, text) ? "<%if%>" : "<" + node.tag + ">",
+				by: bindingLabel(node, text),
 				scope: scope,
 				declaration: variableDeclaration(node, text, name)
 			};
@@ -85,8 +110,13 @@ function resolve(name, offset, tree, text) {
 	return null;
 }
 
-// Every name bound at a cursor, innermost scope first, as { name, kind, of } for
-// a parameter or { name, kind, by } for a widget's variable.
+/**
+ * Every name bound at a cursor, innermost scope first.
+ * @param {number} offset - offset into text
+ * @param {object[]} tree - parse tree
+ * @param {string} text - source text
+ * @returns {object[]} { name, kind, of } for a parameter, { name, kind, by } for a widget's variable
+ */
 function bindingsAt(offset, tree, text) {
 	var found = [];
 	scopesAt(tree, text, offset, true).forEach(function(scope) {
@@ -97,22 +127,33 @@ function bindingsAt(offset, tree, text) {
 			});
 		} else {
 			widgets.variablesOf({ name: node.tag.slice(1), attributes: node.orderedAttributes || [] }).forEach(function(name) {
-				found.push({ name: name, kind: "variable", by: calls.conditionalClauses(node, text) ? "<%if%>" : "<" + node.tag + ">" });
+				found.push({ name: name, kind: "variable", by: bindingLabel(node, text) });
 			});
 		}
 	});
 	return found;
 }
 
-// A parameter is declared between the parentheses on the pragma's first line.
+/**
+ * Where a parameter is declared, between the parentheses on the pragma's first line.
+ * @param {object} node - definition node
+ * @param {string} text - source text
+ * @param {string} name - parameter name
+ * @returns {({start: number, end: number}|null)} Range
+ */
 function parameterDeclaration(node, text, name) {
 	var line = text.slice(node.start, node.end).split("\n")[0],
 		match = new RegExp("[(,\\s]" + $tw.utils.escapeRegExp(name) + "(?=\\s*[:,)])").exec(line);
 	return match ? { start: node.start + match.index + 1, end: node.start + match.index + 1 + name.length } : null;
 }
 
-// Where a widget names the variable: a $let or $vars attribute of that name, or
-// the value of a name, variable or counter attribute.
+/**
+ * Where a widget names the variable: a $let, $vars or $parameters attribute of that name, or a name, variable or counter value.
+ * @param {object} node - widget node
+ * @param {string} text - source text
+ * @param {string} name - variable name
+ * @returns {({start: number, end: number}|null)} Range
+ */
 function variableDeclaration(node, text, name) {
 	var attributes = node.attributes || {},
 		holder = attributes[name] && ["$let", "$vars", "$parameters"].includes(node.tag) ? attributes[name] : null;

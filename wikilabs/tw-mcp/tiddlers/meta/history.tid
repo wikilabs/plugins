@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.22.1 - 2026-11-07
+
+* With the TiddlyWiki 5.5.0 prerelease, hovering the content of an `<%elseif%>` or `<%else%>` clause opens no `$list` popup, and `condition` there is set "by `<%if%>`".
+
 V 0.22.0 - 2026-11-07
 
 * New route mode: `--mcp route=<dir>` lets one MCP entry reach every wiki server running in a subfolder of `<dir>`. Every tool takes a `wiki` argument; without it, a call goes to the wiki on port 8080 (`default-port=<n>`). The new `list_wikis` tool shows the running wikis.
