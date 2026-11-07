@@ -1,5 +1,9 @@
 title: $:/plugins/wikilabs/bundler/history
 
+V 1.3.0 - 2026-11-07
+
+* Add `$removeFields` attribute to the `action-bundleplugin` widget, to drop the listed fields from every payload tiddler
+
 V 1.2.0 - 2025-06-17
 
 * Export bundle data with a .data extension, so it does not overwrite existing config tiddlers on the filesystem
