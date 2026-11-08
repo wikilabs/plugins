@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/tw-mcp/history
 
+V 0.24.0 - 2026-11-08
+
+* A plugin's shadow tiddler opens its `.tid` source file in the plugin folder: go to definition on a link, a transclusion or a call, hover links, find references, workspace symbols and rename. A core shadow, or one packed into a `.multids` or `.json` file, still opens read-only.
+* Go to definition on a link or transclusion of a shadow without a source file opens its read-only view instead of nothing.
+
 V 0.23.1 - 2026-11-08
 
 * Browser links and the editor's preview use the host the server runs on: a `host=` name as given, else the address it is bound to. A server started with `host=localhost` on `[::1]` was linked as `127.0.0.1`, which refused the connection. The host is recorded in `.tw-mcp/connect`.

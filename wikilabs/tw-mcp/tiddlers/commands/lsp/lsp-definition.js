@@ -5,7 +5,7 @@ module-type: library
 
 Go to definition. On a call: the definition the wiki would use at that call, or
 for a parameter or a widget's variable the place it is declared. On a link: the
-.tid file that holds the tiddler.
+file that holds the tiddler, a shadow's plugin source file, else its view.
 
 A definition may live in this document, in another .tid file, in a shadow or
 in the JavaScript behind a widget or macro; the last two open as read-only
@@ -27,14 +27,24 @@ var source = require("$:/core/modules/commands/inspect/lsp/lsp-source.js"),
 
 // --- Links ---
 
-// Every link and transclusion target, as {target, from, to} in document offsets.
+/**
+ * Every link and transclusion target in document offsets.
+ * @param {object} body - from source.bodyOf
+ * @returns {Array<{target: string, from: number, to: number}>} Sites
+ */
 function linkSites(body) {
 	return links.targetsIn(body.text).map(function(link) {
 		return { target: link.target, from: body.offset + link.start, to: body.offset + link.end };
 	});
 }
 
-// The link whose target text holds the cursor, the tightest when a transclusion sits inside a link.
+/**
+ * The link whose target text holds the cursor, the tightest when a transclusion sits inside a link.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @param {{line: number, character: number}} position - cursor
+ * @returns {(string|null)} Target
+ */
 function targetAt(uri, text, position) {
 	var body = source.bodyOf(uri, text),
 		cursor = source.offsetAt(body.starts, position),
@@ -53,8 +63,14 @@ function targetAt(uri, text, position) {
 
 // --- Calls ---
 
-// The call under the cursor and where it is defined, as { origin, targets },
-// each target { uri, range, full }; null when the cursor is on no call.
+/**
+ * The call under the cursor and where it is defined, each target { uri, range, full }.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @param {{line: number, character: number}} position - cursor
+ * @param {object} [openDocuments] - open documents by URI
+ * @returns {(object|null)} { origin, targets }, null off any call
+ */
 function callTargets(uri, text, position, openDocuments) {
 	var site = files.siteAt(files.sitesOfDocument(uri, text), position);
 	if(!site || site.definition) {
@@ -96,8 +112,13 @@ function callTargets(uri, text, position, openDocuments) {
 	};
 }
 
-// The JavaScript behind the filter operator or run prefix under the cursor. A
-// dotted operator is a call, which callTargets answers first.
+/**
+ * The JavaScript behind the filter operator or run prefix under the cursor; a dotted operator is a call, which callTargets answers first.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @param {{line: number, character: number}} position - cursor
+ * @returns {(object|null)} { origin, targets }
+ */
 function operatorTargets(uri, text, position) {
 	var body = source.bodyOf(uri, text),
 		hit = filters.filterPartAt(source.parseWithBodies(body.text), body.text, source.offsetAt(body.starts, position) - body.offset);
@@ -110,12 +131,24 @@ function operatorTargets(uri, text, position) {
 	return target ? { origin: rangeIn(body, hit.start, hit.end), targets: [target] } : null;
 }
 
+/**
+ * The protocol range of two body offsets.
+ * @param {object} body - from source.bodyOf
+ * @param {number} start - body offset
+ * @param {number} end - body offset
+ * @returns {object} LSP range
+ */
 function rangeIn(body, start, end) {
 	return { start: source.positionAt(body.starts, body.offset + start), end: source.positionAt(body.starts, body.offset + end) };
 }
 
-// A declared name, or for a variable no attribute names (the currentTiddler of
-// a <$list>) the tag of the widget that sets it.
+/**
+ * A declared name, or for a variable no attribute names (the currentTiddler of a <$list>) the tag of the widget that sets it.
+ * @param {string} uri - document URI
+ * @param {object} body - from source.bodyOf
+ * @param {object} binding - from scope.resolve
+ * @returns {object} Target { uri, range, full }
+ */
 function declarationTarget(uri, body, binding) {
 	var start, end;
 	if(binding.declaration) {
@@ -129,8 +162,12 @@ function declarationTarget(uri, body, binding) {
 	return { uri: uri, range: range, full: range };
 }
 
-// A global's definition in the document the editor opens for its tiddler, read
-// from that document: a file saved from the editor can be ahead of the wiki.
+/**
+ * A global's definition in the document the editor opens for its tiddler, read from there since a saved file can be ahead of the wiki.
+ * @param {string} title - defining tiddler
+ * @param {string} name - definition name
+ * @returns {(object|null)} Target { uri, range, full }
+ */
 function tiddlerTarget(title, name) {
 	var where = source.documentUriOf(title),
 		sites;
@@ -147,7 +184,12 @@ function tiddlerTarget(title, name) {
 	return hit ? { uri: where, range: hit.range, full: hit.full } : null;
 }
 
-// The JavaScript behind a widget or macro, at its constructor or its export.
+/**
+ * The JavaScript behind a widget or macro, at its constructor or its export.
+ * @param {(string|null)} title - module title
+ * @param {string} exportName - export name
+ * @returns {(object|null)} Target { uri, range, full }
+ */
 function moduleTarget(title, exportName) {
 	var at = title ? modules.exportedAt(title, exportName) : null;
 	if(!at) {
@@ -158,8 +200,12 @@ function moduleTarget(title, exportName) {
 	return { uri: source.documentUriOf(title), range: range, full: range };
 }
 
-// A client that understands LocationLink is given the whole definition to peek
-// at and the name that was clicked; any other gets the definition's name.
+/**
+ * LocationLinks with the whole definition to peek at for a client that understands them, else the definition's name.
+ * @param {object} call - { origin, targets }
+ * @param {object} [options] - linkSupport
+ * @returns {(object|object[])} Locations or links
+ */
 function respond(call, options) {
 	if(options && options.linkSupport) {
 		return call.targets.map(function(target) {
@@ -170,6 +216,15 @@ function respond(call, options) {
 	return locations.length === 1 ? locations[0] : locations;
 }
 
+/**
+ * Go to definition: a call's definition, an operator's JavaScript, or the tiddler a link names.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @param {{line: number, character: number}} position - cursor
+ * @param {object} [options] - linkSupport
+ * @param {object} [openDocuments] - open documents by URI
+ * @returns {(object|object[]|null)} Location, locations or links
+ */
 function definition(uri, text, position, options, openDocuments) {
 	var call = callTargets(uri, text, position, openDocuments);
 	if(call) {
@@ -183,13 +238,15 @@ function definition(uri, text, position, options, openDocuments) {
 	if(!target) {
 		return null;
 	}
-	var fileUri = source.uriOfTitle(links.titleOfTarget(target));
-	if(!fileUri) {
+	// Any file of the tiddler, an image included, else its read-only view.
+	var title = links.titleOfTarget(target),
+		targetUri = source.uriOfTitle(title) || source.documentUriOf(title);
+	if(!targetUri) {
 		return null;
 	}
 	// The whole file is the definition, so the range is its first character.
 	return {
-		uri: fileUri,
+		uri: targetUri,
 		range: {
 			start: { line: 0, character: 0 },
 			end: { line: 0, character: 0 }

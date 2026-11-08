@@ -11,7 +11,8 @@ in, and walking a parse tree.
 
 "use strict";
 
-var calls = require("$:/core/modules/commands/inspect/calls.js");
+var calls = require("$:/core/modules/commands/inspect/calls.js"),
+	shadows = require("$:/core/modules/commands/inspect/lsp/lsp-shadows.js");
 
 var WIKITEXT_TYPE = "text/vnd.tiddlywiki";
 
@@ -233,7 +234,10 @@ function titleOfUri(uri) {
 			return title;
 		}
 	}
-	return null;
+	var shadow = shadows.liveShadowFiles().find(function(entry) {
+		return pathToUri(entry.filepath) === uri;
+	});
+	return shadow ? shadow.title : null;
 }
 
 /**
@@ -381,13 +385,30 @@ function uriToPath(uri) {
 }
 
 /**
- * Where a title lives on disk; a shadow tiddler has no file, and nothing records its plugin's folder.
+ * Where a title lives on disk: its own file, else for a shadow its plugin's source file.
  * @param {string} title - tiddler title
  * @returns {(string|null)} Path
  */
 function fileOfTitle(title) {
-	var entry = ($tw.boot.files || {})[title];
+	var entry = fileEntry(title);
 	return entry && entry.filepath ? entry.filepath : null;
+}
+
+/**
+ * The file record of a title: boot's, else the shadow's source file.
+ * @param {string} title - tiddler title
+ * @returns {(object|null)} Entry with filepath and hasMetaFile
+ */
+function fileEntry(title) {
+	return ($tw.boot.files || {})[title] || shadows.fileOfShadow(title);
+}
+
+/**
+ * Every running shadow with a source file of its own.
+ * @returns {object[]} { title, filepath, hasMetaFile, plugin }
+ */
+function shadowFiles() {
+	return shadows.liveShadowFiles();
 }
 
 /**
@@ -523,7 +544,7 @@ function virtualDocument(uri) {
  */
 function documentUriOf(title) {
 	if(hasFile(title)) {
-		return pathToUri($tw.boot.files[title].filepath);
+		return pathToUri(fileOfTitle(title));
 	}
 	return $tw.wiki.getTiddler(title) ? virtualUri(title) : null;
 }
@@ -534,7 +555,7 @@ function documentUriOf(title) {
  * @returns {boolean} True if it has a file
  */
 function hasFile(title) {
-	var entry = ($tw.boot.files || {})[title];
+	var entry = fileEntry(title);
 	return !!(entry && entry.filepath && (isTidUri(entry.filepath) || entry.hasMetaFile));
 }
 
@@ -580,6 +601,7 @@ exports.parseWithBodies = parseWithBodies;
 exports.pathToUri = pathToUri;
 exports.uriToPath = uriToPath;
 exports.fileOfTitle = fileOfTitle;
+exports.shadowFiles = shadowFiles;
 exports.uriOfTitle = uriOfTitle;
 exports.browsableUri = browsableUri;
 exports.isVirtualUri = isVirtualUri;

@@ -33,8 +33,12 @@ var VIEWS_CACHE_KEY = "tw-lsp-views";
 // URI and comparison key per file path (see fileDocument).
 var fileDocuments = Object.create(null);
 
-// Every call and definition in a document, with protocol ranges, calls in its
-// .tid header fields included. A document holding no wikitext has none.
+/**
+ * Every call and definition in a document with protocol ranges, header field calls included; none for a document holding no wikitext.
+ * @param {string} uri - document URI
+ * @param {string} text - document text
+ * @returns {object[]} Sites
+ */
 function sitesOfDocument(uri, text) {
 	var body = source.bodyOf(uri, text);
 	if(!isWikitext(uri, body)) {
@@ -67,11 +71,22 @@ function sitesOfDocument(uri, text) {
 	return located;
 }
 
+/**
+ * The protocol range between two document offsets.
+ * @param {object} body - from source.bodyOf
+ * @param {number} start - offset
+ * @param {number} end - offset
+ * @returns {object} LSP range
+ */
 function rangeOf(body, start, end) {
 	return { start: source.positionAt(body.starts, start), end: source.positionAt(body.starts, end) };
 }
 
-// The value of each .tid header field but the title, and where it starts.
+/**
+ * The value of each .tid header field but the title, and where it starts.
+ * @param {object} body - from source.bodyOf
+ * @returns {Array<{value: string, start: number}>} Fields
+ */
 function headerFields(body) {
 	var fields = [];
 	for(var i = 0; i < body.firstLine - 1; i++) {
@@ -83,8 +98,12 @@ function headerFields(body) {
 	return fields;
 }
 
-// A view of a wiki tiddler takes its type from the wiki; a .tid file takes it
-// from its own type: line, since the wiki's copy may be stale.
+/**
+ * Tells whether a document is wikitext: a view by its wiki tiddler's type, a .tid by its own type: line, since the wiki's copy may be stale.
+ * @param {string} uri - document URI
+ * @param {object} body - from source.bodyOf
+ * @returns {boolean} True for wikitext
+ */
 function isWikitext(uri, body) {
 	if(source.isVirtualUri(uri)) {
 		var title = source.titleOfVirtualUri(uri),
@@ -100,6 +119,11 @@ function isWikitext(uri, body) {
 	return true;
 }
 
+/**
+ * The sites of a file on disk, cached while its mtime and size are unchanged.
+ * @param {string} filepath - file path
+ * @returns {object[]} Sites
+ */
 function sitesOfFile(filepath) {
 	var stat = fs.statSync(filepath, { throwIfNoEntry: false });
 	if(!stat) {
@@ -115,6 +139,11 @@ function sitesOfFile(filepath) {
 	return sites;
 }
 
+/**
+ * The sites of a tiddler's read-only view.
+ * @param {string} title - tiddler title
+ * @returns {object[]} Sites
+ */
 function sitesOfView(title) {
 	var viewUri = source.virtualUri(title);
 	return $tw.wiki.getCacheForTiddler(title, VIEW_CACHE_KEY, function() {
@@ -122,8 +151,12 @@ function sitesOfView(title) {
 	});
 }
 
-// A name never spans lines, so the cursor only has to sit on the name's line,
-// anywhere from its first character to just after its last.
+/**
+ * The site at a position: a name never spans lines, so anywhere on its line from its first character to just after its last.
+ * @param {object[]} sites - sites of the document
+ * @param {{line: number, character: number}} position - cursor
+ * @returns {(object|null)} Site
+ */
 function siteAt(sites, position) {
 	for(var i = 0; i < sites.length; i++) {
 		var range = sites[i].range;
@@ -134,9 +167,11 @@ function siteAt(sites, position) {
 	return null;
 }
 
-// VS Code writes a drive letter lowercase with its colon escaped
-// (file:///e%3A/...), where a path from $tw.boot.files gives file:///E:/...,
-// so two spellings of one file must compare equal; a view compares by title.
+/**
+ * A key under which two spellings of one file compare equal (VS Code writes file:///e%3A/...), and a view compares by title.
+ * @param {string} uri - document URI
+ * @returns {string} Key
+ */
 function sameFileKey(uri) {
 	if(source.isVirtualUri(uri)) {
 		return "tiddlywiki:" + source.titleOfVirtualUri(uri);
@@ -146,9 +181,10 @@ function sameFileKey(uri) {
 	});
 }
 
-// Wikitext tiddlers the editor can only open as a view: real ones no file holds
-// exactly, and shadows that no real tiddler overrides, since only the running
-// text counts.
+/**
+ * Wikitext tiddlers the editor can only open as a view: real ones no file holds exactly, and shadows no real tiddler overrides.
+ * @returns {string[]} Titles
+ */
 function wikiOnlyTitles() {
 	var titles = [];
 	function consider(tiddler, title) {
@@ -165,7 +201,12 @@ function wikiOnlyTitles() {
 	return titles;
 }
 
-// A cheap test before a tiddler is parsed: the name appears in some field.
+/**
+ * A cheap test before a tiddler is parsed: the name appears in some field.
+ * @param {string} title - tiddler title
+ * @param {string} name - name searched for
+ * @returns {boolean} True if mentioned
+ */
 function mentions(title, name) {
 	var tiddler = $tw.wiki.getTiddler(title);
 	return Object.keys(tiddler.fields).some(function(key) {
@@ -173,15 +214,25 @@ function mentions(title, name) {
 	});
 }
 
-// Every document the editor can open, once each, under whichever spelling of
-// its URI came first: open buffers, then the wiki's .tid files, then views.
-// visit(uri, title, sites) is handed sites() to call only if it needs them,
-// since parsing is the expensive part.
+/**
+ * Visits every document the editor can open once, under the first spelling of its URI: open buffers, the wiki's .tid files, plugin source files, then views.
+ * @param {object} openDocuments - open documents by URI
+ * @param {function(string, string, function(): object[]): void} visit - receives uri, title and a sites() to call only if needed
+ * @returns {void}
+ */
 function eachDocument(openDocuments, visit) {
 	var seen = Object.create(null);
 	function offer(docUri, title, sites, key) {
 		seen[key || sameFileKey(docUri)] = true;
 		visit(docUri, title, sites);
+	}
+	function offerFile(title, filepath) {
+		if(filepath && source.isTidUri(filepath)) {
+			var file = fileDocument(filepath);
+			if(!seen[file.key]) {
+				offer(file.uri, title, sitesOfFile.bind(null, filepath), file.key);
+			}
+		}
 	}
 	Object.keys(openDocuments || {}).forEach(function(openUri) {
 		offer(openUri, source.titleOfDocument(openUri, openDocuments[openUri]), function() {
@@ -190,14 +241,11 @@ function eachDocument(openDocuments, visit) {
 	});
 	var files = $tw.boot.files || {};
 	for(var title in files) {
-		var filepath = files[title].filepath;
-		if(filepath && source.isTidUri(filepath)) {
-			var file = fileDocument(filepath);
-			if(!seen[file.key]) {
-				offer(file.uri, title, sitesOfFile.bind(null, filepath), file.key);
-			}
-		}
+		offerFile(title, files[title].filepath);
 	}
+	source.shadowFiles().forEach(function(shadow) {
+		offerFile(shadow.title, shadow.filepath);
+	});
 	// A title filed since the views were listed is a file now.
 	wikiOnlyViews().forEach(function(view) {
 		if(!seen[view.key] && !source.hasFile(view.title)) {
@@ -206,7 +254,11 @@ function eachDocument(openDocuments, visit) {
 	});
 }
 
-// A file's URI and comparison key, which depend on its path alone.
+/**
+ * A file's URI and comparison key, which depend on its path alone.
+ * @param {string} filepath - file path
+ * @returns {{uri: string, key: string}} Document
+ */
 function fileDocument(filepath) {
 	if(!fileDocuments[filepath]) {
 		var fileUri = source.pathToUri(filepath);
@@ -215,9 +267,10 @@ function fileDocument(filepath) {
 	return fileDocuments[filepath];
 }
 
-// The views of wikitext tiddlers no file holds, as { title, uri, key }. Finding
-// them walks every tiddler, so the list waits in the wiki's global cache, which
-// every change to the wiki clears.
+/**
+ * The views of wikitext tiddlers no file holds, kept in the wiki's global cache that every change clears.
+ * @returns {Array<{title: string, uri: string, key: string}>} Views
+ */
 function wikiOnlyViews() {
 	return $tw.wiki.getGlobalCache(VIEWS_CACHE_KEY, function() {
 		return wikiOnlyTitles().map(function(title) {
@@ -227,7 +280,12 @@ function wikiOnlyViews() {
 	});
 }
 
-// Every site named name in every document the editor can open, as { uri, site }.
+/**
+ * Every site named name in every document the editor can open.
+ * @param {string} name - call or definition name
+ * @param {object} openDocuments - open documents by URI
+ * @returns {Array<{uri: string, site: object}>} Hits
+ */
 function sitesNamed(name, openDocuments) {
 	var found = [];
 	eachDocument(openDocuments, function(docUri, title, sites) {

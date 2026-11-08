@@ -100,3 +100,4 @@ exports.virtualUri = source.virtualUri;
 exports.titleOfVirtualUri = source.titleOfVirtualUri;
 exports.virtualText = source.virtualText;
 exports.documentUriOf = source.documentUriOf;
+exports.shadowFiles = source.shadowFiles;
