@@ -1,0 +1,16 @@
+title: $:/plugins/wikilabs/new-style/thin-scrollbars
+tags: $:/tags/Stylesheet
+type: text/css
+
+* {
+	scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+	width: .4em;
+	height: .4em;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: #bbb;
+}

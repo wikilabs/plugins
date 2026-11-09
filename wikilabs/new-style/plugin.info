@@ -3,7 +3,7 @@
 	"name": "New Style",
 	"description": "Theme: Underlined Tabs - Animation Helper",
 	"author": "pmario",
-	"version": "0.9.0",
+	"version": "0.10.0",
 	"list": "readme license",
 	"stability": "STABILITY_2_STABLE"
 }
