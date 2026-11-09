@@ -1,5 +1,10 @@
 title: $:/plugins/wikilabs/thin-scrollbars/history
 
+V 0.2.0 - 2026-11-09
+
+* Set stability back to stable
+* Remove the wider scrollbar on hover, so all scrollbars stay thin
+
 V 0.1.2 - 2024-05-23
 
 * Add stability badges
